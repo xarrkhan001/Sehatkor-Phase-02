@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import SearchServices from "@/components/SearchServices";
 import CompareTray from "@/components/CompareTray";
+import PartnersMarquee from "@/components/PartnersMarquee";
 import CompareExplorer from "@/components/CompareExplorer";
 import heroImage from "@/assets/healthcare-hero-bg.jpg";
 import { 
@@ -241,6 +242,9 @@ const HomePage = () => {
           <CompareExplorer />
         </div>
       </section>
+
+      {/* Partners Marquee below the compare section */}
+      <PartnersMarquee />
 
       {/* Features Section */}
       <section className="py-16 sm:py-20 bg-white">
