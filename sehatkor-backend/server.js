@@ -225,33 +225,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Basic health check endpoint
-app.get("/", (req, res) => {
-  res.status(200).json({
-    status: "active", // More standard terminology
-    error: false,
-    message: "Server is running",
-    timestamp: new Date().toISOString(), // Added timestamp for monitoring
-  });
-});
-
-// 404 handler for unmatched routes
-app.use((req, res) => {
-  res.status(404).json({
-    error: true,
-    message: "Route not found",
-  });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    error: true,
-    message: "Internal server error",
-  });
-});
-
 server.listen(PORT, (err) => {
   if (err) {
     console.error("❌ Failed to start server:", err);
