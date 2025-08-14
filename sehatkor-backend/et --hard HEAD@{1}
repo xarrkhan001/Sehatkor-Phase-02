@@ -1,0 +1,10 @@
+[33mebb8d3f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mchatsystem-dlt-notific-forword-backend[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: pull origin main: Fast-forward
+[33m9cdbbb4[m[33m ([m[1;31morigin/chatsystem-dlt-notific-forword-backend[m[33m)[m HEAD@{1}: commit: improvement in chat app functionalty
+[33m1af5f32[m[33m ([m[1;31morigin/signupwithgoogle-backend[m[33m, [m[1;32msignupwithgoogle-backend[m[33m, [m[1;32mchatsystem-dlt-notific-forword[m[33m)[m HEAD@{2}: checkout: moving from chatsystem-dlt-notific-forword to chatsystem-dlt-notific-forword-backend
+[33m1af5f32[m[33m ([m[1;31morigin/signupwithgoogle-backend[m[33m, [m[1;32msignupwithgoogle-backend[m[33m, [m[1;32mchatsystem-dlt-notific-forword[m[33m)[m HEAD@{3}: checkout: moving from signupwithgoogle-backend to chatsystem-dlt-notific-forword
+[33m1af5f32[m[33m ([m[1;31morigin/signupwithgoogle-backend[m[33m, [m[1;32msignupwithgoogle-backend[m[33m, [m[1;32mchatsystem-dlt-notific-forword[m[33m)[m HEAD@{4}: commit: signup with google logic implemented in backend
+[33me522a56[m[33m ([m[1;31morigin/chat-websocket[m[33m, [m[1;32mchat-websocket[m[33m)[m HEAD@{5}: checkout: moving from chat-websocket to signupwithgoogle-backend
+[33me522a56[m[33m ([m[1;31morigin/chat-websocket[m[33m, [m[1;32mchat-websocket[m[33m)[m HEAD@{6}: commit: websocket has been implemnted
+[33mfa8cf6a[m[33m ([m[1;31morigin/saud-backend[m[33m, [m[1;32mmain[m[33m)[m HEAD@{7}: checkout: moving from main to chat-websocket
+[33mfa8cf6a[m[33m ([m[1;31morigin/saud-backend[m[33m, [m[1;32mmain[m[33m)[m HEAD@{8}: Branch: renamed refs/heads/master to refs/heads/main
+[33mfa8cf6a[m[33m ([m[1;31morigin/saud-backend[m[33m, [m[1;32mmain[m[33m)[m HEAD@{10}: commit (initial): first commit
