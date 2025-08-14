@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserBadge from "@/components/UserBadge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,7 +22,8 @@ import {
   Hospital,
   FlaskConical,
   Pill,
-  UserCircle
+  UserCircle,
+  BadgeCheck
 } from "lucide-react";
 
 const Navbar = () => {
@@ -109,16 +112,31 @@ const Navbar = () => {
                     <User className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-white border shadow-xl rounded-xl mt-2">
-                  <DropdownMenuLabel className="font-normal px-4 py-3">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                      <p className="text-xs leading-none text-muted-foreground capitalize">{user.role}</p>
+                <DropdownMenuContent align="end" className="w-72 bg-white border shadow-xl rounded-2xl mt-2 p-0 overflow-hidden">
+                  <DropdownMenuLabel className="font-normal px-4 pt-4 pb-3 bg-gradient-to-br from-red-50 to-white">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
+                        <AvatarImage src={(user as any).avatar} alt={user.name} />
+                        <AvatarFallback className="bg-red-100 text-red-700 font-semibold">
+                          {user.name?.charAt(0) ?? 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold leading-none text-gray-900 truncate">{user.name}</p>
+                        <p className="text-xs leading-none text-gray-500 truncate">{user.email}</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <UserBadge role={(user as any).role} />
+                          {user.isVerified && (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                              <BadgeCheck className="h-3 w-3" /> Verified
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-100" />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50 px-4 py-2 rounded-lg mx-2 mb-2">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50 px-4 py-2 rounded-lg mx-2 my-2">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>
@@ -174,7 +192,14 @@ const Navbar = () => {
           <div className="px-4 py-2">
             <p className="text-sm font-medium text-gray-900">{user.name}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
-            <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <UserBadge role={(user as any).role} />
+              {user.isVerified && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                  <BadgeCheck className="h-3 w-3" /> Verified
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={() => {
