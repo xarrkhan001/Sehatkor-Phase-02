@@ -1,54 +1,61 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import http from 'http';
-import jwt from 'jsonwebtoken';
-import { Server } from 'socket.io';
-import { connectDB } from './config/index.js';
-import uploadRoutes from './routes/upload.routes.js';
-import authRoutes from './routes/auth.routes.js';
-import adminRoutes from './routes/admin.routes.js';
-import userRoutes from './routes/user.routes.js';
-import chatRoutes from './routes/chat.routes.js';
-import connectionRoutes from './routes/connection.routes.js';
-import { registerUserSocket, unregisterUserSocket, getUserSocketIds, getOnlineUserIds } from './services/chat.service.js';
-import Conversation from './models/Conversation.js';
-import Message from './models/Message.js';
-import { facebookCallback } from './apis/index.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import http from "http";
+import jwt from "jsonwebtoken";
+import { Server } from "socket.io";
+import { connectDB } from "./config/index.js";
+import uploadRoutes from "./routes/upload.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
+import connectionRoutes from "./routes/connection.routes.js";
+import {
+  registerUserSocket,
+  unregisterUserSocket,
+  getUserSocketIds,
+  getOnlineUserIds,
+} from "./services/chat.service.js";
+import Conversation from "./models/Conversation.js";
+import Message from "./models/Message.js";
+import { facebookCallback } from "./apis/index.js";
 
 dotenv.config();
 connectDB();
 
 const app = express();
 const allowedOrigins = [
-  'http://localhost:8080',
-  'http://localhost:8081',
-  'http://localhost:5173',
+  "http://localhost:8080",
+  "http://localhost:8081",
+  "http://localhost:5173",
 ];
 if (process.env.CLIENT_URL) allowedOrigins.push(process.env.CLIENT_URL);
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
-app.use('/api/auth', authRoutes);
-app.use('/api', uploadRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/connections', connectionRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", uploadRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/connections", connectionRoutes);
 
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
-app.get('/auth/facebook/callback', facebookCallback);
+app.get("/auth/facebook/callback", facebookCallback);
 
-console.log('🟢 server.js starting...');
+console.log("🟢 server.js starting...");
 let PORT = process.env.PORT;
 if (!PORT || isNaN(Number(PORT))) {
-  console.warn('⚠️  Invalid or missing PORT in .env. Using default port 4000.');
+  console.warn("⚠️  Invalid or missing PORT in .env. Using default port 4000.");
   PORT = 4000;
 } else {
   PORT = Number(PORT);
@@ -58,54 +65,68 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:5173'],
+    origin: [
+      "http://localhost:8080",
+      "http://localhost:8081",
+      "http://localhost:5173",
+    ],
     credentials: true,
   },
-  path: '/socket.io',
+  path: "/socket.io",
 });
 
 // Expose io to express routes/controllers
-app.set('io', io);
+app.set("io", io);
 
 io.use((socket, next) => {
   try {
     const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-    if (!token) return next(new Error('Authentication token missing'));
+    if (!token) return next(new Error("Authentication token missing"));
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.userId = decoded.id || decoded.userId;
     next();
   } catch (err) {
-    next(new Error('Authentication failed'));
+    next(new Error("Authentication failed"));
   }
 });
 
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
   const userId = socket.userId;
   registerUserSocket(userId, socket.id);
   // Notify all about current online users
-  io.emit('online_users', getOnlineUserIds());
+  io.emit("online_users", getOnlineUserIds());
 
-  socket.on('join_conversation', (conversationId) => {
+  socket.on("join_conversation", (conversationId) => {
     if (conversationId) socket.join(String(conversationId));
   });
 
-  socket.on('send_message', async (payload, callback) => {
+  socket.on("send_message", async (payload, callback) => {
     try {
-      const { conversationId, recipientId, type, text, fileUrl, fileName, fileSize } = payload || {};
+      const {
+        conversationId,
+        recipientId,
+        type,
+        text,
+        fileUrl,
+        fileName,
+        fileSize,
+      } = payload || {};
       if (!conversationId || !recipientId) return;
 
       // Disallow videos and unknown types
-      const allowedTypes = new Set(['text', 'image']);
-      const normalizedType = type || 'text';
+      const allowedTypes = new Set(["text", "image"]);
+      const normalizedType = type || "text";
       if (!allowedTypes.has(normalizedType)) {
-        if (callback) callback({ success: false, error: 'Unsupported message type' });
+        if (callback)
+          callback({ success: false, error: "Unsupported message type" });
         return;
       }
 
       // Ensure conversation exists (invitation flow removed)
       const conv = await Conversation.findById(conversationId);
       if (!conv) {
-        if (callback) callback({ success: false, error: 'Conversation not found' });
+        if (callback)
+          callback({ success: false, error: "Conversation not found" });
         return;
       }
 
@@ -121,7 +142,9 @@ io.on('connection', (socket) => {
       });
       await Conversation.findByIdAndUpdate(conversationId, {
         lastMessage: {
-          text: (normalizedType === 'text' ? text : fileName || normalizedType) || '',
+          text:
+            (normalizedType === "text" ? text : fileName || normalizedType) ||
+            "",
           type: normalizedType,
           sender: userId,
           createdAt: new Date(),
@@ -130,7 +153,7 @@ io.on('connection', (socket) => {
 
       // Emit to the conversation room (participants who have joined the room)
       const roomId = String(conversationId);
-      io.to(roomId).emit('new_message', message);
+      io.to(roomId).emit("new_message", message);
 
       // Additionally, notify recipient sockets that are connected but have not joined the room yet
       try {
@@ -138,7 +161,7 @@ io.on('connection', (socket) => {
         for (const sid of recipientSocketIds) {
           const s = io.sockets.sockets.get(sid);
           if (s && !s.rooms.has(roomId)) {
-            s.emit('new_message', message);
+            s.emit("new_message", message);
           }
         }
       } catch {}
@@ -149,51 +172,89 @@ io.on('connection', (socket) => {
   });
 
   // Delete message via socket
-  socket.on('delete_message', async (payload, callback) => {
+  socket.on("delete_message", async (payload, callback) => {
     try {
       const { messageId, scope } = payload || {};
       if (!messageId) {
-        if (callback) callback({ success: false, error: 'messageId is required' });
+        if (callback)
+          callback({ success: false, error: "messageId is required" });
         return;
       }
       const message = await Message.findById(messageId);
       if (!message) {
-        if (callback) callback({ success: false, error: 'Message not found' });
+        if (callback) callback({ success: false, error: "Message not found" });
         return;
       }
       const conversationId = String(message.conversationId);
-      if (scope === 'everyone') {
+      if (scope === "everyone") {
         // Only sender can delete for everyone
         if (String(message.sender) !== String(userId)) {
-          if (callback) callback({ success: false, error: 'Only sender can delete for everyone' });
+          if (callback)
+            callback({
+              success: false,
+              error: "Only sender can delete for everyone",
+            });
           return;
         }
         await Message.deleteOne({ _id: messageId });
-        io.to(conversationId).emit('message_deleted', { messageId, conversationId });
-        if (callback) callback({ success: true, scope: 'everyone' });
+        io.to(conversationId).emit("message_deleted", {
+          messageId,
+          conversationId,
+        });
+        if (callback) callback({ success: true, scope: "everyone" });
       } else {
         // delete for me: mark soft delete
-        const already = (message.deletedFor || []).some((u) => String(u) === String(userId));
+        const already = (message.deletedFor || []).some(
+          (u) => String(u) === String(userId)
+        );
         if (!already) {
           message.deletedFor = [...(message.deletedFor || []), userId];
           await message.save();
         }
-        if (callback) callback({ success: true, scope: 'me' });
+        if (callback) callback({ success: true, scope: "me" });
       }
     } catch (err) {
-      if (callback) callback({ success: false, error: err?.message || 'Failed to delete' });
+      if (callback)
+        callback({ success: false, error: err?.message || "Failed to delete" });
     }
   });
 
-  socket.on('disconnect', () => {
+  socket.on("disconnect", () => {
     unregisterUserSocket(userId, socket.id);
-    io.emit('online_users', getOnlineUserIds());
+    io.emit("online_users", getOnlineUserIds());
+  });
+});
+
+// Basic health check endpoint
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "active", // More standard terminology
+    error: false,
+    message: "Server is running",
+    timestamp: new Date().toISOString(), // Added timestamp for monitoring
+  });
+});
+
+// 404 handler for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({
+    error: true,
+    message: "Route not found",
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    error: true,
+    message: "Internal server error",
   });
 });
 
 server.listen(PORT, (err) => {
   if (err) {
-    console.error('❌ Failed to start server:', err);
+    console.error("❌ Failed to start server:", err);
     process.exit(1);
   }
   console.log(`🚀 Server running on http://localhost:${PORT}`);
