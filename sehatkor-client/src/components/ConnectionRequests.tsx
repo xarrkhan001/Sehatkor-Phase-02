@@ -196,20 +196,19 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
           <Users className="w-5 h-5 text-blue-500" />
           <h3 className="text-lg font-semibold">Find & Connect</h3>
         </div>
-        
-        {/* Search Input - Full Width */}
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <Input
-              placeholder="Search by name, email, or role (doctor, hospital, lab, pharmacy)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9 h-11 text-sm"
-            />
-          </div>
-        </div>
+       {/* Search Input - Compact */}
+<div className="mb-3">
+  <div className="relative">
+    <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+    <Input
+      placeholder="Search name, email, or role"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+      className="pl-8 h-9 text-xs lg:text-sm"
+    />
+  </div>
+</div>
 
         {/* Search Button - Full Width Below Input */}
         <div className="mb-4">
@@ -286,68 +285,63 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
       </Card>
 
       {/* Pending Requests Section */}
-      <Card className="p-4 sm:p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-orange-500" />
-          <h3 className="text-lg font-semibold">Pending Requests</h3>
-          {pendingRequests.length > 0 && (
-            <Badge variant="secondary">{pendingRequests.length}</Badge>
-          )}
-        </div>
+<Card className="p-2 lg:p-3">
+  <div className="flex items-center gap-2 mb-1 lg:mb-2">
+    <h3 className="text-sm lg:text-base font-semibold">Pending Requests</h3>
+    {pendingRequests.length > 0 && (
+      <Badge variant="secondary" className="text-[10px] lg:text-xs">{pendingRequests.length}</Badge>
+    )}
+  </div>
 
-        {loading ? (
-          <div className="text-center py-4 text-gray-500">Loading...</div>
-        ) : pendingRequests.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-            <p>No pending connection requests</p>
+  {loading ? (
+    <div className="text-center py-2 lg:py-3 text-gray-500 text-xs lg:text-sm">Loading...</div>
+  ) : pendingRequests.length === 0 ? (
+    <div className="text-center py-4 lg:py-6 text-gray-500 text-xs lg:text-sm">
+      <MessageCircle className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-1 text-gray-300" />
+      <p>No pending connection requests</p>
+    </div>
+  ) : (
+    <div className="space-y-1.5 lg:space-y-2">
+      {pendingRequests.map((request) => (
+        <div key={request._id} className="flex flex-col gap-1.5 lg:gap-2 p-1.5 lg:p-2 border rounded-lg">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6 lg:h-7 lg:w-7">
+              <AvatarImage src={request.sender.avatar} />
+              <AvatarFallback className="text-[10px] lg:text-xs">
+                <UserCheck className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="font-medium text-xs lg:text-sm truncate">{request.sender.name}</div>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {pendingRequests.map((request) => (
-              <div key={request._id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-lg gap-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar className="h-12 w-12 sm:h-10 sm:w-10 flex-shrink-0">
-                    <AvatarImage src={request.sender.avatar} />
-                    <AvatarFallback>
-                      <UserCheck className="w-5 h-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm sm:text-base truncate">{request.sender.name}</div>
-                    <div className="text-xs sm:text-sm text-gray-500 truncate">{request.sender.email}</div>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <UserBadge role={request.sender.role} />
-                      {request.message && (
-                        <span className="text-xs text-gray-600 italic">"{request.message}"</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Button
-                    size="default"
-                    onClick={() => handleAcceptRequest(request._id)}
-                    className="bg-green-500 hover:bg-green-600 text-white flex-1 sm:flex-none min-w-[100px] h-10"
-                  >
-                    <Check className="w-4 h-4 mr-2" />
-                    Accept
-                  </Button>
-                  <Button
-                    size="default"
-                    variant="destructive"
-                    onClick={() => handleRejectRequest(request._id)}
-                    className="flex-1 sm:flex-none min-w-[100px] h-10"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Reject
-                  </Button>
-                </div>
-              </div>
-            ))}
+          
+          {request.message && (
+            <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
+              "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
+            </div>
+          )}
+
+          <div className="flex gap-1.5 w-full">
+            <Button
+              className="bg-green-500 hover:bg-green-600 text-white flex-1 h-6 lg:h-7 px-1.5 lg:px-2 text-[11px] lg:text-xs"
+              onClick={() => handleAcceptRequest(request._id)}
+            >
+              <Check className="w-2 h-2 lg:w-2.5 lg:h-2.5 mr-0.5" />
+              Accept
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1 h-6 lg:h-7 px-1.5 lg:px-2 text-[11px] lg:text-xs"
+              onClick={() => handleRejectRequest(request._id)}
+            >
+              <X className="w-2 h-2 lg:w-2.5 lg:h-2.5 mr-0.5" />
+              Reject
+            </Button>
           </div>
-        )}
-      </Card>
+        </div>
+      ))}
+    </div>
+  )}
+</Card>
 
       {/* Send Request Dialog */}
       <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
