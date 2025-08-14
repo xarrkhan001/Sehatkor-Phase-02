@@ -181,4 +181,20 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Partners marquee */
+  .partners-marquee .marquee-track {
+    animation: marquee-scroll 23s linear infinite; /* slower */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .partners-marquee .marquee-track {
+      animation: none;
+      transform: translateX(0);
+    }
+  }
+  /* We animate two groups of identical content; when one exits, the other follows, creating an infinite, seamless loop. */
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 }
