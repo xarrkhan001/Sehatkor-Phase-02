@@ -1225,9 +1225,9 @@ const FloatingChat = () => {
                     })}
                   </div>
 
-                  <div className="p-3 border-t bg-white/90">
+                  <div className="p-1 border-t bg-white/90">
                     {pendingAttachment && (
-                      <div className="mb-2 p-3 border rounded-lg bg-white shadow-sm">
+                      <div className="mb-2 p-2 md:p-3 border rounded-lg bg-white shadow-sm">
                         <div className="flex flex-col items-start gap-3">
                           <img src={pendingAttachment.previewUrl} className="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-md border flex-shrink-0" />
                           <div className="flex-1 min-w-0 w-full">
@@ -1257,7 +1257,7 @@ const FloatingChat = () => {
                         disabled={!activeUser || sending}
                         className="rounded-full"
                       />
-                      <Button size="sm" onClick={handleSend} disabled={!activeUser || sending} className="bg-red-600 hover:bg-red-700 text-white shadow-sm rounded-full h-9 w-9 p-0 flex items-center justify-center">
+                      <Button size="sm" onClick={handleSend} disabled={!activeUser || sending} className="p-2 rounded-md cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-sm">
                         <Send className="w-4 h-4 text-white" />
                       </Button>
                     </div>
