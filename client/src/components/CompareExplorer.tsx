@@ -314,10 +314,10 @@ const CompareExplorer = () => {
                           {item.location}
                         </div>
                         <div className="mt-3 flex gap-2">
-                          <Button size="sm" variant="outline" className="flex-1" onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}>
+                          <Button  variant="outline"  className="flex-1 px-1 text-xs" onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}>
                             View Location
                           </Button>
-                          <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); navigate(`/service/${item.id}`); }}>
+                          <Button  variant="secondary" className="flex-1 px-1 text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/service/${item.id}`); }}>
                             View Details
                           </Button>
                         </div>
