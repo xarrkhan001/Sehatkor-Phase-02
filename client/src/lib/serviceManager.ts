@@ -135,6 +135,74 @@ class ServiceManager {
     return allServices.filter(service => service.providerType === providerType);
   }
 
+  // Get services by provider type with proper filtering
+  static getServicesByProviderType(providerType: Service['providerType']): Service[] {
+    const allServices = this.getAllServices();
+    return allServices.filter(service => service.providerType === providerType);
+  }
+
+  // Get doctor services only
+  static getDoctorServices(): Service[] {
+    return this.getServicesByProviderType('doctor');
+  }
+
+  // Get clinic services only
+  static getClinicServices(): Service[] {
+    return this.getServicesByProviderType('clinic');
+  }
+
+  // Get pharmacy services only
+  static getPharmacyServices(): Service[] {
+    return this.getServicesByProviderType('pharmacy');
+  }
+
+  // Get laboratory services only
+  static getLaboratoryServices(): Service[] {
+    return this.getServicesByProviderType('laboratory');
+  }
+
+  // Fetch all services from server and sync to local storage
+  static async syncServicesFromServer(): Promise<Service[]> {
+    try {
+      console.log('Syncing services from server...');
+      const response = await fetch('http://localhost:4000/api/user/services/public');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch services`);
+      }
+      
+      const data = await response.json();
+      console.log('Server services received:', data);
+      
+      // Convert server data to local format
+      const localServices: Service[] = data.services.map((service: any) => ({
+        id: String(service._id),
+        name: service.name,
+        description: service.description || '',
+        price: service.price || 0,
+        category: service.category || 'Treatment',
+        providerType: service.providerType,
+        providerId: service.providerId,
+        providerName: service.providerName,
+        image: service.imageUrl,
+        duration: service.duration,
+        ...(service.stock != null && { stock: service.stock }),
+        createdAt: service.createdAt,
+        updatedAt: service.updatedAt,
+      }));
+      
+      // Save to local storage
+      this.saveServices(localServices);
+      console.log('Services synced to local storage:', localServices.length);
+      
+      return localServices;
+    } catch (error) {
+      console.error('Error syncing services from server:', error);
+      // Return existing local services if server fails
+      return this.getAllServices();
+    }
+  }
+
   // Add service
   static addService(service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Service {
     const allServices = this.getAllServices();

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import ServiceManager from "@/lib/serviceManager";
-import { mockServices, Service } from "@/data/mockData";
+import { Service } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,38 +20,19 @@ const DoctorsPage = () => {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
 
   useEffect(() => {
-    const source = ServiceManager.getAllServices();
-    const realServices = source.map((service: any) => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      rating: 4.5,
-      location: "Karachi",
-      type: service.category === "Surgery" ? "Surgery" : "Treatment",
-      homeService: service.providerType === "doctor",
-      image: service.image,
-      provider: service.providerName || "Doctor",
-      createdAt: (service as any).createdAt,
-      _providerId: (service as any).providerId,
-    }) as Service);
-    const all = [...realServices, ...mockServices];
-    const filtered = all.filter(
-      (service: Service) => service.type === "Treatment" || service.type === "Surgery"
-    );
-    filtered.sort((a: any, b: any) => {
-      const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
-      const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
-      if (aOwn !== bOwn) return aOwn ? -1 : 1;
-      const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
-      const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
-      return bd - ad;
-    });
-    setDoctorServices(filtered as any);
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'sehatkor_services') {
-        const src = ServiceManager.getAllServices();
-        const real2 = src.map((service: any) => ({
+    const loadServices = async () => {
+      try {
+        // First try to sync from server
+        await ServiceManager.syncServicesFromServer();
+      } catch (error) {
+        console.log('Could not sync from server, using local data');
+      }
+      
+      const source = ServiceManager.getAllServices();
+      // Only get services from doctors (providerType === 'doctor')
+      const realServices = source
+        .filter((service: any) => service.providerType === 'doctor')
+        .map((service: any) => ({
           id: service.id,
           name: service.name,
           description: service.description,
@@ -59,25 +40,31 @@ const DoctorsPage = () => {
           rating: 4.5,
           location: "Karachi",
           type: service.category === "Surgery" ? "Surgery" : "Treatment",
-          homeService: service.providerType === "doctor",
+          homeService: true, // Doctors provide home service
           image: service.image,
           provider: service.providerName || "Doctor",
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
         }) as Service);
-        const all2 = [...real2, ...mockServices];
-        const filtered2 = all2.filter(
-          (s: Service) => s.type === "Treatment" || s.type === "Surgery"
-        );
-        filtered2.sort((a: any, b: any) => {
-          const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
-          const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
-          if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
-          const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
-          return bd - ad;
-        });
-        setDoctorServices(filtered2 as any);
+      
+      // Sort: own services first, then by creation date
+      realServices.sort((a: any, b: any) => {
+        const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
+        const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
+        if (aOwn !== bOwn) return aOwn ? -1 : 1;
+        const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+        const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+        return bd - ad;
+      });
+      
+      setDoctorServices(realServices as any);
+    };
+    
+    loadServices();
+    
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'sehatkor_services') {
+        loadServices();
       }
     };
     window.addEventListener('storage', onStorage);
@@ -257,7 +244,6 @@ const DoctorsPage = () => {
                 <p className="text-xl">No doctors found</p>
                 <p>Try adjusting your search criteria</p>
               </div>
-              <Button onClick={() => setSearchTerm("")}>Clear Search</Button>
             </CardContent>
           </Card>
         )}
