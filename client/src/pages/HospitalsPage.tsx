@@ -10,11 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
 import { useCompare } from "@/contexts/CompareContext";
 import CompareTray from "@/components/CompareTray";
+import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 
 const HospitalsPage = () => {
   const [hospitalServices, setHospitalServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
@@ -56,6 +58,7 @@ const HospitalsPage = () => {
         return bd - ad;
       });
       setHospitalServices(realServices as any);
+      setIsLoading(false);
     };
     
     loadServices();
@@ -106,6 +109,24 @@ const HospitalsPage = () => {
         return { ...svc, coordinates, address } as any;
       })()
     : null;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <div className="flex flex-col items-center text-center mb-6">
+              <h1 className="text-3xl font-bold mb-2">Find Hospitals & Clinics</h1>
+              <p className="text-lg text-gray-500 max-w-2xl">
+                Search from our network of healthcare facilities
+              </p>
+            </div>
+          </div>
+          <ServiceCardSkeleton count={8} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

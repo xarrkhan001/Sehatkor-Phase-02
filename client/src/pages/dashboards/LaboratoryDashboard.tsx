@@ -426,6 +426,95 @@ const LaboratoryDashboard = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
+            {/* Edit Test Dialog */}
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Edit Test</DialogTitle>
+                  <DialogDescription>
+                    Update the details of your diagnostic test.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="editTestName">Test Name *</Label>
+                    <Input
+                      id="editTestName"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                      placeholder="e.g., Complete Blood Count"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Test Image</Label>
+                    <ImageUpload
+                      onImageSelect={(file, preview) => {
+                        setEditImageFile(file);
+                        setEditImagePreview(preview);
+                      }}
+                      onImageRemove={() => {
+                        setEditImageFile(null);
+                        setEditImagePreview('');
+                      }}
+                      currentImage={editImagePreview}
+                      placeholder="Upload new test image"
+                      className="max-w-xs"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="editTestPrice">Price (PKR) *</Label>
+                      <Input
+                        id="editTestPrice"
+                        type="number"
+                        value={editForm.price}
+                        onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                        placeholder="e.g., 1500"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editTestDuration">Duration (hours)</Label>
+                      <Input
+                        id="editTestDuration"
+                        value={editForm.duration}
+                        onChange={(e) => setEditForm({...editForm, duration: e.target.value})}
+                        placeholder="e.g., 2"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="editTestCategory">Category</Label>
+                    <Select value={editForm.category} onValueChange={(value) => setEditForm({...editForm, category: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select test category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {testCategories.map((category) => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="editTestDescription">Description</Label>
+                    <Textarea
+                      id="editTestDescription"
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                      placeholder="Brief description of the test"
+                    />
+                  </div>
+
+                  <Button onClick={handleSaveEdit} className="w-full" disabled={isUploadingImage}>
+                    {isUploadingImage ? 'Uploading...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
             {/* Test Queue */}
             <Card className="card-healthcare">
               <CardHeader>
@@ -575,6 +664,7 @@ const LaboratoryDashboard = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Image</TableHead>
                           <TableHead>Test Name</TableHead>
                           <TableHead>Category</TableHead>
                           <TableHead>Price</TableHead>
@@ -585,6 +675,23 @@ const LaboratoryDashboard = () => {
                       <TableBody>
                         {tests.map((test) => (
                           <TableRow key={test.id}>
+                            <TableCell>
+                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                {test.image ? (
+                                  <img 
+                                    src={test.image} 
+                                    alt={test.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      target.nextElementSibling!.classList.remove('hidden');
+                                    }}
+                                  />
+                                ) : null}
+                                <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+                              </div>
+                            </TableCell>
                             <TableCell className="font-medium">{test.name}</TableCell>
                             <TableCell>
                               <Badge variant="outline">{test.category}</Badge>
