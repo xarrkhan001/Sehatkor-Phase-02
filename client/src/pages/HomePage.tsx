@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import SearchServices from "@/components/SearchServices";
 import CompareTray from "@/components/CompareTray";
 import PartnersMarquee from "@/components/PartnersMarquee";
 import CompareExplorer from "@/components/CompareExplorer";
+import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
 import heroImage from "@/assets/healthcare-hero-bg.jpg";
 import { 
   Search, 
@@ -26,6 +28,21 @@ import {
 import { popularDiseases } from "@/data/diseases";
 
 const HomePage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for initial page load
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <HomeSkeleton />;
+  }
+
   const features = [
     {
       icon: Calendar,

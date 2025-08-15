@@ -14,6 +14,7 @@ import { Service } from "@/data/mockData";
 import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
 import { useCompare } from "@/contexts/CompareContext";
 import CompareTray from "@/components/CompareTray";
+import SearchPageSkeleton from "@/components/skeletons/SearchPageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface SearchService extends Service {
@@ -34,6 +35,7 @@ const SearchPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
   const [allServices, setAllServices] = useState<SearchService[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
@@ -132,6 +134,7 @@ const SearchPage = () => {
       });
       
       setAllServices(formattedRealServices);
+      setIsLoading(false);
     };
     
     loadServices();
@@ -246,6 +249,10 @@ const SearchPage = () => {
 
   // Get current service being shown on map
   const currentMapService = allServices.find(service => service.id === showLocationMap);
+
+  if (isLoading) {
+    return <SearchPageSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
