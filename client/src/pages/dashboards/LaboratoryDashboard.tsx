@@ -12,6 +12,8 @@ import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
+import { uploadFile } from "@/lib/chatApi";
+import { listTests as apiList, createTest as apiCreate, updateTest as apiUpdate, deleteTest as apiDelete } from "@/lib/laboratoryApi";
 import { 
   TestTube, 
   Calendar, 
@@ -34,10 +36,25 @@ import {
 const LaboratoryDashboard = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
-  const [tests, setTests] = useState([]);
+  const [tests, setTests] = useState<any[]>([]);
   const [isAddTestOpen, setIsAddTestOpen] = useState(false);
   const [labType, setLabType] = useState('');
-  const [testImage, setTestImage] = useState('');
+  const [testImagePreview, setTestImagePreview] = useState('');
+  const [testImageFile, setTestImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isAddingTest, setIsAddingTest] = useState(false);
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingTestId, setEditingTestId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    price: '',
+    duration: '',
+    description: '',
+    category: ''
+  });
+  const [editImagePreview, setEditImagePreview] = useState('');
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
 
   const [testForm, setTestForm] = useState({
     name: '',
@@ -56,25 +73,85 @@ const LaboratoryDashboard = () => {
     'Blood Test', 'Urine Test', 'X-Ray', 'MRI', 'CT Scan', 'Ultrasound'
   ];
 
-  useEffect(() => {
-    const savedTests = localStorage.getItem(`lab_tests_${user?.id}`);
-    if (savedTests) {
-      setTests(JSON.parse(savedTests));
+  const syncServicesFromBackend = (docs: any[]) => {
+    if (!user?.id) return;
+    try {
+      const all = ServiceManager.getAllServices();
+      // Remove existing laboratory services from this user
+      const filtered = all.filter((s: any) => !(s.providerType === 'laboratory' && s.providerId === user.id));
+      
+      // Add new tests from backend
+      const mapped = docs.map((d: any) => ({
+        id: String(d._id),
+        name: d.name,
+        description: d.description || '',
+        price: d.price || 0,
+        category: (d.category || 'Test') as any,
+        providerType: 'laboratory' as const,
+        providerId: user.id,
+        providerName: d.providerName || (user?.name || 'Laboratory'),
+        image: d.imageUrl,
+        duration: d.duration || '',
+        createdAt: d.createdAt || new Date().toISOString(),
+        updatedAt: d.updatedAt || new Date().toISOString(),
+      }));
+      
+      const next = [...filtered, ...mapped];
+      localStorage.setItem('sehatkor_services', JSON.stringify(next));
+      window.dispatchEvent(new StorageEvent('storage', { key: 'sehatkor_services' }));
+    } catch (error) {
+      console.error('Error syncing services from backend:', error);
     }
-
-    const savedType = localStorage.getItem(`lab_type_${user?.id}`);
-    if (savedType) {
-      setLabType(savedType);
-    }
-  }, [user?.id]);
-
-  const saveTests = (newTests) => {
-    setTests(newTests);
-    localStorage.setItem(`lab_tests_${user?.id}`, JSON.stringify(newTests));
   };
 
-  const handleAddTest = () => {
-    if (!testForm.name) {
+  const reloadTests = async () => {
+    if (!user?.id) return;
+    try {
+      console.log('Fetching laboratory tests for user:', user.id);
+      const docs = await apiList();
+      console.log('Laboratory tests fetched:', docs);
+      
+      // Map to UI Test type for table
+      const mapped: any[] = docs.map((d: any) => ({
+        id: String(d._id),
+        name: d.name,
+        description: d.description || '',
+        price: d.price || 0,
+        category: d.category || 'Test',
+        duration: d.duration || '',
+        image: d.imageUrl,
+        providerId: user.id,
+        providerName: d.providerName || (user?.name || 'Laboratory'),
+        providerType: 'laboratory' as const,
+        createdAt: d.createdAt,
+        updatedAt: d.updatedAt,
+      }));
+      
+      setTests(mapped);
+      
+      // Sync to local storage for other pages
+      syncServicesFromBackend(docs);
+      
+    } catch (error) {
+      console.error('Error loading tests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load tests. Please refresh the page.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  useEffect(() => {
+    // initial load and lab type from localStorage
+    reloadTests();
+    const savedType = localStorage.getItem(`lab_type_${user?.id}`);
+    if (savedType) setLabType(savedType);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const handleAddTest = async () => {
+    if (!testForm.name || !user?.id) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -83,53 +160,157 @@ const LaboratoryDashboard = () => {
       return;
     }
 
+    setIsAddingTest(true);
     const parsedPrice = testForm.price ? parseFloat(testForm.price) : 0;
 
-    // Add test using ServiceManager
     try {
-      const testData = {
+      let imageUrl: string | undefined = undefined;
+      let imagePublicId: string | undefined = undefined;
+      
+      if (testImageFile) {
+        setIsUploadingImage(true);
+        try {
+          const result = await uploadFile(testImageFile);
+          imageUrl = result?.url;
+          imagePublicId = result?.public_id;
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError);
+          toast({
+            title: "Warning",
+            description: "Image upload failed, but test will be added without image",
+            variant: "destructive"
+          });
+        } finally {
+          setIsUploadingImage(false);
+        }
+      }
+
+      // Save to backend
+      const created = await apiCreate({
         name: testForm.name,
         description: testForm.description,
         price: parsedPrice,
-        category: testForm.category,
-        providerType: 'laboratory' as const,
-        providerId: user?.id || '',
+        category: testForm.category || 'Test',
+        duration: testForm.duration,
+        imageUrl,
+        imagePublicId,
         providerName: user?.name || 'Laboratory',
-        image: testImage,
-        ...(testForm.duration && { duration: testForm.duration })
+      });
+
+      // Sync to local storage for other pages
+      const newTest = {
+        name: created.name,
+        description: created.description,
+        price: created.price,
+        category: created.category,
+        image: created.imageUrl,
+        providerId: user.id,
+        providerName: created.providerName,
+        providerType: 'laboratory' as const,
       };
 
-      const newTest = ServiceManager.addService(testData);
-      setTestForm({
-        name: '',
-        price: '',
-        duration: '',
-        description: '',
-        category: ''
-      });
-      setTestImage('');
+      // Add to local storage
+      ServiceManager.addService(newTest);
+
+      // Reset form
+      setTestForm({ name: '', price: '', duration: '', description: '', category: '' });
+      setTestImagePreview('');
+      setTestImageFile(null);
       setIsAddTestOpen(false);
-      toast({
-        title: "Success",
-        description: "Test added successfully and will appear in search results"
+      
+      // Reload tests from backend
+      await reloadTests();
+      
+      toast({ 
+        title: "Success", 
+        description: "Test added successfully and is now available to all users" 
       });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add test",
-        variant: "destructive"
+    } catch (error: any) {
+      console.error('Error adding test:', error);
+      toast({ 
+        title: "Error", 
+        description: error?.message || "Failed to add test. Please try again.", 
+        variant: "destructive" 
       });
+    } finally {
+      setIsAddingTest(false);
     }
   };
 
-  const handleDeleteTest = (testId) => {
-    const updatedTests = tests.filter(test => test.id !== testId);
-    saveTests(updatedTests);
-    
-    toast({
-      title: "Success",
-      description: "Test deleted successfully"
+  const handleDeleteTest = async (testId: string) => {
+    try {
+      await apiDelete(testId);
+      ServiceManager.deleteService(testId);
+      reloadTests();
+      toast({ title: "Success", description: "Test deleted successfully" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message || "Failed to delete test", variant: "destructive" });
+    }
+  };
+
+  const openEdit = (t: any) => {
+    const id = t._id || t.id;
+    setEditingTestId(String(id));
+    setEditForm({
+      name: t.name || '',
+      price: t.price != null ? String(t.price) : '',
+      duration: t.duration || '',
+      description: t.description || '',
+      category: t.category || ''
     });
+    setEditImagePreview(t.imageUrl || t.image || '');
+    setEditImageFile(null);
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTestId) return;
+    try {
+      let imageUrl: string | undefined = editImagePreview || undefined;
+      let imagePublicId: string | undefined = undefined;
+      if (editImageFile) {
+        setIsUploadingImage(true);
+        try {
+          const result = await uploadFile(editImageFile);
+          imageUrl = result?.url;
+          imagePublicId = result?.public_id;
+        } finally {
+          setIsUploadingImage(false);
+        }
+      }
+      const parsedPrice = editForm.price ? parseFloat(editForm.price) : 0;
+      const updated = await apiUpdate(editingTestId, {
+        name: editForm.name,
+        description: editForm.description,
+        price: parsedPrice,
+        category: editForm.category || 'Test',
+        duration: editForm.duration,
+        imageUrl,
+        imagePublicId,
+      });
+      
+      // Update in local storage
+      const updatedTest = {
+        name: updated.name,
+        description: updated.description,
+        price: updated.price,
+        category: updated.category,
+        duration: updated.duration,
+        image: updated.imageUrl,
+        providerId: user.id,
+        providerName: updated.providerName,
+        providerType: 'laboratory' as const,
+      };
+      
+      // Note: Local storage sync is handled in reloadTests
+      await reloadTests();
+      
+      setIsEditOpen(false);
+      setEditingTestId(null);
+      toast({ title: "Success", description: "Test updated successfully" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.message || "Failed to update test", variant: "destructive" });
+    }
   };
 
   const handleTypeChange = (type) => {
@@ -323,9 +504,15 @@ const LaboratoryDashboard = () => {
                         <div>
                           <Label>Test Image</Label>
                           <ImageUpload
-                            onImageSelect={(file, preview) => setTestImage(preview)}
-                            onImageRemove={() => setTestImage('')}
-                            currentImage={testImage}
+                            onImageSelect={(file, preview) => {
+                              setTestImageFile(file);
+                              setTestImagePreview(preview);
+                            }}
+                            onImageRemove={() => {
+                              setTestImageFile(null);
+                              setTestImagePreview('');
+                            }}
+                            currentImage={testImagePreview}
                             placeholder="Upload test image"
                             className="max-w-xs"
                           />
@@ -374,8 +561,8 @@ const LaboratoryDashboard = () => {
                             placeholder="Brief description of the test"
                           />
                         </div>
-                        <Button onClick={handleAddTest} className="w-full">
-                          Add Test
+                        <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
+                          {isAddingTest ? 'Adding Test...' : 'Add Test'}
                         </Button>
                       </div>
                     </DialogContent>
@@ -383,9 +570,56 @@ const LaboratoryDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-center py-8">
-                  Services added here will appear in search results for patients to find and book.
-                </p>
+                <div className="space-y-4">
+                  {tests.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Test Name</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Duration</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {tests.map((test) => (
+                          <TableRow key={test.id}>
+                            <TableCell className="font-medium">{test.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{test.category}</Badge>
+                            </TableCell>
+                            <TableCell>PKR {test.price.toLocaleString()}</TableCell>
+                            <TableCell>{test.duration || 'N/A'}</TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEdit(test)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteTest(test.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">
+                      No tests added yet. Add your first test to get started.
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>

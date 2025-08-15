@@ -68,7 +68,10 @@ const DoctorDashboard = () => {
   const reloadServices = async () => {
     if (!user?.id) return;
     try {
+      console.log('Fetching doctor services for user:', user.id);
       const docs = await apiList();
+      console.log('Doctor services fetched:', docs);
+      
       // Map to UI Service type for table
       const mapped: DoctorService[] = docs.map((d: any) => ({
         id: String(d._id),
@@ -86,12 +89,18 @@ const DoctorDashboard = () => {
       }) as any);
       setServices(mapped);
       syncLocalFromDocs(docs);
-    } catch {
+    } catch (error) {
+      console.error('Error fetching doctor services:', error);
       // fallback to local
       const userServices = ServiceManager.getServicesByProvider(user.id).filter(
         service => service.providerType === 'doctor'
       ) as DoctorService[];
       setServices(userServices);
+      toast({
+        title: "Warning",
+        description: "Could not load services from server. Using local data.",
+        variant: "destructive"
+      });
     }
   };
 

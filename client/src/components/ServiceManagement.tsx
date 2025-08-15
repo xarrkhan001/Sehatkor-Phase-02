@@ -111,6 +111,17 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       }
 
       if (userRole === 'doctor') {
+        console.log('Creating doctor service with payload:', {
+          name: serviceForm.name,
+          description: serviceForm.description,
+          price: parsedPrice,
+          category: serviceForm.category || 'Treatment',
+          duration: serviceForm.duration || undefined,
+          imageUrl,
+          imagePublicId,
+          providerName: userName,
+        });
+        
         if (editingService) {
           const updated = await doctorUpdate(editingService.id, {
             name: serviceForm.name,
@@ -143,6 +154,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             imagePublicId,
             providerName: userName,
           });
+          console.log('Doctor service created:', created);
+          
           const added = ServiceManager.addService({
             id: created._id as any,
             name: created.name,
@@ -173,7 +186,12 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
         }
       }
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to save service', variant: 'destructive' });
+      console.error('Error in handleAddService:', e);
+      toast({ 
+        title: 'Error', 
+        description: e?.message || 'Failed to save service. Please check your connection and try again.', 
+        variant: 'destructive' 
+      });
     }
 
     resetForm();

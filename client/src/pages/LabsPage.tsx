@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import ServiceManager from "@/lib/serviceManager";
-import { mockServices, Service } from "@/data/mockData";
+import { Service } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,36 +10,64 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
 import { useCompare } from "@/contexts/CompareContext";
 import CompareTray from "@/components/CompareTray";
+import { useAuth } from "@/contexts/AuthContext";
 
 const LabsPage = () => {
   const [labServices, setLabServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const source = (ServiceManager as any).getAllServicesWithVariants
-      ? (ServiceManager as any).getAllServicesWithVariants()
-      : ServiceManager.getAllServices();
-    const realServices = source.map((service: any) => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      rating: 4.5,
-      location: "Karachi",
-      type: "Test",
-      homeService: false,
-      image: service.image,
-      provider: service.providerName || "Lab"
-    }) as Service);
-    const all = [...realServices, ...mockServices];
-    setLabServices(
-      all.filter(
-        (service: Service) => (service.provider || "").toLowerCase().includes("lab")
-      )
-    );
-  }, []);
+    const loadServices = async () => {
+      try {
+        // First try to sync from server
+        await ServiceManager.syncServicesFromServer();
+      } catch (error) {
+        console.log('Could not sync from server, using local data');
+      }
+      
+      const source = ServiceManager.getAllServices();
+      const realServices = source
+        .filter((service: any) => service.providerType === 'laboratory') // Only laboratory services
+        .map((service: any) => ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          rating: 4.5,
+          location: "Karachi",
+          type: "Test",
+          homeService: false,
+          image: service.image,
+          provider: service.providerName || "Laboratory",
+          createdAt: (service as any).createdAt,
+          _providerId: (service as any).providerId,
+        }) as Service);
+      
+      // Sort: own services first, then by creation date
+      realServices.sort((a: any, b: any) => {
+        const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
+        const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
+        if (aOwn !== bOwn) return aOwn ? -1 : 1;
+        const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+        const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+        return bd - ad;
+      });
+      setLabServices(realServices as any);
+    };
+    
+    loadServices();
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'sehatkor_services') {
+        loadServices();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [user?.id]);
 
   const filteredServices = useMemo(() => {
     return labServices.filter(service => {
@@ -200,7 +228,6 @@ const LabsPage = () => {
                 <p className="text-xl">No labs found</p>
                 <p>Try adjusting your search criteria</p>
               </div>
-              <Button onClick={() => setSearchTerm("")}>Clear Search</Button>
             </CardContent>
           </Card>
         )}

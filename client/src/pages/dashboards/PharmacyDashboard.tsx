@@ -42,6 +42,7 @@ const PharmacyDashboard = () => {
   const [medicineImagePreview, setMedicineImagePreview] = useState('');
   const [medicineImageFile, setMedicineImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isAddingMedicine, setIsAddingMedicine] = useState(false);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingMedicineId, setEditingMedicineId] = useState<string | null>(null);
@@ -76,7 +77,10 @@ const PharmacyDashboard = () => {
     if (!user?.id) return;
     try {
       const all = ServiceManager.getAllServices();
+      // Remove existing pharmacy services from this user
       const filtered = all.filter((s: any) => !(s.providerType === 'pharmacy' && s.providerId === user.id));
+      
+      // Add new medicines from backend
       const mapped = docs.map((d: any) => ({
         id: String(d._id),
         name: d.name,
@@ -87,26 +91,54 @@ const PharmacyDashboard = () => {
         providerId: user.id,
         providerName: d.providerName || (user?.name || 'Pharmacy'),
         image: d.imageUrl,
-        ...(d.stock != null ? { stock: d.stock } : {}),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        stock: d.stock || 0,
+        createdAt: d.createdAt || new Date().toISOString(),
+        updatedAt: d.updatedAt || new Date().toISOString(),
       }));
+      
       const next = [...filtered, ...mapped];
       localStorage.setItem('sehatkor_services', JSON.stringify(next));
       window.dispatchEvent(new StorageEvent('storage', { key: 'sehatkor_services' }));
-    } catch {}
+    } catch (error) {
+      console.error('Error syncing services from backend:', error);
+    }
   };
 
   const reloadMedicines = async () => {
     if (!user?.id) return;
     try {
+      console.log('Fetching pharmacy medicines for user:', user.id);
       const docs = await apiList();
-      setMedicines(docs);
+      console.log('Pharmacy medicines fetched:', docs);
+      
+      // Map to UI Medicine type for table
+      const mapped: any[] = docs.map((d: any) => ({
+        id: String(d._id),
+        name: d.name,
+        description: d.description || '',
+        price: d.price || 0,
+        category: d.category || 'Other',
+        stock: d.stock || 0,
+        image: d.imageUrl,
+        providerId: user.id,
+        providerName: d.providerName || (user?.name || 'Pharmacy'),
+        providerType: 'pharmacy' as const,
+        createdAt: d.createdAt,
+        updatedAt: d.updatedAt,
+      }));
+      
+      setMedicines(mapped);
+      
+      // Sync to local storage for other pages
       syncServicesFromBackend(docs);
-    } catch (e) {
-      // fallback to local
-      const list = ServiceManager.getServicesByProvider(user.id);
-      setMedicines(list);
+      
+    } catch (error) {
+      console.error('Error loading medicines:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load medicines. Please refresh the page.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -119,7 +151,7 @@ const PharmacyDashboard = () => {
   }, [user?.id]);
 
   const handleAddMedicine = async () => {
-    if (!medicineForm.name) {
+    if (!medicineForm.name || !user?.id) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -128,17 +160,27 @@ const PharmacyDashboard = () => {
       return;
     }
 
+    setIsAddingMedicine(true);
     const parsedPrice = medicineForm.price ? parseFloat(medicineForm.price) : 0;
+    const parsedStock = medicineForm.stock ? parseInt(medicineForm.stock) : 0;
 
     try {
       let imageUrl: string | undefined = undefined;
       let imagePublicId: string | undefined = undefined;
+      
       if (medicineImageFile) {
         setIsUploadingImage(true);
         try {
           const result = await uploadFile(medicineImageFile);
           imageUrl = result?.url;
           imagePublicId = result?.public_id;
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError);
+          toast({
+            title: "Warning",
+            description: "Image upload failed, but medicine will be added without image",
+            variant: "destructive"
+          });
         } finally {
           setIsUploadingImage(false);
         }
@@ -150,23 +192,50 @@ const PharmacyDashboard = () => {
         description: medicineForm.description,
         price: parsedPrice,
         category: medicineForm.category || 'Other',
-        stock: medicineForm.stock ? parseInt(medicineForm.stock) : 0,
+        stock: parsedStock,
         imageUrl,
         imagePublicId,
         providerName: user?.name || 'Pharmacy',
       });
-      // Sync from backend to local for listings
-      await reloadMedicines();
 
-      // reset form
+      // Sync to local storage for other pages
+      const newMedicine = {
+        name: created.name,
+        description: created.description,
+        price: created.price,
+        category: created.category,
+        stock: created.stock,
+        image: created.imageUrl,
+        providerId: user.id,
+        providerName: created.providerName,
+        providerType: 'pharmacy' as const,
+      };
+
+      // Add to local storage
+      ServiceManager.addService(newMedicine);
+
+      // Reset form
       setMedicineForm({ name: '', price: '', stock: '', description: '', category: '' });
       setMedicineImagePreview('');
       setMedicineImageFile(null);
       setIsAddMedicineOpen(false);
-      reloadMedicines();
-      toast({ title: "Success", description: "Medicine added successfully" });
+      
+      // Reload medicines from backend
+      await reloadMedicines();
+      
+      toast({ 
+        title: "Success", 
+        description: "Medicine added successfully and is now available to all users" 
+      });
     } catch (error: any) {
-      toast({ title: "Error", description: error?.message || "Failed to add medicine", variant: "destructive" });
+      console.error('Error adding medicine:', error);
+      toast({ 
+        title: "Error", 
+        description: error?.message || "Failed to add medicine. Please try again.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsAddingMedicine(false);
     }
   };
 
@@ -415,8 +484,8 @@ const PharmacyDashboard = () => {
                             placeholder="Brief description of the medicine"
                           />
                         </div>
-                         <Button onClick={handleAddMedicine} className="w-full" disabled={isUploadingImage}>
-                          Add Medicine
+                         <Button onClick={handleAddMedicine} className="w-full" disabled={isUploadingImage || isAddingMedicine}>
+                          {isAddingMedicine ? 'Adding Medicine...' : 'Add Medicine'}
                         </Button>
                       </div>
                     </DialogContent>

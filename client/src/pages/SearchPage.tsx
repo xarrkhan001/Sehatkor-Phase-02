@@ -10,7 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2 } from "lucide-react";
-import { mockServices, Service } from "@/data/mockData";
+import { Service } from "@/data/mockData";
 import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
 import { useCompare } from "@/contexts/CompareContext";
 import CompareTray from "@/components/CompareTray";
@@ -91,82 +91,59 @@ const SearchPage = () => {
 
   // Load real services and combine with mock services
   useEffect(() => {
-    const realServices = ServiceManager.getAllServices();
+    const loadServices = async () => {
+      try {
+        // First try to sync from server
+        await ServiceManager.syncServicesFromServer();
+      } catch (error) {
+        console.log('Could not sync from server, using local data');
+      }
+      
+      const realServices = ServiceManager.getAllServices();
+      
+      // Convert real services to search format with proper filtering
+      const formattedRealServices: SearchService[] = realServices.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        rating: service?.rating ?? 4.5,
+        provider: service.providerName,
+        location: service?.location ?? "Karachi",
+        type: mapServiceTypeToSearch(service),
+        homeService: service.providerType === 'doctor',
+        isReal: true,
+        image: service.image,
+        coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
+        address: service?.address ?? getMockAddress(service.providerName, mapServiceTypeToSearch(service), service?.location ?? "Karachi"),
+        createdAt: (service as any).createdAt,
+        _providerId: (service as any).providerId,
+        _providerType: service.providerType, // Add provider type for filtering
+      }));
+
+      // Sort: own services first, then by creation date
+      formattedRealServices.sort((a: any, b: any) => {
+        const aOwn = a._providerId && user?.id && a._providerId === user.id;
+        const bOwn = b._providerId && user?.id && b._providerId === user.id;
+        if (aOwn !== bOwn) return aOwn ? -1 : 1;
+        const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+        return bd - ad;
+      });
+      
+      setAllServices(formattedRealServices);
+    };
     
-    // Convert real services to search format
-    const formattedRealServices: SearchService[] = realServices.map((service: any) => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      rating: service?.rating ?? 4.5,
-      provider: service.providerName,
-      location: service?.location ?? "Karachi",
-      type: mapServiceTypeToSearch(service),
-      homeService: service.providerType === 'doctor',
-      isReal: true,
-      image: service.image,
-      coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
-      address: service?.address ?? getMockAddress(service.providerName, mapServiceTypeToSearch(service), service?.location ?? "Karachi"),
-      createdAt: (service as any).createdAt,
-      _providerId: (service as any).providerId,
-    }));
-
-    // Update mock services with proper locations
-    const updatedMockServices = mockServices.map(service => {
-      const serviceLocation = service.location || "Karachi";
-      return {
-        ...service,
-        isReal: false,
-        coordinates: getCoordinatesForLocation(serviceLocation),
-        address: getMockAddress(service.provider, service.type, serviceLocation)
-      };
-    });
-
-    // Combine real services with mock services
-    // De-duplicate by id to ensure each real service appears once
-    const byId = new Map<string, SearchService>();
-    for (const svc of [...formattedRealServices, ...updatedMockServices]) {
-      if (!byId.has(svc.id)) byId.set(svc.id, svc);
-    }
-    setAllServices(Array.from(byId.values()));
+    loadServices();
 
     const onStorage = (e: StorageEvent) => {
       if (e.key === 'sehatkor_services') {
-        const realServicesN = ServiceManager.getAllServices();
-        const formattedRealServicesN: SearchService[] = realServicesN.map((service: any) => ({
-          id: service.id,
-          name: service.name,
-          description: service.description,
-          price: service.price,
-          rating: service?.rating ?? 4.5,
-          provider: service.providerName,
-          location: service?.location ?? "Karachi",
-          type: mapServiceTypeToSearch(service),
-          homeService: service.providerType === 'doctor',
-          isReal: true,
-          image: service.image,
-          coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
-          address: service?.address ?? getMockAddress(service.providerName, mapServiceTypeToSearch(service), service?.location ?? "Karachi"),
-          createdAt: (service as any).createdAt,
-          _providerId: (service as any).providerId,
-        }));
-        const updatedMock = mockServices.map(service => ({
-          ...service,
-          isReal: false,
-          coordinates: getCoordinatesForLocation(service.location || 'Karachi'),
-          address: getMockAddress(service.provider, service.type, service.location || 'Karachi'),
-        }));
-        const byIdN = new Map<string, SearchService>();
-        for (const svc of [...formattedRealServicesN, ...updatedMock]) {
-          if (!byIdN.has(svc.id)) byIdN.set(svc.id, svc);
-        }
-        setAllServices(Array.from(byIdN.values()));
+        loadServices();
       }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  }, [user?.id]);
 
   // Handle URL parameters on component mount
   useEffect(() => {
@@ -309,9 +286,6 @@ const SearchPage = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Filters</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>
-                    Clear All
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -540,7 +514,6 @@ const SearchPage = () => {
                     <p className="text-xl">No services found</p>
                     <p>Try adjusting your search criteria</p>
                   </div>
-                  <Button onClick={clearFilters}>Clear All Filters</Button>
                 </CardContent>
               </Card>
             )}
