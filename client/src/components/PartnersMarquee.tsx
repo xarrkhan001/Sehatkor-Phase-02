@@ -64,7 +64,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "normal" }:
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 text-center">
           <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold">{title}</h3>
-          <Badge variant="secondary" className="mt-2">Join Us</Badge>
+          <Badge variant="secondary" className="mt-2 text-[10px] bg-red-100 text-red-700 border-red-200">Join Us</Badge>
         </div>
       </div>
 
