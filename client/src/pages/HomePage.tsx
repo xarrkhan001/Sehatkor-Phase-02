@@ -21,10 +21,7 @@ import {
   Stethoscope,
   TestTube,
   Pill,
-  Scissors,
-  Sparkles,
-  Scale,
-  DollarSign
+  Scissors
 } from "lucide-react";
 import { popularDiseases } from "@/data/diseases";
 
@@ -234,57 +231,17 @@ const HomePage = () => {
         </div>
       </section>
 
-     {/* Comparison Explorer  */}
-<section className="py-16 md:py-24 lg:py-28 bg-gradient-to-br from-white via-[#f8faff] to-muted/10">
-  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-    {/* Header Section */}
-    <div className="mb-14 lg:mb-16 text-center">
-      {/* Enhanced Badge */}
-      <Badge 
-        variant="secondary" 
-        className="mb-5 px-4 py-1.5 rounded-full border border-blue-100 bg-white/90 shadow-xs hover:shadow-sm transition-all duration-200 inline-flex items-center gap-1.5"
-      >
-        <div className="h-2 w-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" />
-        <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent font-medium">
-          Smart Compare
-        </span>
-      </Badge>
-
-      {/* Gradient Headline */}
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight md:leading-tighter bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600 bg-clip-text text-transparent px-2">
-        Compare Providers for the Same Service
-      </h2>
-
-      {/* Styled Subtitle */}
-      <p className="text-muted-foreground/90 mt-5 md:mt-6 text-lg md:text-xl max-w-2xl mx-auto relative px-4">
-        <span className="relative z-10 bg-gradient-to-r from-white via-white/90 to-white bg-clip-text">
-          Pick the same product across providers and see price, location, and rating differences
-        </span>
-        <span className="absolute left-1/2 -translate-x-1/2 bottom-1/4 w-4/5 h-[1px] bg-gradient-to-r from-transparent via-gray-200/80 to-transparent" />
-      </p>
-    </div>
-
-    {/* Comparison Container */}
-    <div className="relative max-w-6xl mx-auto group">
-      {/* Glow Effect (CSS-only) */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-blue-100/40 via-cyan-100/30 to-purple-100/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-300" />
-      
-      {/* Main Content Box */}
-      <div className="relative bg-white/95 rounded-xl shadow-2xl shadow-blue-100/30 border border-gray-100/80 overflow-hidden transition-all duration-300 hover:shadow-blue-100/50 hover:border-gray-200/90">
-        {/* Top Gradient Border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400" />
-        
-        {/* Content Area */}
-        <div className="p-1 sm:p-2 md:p-4 lg:p-5">
+      {/* Comparison Explorer (styled section) */}
+      <section className="py-16 bg-gradient-to-b from-white to-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 text-center">
+            <Badge variant="secondary" className="mb-2">Smart Compare</Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Compare Providers for the Same Service</h2>
+            <p className="text-muted-foreground mt-2">Pick the same product across providers and see price, location, and rating differences</p>
+          </div>
           <CompareExplorer />
         </div>
-        
-        {/* Bottom Gradient Border */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 opacity-30" />
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* Partners Marquee below the compare section */}
       <PartnersMarquee />

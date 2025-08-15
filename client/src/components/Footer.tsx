@@ -199,14 +199,7 @@ const Footer = () => {
               ))}
             </div>
           </div>
-          
-          {/* Additional Info */}
-          <div className="mt-4 pt-4 border-t border-white/5">
-            <div className="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 space-y-2 md:space-y-0">
-              <div>🏥 Licensed Healthcare Platform | 🔒 SSL Secured | 💊 Verified Providers</div>
-              <div>Made with ❤️ for healthier Pakistan</div>
-            </div>
-          </div>
+        
         </div>
       </div>
     </footer>

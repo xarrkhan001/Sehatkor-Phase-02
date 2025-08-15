@@ -239,9 +239,9 @@ const CompareExplorer = () => {
               {(!nameQuery && !selectedName) && (
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="bg-primary/5">Newly Added</Badge>
-                      <span className="text-xs text-muted-foreground">Recently added services</span>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Badge variant="outline" className="text-[10px] bg-red-100 text-red-700 border-red-200">Newly Added</Badge>
+                      <span className="text-xs rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700 text-muted-foreground">Recently added services</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
