@@ -1028,17 +1028,17 @@ const RegisterPage = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Authorized Person Name *</Label>
+                    <Label htmlFor="name">Full Name*</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
-                      placeholder="Enter authorized person name"
+                      placeholder="Enter full name"
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email Address *</Label>
+                    <Label htmlFor="email">Email Address*</Label>
                     <Input
                       id="email"
                       type="email"
@@ -1052,7 +1052,7 @@ const RegisterPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone">Phone Number (Primary) *</Label>
+                    <Label htmlFor="phone">Whatsapp Number*</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
@@ -1062,7 +1062,7 @@ const RegisterPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phoneAlternate">Phone Number (Alternate)</Label>
+                    <Label htmlFor="phoneAlternate">Alternate Phone Numbers</Label>
                     <Input
                       id="phoneAlternate"
                       value={formData.phoneAlternate}
@@ -1074,7 +1074,7 @@ const RegisterPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="cnic">CNIC Number *</Label>
+                    <Label htmlFor="cnic">CNIC Number*</Label>
                     <Input
                       id="cnic"
                       value={formData.cnic}
@@ -1084,7 +1084,7 @@ const RegisterPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="city">City *</Label>
+                    <Label htmlFor="city">City*</Label>
                     <Select value={formData.city} onValueChange={(value) => handleInputChange("city", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your city" />
