@@ -162,16 +162,35 @@
     }
   }
   
-  /* Prevent horizontal scroll */
+  /* Prevent horizontal scroll and layout shift */
   html, body {
     overflow-x: hidden;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Prevent dropdown from causing layout shift */
+  body {
+    overflow-y: auto;
+  }
+  
+  /* Ensure full width layout */
+  #root {
+    width: 100%;
+    min-height: 100vh;
   }
   
   /* Ensure full viewport width for hero sections */
   .full-width-section {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Fix container width to prevent right side spacing */
+  .container {
+    width: 100%;
+    max-width: 100%;
   }
   
   /* Line clamp utility for text truncation */

@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { mockBlogPosts } from "@/data/mockData";
+import BlogSkeleton from "@/components/skeletons/BlogSkeleton";
 import { Search, Calendar, User, Clock, Eye, ArrowRight, TrendingUp, BookOpen, Stethoscope, Star, Activity, FileText, Users, Award, ChevronRight, Bookmark, Share2 } from "lucide-react";
 
 const BlogPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate loading time for demonstration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // 2 seconds loading time
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const categories = ["All", "Health Tips", "Medical", "Mental Health", "Pediatrics", "Nutrition"];
 
@@ -29,8 +40,13 @@ const BlogPage = () => {
 
   const featuredPost = mockBlogPosts[0];
 
+  // Show skeleton while loading
+  if (isLoading) {
+    return <BlogSkeleton />;
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Premium Hero Section */}
       <div className="relative bg-white">
         <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-slate-50"></div>
