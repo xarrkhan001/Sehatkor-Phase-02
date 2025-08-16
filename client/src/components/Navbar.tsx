@@ -63,8 +63,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md shadow-sm">
-      <div className="container mx-auto px-4">
+    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md shadow-sm overflow-visible">
+      <div className="container mx-auto px-4 relative">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
@@ -112,7 +112,7 @@ const Navbar = () => {
                     <User className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-60 bg-white border shadow-xl rounded-2xl mt-5 p-0 overflow-hidden">
+                <DropdownMenuContent align="end" className="w-60 bg-white border shadow-xl rounded-2xl mt-2 p-0 overflow-hidden" sideOffset={5} alignOffset={-10}>
                   <DropdownMenuLabel className="font-normal px-4 pt-4 pb-3 bg-white">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
