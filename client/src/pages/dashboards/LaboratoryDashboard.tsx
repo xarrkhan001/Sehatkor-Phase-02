@@ -98,6 +98,9 @@ const LaboratoryDashboard = () => {
         providerName: d.providerName || (user?.name || 'Laboratory'),
         image: d.imageUrl,
         duration: d.duration || '',
+        googleMapLink: d.googleMapLink,
+        city: d.city,
+        detailAddress: d.detailAddress,
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));

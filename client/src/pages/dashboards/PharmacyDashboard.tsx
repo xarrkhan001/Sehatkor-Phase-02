@@ -98,6 +98,9 @@ const PharmacyDashboard = () => {
         providerName: d.providerName || (user?.name || 'Pharmacy'),
         image: d.imageUrl,
         stock: d.stock || 0,
+        googleMapLink: d.googleMapLink,
+        city: d.city,
+        detailAddress: d.detailAddress,
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
@@ -301,6 +304,9 @@ const PharmacyDashboard = () => {
         stock: editForm.stock ? parseInt(editForm.stock) : 0,
         imageUrl,
         imagePublicId,
+        googleMapLink: editForm.googleMapLink,
+        city: editForm.city,
+        detailAddress: editForm.detailAddress,
       });
       // refresh from backend and sync ServiceManager
       await reloadMedicines();

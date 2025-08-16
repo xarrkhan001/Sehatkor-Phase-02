@@ -8,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
-import { useCompare } from "@/contexts/CompareContext";
-import CompareTray from "@/components/CompareTray";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -242,20 +240,19 @@ const DoctorsPage = () => {
                   <Button className="flex-1 min-w-[100px]">
                     <Clock className="w-4 h-4 mr-1" /> Book Now
                   </Button>
-                  <CompareActions id={service.id} />
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowLocationMap(service.id)}
+                    className="flex-1 min-w-[100px]"
+                  >
+                    <MapPin className="w-4 h-4 mr-1" /> Location
+                  </Button>
                   <Button
                     variant="secondary"
                     onClick={() => (window.location.href = `/service/${service.id}`)}
                     className="flex-1 min-w-[100px]"
                   >
                     View Details
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowLocationMap(service.id)}
-                    className="flex-1 min-w-[100px]"
-                  >
-                    View Location
                   </Button>
                 </div>
               </CardContent>
@@ -318,18 +315,8 @@ const DoctorsPage = () => {
           </div>
         </div>
       )}
-      <CompareTray />
     </div>
   );
 };
 
-export default DoctorsPage; 
-
-const CompareActions = ({ id }: { id: string }) => {
-  const { toggle } = useCompare();
-  return (
-    <Button variant="outline" size="sm" onClick={() => toggle(id)} className="flex-1 min-w-[100px]">
-      Compare
-    </Button>
-  );
-};
+export default DoctorsPage;
