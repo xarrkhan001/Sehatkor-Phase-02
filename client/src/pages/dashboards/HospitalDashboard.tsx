@@ -15,7 +15,7 @@ import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listServices as apiList, createService as apiCreate, updateService as apiUpdate, deleteService as apiDelete } from "@/lib/clinicApi";
 import { 
-  Building, 
+  Building2, 
   Calendar, 
   Users, 
   Clock, 
@@ -31,20 +31,20 @@ import {
   Activity,
   Plus,
   Trash2,
-  DollarSign
+  DollarSign,
+  Heart,
+  Shield
 } from "lucide-react";
 
-const ClinicDashboard = () => {
+const HospitalDashboard = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [services, setServices] = useState<any[]>([]);
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
-  const [editingService, setEditingService] = useState(null);
-  const [clinicType, setClinicType] = useState('');
+  const [hospitalType, setHospitalType] = useState('');
   const [serviceImage, setServiceImage] = useState('');
   const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isAddingService, setIsAddingService] = useState(false);
 
   const [serviceForm, setServiceForm] = useState({
     name: '',
@@ -54,9 +54,15 @@ const ClinicDashboard = () => {
     department: ''
   });
 
-  const clinicTypes = [
-    'General Hospital', 'Specialized Hospital', 'Eye Hospital', 
-    'Heart Hospital', 'Children Hospital', 'Emergency Center'
+  const hospitalTypes = [
+    'General Hospital', 'Specialized Hospital', 'Teaching Hospital',
+    'Children Hospital', 'Cardiac Hospital', 'Cancer Hospital',
+    'Emergency Hospital', 'Rehabilitation Center', 'Mental Health Hospital'
+  ];
+
+  const hospitalDepartments = [
+    'Emergency', 'Cardiology', 'Neurology', 'Orthopedics', 
+    'Oncology', 'Pediatrics', 'Surgery', 'ICU', 'Radiology'
   ];
 
   const syncLocalFromDocs = (docs: any[]) => {
@@ -71,7 +77,7 @@ const ClinicDashboard = () => {
       category: d.category || d.department || 'Treatment',
       providerType: 'clinic' as const,
       providerId: user.id,
-      providerName: d.providerName || (user?.name || 'Clinic'),
+      providerName: d.providerName || (user?.name || 'Hospital'),
       image: d.imageUrl,
       duration: d.duration,
       createdAt: d.createdAt || new Date().toISOString(),
@@ -96,12 +102,10 @@ const ClinicDashboard = () => {
 
   useEffect(() => {
     reloadServices();
-    const savedType = localStorage.getItem(`clinic_type_${user?.id}`);
-    if (savedType) setClinicType(savedType);
+    const savedType = localStorage.getItem(`hospital_type_${user?.id}`);
+    if (savedType) setHospitalType(savedType);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  const saveServices = (newServices: any[]) => setServices(newServices);
 
   const handleAddService = async () => {
     if (!serviceForm.name) {
@@ -113,7 +117,6 @@ const ClinicDashboard = () => {
       return;
     }
 
-    setIsAddingService(true);
     const parsedPrice = serviceForm.price ? parseFloat(serviceForm.price) : 0;
 
     try {
@@ -127,41 +130,17 @@ const ClinicDashboard = () => {
         } finally { setIsUploadingImage(false); }
       }
 
-      if (editingService) {
-        // Update existing service
-        await apiUpdate(String(editingService._id || editingService.id), {
-          name: serviceForm.name,
-          description: serviceForm.description,
-          price: parsedPrice,
-          department: serviceForm.department || undefined,
-          category: serviceForm.department || 'Treatment',
-          duration: serviceForm.duration || undefined,
-          imageUrl,
-          imagePublicId,
-        });
-        toast({
-          title: "Success",
-          description: "Service updated successfully"
-        });
-      } else {
-        // Create new service
-        await apiCreate({
-          name: serviceForm.name,
-          description: serviceForm.description,
-          price: parsedPrice,
-          department: serviceForm.department || undefined,
-          category: serviceForm.department || 'Treatment',
-          duration: serviceForm.duration || undefined,
-          imageUrl,
-          imagePublicId,
-          providerName: user?.name || 'Clinic',
-        });
-        toast({
-          title: "Success",
-          description: "Service added successfully"
-        });
-      }
-      
+      const created = await apiCreate({
+        name: serviceForm.name,
+        description: serviceForm.description,
+        price: parsedPrice,
+        department: serviceForm.department || undefined,
+        category: serviceForm.department || 'Treatment',
+        duration: serviceForm.duration || undefined,
+        imageUrl,
+        imagePublicId,
+        providerName: user?.name || 'Hospital',
+      });
       await reloadServices();
       setServiceForm({
         name: '',
@@ -171,36 +150,27 @@ const ClinicDashboard = () => {
         department: ''
       });
       setServiceImage(''); setServiceImageFile(null);
-      setEditingService(null);
       setIsAddServiceOpen(false);
+      toast({
+        title: "Success",
+        description: "Service added successfully"
+      });
     } catch (error) {
       toast({
         title: "Error",
-        description: editingService ? "Failed to update service" : "Failed to add service",
+        description: "Failed to add service",
         variant: "destructive"
       });
-    } finally {
-      setIsAddingService(false);
     }
   };
 
-  const handleDeleteService = (serviceId) => {
-    const updatedServices = services.filter(service => service.id !== serviceId);
-    saveServices(updatedServices);
-    
-    toast({
-      title: "Success",
-      description: "Service deleted successfully"
-    });
-  };
-
   const handleTypeChange = (type) => {
-    setClinicType(type);
-    localStorage.setItem(`clinic_type_${user?.id}`, type);
+    setHospitalType(type);
+    localStorage.setItem(`hospital_type_${user?.id}`, type);
     
     toast({
       title: "Success",
-      description: "Clinic type updated successfully"
+      description: "Hospital type updated successfully"
     });
   };
 
@@ -210,9 +180,9 @@ const ClinicDashboard = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{user?.name} Clinic</h1>
+            <h1 className="text-3xl font-bold mb-2">{user?.name} Hospital</h1>
             <p className="text-muted-foreground">
-              Welcome to your clinic management dashboard
+              Comprehensive healthcare management dashboard
             </p>
           </div>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -234,9 +204,9 @@ const ClinicDashboard = () => {
               <div className="flex items-start space-x-4">
                 <AlertCircle className="w-5 h-5 text-warning mt-0.5" />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-warning mb-1">Clinic License Verification Pending</h3>
+                  <h3 className="font-semibold text-warning mb-1">Hospital License Verification Pending</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Your clinic license is being verified. Upload documents to complete verification.
+                    Your hospital license is being verified. Upload documents to complete verification.
                   </p>
                   <Button size="sm" className="bg-warning hover:bg-warning/90">
                     Upload Documents
@@ -254,7 +224,7 @@ const ClinicDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Patients</p>
-                  <p className="text-2xl font-bold">156</p>
+                  <p className="text-2xl font-bold">1,247</p>
                 </div>
                 <Users className="w-8 h-8 text-primary" />
               </div>
@@ -266,7 +236,7 @@ const ClinicDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Occupied Beds</p>
-                  <p className="text-2xl font-bold text-warning">24/30</p>
+                  <p className="text-2xl font-bold text-warning">89/120</p>
                 </div>
                 <Bed className="w-8 h-8 text-warning" />
               </div>
@@ -277,8 +247,8 @@ const ClinicDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Active Doctors</p>
-                  <p className="text-2xl font-bold text-success">12</p>
+                  <p className="text-sm text-muted-foreground">Active Staff</p>
+                  <p className="text-2xl font-bold text-success">156</p>
                 </div>
                 <Stethoscope className="w-8 h-8 text-success" />
               </div>
@@ -290,7 +260,7 @@ const ClinicDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-2xl font-bold">PKR 2.4M</p>
+                  <p className="text-2xl font-bold">PKR 12.5M</p>
                 </div>
                 <DollarSign className="w-8 h-8 text-primary" />
               </div>
@@ -306,8 +276,8 @@ const ClinicDashboard = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle>Clinic Services</CardTitle>
-                    <CardDescription>Manage your clinic services and pricing</CardDescription>
+                    <CardTitle>Hospital Services</CardTitle>
+                    <CardDescription>Manage your hospital services and departments</CardDescription>
                   </div>
                   <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
                     <DialogTrigger asChild>
@@ -318,9 +288,9 @@ const ClinicDashboard = () => {
                     </DialogTrigger>
                     <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
+                        <DialogTitle>Add New Service</DialogTitle>
                         <DialogDescription>
-                          {editingService ? 'Update the service details' : 'Add a new service to your clinic'}
+                          Add a new service to your hospital
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-3">
@@ -330,7 +300,7 @@ const ClinicDashboard = () => {
                             id="serviceName"
                             value={serviceForm.name}
                             onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
-                            placeholder="e.g., X-Ray Scan"
+                            placeholder="e.g., Cardiac Surgery"
                           />
                         </div>
                         
@@ -356,27 +326,31 @@ const ClinicDashboard = () => {
                               type="number"
                               value={serviceForm.price}
                               onChange={(e) => setServiceForm({...serviceForm, price: e.target.value})}
-                              placeholder="e.g., 3000"
+                              placeholder="e.g., 50000"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="serviceDuration">Duration (minutes)</Label>
+                            <Label htmlFor="serviceDuration">Duration (hours)</Label>
                             <Input
                               id="serviceDuration"
                               value={serviceForm.duration}
                               onChange={(e) => setServiceForm({...serviceForm, duration: e.target.value})}
-                              placeholder="e.g., 45"
+                              placeholder="e.g., 4"
                             />
                           </div>
                         </div>
                         <div>
                           <Label htmlFor="serviceDepartment">Department</Label>
-                          <Input
-                            id="serviceDepartment"
-                            value={serviceForm.department}
-                            onChange={(e) => setServiceForm({...serviceForm, department: e.target.value})}
-                            placeholder="e.g., Cardiology"
-                          />
+                          <Select value={serviceForm.department} onValueChange={(value) => setServiceForm({...serviceForm, department: value})}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select department" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hospitalDepartments.map((dept) => (
+                                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div>
                           <Label htmlFor="serviceDescription">Description</Label>
@@ -387,8 +361,8 @@ const ClinicDashboard = () => {
                             placeholder="Brief description of the service"
                           />
                         </div>
-                        <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
-                          {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
+                        <Button onClick={handleAddService} className="w-full">
+                          Add Service
                         </Button>
                       </div>
                     </DialogContent>
@@ -429,18 +403,7 @@ const ClinicDashboard = () => {
                             <TableCell>{m.price ?? 0}</TableCell>
                             <TableCell>{m.duration ?? '-'}</TableCell>
                             <TableCell className="text-right space-x-2">
-                              <Button size="sm" variant="outline" onClick={() => {
-                                setEditingService(m);
-                                setServiceForm({
-                                  name: m.name || '',
-                                  price: m.price != null ? String(m.price) : '',
-                                  duration: m.duration || '',
-                                  description: m.description || '',
-                                  department: m.department || m.category || ''
-                                });
-                                setServiceImage(m.imageUrl || m.image || '');
-                                setIsAddServiceOpen(true);
-                              }}>
+                              <Button size="sm" variant="outline">
                                 <Edit className="w-4 h-4 mr-1" /> Edit
                               </Button>
                               <Button size="sm" variant="destructive" onClick={async () => {
@@ -457,37 +420,36 @@ const ClinicDashboard = () => {
                 )}
               </CardContent>
             </Card>
-
           </div>
 
           {/* Profile Sidebar */}
           <div className="space-y-6">
             <Card className="card-healthcare">
               <CardHeader>
-                <CardTitle>Clinic Profile</CardTitle>
+                <CardTitle>Hospital Profile</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Building className="w-8 h-8 text-primary" />
+                    <Building2 className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold">{user?.name} Clinic</h3>
+                  <h3 className="text-lg font-semibold">{user?.name} Hospital</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
-                  {clinicType && (
-                    <Badge variant="secondary" className="mt-2">{clinicType}</Badge>
+                  {hospitalType && (
+                    <Badge variant="secondary" className="mt-2">{hospitalType}</Badge>
                   )}
                   <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="clinicType">Clinic Type</Label>
-                    <Select value={clinicType} onValueChange={handleTypeChange}>
+                    <Label htmlFor="hospitalType">Hospital Type</Label>
+                    <Select value={hospitalType} onValueChange={handleTypeChange}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select clinic type" />
+                        <SelectValue placeholder="Select hospital type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {clinicTypes.map((type) => (
+                        {hospitalTypes.map((type) => (
                           <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
                       </SelectContent>
@@ -496,7 +458,7 @@ const ClinicDashboard = () => {
 
                   <Button className="w-full" variant="outline">
                     <Edit className="w-4 h-4 mr-2" />
-                    Edit Clinic Info
+                    Edit Hospital Info
                   </Button>
                 </div>
               </CardContent>
@@ -519,6 +481,10 @@ const ClinicDashboard = () => {
                   <Users className="w-4 h-4 mr-2" />
                   Staff Management
                 </Button>
+                <Button className="w-full justify-start" variant="outline">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Emergency Protocols
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -528,4 +494,4 @@ const ClinicDashboard = () => {
   );
 };
 
-export default ClinicDashboard;
+export default HospitalDashboard;
