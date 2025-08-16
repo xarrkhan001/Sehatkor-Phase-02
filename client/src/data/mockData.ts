@@ -208,39 +208,111 @@ export const mockServices: Service[] = [
 export const mockBlogPosts: BlogPost[] = [
   {
     id: "1",
-    title: "10 Tips for Maintaining Good Health",
-    excerpt: "Discover essential tips for maintaining optimal health and wellness in your daily life.",
-    image: "/api/placeholder/400/250",
+    title: "Pakistan میں ڈیجیٹل ہیلتھ کیئر کا مستقبل",
+    excerpt: "جانیں کہ کیسے ڈیجیٹل ٹیکنالوجی پاکستان میں صحت کی سہولات کو بہتر بنا رہی ہے اور مریضوں کو گھر بیٹھے علاج فراہم کر رہی ہے۔",
+    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=250&fit=crop",
     author: "Dr. Ahmed Ali",
     date: "2024-01-15",
     category: "Health Tips"
   },
   {
     id: "2",
-    title: "Understanding Diabetes Management",
-    excerpt: "A comprehensive guide to managing diabetes effectively with diet, exercise, and medication.",
-    image: "/api/placeholder/400/250",
+    title: "شوگر کی بیماری: علامات، علاج اور احتیاط",
+    excerpt: "ذیابیطس کی تشخیص، علاج اور روزمرہ زندگی میں احتیاطی تدابیر کے بارے میں تفصیلی معلومات۔ صحیح خوراک اور ورزش کی اہمیت۔",
+    image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop",
     author: "Dr. Fatima Khan",
     date: "2024-01-12",
     category: "Medical"
   },
   {
     id: "3",
-    title: "Mental Health Awareness in Pakistan",
-    excerpt: "Breaking the stigma around mental health and promoting awareness in Pakistani society.",
-    image: "/api/placeholder/400/250",
+    title: "دماغی صحت: پاکستانی معاشرے میں آگاہی",
+    excerpt: "ذہنی صحت کے مسائل کو سمجھنا اور ان سے نمٹنے کے طریقے۔ ڈپریشن، اضطراب اور تناؤ کا علاج۔",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop",
     author: "Dr. Hassan Sheikh",
     date: "2024-01-10",
     category: "Mental Health"
   },
   {
     id: "4",
-    title: "Vaccination Schedule for Children",
-    excerpt: "Complete vaccination schedule and important immunizations for Pakistani children.",
-    image: "/api/placeholder/400/250",
+    title: "بچوں کی ویکسینیشن: مکمل شیڈول اور احتیاط",
+    excerpt: "پاکستانی بچوں کے لیے ضروری ٹیکوں کا شیڈول اور ان کی اہمیت۔ محفوظ اور مؤثر ویکسینیشن کے فوائد۔",
+    image: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?w=400&h=250&fit=crop",
     author: "Dr. Ayesha Malik",
     date: "2024-01-08",
     category: "Pediatrics"
+  },
+  {
+    id: "5",
+    title: "رمضان میں صحت مند روزہ: طبی رہنمائی",
+    excerpt: "روزے کے دوران صحت کا خیال رکھنے کے طریقے، سحری اور افطاری کی بہترین خوراک، اور مریضوں کے لیے خصوصی ہدایات۔",
+    image: "https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=250&fit=crop",
+    author: "Dr. Muhammad Usman",
+    date: "2024-01-05",
+    category: "Nutrition"
+  },
+  {
+    id: "6",
+    title: "خواتین کی صحت: خصوصی احتیاط اور بچاؤ",
+    excerpt: "خواتین کے لیے خصوصی صحت کے مسائل، حمل کی دیکھ بھال، اور مختلف عمر میں ضروری طبی جانچ پڑتال۔",
+    image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=250&fit=crop",
+    author: "Dr. Sana Rashid",
+    date: "2024-01-03",
+    category: "Health Tips"
+  },
+  {
+    id: "7",
+    title: "دل کی بیماریوں سے بچاؤ: جدید علاج",
+    excerpt: "دل کی صحت کے لیے ضروری احتیاط، کولیسٹرول کنٹرول، بلڈ پریشر کا انتظام، اور جدید کارڈیک ٹریٹمنٹ۔",
+    image: "https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=400&h=250&fit=crop",
+    author: "Dr. Tariq Mahmood",
+    date: "2024-01-01",
+    category: "Medical"
+  },
+  {
+    id: "8",
+    title: "بزرگوں کی صحت: خصوصی دیکھ بھال",
+    excerpt: "بڑھتی عمر میں صحت کے مسائل، ہڈیوں کی کمزوری، یادداشت کی حفاظت، اور گھریلو نگہداشت کے طریقے۔",
+    image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=250&fit=crop",
+    author: "Dr. Rubina Shah",
+    date: "2023-12-28",
+    category: "Health Tips"
+  },
+  {
+    id: "9",
+    title: "موسمی بیماریوں سے بچاؤ اور علاج",
+    excerpt: "مختلف موسموں میں عام بیماریاں، فلو، نزلہ زکام، ڈینگی، اور ملیریا سے بچاؤ کے طریقے۔",
+    image: "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=400&h=250&fit=crop",
+    author: "Dr. Imran Ali",
+    date: "2023-12-25",
+    category: "Medical"
+  },
+  {
+    id: "10",
+    title: "صحت مند غذا: پاکستانی کھانوں میں توازن",
+    excerpt: "روایتی پاکستانی کھانوں میں غذائی توازن، صحت مند کھانا پکانے کے طریقے، اور موٹاپے سے بچاؤ۔",
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=250&fit=crop",
+    author: "Dr. Nadia Qureshi",
+    date: "2023-12-22",
+    category: "Nutrition"
+  },
+  {
+    id: "11",
+    title: "آنکھوں کی حفاظت: جدید دور کے چیلنجز",
+    excerpt: "موبائل اور کمپیوٹر کے استعمال سے آنکھوں پر اثرات، آنکھوں کی بیماریوں سے بچاؤ، اور بہترین علاج۔",
+    image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=250&fit=crop",
+    author: "Dr. Kamran Hussain",
+    date: "2023-12-20",
+    category: "Health Tips"
+  },
+  {
+    id: "12",
+    title: "کینسر سے بچاؤ: ابتدائی تشخیص کی اہمیت",
+    excerpt: "مختلف قسم کے کینسر کی علامات، ابتدائی تشخیص کے فوائد، اور جدید علاج کے طریقے۔",
+    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=250&fit=crop",
+    author: "Dr. Saima Akhtar",
+    date: "2023-12-18",
+    category: "Medical"
   }
 ];
 
