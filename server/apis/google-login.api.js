@@ -55,28 +55,90 @@ const generateToken = (user) => jwt.sign(
 
 export const googleLogin = async (req, res) => {
   try {
-    const { idToken, role = 'patient' } = req.body || {};
+    console.log('Google login request received:', { body: req.body, headers: req.headers });
+    const { idToken, role = 'patient', additionalFields } = req.body || {};
     if (!idToken) return res.status(400).json({ message: 'idToken required' });
 
     const profile = await verifyGoogleIdToken(idToken);
 
     let user = await User.findOne({ email: profile.email });
+    
+    // If user doesn't exist, check if additional fields are provided
     if (!user) {
+      // For new users, require additional fields
+      if (!additionalFields) {
+        return res.status(400).json({ 
+          message: 'Additional fields required for new user registration',
+          requiresAdditionalFields: true,
+          profile: {
+            name: profile.name,
+            email: profile.email,
+            picture: profile.picture
+          }
+        });
+      }
+
+      // Validate required fields
+      const requiredFields = ['phone', 'cnic', 'address', 'city', 'province'];
+      const missingFields = requiredFields.filter(field => !additionalFields[field] || additionalFields[field].trim() === '');
+      
+      // Role-specific required fields
+      if (role === 'doctor' && (!additionalFields.licenseNumber || additionalFields.licenseNumber.trim() === '')) {
+        missingFields.push('licenseNumber');
+      }
+      if (role === 'doctor' && (!additionalFields.designation || additionalFields.designation.trim() === '')) {
+        missingFields.push('designation');
+      }
+      if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(role) && (!additionalFields.businessName || additionalFields.businessName.trim() === '')) {
+        missingFields.push('businessName');
+      }
+
+      if (missingFields.length > 0) {
+        return res.status(400).json({ 
+          message: `Missing required fields: ${missingFields.join(', ')}`,
+          missingFields
+        });
+      }
+
+      // Create user with additional fields
+      const userRole = ['patient','doctor','clinic/hospital','laboratory','pharmacy'].includes(role) ? role : 'patient';
       user = await User.create({
         name: profile.name,
         email: profile.email,
-        role: ['patient','doctor','clinic/hospital','laboratory','pharmacy'].includes(role) ? role : 'patient',
+        role: userRole,
         avatar: profile.picture,
-        isVerified: role === 'patient',
-        password: Math.random().toString(36).slice(2) // placeholder; not used for google users
+        isVerified: userRole === 'patient',
+        password: Math.random().toString(36).slice(2), // placeholder; not used for google users
+        phone: additionalFields.phone,
+        cnic: additionalFields.cnic,
+        licenseNumber: additionalFields.licenseNumber || '',
+        businessName: additionalFields.businessName || '',
+        address: additionalFields.address,
+        city: additionalFields.city,
+        province: additionalFields.province,
+        designation: additionalFields.designation || ''
       });
+
+      // For new non-patient users, return success but don't provide token (requires admin verification)
+      if (userRole !== 'patient') {
+        return res.status(200).json({ 
+          message: 'Registration successful! Please wait for admin verification before you can log in.',
+          requiresVerification: true,
+          user: {
+            name: user.name,
+            email: user.email,
+            role: user.role
+          }
+        });
+      }
+    } else {
+      // Gate unverified providers (only for existing users)
+      if (user.role !== 'patient' && !user.isVerified) {
+        return res.status(403).json({ message: 'Account not verified by admin' });
+      }
     }
 
-    // Gate unverified providers
-    if (user.role !== 'patient' && !user.isVerified) {
-      return res.status(403).json({ message: 'Account not verified by admin' });
-    }
-
+    // Only generate token for patients or verified users
     const token = generateToken(user);
     const userObj = user.toObject();
     delete userObj.password;
