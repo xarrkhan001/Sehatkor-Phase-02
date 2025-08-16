@@ -9,6 +9,9 @@ const LaboratoryTestSchema = new mongoose.Schema(
     duration: { type: String }, // e.g., "2-3 hours", "Same day"
     imageUrl: { type: String },
     imagePublicId: { type: String },
+    googleMapLink: { type: String },
+    city: { type: String },
+    detailAddress: { type: String },
     providerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     providerName: { type: String, required: true },
     providerType: { type: String, enum: ['laboratory'], default: 'laboratory' },

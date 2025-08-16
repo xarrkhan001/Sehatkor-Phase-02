@@ -51,7 +51,10 @@ const PharmacyDashboard = () => {
     price: '',
     stock: '',
     description: '',
-    category: ''
+    category: '',
+    googleMapLink: '',
+    city: '',
+    detailAddress: ''
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -61,7 +64,10 @@ const PharmacyDashboard = () => {
     price: '',
     stock: '',
     description: '',
-    category: ''
+    category: '',
+    googleMapLink: '',
+    city: '',
+    detailAddress: ''
   });
 
   const pharmacyTypes = [
@@ -195,6 +201,9 @@ const PharmacyDashboard = () => {
         stock: parsedStock,
         imageUrl,
         imagePublicId,
+        googleMapLink: medicineForm.googleMapLink,
+        city: medicineForm.city,
+        detailAddress: medicineForm.detailAddress,
         providerName: user?.name || 'Pharmacy',
       });
 
@@ -215,7 +224,7 @@ const PharmacyDashboard = () => {
       ServiceManager.addService(newMedicine);
 
       // Reset form
-      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '' });
+      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '' });
       setMedicineImagePreview('');
       setMedicineImageFile(null);
       setIsAddMedicineOpen(false);
@@ -258,7 +267,10 @@ const PharmacyDashboard = () => {
       price: m.price != null ? String(m.price) : '',
       stock: m.stock != null ? String(m.stock) : '',
       description: m.description || '',
-      category: m.category || ''
+      category: m.category || '',
+      googleMapLink: m.googleMapLink || '',
+      city: m.city || '',
+      detailAddress: m.detailAddress || ''
     });
     setEditImagePreview(m.imageUrl || m.image || '');
     setEditImageFile(null);
@@ -484,6 +496,38 @@ const PharmacyDashboard = () => {
                             placeholder="Brief description of the medicine"
                           />
                         </div>
+                        {/* Location Fields */}
+                        <div className="space-y-3 border-t pt-3">
+                          <h4 className="font-medium text-sm">Location Information</h4>
+                          <div>
+                            <Label htmlFor="medicineCity">City</Label>
+                            <Input
+                              id="medicineCity"
+                              value={medicineForm.city}
+                              onChange={(e) => setMedicineForm({...medicineForm, city: e.target.value})}
+                              placeholder="e.g., Karachi"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="medicineAddress">Detailed Address</Label>
+                            <Textarea
+                              id="medicineAddress"
+                              value={medicineForm.detailAddress}
+                              onChange={(e) => setMedicineForm({...medicineForm, detailAddress: e.target.value})}
+                              placeholder="e.g., Shop 123, ABC Plaza, Main Road"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="medicineMapLink">Google Maps Link (Optional)</Label>
+                            <Input
+                              id="medicineMapLink"
+                              value={medicineForm.googleMapLink}
+                              onChange={(e) => setMedicineForm({...medicineForm, googleMapLink: e.target.value})}
+                              placeholder="https://maps.google.com/..."
+                            />
+                          </div>
+                        </div>
                          <Button onClick={handleAddMedicine} className="w-full" disabled={isUploadingImage || isAddingMedicine}>
                           {isAddingMedicine ? 'Adding Medicine...' : 'Add Medicine'}
                         </Button>
@@ -597,6 +641,40 @@ const PharmacyDashboard = () => {
                     <Label htmlFor="editDesc">Description</Label>
                     <Textarea id="editDesc" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
                   </div>
+
+                  {/* Location Fields */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Location Information</h4>
+                    <div>
+                      <Label htmlFor="editMedicineCity">City</Label>
+                      <Input
+                        id="editMedicineCity"
+                        value={editForm.city}
+                        onChange={(e) => setEditForm({...editForm, city: e.target.value})}
+                        placeholder="e.g., Karachi"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editMedicineAddress">Detailed Address</Label>
+                      <Textarea
+                        id="editMedicineAddress"
+                        value={editForm.detailAddress}
+                        onChange={(e) => setEditForm({...editForm, detailAddress: e.target.value})}
+                        placeholder="e.g., Shop 123, ABC Plaza, Main Road"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editMedicineMapLink">Google Maps Link (Optional)</Label>
+                      <Input
+                        id="editMedicineMapLink"
+                        value={editForm.googleMapLink}
+                        onChange={(e) => setEditForm({...editForm, googleMapLink: e.target.value})}
+                        placeholder="https://maps.google.com/..."
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <Button className="flex-1" onClick={handleSaveEdit} disabled={isUploadingImage}>Save</Button>
                     <Button className="flex-1" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>

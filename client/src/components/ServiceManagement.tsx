@@ -43,7 +43,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     duration: '',
     description: '',
     category: '',
-    stock: ''
+    stock: '',
+    googleMapLink: '',
+    city: '',
+    detailAddress: ''
   });
 
   const getServiceCategories = () => {
@@ -67,7 +70,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       duration: '',
       description: '',
       category: '',
-      stock: ''
+      stock: '',
+      googleMapLink: '',
+      city: '',
+      detailAddress: ''
     });
     setServiceImage('');
     setEditingService(null);
@@ -96,6 +102,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       providerType: userRole,
       image: serviceImage,
       duration: serviceForm.duration,
+      googleMapLink: serviceForm.googleMapLink,
+      city: serviceForm.city,
+      detailAddress: serviceForm.detailAddress,
       ...(userRole === 'pharmacy' && { stock: parsedStock })
     };
 
@@ -131,6 +140,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             duration: serviceForm.duration || undefined,
             imageUrl,
             imagePublicId,
+            googleMapLink: serviceForm.googleMapLink,
+            city: serviceForm.city,
+            detailAddress: serviceForm.detailAddress,
           });
           const updatedLocal = ServiceManager.updateService(editingService.id, {
             name: updated.name,
@@ -152,6 +164,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             duration: serviceForm.duration || undefined,
             imageUrl,
             imagePublicId,
+            googleMapLink: serviceForm.googleMapLink,
+            city: serviceForm.city,
+            detailAddress: serviceForm.detailAddress,
             providerName: userName,
           });
           console.log('Doctor service created:', created);
@@ -173,7 +188,14 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
         }
       } else {
         if (editingService) {
-          const updatedService = ServiceManager.updateService(editingService.id, serviceData);
+          // Include location fields for lab and pharmacy services
+          const updateData = {
+            ...serviceData,
+            googleMapLink: serviceForm.googleMapLink,
+            city: serviceForm.city,
+            detailAddress: serviceForm.detailAddress
+          };
+          const updatedService = ServiceManager.updateService(editingService.id, updateData);
           if (updatedService) {
             const updatedServices = services.map(service => service.id === editingService.id ? updatedService : service);
             onServicesUpdate(updatedServices);
@@ -206,7 +228,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       duration: service.duration || '',
       description: service.description,
       category: service.category,
-      stock: 'stock' in service ? service.stock?.toString() || '' : ''
+      stock: 'stock' in service ? service.stock?.toString() || '' : '',
+      googleMapLink: (service as any).googleMapLink || '',
+      city: (service as any).city || '',
+      detailAddress: (service as any).detailAddress || ''
     });
     setServiceImage(service.image || '');
     setIsAddServiceOpen(true);
@@ -331,6 +356,43 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     placeholder="Brief description of the service"
                   />
                 </div>
+
+                {/* Location Fields */}
+                <div className="space-y-3 border-t pt-3">
+                  <h4 className="font-medium text-sm">Location Information</h4>
+                  
+                  <div>
+                    <Label htmlFor="serviceCity">City</Label>
+                    <Input
+                      id="serviceCity"
+                      value={serviceForm.city}
+                      onChange={(e) => setServiceForm({...serviceForm, city: e.target.value})}
+                      placeholder="e.g., Karachi, Lahore"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="serviceAddress">Detailed Address</Label>
+                    <Textarea
+                      id="serviceAddress"
+                      value={serviceForm.detailAddress}
+                      onChange={(e) => setServiceForm({...serviceForm, detailAddress: e.target.value})}
+                      placeholder="Complete address where service is provided"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="serviceMapLink">Google Maps Link (Optional)</Label>
+                    <Input
+                      id="serviceMapLink"
+                      value={serviceForm.googleMapLink}
+                      onChange={(e) => setServiceForm({...serviceForm, googleMapLink: e.target.value})}
+                      placeholder="https://maps.google.com/..."
+                    />
+                  </div>
+                </div>
+
                 <Button onClick={handleAddService} className="w-full">
                   {editingService ? 'Update Service' : 'Add Service'}
                 </Button>

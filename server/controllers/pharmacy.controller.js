@@ -15,7 +15,7 @@ export const listMedicines = async (req, res) => {
 export const createMedicine = async (req, res) => {
   try {
     const providerId = req.userId;
-    const { name, description, price, category, stock, imageUrl, imagePublicId } = req.body || {};
+    const { name, description, price, category, stock, imageUrl, imagePublicId, googleMapLink, city, detailAddress } = req.body || {};
     if (!name) return res.status(400).json({ message: 'Name is required' });
     const doc = await Medicine.create({
       name,
@@ -25,6 +25,9 @@ export const createMedicine = async (req, res) => {
       stock: typeof stock === 'number' ? stock : Number(stock) || 0,
       imageUrl,
       imagePublicId,
+      googleMapLink,
+      city,
+      detailAddress,
       providerId,
       providerName: req.body.providerName || 'Pharmacy',
       providerType: 'pharmacy',
@@ -51,6 +54,9 @@ export const updateMedicine = async (req, res) => {
           ...(updates.stock != null && { stock: typeof updates.stock === 'number' ? updates.stock : Number(updates.stock) || 0 }),
           ...(updates.imageUrl != null && { imageUrl: updates.imageUrl }),
           ...(updates.imagePublicId != null && { imagePublicId: updates.imagePublicId }),
+          ...(updates.googleMapLink != null && { googleMapLink: updates.googleMapLink }),
+          ...(updates.city != null && { city: updates.city }),
+          ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
         }
       },
       { new: true }

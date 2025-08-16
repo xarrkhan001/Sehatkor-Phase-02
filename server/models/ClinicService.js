@@ -10,6 +10,9 @@ const ClinicServiceSchema = new mongoose.Schema(
     duration: { type: String },
     imageUrl: { type: String },
     imagePublicId: { type: String },
+    googleMapLink: { type: String },
+    city: { type: String },
+    detailAddress: { type: String },
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

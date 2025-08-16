@@ -26,6 +26,9 @@ export const createClinicService = async (req, res) => {
       imageUrl,
       imagePublicId,
       providerName,
+      googleMapLink,
+      city,
+      detailAddress,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
     const doc = await ClinicService.create({
@@ -37,6 +40,9 @@ export const createClinicService = async (req, res) => {
       duration,
       imageUrl,
       imagePublicId,
+      googleMapLink,
+      city,
+      detailAddress,
       providerId: req.userId,
       providerName: providerName || "Clinic",
       providerType: "clinic",
@@ -74,6 +80,9 @@ export const updateClinicService = async (req, res) => {
           ...(updates.imagePublicId != null && {
             imagePublicId: updates.imagePublicId,
           }),
+          ...(updates.googleMapLink != null && { googleMapLink: updates.googleMapLink }),
+          ...(updates.city != null && { city: updates.city }),
+          ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
         },
       },
       { new: true }

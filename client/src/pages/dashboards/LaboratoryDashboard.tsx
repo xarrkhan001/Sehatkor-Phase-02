@@ -51,7 +51,10 @@ const LaboratoryDashboard = () => {
     price: '',
     duration: '',
     description: '',
-    category: ''
+    category: '',
+    googleMapLink: '',
+    city: '',
+    detailAddress: ''
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -61,7 +64,10 @@ const LaboratoryDashboard = () => {
     price: '',
     duration: '',
     description: '',
-    category: ''
+    category: '',
+    googleMapLink: '',
+    city: '',
+    detailAddress: ''
   });
 
   const labTypes = [
@@ -194,6 +200,9 @@ const LaboratoryDashboard = () => {
         duration: testForm.duration,
         imageUrl,
         imagePublicId,
+        googleMapLink: testForm.googleMapLink,
+        city: testForm.city,
+        detailAddress: testForm.detailAddress,
         providerName: user?.name || 'Laboratory',
       });
 
@@ -213,7 +222,7 @@ const LaboratoryDashboard = () => {
       ServiceManager.addService(newTest);
 
       // Reset form
-      setTestForm({ name: '', price: '', duration: '', description: '', category: '' });
+      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '' });
       setTestImagePreview('');
       setTestImageFile(null);
       setIsAddTestOpen(false);
@@ -256,7 +265,10 @@ const LaboratoryDashboard = () => {
       price: t.price != null ? String(t.price) : '',
       duration: t.duration || '',
       description: t.description || '',
-      category: t.category || ''
+      category: t.category || '',
+      googleMapLink: t.googleMapLink || '',
+      city: t.city || '',
+      detailAddress: t.detailAddress || ''
     });
     setEditImagePreview(t.imageUrl || t.image || '');
     setEditImageFile(null);
@@ -287,6 +299,10 @@ const LaboratoryDashboard = () => {
         duration: editForm.duration,
         imageUrl,
         imagePublicId,
+        googleMapLink: editForm.googleMapLink,
+        city: editForm.city,
+        detailAddress: editForm.detailAddress,
+        providerName: user?.name || 'Laboratory',
       });
       
       // Update in local storage
@@ -509,6 +525,39 @@ const LaboratoryDashboard = () => {
                     />
                   </div>
 
+                  {/* Location Fields */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Location Information</h4>
+                    <div>
+                      <Label htmlFor="editTestCity">City</Label>
+                      <Input
+                        id="editTestCity"
+                        value={editForm.city}
+                        onChange={(e) => setEditForm({...editForm, city: e.target.value})}
+                        placeholder="e.g., Karachi"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editTestAddress">Detailed Address</Label>
+                      <Textarea
+                        id="editTestAddress"
+                        value={editForm.detailAddress}
+                        onChange={(e) => setEditForm({...editForm, detailAddress: e.target.value})}
+                        placeholder="e.g., Floor 2, Medical Plaza, Main Road"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editTestMapLink">Google Maps Link (Optional)</Label>
+                      <Input
+                        id="editTestMapLink"
+                        value={editForm.googleMapLink}
+                        onChange={(e) => setEditForm({...editForm, googleMapLink: e.target.value})}
+                        placeholder="https://maps.google.com/..."
+                      />
+                    </div>
+                  </div>
+
                   <Button onClick={handleSaveEdit} className="w-full" disabled={isUploadingImage}>
                     {isUploadingImage ? 'Uploading...' : 'Save Changes'}
                   </Button>
@@ -650,6 +699,40 @@ const LaboratoryDashboard = () => {
                             placeholder="Brief description of the test"
                           />
                         </div>
+                        
+                        {/* Location Fields */}
+                        <div className="space-y-3 border-t pt-3">
+                          <h4 className="font-medium text-sm">Location Information</h4>
+                          <div>
+                            <Label htmlFor="testCity">City</Label>
+                            <Input
+                              id="testCity"
+                              value={testForm.city}
+                              onChange={(e) => setTestForm({...testForm, city: e.target.value})}
+                              placeholder="e.g., Karachi"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="testAddress">Detailed Address</Label>
+                            <Textarea
+                              id="testAddress"
+                              value={testForm.detailAddress}
+                              onChange={(e) => setTestForm({...testForm, detailAddress: e.target.value})}
+                              placeholder="e.g., Floor 2, Medical Plaza, Main Road"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="testMapLink">Google Maps Link (Optional)</Label>
+                            <Input
+                              id="testMapLink"
+                              value={testForm.googleMapLink}
+                              onChange={(e) => setTestForm({...testForm, googleMapLink: e.target.value})}
+                              placeholder="https://maps.google.com/..."
+                            />
+                          </div>
+                        </div>
+                        
                         <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
                           {isAddingTest ? 'Adding Test...' : 'Add Test'}
                         </Button>
