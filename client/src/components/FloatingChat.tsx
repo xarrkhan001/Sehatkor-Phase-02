@@ -45,6 +45,8 @@ const FloatingChat = () => {
   const [hasSelectedUser, setHasSelectedUser] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'connections'>('chat');
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [clearChatOpen, setClearChatOpen] = useState(false);
+  const [clearingChat, setClearingChat] = useState(false);
   
   const chatPatternUrl = useMemo(() => {
     const stroke = 'rgba(239,68,68,0.22)'; // moderately stronger red
@@ -747,21 +749,41 @@ const FloatingChat = () => {
     }
   };
 
-  const [clearAllOpen, setClearAllOpen] = useState(false);
-  const [clearingAll, setClearingAll] = useState(false);
-  const onClearConversation = async () => {
-    if (!conversationId || clearingAll) return;
-    setClearingAll(true);
+
+
+  const onClearChatForMe = async () => {
+    if (!conversationId || clearingChat) return;
+    setClearingChat(true);
     try {
-      await apiClearConversation(conversationId);
+      // Get all messages in the conversation and mark them as deleted for current user
+      const messagesToClear = messages.filter(m => {
+        const myId = (user as any)?.id || (user as any)?._id;
+        const senderId = (m as any)?.sender?._id || (m as any)?.sender;
+        // Only clear messages that are not already deleted for me
+        return !m.deletedFor?.includes(myId);
+      });
+
+      // Clear messages for current user by calling delete API with scope 'me'
+      await Promise.all(
+        messagesToClear.map(m => apiDeleteMessage(m._id, 'me'))
+      );
+
+      // Remove messages from local state
       setMessages([]);
-      setConversations((prev) => prev.map((c) => String(c._id) === String(conversationId) ? { ...c, lastMessage: undefined, unreadCount: 0 } : c));
-      toast({ title: 'Chat cleared', description: 'All messages deleted.' });
-      setClearAllOpen(false);
+      
+      // Update conversation to show no unread messages for current user
+      setConversations((prev) => prev.map((c) => 
+        String(c._id) === String(conversationId) 
+          ? { ...c, unreadCount: 0 } 
+          : c
+      ));
+      
+      toast({ title: 'Chat cleared', description: 'Messages cleared for you only.' });
+      setClearChatOpen(false);
     } catch (e: any) {
-      toast({ title: 'Failed to clear', description: e?.message || 'Try again later', variant: 'destructive' });
+      toast({ title: 'Failed to clear chat', description: e?.message || 'Try again later', variant: 'destructive' });
     } finally {
-      setClearingAll(false);
+      setClearingChat(false);
     }
   };
 
@@ -1114,8 +1136,9 @@ const FloatingChat = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[12rem] rounded-xl border bg-white/95 backdrop-blur-md shadow-2xl p-1">
-          <DropdownMenuItem onSelect={() => setClearAllOpen(true)} className="text-destructive focus:text-destructive">
-            Delete all messages
+          <DropdownMenuItem onSelect={() => setClearChatOpen(true)} className="flex items-center gap-2 text-orange-600 focus:text-orange-700 focus:bg-orange-50">
+            <MessageCircle className="w-4 h-4" />
+            Clear Chat
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -1332,20 +1355,25 @@ const FloatingChat = () => {
                     </DialogContent>
                   </Dialog>
 
-              {/* Clear All Messages confirmation modal (responsive and centered) */}
-              <Dialog open={clearAllOpen} onOpenChange={(v) => { if (!clearingAll) setClearAllOpen(v as boolean); }}>
+
+
+              {/* Clear Chat confirm modal */}
+              <Dialog open={clearChatOpen} onOpenChange={(v) => { if (!clearingChat) setClearChatOpen(v as boolean); }}>
                 <DialogContent className="rounded-xl bg-white/95 backdrop-blur-md w-[calc(100%-2rem)] max-w-sm sm:w-[calc(100%-4rem)]">
-                  <DialogTitle>Delete all messages?</DialogTitle>
-                  <DialogDescription>This will remove all messages in this chat for everyone. This cannot be undone.</DialogDescription>
+                  <DialogTitle className="flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5 text-orange-600" />
+                    Clear Chat?
+                  </DialogTitle>
+                  <DialogDescription>This will clear all messages in this chat for you only. The other person will still see their messages. This cannot be undone.</DialogDescription>
                   <div className="flex items-center gap-2 pt-2">
-                    <Button variant="outline" onClick={() => setClearAllOpen(false)} disabled={clearingAll}>
+                    <Button variant="outline" onClick={() => setClearChatOpen(false)} disabled={clearingChat}>
                       Cancel
                     </Button>
-                    <Button onClick={onClearConversation} disabled={clearingAll} className="bg-red-600 hover:bg-red-700 text-white">
-                      {clearingAll ? (
-                        <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Deleting…</span>
+                    <Button onClick={onClearChatForMe} disabled={clearingChat} className="bg-orange-600 hover:bg-orange-700 text-white">
+                      {clearingChat ? (
+                        <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Clearing…</span>
                       ) : (
-                        'Delete for everyone'
+                        <span className="inline-flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Clear Chat</span>
                       )}
                     </Button>
                   </div>
