@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import PatientDashboard from './dashboards/PatientDashboard';
 import DoctorDashboard from './dashboards/DoctorDashboard';
 import ClinicDashboard from './dashboards/ClinicDashboard';
+import HospitalDashboard from './dashboards/HospitalDashboard';
 import LaboratoryDashboard from './dashboards/LaboratoryDashboard';
 import PharmacyDashboard from './dashboards/PharmacyDashboard';
 
@@ -24,7 +25,7 @@ const RoleBasedDashboard = () => {
       return <PatientDashboard />;
     case 'doctor':
       return <DoctorDashboard />;
-    case 'clinic':
+    case 'clinic/hospital':
       return <ClinicDashboard />;
     case 'laboratory':
       return <LaboratoryDashboard />;
