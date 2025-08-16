@@ -51,7 +51,10 @@ const ClinicDashboard = () => {
     price: '',
     duration: '',
     description: '',
-    department: ''
+    department: '',
+    googleMapLink: '',
+    city: '',
+    detailAddress: ''
   });
 
   const clinicTypes = [
@@ -138,6 +141,9 @@ const ClinicDashboard = () => {
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
+          googleMapLink: serviceForm.googleMapLink,
+          city: serviceForm.city,
+          detailAddress: serviceForm.detailAddress,
         });
         toast({
           title: "Success",
@@ -154,6 +160,9 @@ const ClinicDashboard = () => {
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
+          googleMapLink: serviceForm.googleMapLink,
+          city: serviceForm.city,
+          detailAddress: serviceForm.detailAddress,
           providerName: user?.name || 'Clinic',
         });
         toast({
@@ -168,7 +177,10 @@ const ClinicDashboard = () => {
         price: '',
         duration: '',
         description: '',
-        department: ''
+        department: '',
+        googleMapLink: '',
+        city: '',
+        detailAddress: ''
       });
       setServiceImage(''); setServiceImageFile(null);
       setEditingService(null);
@@ -387,6 +399,39 @@ const ClinicDashboard = () => {
                             placeholder="Brief description of the service"
                           />
                         </div>
+                        
+                        {/* Location Fields */}
+                        <div className="space-y-3 border-t pt-3">
+                          <h4 className="font-medium text-sm">Location Information</h4>
+                          <div>
+                            <Label htmlFor="serviceCity">City</Label>
+                            <Input
+                              id="serviceCity"
+                              value={serviceForm.city}
+                              onChange={(e) => setServiceForm({...serviceForm, city: e.target.value})}
+                              placeholder="e.g., Karachi"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="serviceAddress">Detailed Address</Label>
+                            <Textarea
+                              id="serviceAddress"
+                              value={serviceForm.detailAddress}
+                              onChange={(e) => setServiceForm({...serviceForm, detailAddress: e.target.value})}
+                              placeholder="Complete address with landmarks"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="serviceGoogleMap">Google Maps Link (Optional)</Label>
+                            <Input
+                              id="serviceGoogleMap"
+                              value={serviceForm.googleMapLink}
+                              onChange={(e) => setServiceForm({...serviceForm, googleMapLink: e.target.value})}
+                              placeholder="https://maps.google.com/..."
+                            />
+                          </div>
+                        </div>
                         <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
                           {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
                         </Button>
@@ -436,7 +481,10 @@ const ClinicDashboard = () => {
                                   price: m.price != null ? String(m.price) : '',
                                   duration: m.duration || '',
                                   description: m.description || '',
-                                  department: m.department || m.category || ''
+                                  department: m.department || m.category || '',
+                                  googleMapLink: m.googleMapLink || '',
+                                  city: m.city || '',
+                                  detailAddress: m.detailAddress || ''
                                 });
                                 setServiceImage(m.imageUrl || m.image || '');
                                 setIsAddServiceOpen(true);

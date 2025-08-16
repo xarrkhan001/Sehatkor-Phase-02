@@ -39,6 +39,7 @@ const SearchPage = () => {
   const { user } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [currentMapService, setCurrentMapService] = useState<SearchService | null>(null);
 
   // Helper function to get coordinates based on location
   const getCoordinatesForLocation = (location: string) => {
@@ -111,13 +112,15 @@ const SearchPage = () => {
         price: service.price,
         rating: service?.rating ?? 4.5,
         provider: service.providerName,
-        location: service?.location ?? "Karachi",
+        location: service.city || "Karachi",
         type: mapServiceTypeToSearch(service),
         homeService: service.providerType === 'doctor',
         isReal: true,
         image: service.image,
         coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
-        address: service?.address ?? getMockAddress(service.providerName, mapServiceTypeToSearch(service), service?.location ?? "Karachi"),
+        address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
+        googleMapLink: service.googleMapLink,
+        detailAddress: service.detailAddress,
         createdAt: (service as any).createdAt,
         _providerId: (service as any).providerId,
         _providerType: service.providerType, // Add provider type for filtering
@@ -247,8 +250,15 @@ const SearchPage = () => {
     }
   };
 
-  // Get current service being shown on map
-  const currentMapService = allServices.find(service => service.id === showLocationMap);
+  // Update current service being shown on map when showLocationMap changes
+  useEffect(() => {
+    if (showLocationMap) {
+      const service = allServices.find(s => s.id === showLocationMap);
+      setCurrentMapService(service || null);
+    } else {
+      setCurrentMapService(null);
+    }
+  }, [showLocationMap, allServices]);
 
   if (isLoading) {
     return <SearchPageSkeleton />;
@@ -487,14 +497,13 @@ const SearchPage = () => {
     </Button>
     <Button
       variant="outline"
-      onClick={() => toggleServiceSelection(service.id)}
-      className={`flex-1 min-w-[100px] ${
-        selectedServices.includes(service.id) ? "bg-accent" : ""
-      }`}
+      onClick={() => {
+        setCurrentMapService(service);
+        setShowLocationMap(service.id);
+      }}
+      className="flex-1 min-w-[100px]"
     >
-      {selectedServices.includes(service.id)
-        ? "Remove from Compare"
-        : "Compare"}
+      <MapPin className="w-4 h-4 mr-1" /> Location
     </Button>
     <Button
       variant="secondary"
@@ -625,81 +634,43 @@ const SearchPage = () => {
         )}
       </div>
 
-      {/* Location Map Card */}
+      {/* Location Modal */}
       {showLocationMap && currentMapService && (
-        <div className={`
-          fixed z-50 bg-background shadow-xl rounded-lg border transition-all duration-300
-          ${isMapExpanded ? 
-            'w-[calc(100vw-2rem)] h-[80vh] top-4 left-4 right-4 bottom-auto ' +  // Mobile first
-            'md:w-[calc(100vw-4rem)] md:left-8 md:right-8 ' +  // Medium screens
-            'lg:w-[720px] lg:h-[80vh] lg:top-1/2 lg:left-1/2 lg:right-auto lg:bottom-auto lg:-translate-x-1/2 lg:-translate-y-1/2' :  // Large screens - centered modal
-            
-            // Collapsed state
-            'w-[calc(100vw-2rem)] h-64 bottom-4 left-4 right-4 ' +  // Mobile
-            'md:w-80 md:right-4 md:left-auto'  // Desktop
-          }
-        `}>
-          <div className="relative w-full h-full">
-            {/* Map Header */}
-            <div className="absolute top-0 left-0 right-0 bg-background z-10 p-3 flex justify-between items-center border-b">
-              <div className="max-w-[70%]">
-                <h3 className="font-semibold truncate">{currentMapService.name}</h3>
-                <p className="text-sm text-muted-foreground truncate">{currentMapService.address}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsMapExpanded(!isMapExpanded)}
-                  className="h-8 w-8"
-                >
-                  {isMapExpanded ? (
-                    <Minimize2 className="w-4 h-4" />
-                  ) : (
-                    <Maximize2 className="w-4 h-4" />
-                  )}
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => {
-                    setShowLocationMap(null);
-                    setIsMapExpanded(false);
-                  }}
-                  className="h-8 w-8"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">{currentMapService.name}</h3>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowLocationMap(null)}
+                className="h-8 w-8"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
             
-            {/* Map Content */}
-            <div className="absolute top-12 bottom-0 left-0 right-0 bg-muted flex items-center justify-center">
-              {currentMapService.coordinates ? (
-                <div className="w-full h-full flex flex-col">
-                  {/* Map Placeholder - Replace with actual map component */}
-                  <div className="flex-1 bg-gray-200 relative">
-                    <MapPin 
-                      className="w-12 h-12 text-red-500 absolute"
-                      style={{
-                        left: '50%',
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)'
-                      }}
-                    />
-                  </div>
-                  <div className="p-4 bg-white border-t">
-                    <p className="font-medium">{currentMapService.location}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {currentMapService.address}
-                    </p>
-                    <p className="text-xs mt-2">
-                      Coordinates: {currentMapService.coordinates.lat.toFixed(4)}, {currentMapService.coordinates.lng.toFixed(4)}
-                    </p>
-                  </div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Location</p>
+                <p className="text-base">{currentMapService.location}</p>
+              </div>
+              
+              {currentMapService.address && (
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Address</p>
+                  <p className="text-base">{currentMapService.address}</p>
                 </div>
-              ) : (
-                <div className="text-muted-foreground">Location not available</div>
+              )}
+              
+              {currentMapService.googleMapLink && (
+                <Button 
+                  className="w-full mt-4"
+                  onClick={() => window.open(currentMapService.googleMapLink, '_blank')}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Open in Google Maps
+                </Button>
               )}
             </div>
           </div>
