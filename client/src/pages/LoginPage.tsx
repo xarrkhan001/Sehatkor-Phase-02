@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { GoogleLogin } from '@react-oauth/google';
 import { 
   Mail, 
   Lock, 
@@ -29,6 +30,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -217,6 +219,80 @@ const LoginPage = () => {
                 )}
               </Button>
             </form>
+
+            {/* Social Login Section */}
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-muted-foreground">or continue with</span>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={async (cred) => {
+                    try {
+                      setGoogleLoading(true);
+                      const idToken = cred?.credential as string;
+                      if (!idToken) throw new Error('Missing Google credential');
+                      
+                      const res = await fetch('http://localhost:4000/api/auth/google', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idToken })
+                      });
+                      const data = await res.json();
+                      
+                      if (!res.ok) {
+                        if (res.status === 403) {
+                          toast({
+                            title: 'Account Not Verified',
+                            description: 'Your account is pending admin approval. Please wait for verification.',
+                            variant: 'destructive'
+                          });
+                        } else {
+                          throw new Error(data.message || 'Google sign-in failed');
+                        }
+                      } else {
+                        // Successful login
+                        await login({ ...data.user, id: data.user._id }, data.token);
+                        if (data.user.role === 'patient') {
+                          navigate('/');
+                        } else {
+                          navigate('/dashboard');
+                        }
+                        toast({
+                          title: 'Welcome back!',
+                          description: `Signed in successfully as ${data.user.name}`,
+                        });
+                      }
+                    } catch (err: any) {
+                      toast({
+                        title: 'Google Sign-in Failed',
+                        description: err.message || 'Please try again',
+                        variant: 'destructive'
+                      });
+                    } finally {
+                      setGoogleLoading(false);
+                    }
+                  }}
+                  onError={() => {
+                    toast({
+                      title: 'Google Sign-in Failed',
+                      description: 'Please try again',
+                      variant: 'destructive'
+                    });
+                  }}
+                  theme="filled_blue"
+                  shape="rectangular"
+                  size="large"
+                  text="signin_with"
+                />
+              </div>
+            </div>
 
             <div className="text-center">
               <p className="text-muted-foreground">

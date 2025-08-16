@@ -32,7 +32,7 @@ import { generateUserId } from "@/data/mockData";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
-    role: "",
+    role: "patient",
     name: "",
     email: "",
     phone: "",
@@ -80,6 +80,9 @@ const RegisterPage = () => {
   const { register, login } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [facebookLoading, setFacebookLoading] = useState(false);
+  const [showGoogleAdditionalFields, setShowGoogleAdditionalFields] = useState(false);
+  const [googleProfile, setGoogleProfile] = useState<any>(null);
+  const [googleIdToken, setGoogleIdToken] = useState<string>('');
 
   const roles = [
     { value: "patient", label: "Patient", icon: User, description: "Book appointments and manage health records", gradient: "from-blue-500 to-cyan-500", bgColor: "bg-blue-50", iconColor: "text-blue-600" },
@@ -135,6 +138,103 @@ const RegisterPage = () => {
       handleInputChange('servicesOffered', currentServices.filter(s => s !== service));
     } else {
       handleInputChange('servicesOffered', [...currentServices, service]);
+    }
+  };
+
+  const handleGoogleRegistrationComplete = async () => {
+    if (!googleIdToken || !googleProfile) {
+      toast({
+        title: "Error",
+        description: "Google authentication data is missing",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate required fields
+    const requiredFields = ['phone', 'cnic', 'address', 'city', 'province'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData] || (formData[field as keyof typeof formData] as string).trim() === '');
+    
+    // Role-specific required fields
+    if (formData.role === 'doctor' && (!formData.licenseNumber || formData.licenseNumber.trim() === '')) {
+      missingFields.push('licenseNumber');
+    }
+    if (formData.role === 'doctor' && (!formData.designation || formData.designation.trim() === '')) {
+      missingFields.push('designation');
+    }
+    if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(formData.role) && (!formData.businessName || formData.businessName.trim() === '')) {
+      missingFields.push('businessName');
+    }
+
+    if (missingFields.length > 0) {
+      toast({
+        title: "Missing Required Fields",
+        description: `Please fill in: ${missingFields.join(', ')}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!acceptTerms) {
+      toast({
+        title: "Error",
+        description: "Please accept the terms and conditions",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setGoogleLoading(true);
+
+    try {
+      const additionalFields = {
+        phone: formData.phone,
+        cnic: formData.cnic,
+        licenseNumber: formData.licenseNumber,
+        businessName: formData.businessName,
+        address: formData.address,
+        city: formData.city,
+        province: formData.province,
+        designation: formData.designation
+      };
+
+      const res = await fetch('http://localhost:4000/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          idToken: googleIdToken, 
+          role: formData.role,
+          additionalFields
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Google registration failed');
+
+      if (data.requiresVerification) {
+        // Non-patient user registered successfully but needs admin verification
+        toast({ 
+          title: 'Registration Submitted!', 
+          description: `Your registration as ${formData.role} has been submitted. Please wait for admin verification before you can log in.`
+        });
+        navigate('/login');
+      } else {
+        // Patient user or existing verified user - log them in
+        await login({ ...data.user, id: data.user._id }, data.token);
+        toast({ 
+          title: 'Welcome!', 
+          description: 'Successfully signed in with Google.' 
+        });
+        navigate('/');
+      }
+    } catch (err: any) {
+      toast({ 
+        title: 'Google Registration Failed', 
+        description: err.message || 'Try again', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -564,17 +664,37 @@ const RegisterPage = () => {
                       setGoogleLoading(true);
                       const idToken = cred?.credential as string;
                       if (!idToken) throw new Error('Missing Google credential');
+                      
+                      // First, try to authenticate with Google (without additional fields)
                       const res = await fetch('http://localhost:4000/api/auth/google', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ idToken, role: formData.role || 'patient' })
                       });
                       const data = await res.json();
-                      if (!res.ok) throw new Error(data.message || 'Google signup failed');
-                      // Update auth context so Navbar instantly reflects logged-in state
-                      await login({ ...data.user, id: data.user._id }, data.token);
-                      toast({ title: 'Welcome!', description: 'Signed in with Google.' });
-                      navigate('/');
+                      
+                      if (res.ok) {
+                        // User already exists, log them in
+                        await login({ ...data.user, id: data.user._id }, data.token);
+                        toast({ title: 'Welcome back!', description: 'Signed in with Google.' });
+                        navigate('/');
+                      } else if (data.requiresAdditionalFields) {
+                        // New user, need additional fields
+                        setGoogleProfile(data.profile);
+                        setGoogleIdToken(idToken);
+                        setFormData(prev => ({
+                          ...prev,
+                          name: data.profile.name,
+                          email: data.profile.email
+                        }));
+                        setShowGoogleAdditionalFields(true);
+                        toast({ 
+                          title: 'Additional Information Required', 
+                          description: 'Please fill in the required fields to complete your registration.' 
+                        });
+                      } else {
+                        throw new Error(data.message || 'Google signup failed');
+                      }
                     } catch (err: any) {
                       toast({ title: 'Google Sign-in Failed', description: err.message || 'Try again', variant: 'destructive' });
                     } finally {
@@ -622,7 +742,233 @@ const RegisterPage = () => {
                 </div>
               </div>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-8">
+
+            {/* Google Additional Fields Form */}
+            {showGoogleAdditionalFields && (
+              <div className="mb-8 p-6 border-2 border-blue-200 rounded-lg bg-blue-50">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-900">Complete Your Google Registration</h3>
+                    <p className="text-sm text-blue-700">
+                      Welcome {googleProfile?.name}! Please provide additional information to complete your registration.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Role Selection for Google Users */}
+                  <div>
+                    <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {roles.map((role) => {
+                        const Icon = role.icon;
+                        const isSelected = formData.role === role.value;
+                        return (
+                          <div
+                            key={role.value}
+                            className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${
+                              isSelected ? "scale-105" : ""
+                            }`}
+                            onClick={() => handleInputChange("role", role.value)}
+                          >
+                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[120px] ${
+                              isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
+                            }`}>
+                              <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${
+                                isSelected ? role.bgColor : "hover:" + role.bgColor
+                              } transition-all duration-300`}>
+                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${
+                                  isSelected ? "scale-110" : "group-hover:scale-110"
+                                }`}>
+                                  <Icon className="w-4 h-4 text-white" />
+                                </div>
+                                
+                                <h3 className={`text-sm font-bold text-center mb-1 ${role.iconColor} transition-colors duration-300`}>
+                                  {role.label}
+                                </h3>
+                                
+                                <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
+                                  {role.description}
+                                </p>
+                                
+                                {isSelected && (
+                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
+                                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Required Fields for Google Registration */}
+                  <div className="space-y-4">
+                    <h4 className="text-md font-semibold">Required Information</h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="google-phone">Phone Number *</Label>
+                        <Input
+                          id="google-phone"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange("phone", e.target.value)}
+                          placeholder="+92 300 1234567"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="google-cnic">CNIC Number *</Label>
+                        <Input
+                          id="google-cnic"
+                          value={formData.cnic}
+                          onChange={(e) => handleInputChange("cnic", e.target.value)}
+                          placeholder="12345-1234567-1"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="google-address">Complete Address *</Label>
+                      <Textarea
+                        id="google-address"
+                        value={formData.address}
+                        onChange={(e) => handleInputChange("address", e.target.value)}
+                        placeholder="Enter complete address"
+                        rows={3}
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="google-city">City *</Label>
+                        <Select value={formData.city} onValueChange={(value) => handleInputChange("city", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your city" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Karachi">Karachi</SelectItem>
+                            <SelectItem value="Lahore">Lahore</SelectItem>
+                            <SelectItem value="Islamabad">Islamabad</SelectItem>
+                            <SelectItem value="Faisalabad">Faisalabad</SelectItem>
+                            <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
+                            <SelectItem value="Multan">Multan</SelectItem>
+                            <SelectItem value="Peshawar">Peshawar</SelectItem>
+                            <SelectItem value="Quetta">Quetta</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="google-province">Province *</Label>
+                        <Select value={formData.province} onValueChange={(value) => handleInputChange("province", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select province" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {provinces.map((province) => (
+                              <SelectItem key={province} value={province}>{province}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Role-specific fields for Google registration */}
+                    {formData.role === 'doctor' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="google-license">License Number *</Label>
+                          <Input
+                            id="google-license"
+                            value={formData.licenseNumber}
+                            onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
+                            placeholder="Enter license number"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="google-designation">Designation *</Label>
+                          <Input
+                            id="google-designation"
+                            value={formData.designation}
+                            onChange={(e) => handleInputChange("designation", e.target.value)}
+                            placeholder="e.g., Medical Officer, Consultant"
+                            required
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {['clinic/hospital', 'laboratory', 'pharmacy'].includes(formData.role) && (
+                      <div>
+                        <Label htmlFor="google-business">Business Name *</Label>
+                        <Input
+                          id="google-business"
+                          value={formData.businessName}
+                          onChange={(e) => handleInputChange("businessName", e.target.value)}
+                          placeholder="Enter business/facility name"
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Terms and Conditions */}
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="google-terms"
+                      checked={acceptTerms}
+                      onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                    />
+                    <Label htmlFor="google-terms" className="text-sm leading-relaxed">
+                      I agree to the{" "}
+                      <Link to="/terms" className="text-primary hover:underline">
+                        Terms and Conditions
+                      </Link>{" "}
+                      and{" "}
+                      <Link to="/privacy" className="text-primary hover:underline">
+                        Privacy Policy
+                      </Link>
+                    </Label>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowGoogleAdditionalFields(false);
+                        setGoogleProfile(null);
+                        setGoogleIdToken('');
+                      }}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleGoogleRegistrationComplete}
+                      disabled={googleLoading}
+                      className="flex-1"
+                    >
+                      {googleLoading ? "Completing Registration..." : "Complete Registration"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-8" style={{ display: showGoogleAdditionalFields ? 'none' : 'block' }}>
               {/* Role Selection */}
               <div>
                 <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
