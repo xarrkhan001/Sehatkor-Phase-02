@@ -47,7 +47,7 @@ const FloatingChat = () => {
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [clearChatOpen, setClearChatOpen] = useState(false);
   const [clearingChat, setClearingChat] = useState(false);
-  
+
   const chatPatternUrl = useMemo(() => {
     const stroke = 'rgba(239,68,68,0.22)'; // moderately stronger red
     const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'>"
@@ -117,15 +117,15 @@ const FloatingChat = () => {
       loadPendingRequestsCount();
     }
   }, [isOpen]);
-  
+
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMediumScreen(window.innerWidth >= 640 && window.innerWidth < 1024);
     };
-    
+
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    
+
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
@@ -155,10 +155,12 @@ const FloatingChat = () => {
     };
   }, [user]);
 
+
   const [contextMessageId, setContextMessageId] = useState<string | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
   const msgElRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const lastTouchPointRef = useRef<{ x: number; y: number } | null>(null);
+  const connectionsSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [forwardOpen, setForwardOpen] = useState(false);
   const [forwardQuery, setForwardQuery] = useState("");
   const [forwardSourceMessage, setForwardSourceMessage] = useState<any | null>(null);
@@ -703,6 +705,55 @@ const FloatingChat = () => {
       return next;
     });
   };
+
+  // Global chat opener: listens for 'sehatkor:open-chat' custom events
+  useEffect(() => {
+    const handler = async (evt: Event) => {
+      const e = evt as CustomEvent<{ serviceName?: string; providerName?: string; providerId?: string }>;
+      const detail = e.detail || {};
+      const token = localStorage.getItem('sehatkor_token');
+      if (!token) {
+        setUsersError('Please login to use chat');
+        setIsOpen(true);
+        return;
+      }
+
+      setIsOpen(true);
+      try {
+        // Ensure we have a fresh list of users and conversations
+        setLoadingUsers(true);
+        const [usersList, convs] = await Promise.all([getConnectedUsers(), fetchConversations()]);
+        setUsers(usersList);
+        setConversations(convs);
+
+        // Try to find connected user by providerId first
+        const pid = (detail.providerId || '').trim();
+        let target = pid ? usersList.find((u: any) => String(u._id) === String(pid)) : null;
+        if (!target && detail.providerName) {
+          const nameLc = detail.providerName.toLowerCase();
+          target = usersList.find((u: any) => (u.name || '').toLowerCase() === nameLc);
+        }
+
+        if (target) {
+          await openChatWith(target);
+          return;
+        }
+
+        // Not connected: switch to Connections tab only. Do NOT auto-send or prefill search.
+        setActiveTab('connections');
+        // autofocus the connections search so user can type immediately
+        setTimeout(() => {
+          try { connectionsSearchInputRef.current?.focus(); } catch {}
+        }, 0);
+        toast({ title: 'Not connected', description: 'Connection section khula hai. Pehle request karo add hone ke liye.' });
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    window.addEventListener('sehatkor:open-chat', handler as EventListener);
+    return () => window.removeEventListener('sehatkor:open-chat', handler as EventListener);
+  }, [toast, openChatWith]);
 
   const handleSend = () => {
     if (!message.trim() || !conversationId || !activeUser) return;
