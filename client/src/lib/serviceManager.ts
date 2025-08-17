@@ -189,6 +189,7 @@ class ServiceManager {
         city: service.city,
         detailAddress: service.detailAddress,
         googleMapLink: service.googleMapLink,
+        providerPhone: service.providerPhone,
         ...(service.stock != null && { stock: service.stock }),
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,
