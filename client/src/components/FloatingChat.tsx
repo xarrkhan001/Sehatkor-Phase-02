@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, X, Send, ImageIcon, Search, User, Stethoscope, Camera, Copy, Forward, Trash2, Loader2, ChevronLeft, Download, MoreVertical, UserPlus } from "lucide-react";
+import { MessageCircle, X, Send, ImageIcon, Search, User, Stethoscope, Camera, Copy, Forward, Trash2, Loader2, ChevronLeft, Download, MoreVertical, UserPlus, UserX } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UserBadge from "./UserBadge";
 import { getSocket } from "@/lib/socket";
 import { fetchVerifiedUsers, fetchMessages, getOrCreateConversation, uploadFile, fetchConversations, markAsRead, updateMyProfile, deleteMessage as apiDeleteMessage, clearConversation as apiClearConversation } from "@/lib/chatApi";
-import { getPendingRequests, getConnectedUsers } from "@/lib/connectionApi";
+import { getPendingRequests, getConnectedUsers, deleteUserConnection } from "@/lib/connectionApi";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -91,6 +91,27 @@ const FloatingChat = () => {
     }
   };
 
+  // Handle removing user connection from chat
+  const handleRemoveConnection = async (userId: string, userName: string) => {
+    try {
+      await deleteUserConnection(userId);
+      toast({
+        title: "Connection Removed",
+        description: `Connection with ${userName} has been removed`
+      });
+      // Refresh connected users and conversations
+      const [usersList, convs] = await Promise.all([getConnectedUsers(), fetchConversations()]);
+      setUsers(usersList);
+      setConversations(convs);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove connection",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       loadPendingRequestsCount();
@@ -107,6 +128,32 @@ const FloatingChat = () => {
     
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // Initial load of connected users and conversations on mount (and when user changes)
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        setLoadingUsers(true);
+        setUsersError(null);
+        const [usersList, convs] = await Promise.all([
+          getConnectedUsers(),
+          fetchConversations(),
+        ]);
+        if (!alive) return;
+        setUsers(usersList);
+        setConversations(convs);
+      } catch (err: any) {
+        if (!alive) return;
+        setUsersError(err?.message || 'Failed to load chat data');
+      } finally {
+        if (alive) setLoadingUsers(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [user]);
 
   const [contextMessageId, setContextMessageId] = useState<string | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
@@ -985,8 +1032,8 @@ const FloatingChat = () => {
                         <div className="flex-1 min-w-0 space-y-1">
                           <Skeleton className="h-3 w-32" />
                           <Skeleton className="h-2 w-40" />
+                        </div>
                       </div>
-                    </div>
                     ))}
                   </div>
                 ) : (
@@ -996,57 +1043,68 @@ const FloatingChat = () => {
                       const unread = conv?.unreadCount || 0;
                       const isOnline = onlineIds.includes(String((u as any)._id));
                       return (
-                        <button 
-                          key={u._id} 
-                          onClick={() => openChatWith(u)} 
-                          className={`w-full flex items-center gap-2 p-2 rounded-lg text-left hover:bg-gray-100 relative transition-all duration-200 border ${activeUser?._id===u._id?'bg-gray-100 border-gray-200':'border-transparent'}`}
-                        >
-                          <Avatar className="h-8 w-8 ring-2 ring-red-100">
-                            {u?.avatar && <AvatarImage src={u.avatar} alt={u.name} />}
-                            <AvatarFallback>
-                              <User className="w-4 h-4 text-red-500" />
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-gray-300'}`} />
-                          <div className="truncate text-sm">
-                            <div className="font-medium truncate flex items-center gap-1">
-                              <span className="truncate max-w-[6.5rem]">{u.name}</span>
-                              <UserBadge role={u.role} />
-                            </div>
-                      <div className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
-                        {(() => {
-                          const conv = conversations.find(c => (c.participants || []).some((p: any) => (p?._id || p) === u._id));
-                          const last = conv?.lastMessage;
-                          if (!last) return <span className="truncate">{u.email}</span>;
-                          const lastSender = (last as any)?.sender?._id || (last as any)?.sender;
-                          const mine = String(lastSender) === String(myId);
-                          return (
-                            <>
-                              <span className="inline-flex items-center gap-1">
-                                <span className={`h-1.5 w-1.5 rounded-full ${mine ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                                <span className={`${mine ? 'text-blue-600' : 'text-emerald-700'}`}>{mine ? 'Sent' : 'Received'}</span>
-                              </span>
-                              {last.type === 'image' ? (
-                                <span className="inline-flex items-center gap-0.5 truncate">
-                                  <ImageIcon className="w-3 h-3 text-red-500" />
-                                  <span>Photo</span>
-                                </span>
-                              ) : (
-                                <span className="truncate">{firstWords((last.text || ''), 4)}</span>
+                        <ContextMenu key={u._id}>
+                          <ContextMenuTrigger asChild>
+                            <button 
+                              onClick={() => openChatWith(u)} 
+                              className={`w-full flex items-center gap-2 p-2 rounded-lg text-left hover:bg-gray-100 relative transition-all duration-200 border ${activeUser?._id===u._id?'bg-gray-100 border-gray-200':'border-transparent'}`}
+                            >
+                              <Avatar className="h-8 w-8 ring-2 ring-red-100">
+                                {u?.avatar && <AvatarImage src={u.avatar} alt={u.name} />}
+                                <AvatarFallback>
+                                  <User className="w-4 h-4 text-red-500" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-gray-300'}`} />
+                              <div className="truncate text-sm">
+                                <div className="font-medium truncate flex items-center gap-1">
+                                  <span className="truncate max-w-[6.5rem]">{u.name}</span>
+                                  <UserBadge role={u.role} />
+                                </div>
+                                <div className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
+                                  {(() => {
+                                    const conv = conversations.find(c => (c.participants || []).some((p: any) => (p?._id || p) === u._id));
+                                    const last = conv?.lastMessage;
+                                    if (!last) return <span className="truncate">{u.email}</span>;
+                                    const lastSender = (last as any)?.sender?._id || (last as any)?.sender;
+                                    const mine = String(lastSender) === String(myId);
+                                    return (
+                                      <>
+                                        <span className="inline-flex items-center gap-1">
+                                          <span className={`h-1.5 w-1.5 rounded-full ${mine ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+                                          <span className={`${mine ? 'text-blue-600' : 'text-emerald-700'}`}>{mine ? 'Sent' : 'Received'}</span>
+                                        </span>
+                                        {last.type === 'image' ? (
+                                          <span className="inline-flex items-center gap-0.5 truncate">
+                                            <ImageIcon className="w-3 h-3 text-red-500" />
+                                            <span>Photo</span>
+                                          </span>
+                                        ) : (
+                                          <span className="truncate">{firstWords((last.text || ''), 4)}</span>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                              {unread > 0 && (
+                                <span className="absolute right-2 top-2 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5 shadow">{unread}</span>
                               )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                          </div>
-                          {unread > 0 && (
-                            <span className="absolute right-2 top-2 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5 shadow">{unread}</span>
-                          )}
-                        </button>
+                            </button>
+                          </ContextMenuTrigger>
+                          <ContextMenuContent className="min-w-[12px] rounded-xl border bg-white/95 backdrop-blur-md shadow-2xl p-1">
+                            <ContextMenuItem 
+                              onSelect={() => handleRemoveConnection(u._id, u.name)}
+                              className="gap-2 rounded-lg text-destructive focus:text-destructive"
+                            >
+                              <UserX className="w-4 h-4" /> Remove 
+                            </ContextMenuItem>
+                          </ContextMenuContent>
+                        </ContextMenu>
                       );
                     })}
-                      </div>
-                    )}
+                  </div>
+                )}
                   </>
                 ) : (
                   <div className="py-2 px-2 sm:px-4">

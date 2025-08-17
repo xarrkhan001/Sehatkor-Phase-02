@@ -8,6 +8,7 @@ import {
   rejectConnectionRequest, 
   deleteConnectionRequest,
   getConnectedUsers,
+  removeUserConnection,
   searchUsersForConnection 
 } from '../controllers/connection.controller.js';
 
@@ -36,6 +37,9 @@ router.delete('/delete/:requestId', deleteConnectionRequest);
 
 // Get connected users
 router.get('/connected', getConnectedUsers);
+
+// Remove user connection (from chat)
+router.delete('/remove-connection/:userId', removeUserConnection);
 
 // Search users for connections
 router.get('/search', searchUsersForConnection);

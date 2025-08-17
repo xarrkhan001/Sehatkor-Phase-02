@@ -95,6 +95,22 @@ export async function deleteConnectionRequest(requestId: string) {
   return res.json();
 }
 
+export async function deleteUserConnection(userId: string) {
+  const token = localStorage.getItem('sehatkor_token');
+  const res = await fetch(`${API_BASE}/remove-connection/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || 'Failed to remove connection');
+  }
+  return res.json();
+}
+
 export async function getConnectedUsers() {
   const token = localStorage.getItem('sehatkor_token');
   const res = await fetch(`${API_BASE}/connected`, {

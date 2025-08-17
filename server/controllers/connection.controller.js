@@ -251,6 +251,51 @@ export const getConnectedUsers = async (req, res) => {
   }
 };
 
+// Remove user connection (from chat)
+export const removeUserConnection = async (req, res) => {
+  try {
+    const { userId: targetUserId } = req.params;
+    const currentUserId = req.userId;
+
+    if (!targetUserId) {
+      return res.status(400).json({ message: 'Target user ID is required' });
+    }
+
+    // Find the accepted connection between the two users
+    const connection = await ConnectionRequest.findOne({
+      $or: [
+        { sender: currentUserId, recipient: targetUserId, status: 'accepted' },
+        { sender: targetUserId, recipient: currentUserId, status: 'accepted' }
+      ]
+    });
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Connection not found' });
+    }
+
+    // Delete the connection
+    await ConnectionRequest.findByIdAndDelete(connection._id);
+
+    // Emit socket event to both users for real-time updates
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`user_${currentUserId}`).emit('connection_removed', {
+        userId: targetUserId,
+        message: 'Connection removed successfully'
+      });
+      io.to(`user_${targetUserId}`).emit('connection_removed', {
+        userId: currentUserId,
+        message: 'A user removed your connection'
+      });
+    }
+
+    res.json({ message: 'Connection removed successfully' });
+  } catch (error) {
+    console.error('Error removing connection:', error);
+    res.status(500).json({ message: 'Error removing connection', error: error.message });
+  }
+};
+
 // Search users for connection requests
 export const searchUsersForConnection = async (req, res) => {
   try {

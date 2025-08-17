@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
@@ -14,8 +13,8 @@ import {
   Clock, 
   Check, 
   X, 
-  MessageCircle,
   Users,
+  Loader2,
   Send
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +34,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  role: string;
+  role?: string;
   avatar?: string;
   isVerified: boolean;
   connectionStatus?: 'none' | 'pending' | 'accepted' | 'rejected';
@@ -62,14 +61,16 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [pendingRequests, setPendingRequests] = useState<ConnectionRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<ConnectionRequest[]>([]);
+  const [dismissedCards, setDismissedCards] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'search' | 'received' | 'sent'>('search');
   const [dismissedRejections, setDismissedRejections] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [requestMessage, setRequestMessage] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
+  const [acceptingIds, setAcceptingIds] = useState<Set<string>>(new Set());
+  const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -221,14 +222,14 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
     
     try {
       setSendingRequest(true);
-      await sendConnectionRequest(selectedUser._id, requestMessage.trim());
+      // Message input removed; send without a message
+      await sendConnectionRequest(selectedUser._id, "");
       toast({
         title: "Success",
         description: "Connection request sent successfully"
       });
       setRequestDialogOpen(false);
       setSelectedUser(null);
-      setRequestMessage("");
       // Refresh search results to update status
       if (searchQuery.trim()) {
         handleSearch();
@@ -282,19 +283,32 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
   };
 
   const handleDismissCard = async (requestId: string) => {
-    try {
-      await deleteConnectionRequest(requestId);
+    // Find the request to check its status
+    const request = sentRequests.find(r => r._id === requestId);
+    
+    if (request?.status === 'rejected') {
+      // For rejected requests: permanently delete from database so user can resend
+      try {
+        await deleteConnectionRequest(requestId);
+        toast({
+          title: "Success",
+          description: "Rejected request removed - you can now send a new request"
+        });
+        // Refresh sent requests to update the list
+        loadSentRequests();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to remove request",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // For accepted requests: only hide from UI, don't delete from database
+      setDismissedCards(prev => new Set(prev).add(requestId));
       toast({
         title: "Success",
-        description: "Request removed successfully"
-      });
-      // Refresh sent requests to update the list and counts
-      loadSentRequests();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to remove request",
-        variant: "destructive"
+        description: "Card hidden from view"
       });
     }
   };
@@ -336,7 +350,9 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
   };
 
   const handleAcceptRequest = async (requestId: string) => {
+    if (acceptingIds.has(requestId) || rejectingIds.has(requestId)) return;
     try {
+      setAcceptingIds(prev => new Set(prev).add(requestId));
       await acceptConnectionRequest(requestId);
       toast({
         title: "Success",
@@ -353,11 +369,19 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
         description: error.message || "Failed to accept request",
         variant: "destructive"
       });
+    } finally {
+      setAcceptingIds(prev => {
+        const s = new Set(prev);
+        s.delete(requestId);
+        return s;
+      });
     }
   };
 
   const handleRejectRequest = async (requestId: string) => {
+    if (acceptingIds.has(requestId) || rejectingIds.has(requestId)) return;
     try {
+      setRejectingIds(prev => new Set(prev).add(requestId));
       await rejectConnectionRequest(requestId);
       toast({
         title: "Success",
@@ -370,10 +394,16 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
         description: error.message || "Failed to reject request",
         variant: "destructive"
       });
+    } finally {
+      setRejectingIds(prev => {
+        const s = new Set(prev);
+        s.delete(requestId);
+        return s;
+      });
     }
   };
 
-  const getConnectionStatus = (status: string) => {
+  const getConnectionStatus = (status?: string) => {
     return status || 'none';
   };
 
@@ -396,43 +426,43 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
       <div className="flex space-x-0.5 bg-gray-100 p-0.5 rounded-lg">
         <button
           onClick={() => setActiveTab('search')}
-          className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-1 px-2   py-1.5 text-xs font-medium rounded-md transition-colors lg:flex-col lg:gap-0.5 ${
             activeTab === 'search'
               ? 'bg-white text-red-600 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Search className="w-3 h-3 inline mr-1" />
-          Search
+          <Search className="w-3 h-3 lg:w-4 lg:h-4 lg:mb-0.5" />
+          <span className="leading-none">Search</span>
         </button>
         <button
           onClick={() => setActiveTab('received')}
-          className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-1 px-2  py-1.5 text-xs font-medium rounded-md transition-colors lg:flex-col lg:gap-0.5 ${
             activeTab === 'received'
               ? 'bg-white text-red-600 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <UserPlus className="w-3 h-3 inline mr-1" />
-          Received
+          <UserPlus className="w-3 h-3 lg:w-4 lg:h-4 lg:mb-0.5" />
+          <span className="leading-none">Received</span>
           {pendingRequests.length > 0 && (
-            <span className="ml-1 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
+            <span className="ml-1 lg:ml-0 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
               {pendingRequests.length}
             </span>
           )}
         </button>
         <button
           onClick={() => setActiveTab('sent')}
-          className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-1 px-2  py-1.5 text-xs font-medium rounded-md transition-colors lg:flex-col lg:gap-0.5 ${
             activeTab === 'sent'
               ? 'bg-white text-red-600 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Send className="w-3 h-3 inline mr-1" />
-          Sent
+          <Send className="w-3 h-3 lg:w-4 lg:h-4 lg:mb-0.5" />
+          <span className="leading-none">Sent</span>
           {sentRequests.length > 0 && (
-            <span className="ml-1 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
+            <span className="ml-1 lg:ml-0 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
               {sentRequests.length}
             </span>
           )}
@@ -613,7 +643,7 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
     <div className="text-center py-2 lg:py-3 text-gray-500 text-xs lg:text-sm">Loading...</div>
   ) : pendingRequests.length === 0 ? (
     <div className="text-center py-4 lg:py-6 text-gray-500 text-xs lg:text-sm">
-      <MessageCircle className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-1 text-gray-300" />
+      <Users className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-1 text-gray-300" />
       <p>No pending connection requests</p>
     </div>
   ) : (
@@ -640,17 +670,37 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
             <Button
               className="bg-green-500 hover:bg-green-600 text-white flex-1 h-6 lg:h-7 px-1.5 lg:px-2 text-[11px] lg:text-xs"
               onClick={() => handleAcceptRequest(request._id)}
+              disabled={acceptingIds.has(request._id) || rejectingIds.has(request._id)}
             >
-              <Check className="w-2 h-2 lg:w-2.5 lg:h-2.5 mr-0.5" />
-              Accept
+              {acceptingIds.has(request._id) ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Processing
+                </>
+              ) : (
+                <>
+                  <Check className="w-2 h-2 lg:w-2.5 lg:h-2.5 mr-0.5" />
+                  Accept
+                </>
+              )}
             </Button>
             <Button
               variant="destructive"
               className="flex-1 h-6 lg:h-7 px-1.5 lg:px-2 text-[11px] lg:text-xs"
               onClick={() => handleRejectRequest(request._id)}
+              disabled={acceptingIds.has(request._id) || rejectingIds.has(request._id)}
             >
-              <X className="w-2 h-2 lg:w-2.5 lg:h-2.5 mr-0.5" />
-              Reject
+              {rejectingIds.has(request._id) ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Processing
+                </>
+              ) : (
+                <>
+                  <X className="w-2 h-2 lg:w-2.5 lg:h-2.5 mr-0.5" />
+                  Reject
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -677,13 +727,13 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
             </div>
           ) : (
             <div className="space-y-1.5 lg:space-y-2">
-              {sentRequests.map((request) => (
-                <div key={request._id} className="flex flex-col gap-1.5 lg:gap-2 p-1.5 lg:p-6 border rounded-lg relative">
+              {sentRequests.filter(request => !dismissedCards.has(request._id)).map((request) => (
+                <div key={request._id} className="flex flex-col gap-1.5 lg:gap-2 p-1.5 lg:p-6  border rounded-lg relative">
                   {/* Cross button for rejected and connected requests */}
                   {(request.status === 'rejected' || request.status === 'accepted') && (
                     <button
                       onClick={() => handleDismissCard(request._id)}
-                      className="absolute top-1 right-1 p-1 hover:bg-red-200 rounded-full transition-colors"
+                      className="absolute top-1  right-1 p-1 hover:bg-red-200 rounded-full transition-colors"
                       title="Remove this card"
                     >
                       <X  className="w-4 h-4 text-xl text-red-400 bg-red-50 hover:text-red-600" />
@@ -698,13 +748,13 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
                       </AvatarFallback>
                     </Avatar>
                     <div className="font-medium text-xs  lg:text-sm truncate">{request.recipient.name}</div>
-                    <div className="ml-auto mt-8 md:mt-0">
+                    <div className="ml-auto mt-8 md:mt-0 lg:ml-0 lg:mt-0 lg:absolute lg:bottom-2 lg:right-2">
                       {getStatusBadge(request.status)}
                     </div>
                   </div>
                   
                   {request.message && (
-                    <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
+                    <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10   -mt-1">
                       "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
                     </div>
                   )}
@@ -737,20 +787,6 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
                 <div className="font-medium">{selectedUser?.name}</div>
                 <div className="text-sm text-gray-500">{selectedUser?.email}</div>
                 <UserBadge role={selectedUser?.role || ''} />
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Message (optional)</label>
-              <Textarea
-                placeholder="Add a personal message to your connection request..."
-                value={requestMessage}
-                onChange={(e) => setRequestMessage(e.target.value)}
-                maxLength={200}
-                rows={3}
-              />
-              <div className="text-xs text-gray-500 mt-1">
-                {requestMessage.length}/200 characters
               </div>
             </div>
             
