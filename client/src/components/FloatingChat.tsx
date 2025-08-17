@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UserBadge from "./UserBadge";
 import { getSocket } from "@/lib/socket";
 import { fetchVerifiedUsers, fetchMessages, getOrCreateConversation, uploadFile, fetchConversations, markAsRead, updateMyProfile, deleteMessage as apiDeleteMessage, clearConversation as apiClearConversation } from "@/lib/chatApi";
-import { getPendingRequests } from "@/lib/connectionApi";
+import { getPendingRequests, getConnectedUsers } from "@/lib/connectionApi";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -80,8 +80,8 @@ const FloatingChat = () => {
   // Refresh users list when connections are accepted
   const handleConnectionAccepted = async () => {
     try {
-      // Refresh both users and conversations
-      const [usersList, convs] = await Promise.all([fetchVerifiedUsers(), fetchConversations()]);
+      // Refresh both connected users and conversations
+      const [usersList, convs] = await Promise.all([getConnectedUsers(), fetchConversations()]);
       setUsers(usersList);
       setConversations(convs);
       // Also refresh pending requests count
@@ -311,7 +311,7 @@ const FloatingChat = () => {
     }
     setLoadingUsers(true);
     setUsersError(null);
-    Promise.all([fetchVerifiedUsers(), fetchConversations()])
+    Promise.all([getConnectedUsers(), fetchConversations()])
       .then((list) => {
         const [usersList, convs] = list as any;
         setUsers(usersList);
@@ -395,6 +395,22 @@ const FloatingChat = () => {
       } catch {}
     };
     const onOnline = (ids: string[]) => setOnlineIds(ids || []);
+    const onConnectionAccepted = async (data: any) => {
+      // Refresh chat user list when a connection is accepted
+      try {
+        const [usersList, convs] = await Promise.all([getConnectedUsers(), fetchConversations()]);
+        setUsers(usersList);
+        setConversations(convs);
+        // Show notification
+        toast({
+          title: "Connection Established",
+          description: data.message || "You can now chat with this user"
+        });
+      } catch (error) {
+        // Silently fail, don't show error for this
+      }
+    };
+    
     sc.on("new_message", onNewMessage);
     const onCleared = (evt: any) => {
       if (!evt?.conversationId) return;
@@ -405,11 +421,13 @@ const FloatingChat = () => {
     };
     sc.on('conversation_cleared', onCleared);
     sc.on("online_users", onOnline);
+    sc.on('connection_accepted', onConnectionAccepted);
     
     return () => {
       sc?.off("new_message", onNewMessage);
       sc?.off("online_users", onOnline);
       sc?.off('conversation_cleared', onCleared);
+      sc?.off('connection_accepted', onConnectionAccepted);
       
     };
   }, [conversationId, isOpen, user, activeUser]);
@@ -906,30 +924,30 @@ const FloatingChat = () => {
                 </div>
                 
                 {/* Tab Navigation */}
-                <div className="flex mt-3 border-b">
+                <div className="flex space-x-0.5 bg-gray-100 p-0.5 rounded-lg mt-3">
                   <button
                     onClick={() => setActiveTab('chat')}
-                    className={`flex-1 py-2 px-2 sm:px-3 text-xs sm:text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       activeTab === 'chat'
-                        ? 'border-red-500 text-red-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-red-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
+                    <MessageCircle className="w-3 h-3 inline mr-1" />
                     Chat
                   </button>
                   <button
                     onClick={() => setActiveTab('connections')}
-                    className={`flex-1 py-2 px-2 sm:px-3 text-xs sm:text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       activeTab === 'connections'
-                        ? 'border-red-500 text-red-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-red-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
+                    <UserPlus className="w-3 h-3 inline mr-1" />
                     Connections
                     {pendingRequestsCount > 0 && (
-                      <span className="ml-1 sm:ml-2 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
+                      <span className="ml-1 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
                         {pendingRequestsCount}
                       </span>
                     )}

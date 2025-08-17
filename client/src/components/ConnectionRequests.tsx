@@ -25,8 +25,10 @@ import {
   searchUsersForConnection, 
   sendConnectionRequest, 
   getPendingRequests, 
+  getSentRequests,
   acceptConnectionRequest, 
-  rejectConnectionRequest 
+  rejectConnectionRequest,
+  deleteConnectionRequest 
 } from "@/lib/connectionApi";
 
 interface User {
@@ -55,7 +57,13 @@ interface ConnectionRequestsProps {
 const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<User[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [pendingRequests, setPendingRequests] = useState<ConnectionRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<ConnectionRequest[]>([]);
+  const [activeTab, setActiveTab] = useState<'search' | 'received' | 'sent'>('search');
+  const [dismissedRejections, setDismissedRejections] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
@@ -68,7 +76,75 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
   // Load pending requests on mount
   useEffect(() => {
     loadPendingRequests();
+    loadSentRequests();
   }, []);
+
+  // Socket.io event listeners for real-time updates
+  useEffect(() => {
+    const token = localStorage.getItem('sehatkor_token');
+    if (!token) return;
+
+    let socket: any;
+    try {
+      const { getSocket } = require('@/lib/socket');
+      socket = getSocket();
+    } catch (error) {
+      return;
+    }
+
+    // Listen for new connection requests
+    const onNewConnectionRequest = (data: any) => {
+      // Refresh pending requests when a new request is received
+      loadPendingRequests();
+      toast({
+        title: "New Connection Request",
+        description: data.message || "You have a new connection request"
+      });
+    };
+
+    // Listen for connection acceptance notifications
+    const onConnectionAccepted = (data: any) => {
+      // Refresh sent requests to update status
+      loadSentRequests();
+      toast({
+        title: "Connection Accepted",
+        description: data.message || "Your connection request was accepted"
+      });
+    };
+
+    socket.on('new_connection_request', onNewConnectionRequest);
+    socket.on('connection_accepted', onConnectionAccepted);
+
+    return () => {
+      socket?.off('new_connection_request', onNewConnectionRequest);
+      socket?.off('connection_accepted', onConnectionAccepted);
+    };
+  }, []);
+
+  // Debounced search for suggestions
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        setSuggestionLoading(true);
+        const results = await searchUsersForConnection(searchQuery);
+        setSearchSuggestions(results.slice(0, 5)); // Limit to 5 suggestions
+        setShowSuggestions(true);
+      } catch (error) {
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setSuggestionLoading(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const loadPendingRequests = async () => {
     try {
@@ -86,12 +162,26 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
     }
   };
 
+  const loadSentRequests = async () => {
+    try {
+      const requests = await getSentRequests();
+      setSentRequests(requests);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load sent requests",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSearch = async () => {
-    if (!searchQuery.trim() || searchQuery.length < 2) return;
+    if (!searchQuery.trim()) return;
     
     try {
       setSearchLoading(true);
       setSearchResults([]); // Clear previous results
+      setShowSuggestions(false); // Hide suggestions when doing full search
       
       // Add small delay for better UX
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -107,6 +197,23 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
     } finally {
       setSearchLoading(false);
     }
+  };
+
+  const handleSuggestionSelect = (user: User) => {
+    setSearchQuery(user.name);
+    setShowSuggestions(false);
+    setSearchResults([user]); // Show selected user as search result
+  };
+
+  const handleInputFocus = () => {
+    if (searchSuggestions.length > 0 && searchQuery.length >= 2) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding suggestions to allow for clicks
+    setTimeout(() => setShowSuggestions(false), 150);
   };
 
   const handleSendRequest = async () => {
@@ -126,6 +233,8 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
       if (searchQuery.trim()) {
         handleSearch();
       }
+      // Refresh sent requests
+      loadSentRequests();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -134,6 +243,95 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
       });
     } finally {
       setSendingRequest(false);
+    }
+  };
+
+  const handleResendRequest = async (recipientId: string, recipientName: string) => {
+    setSelectedUser({
+      _id: recipientId,
+      name: recipientName,
+      email: '',
+      role: '',
+      isVerified: true
+    });
+    setRequestDialogOpen(true);
+  };
+
+  const handleDismissRejection = async (requestId: string) => {
+    try {
+      await deleteConnectionRequest(requestId);
+      // Refresh sent requests to reflect the deletion
+      await loadSentRequests();
+      toast({
+        title: "Success",
+        description: "Request dismissed"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to dismiss request",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const isRejectionDismissed = (requestId: string) => {
+    // Since we're deleting from database, this is no longer needed
+    // But keep for backward compatibility
+    return dismissedRejections.has(requestId);
+  };
+
+  const handleDismissCard = async (requestId: string) => {
+    try {
+      await deleteConnectionRequest(requestId);
+      toast({
+        title: "Success",
+        description: "Request removed successfully"
+      });
+      // Refresh sent requests to update the list and counts
+      loadSentRequests();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove request",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRemoveConnectionFromSearch = async (user: User) => {
+    try {
+      // Find the connection request for this user
+      const connectionRequest = sentRequests.find(
+        request => 
+          (request.recipient._id === user._id || request.sender._id === user._id) &&
+          request.status === 'accepted'
+      );
+
+      if (connectionRequest) {
+        await deleteConnectionRequest(connectionRequest._id);
+        toast({
+          title: "Success",
+          description: "Connection removed successfully"
+        });
+        // Refresh search results and sent requests
+        if (searchQuery.trim()) {
+          handleSearch();
+        }
+        loadSentRequests();
+      } else {
+        toast({
+          title: "Error",
+          description: "Connection not found",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove connection",
+        variant: "destructive"
+      });
     }
   };
 
@@ -175,6 +373,10 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
     }
   };
 
+  const getConnectionStatus = (status: string) => {
+    return status || 'none';
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -189,26 +391,126 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-3 lg:space-y-4">
+      {/* Tab Navigation */}
+      <div className="flex space-x-0.5 bg-gray-100 p-0.5 rounded-lg">
+        <button
+          onClick={() => setActiveTab('search')}
+          className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            activeTab === 'search'
+              ? 'bg-white text-red-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Search className="w-3 h-3 inline mr-1" />
+          Search
+        </button>
+        <button
+          onClick={() => setActiveTab('received')}
+          className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            activeTab === 'received'
+              ? 'bg-white text-red-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <UserPlus className="w-3 h-3 inline mr-1" />
+          Received
+          {pendingRequests.length > 0 && (
+            <span className="ml-1 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
+              {pendingRequests.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('sent')}
+          className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            activeTab === 'sent'
+              ? 'bg-white text-red-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Send className="w-3 h-3 inline mr-1" />
+          Sent
+          {sentRequests.length > 0 && (
+            <span className="ml-1 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5">
+              {sentRequests.length}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Search Section */}
-      <Card className="p-4 sm:p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="w-5 h-5 text-blue-500" />
-          <h3 className="text-lg font-semibold">Find & Connect</h3>
-        </div>
-       {/* Search Input - Compact */}
-<div className="mb-3">
-  <div className="relative">
-    <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-    <Input
-      placeholder="Search name, email, or role"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-      className="pl-8 h-9 text-xs lg:text-sm"
-    />
-  </div>
-</div>
+      {activeTab === 'search' && (
+        <Card className="p-2 lg:p-3">
+          <div className="flex items-center gap-1.5 lg:gap-2 mb-2 lg:mb-3">
+            <Search className="w-3 h-3 lg:w-4 lg:h-4 text-gray-500" />
+            <h3 className="font-semibold text-sm lg:text-base">Find Users</h3>
+          </div>
+          
+          {/* Search Input */}
+          <div className="mb-3">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                placeholder="Search name, email, or role"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                className="pl-8 h-9 text-xs lg:text-sm"
+              />
+              
+              {/* Suggestions Dropdown */}
+              {showSuggestions && (searchSuggestions.length > 0 || suggestionLoading) && (
+                <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                  {suggestionLoading ? (
+                    <div className="p-3 text-center text-sm text-gray-500">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                        Searching...
+                      </div>
+                    </div>
+                  ) : (
+                    searchSuggestions.map((user) => (
+                      <div
+                        key={user._id}
+                        onClick={() => handleSuggestionSelect(user)}
+                        className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={user.avatar} alt={user.name} />
+                            <AvatarFallback className="text-xs">
+                              {user.name.split(" ").map(n => n[0]).join("").toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">{user.name}</div>
+                            <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                            {user.role && (
+                              <div className="text-xs text-blue-600 truncate">{user.role}</div>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {getConnectionStatus(user.connectionStatus) === 'none' ? (
+                              <UserPlus className="w-4 h-4 text-gray-400" />
+                            ) : getConnectionStatus(user.connectionStatus) === 'accepted' ? (
+                              <UserCheck className="w-4 h-4 text-green-500" />
+                            ) : getConnectionStatus(user.connectionStatus) === 'pending' ? (
+                              <Clock className="w-4 h-4 text-yellow-500" />
+                            ) : (
+                              <UserX className="w-4 h-4 text-red-500" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
         {/* Search Button - Full Width Below Input */}
         <div className="mb-4">
@@ -246,9 +548,21 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
                 
                 {/* Action Buttons - Stacked Vertically */}
                 <div className="space-y-2">
-                  {/* Status Badge - Above Left */}
-                  <div className="flex justify-start">
-                    {getStatusBadge(user.connectionStatus || 'none')}
+                  {/* Status Badge with Cross Button */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex justify-start">
+                      {getStatusBadge(user.connectionStatus || 'none')}
+                    </div>
+                    {/* Cross button for connected users */}
+                    {user.connectionStatus === 'accepted' && (
+                      <button
+                        onClick={() => handleRemoveConnectionFromSearch(user)}
+                        className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                        title="Remove connection"
+                      >
+                        <X className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                      </button>
+                    )}
                   </div>
                   
                   {/* Connect Button - Below */}
@@ -282,10 +596,12 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
             <p className="text-xs text-gray-400 mt-1">Enter a name, email, or role above</p>
           </div>
         ) : null}
-      </Card>
+        </Card>
+      )}
 
-      {/* Pending Requests Section */}
-<Card className="p-2 lg:p-3">
+      {/* Received Requests Section */}
+      {activeTab === 'received' && (
+        <Card className="p-2 lg:p-3">
   <div className="flex items-center gap-2 mb-1 lg:mb-2">
     <h3 className="text-sm lg:text-base font-semibold">Pending Requests</h3>
     {pendingRequests.length > 0 && (
@@ -341,7 +657,65 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
       ))}
     </div>
   )}
-</Card>
+        </Card>
+      )}
+
+      {/* Sent Requests Section */}
+      {activeTab === 'sent' && (
+        <Card className="p-2 lg:p-3">
+          <div className="flex items-center gap-2 mb-1 lg:mb-2">
+            <h3 className="text-sm lg:text-base font-semibold">Sent Requests</h3>
+            {sentRequests.length > 0 && (
+              <Badge variant="secondary" className="text-[10px] lg:text-xs">{sentRequests.length}</Badge>
+            )}
+          </div>
+
+          {sentRequests.length === 0 ? (
+            <div className="text-center py-4 lg:py-6 text-gray-500 text-xs lg:text-sm">
+              <Send className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-1 text-gray-300" />
+              <p>No sent connection requests</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5 lg:space-y-2">
+              {sentRequests.map((request) => (
+                <div key={request._id} className="flex flex-col gap-1.5 lg:gap-2 p-1.5 lg:p-6 border rounded-lg relative">
+                  {/* Cross button for rejected and connected requests */}
+                  {(request.status === 'rejected' || request.status === 'accepted') && (
+                    <button
+                      onClick={() => handleDismissCard(request._id)}
+                      className="absolute top-1 right-1 p-1 hover:bg-red-200 rounded-full transition-colors"
+                      title="Remove this card"
+                    >
+                      <X  className="w-4 h-4 text-xl text-red-400 bg-red-50 hover:text-red-600" />
+                    </button>
+                  )}
+                  
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6 lg:h-7 lg:w-7">
+                      <AvatarImage src={request.recipient.avatar} />
+                      <AvatarFallback className="text-[10px] lg:text-xs">
+                        <UserCheck className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="font-medium text-xs  lg:text-sm truncate">{request.recipient.name}</div>
+                    <div className="ml-auto mt-8 md:mt-0">
+                      {getStatusBadge(request.status)}
+                    </div>
+                  </div>
+                  
+                  {request.message && (
+                    <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
+                      "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
+                    </div>
+                  )}
+
+
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Send Request Dialog */}
       <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
