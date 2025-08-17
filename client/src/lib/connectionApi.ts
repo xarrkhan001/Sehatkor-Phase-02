@@ -32,6 +32,21 @@ export async function getPendingRequests() {
   return res.json();
 }
 
+export async function getSentRequests() {
+  const token = localStorage.getItem('sehatkor_token');
+  const res = await fetch(`${API_BASE}/sent`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || 'Failed to fetch sent requests');
+  }
+  return res.json();
+}
+
 export async function acceptConnectionRequest(requestId: string) {
   const token = localStorage.getItem('sehatkor_token');
   const res = await fetch(`${API_BASE}/accept/${requestId}`, {
@@ -60,6 +75,22 @@ export async function rejectConnectionRequest(requestId: string) {
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(text || 'Failed to reject request');
+  }
+  return res.json();
+}
+
+export async function deleteConnectionRequest(requestId: string) {
+  const token = localStorage.getItem('sehatkor_token');
+  const res = await fetch(`${API_BASE}/delete/${requestId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || 'Failed to delete request');
   }
   return res.json();
 }

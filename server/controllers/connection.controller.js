@@ -35,6 +35,9 @@ export const sendConnectionRequest = async (req, res) => {
         return res.status(400).json({ message: 'Connection request already pending' });
       } else if (existingRequest.status === 'accepted') {
         return res.status(400).json({ message: 'Already connected with this user' });
+      } else if (existingRequest.status === 'rejected') {
+        // Allow resending after rejection - delete the old rejected request
+        await ConnectionRequest.findByIdAndDelete(existingRequest._id);
       }
     }
 
@@ -49,6 +52,16 @@ export const sendConnectionRequest = async (req, res) => {
 
     // Populate sender details for response
     await connectionRequest.populate('sender', 'name email role avatar');
+
+    // Emit socket event to recipient about new connection request
+    const io = req.app.get('io');
+    if (io) {
+      io.to(recipientId).emit('new_connection_request', {
+        requestId: connectionRequest._id,
+        sender: connectionRequest.sender,
+        message: 'You have a new connection request'
+      });
+    }
 
     res.status(201).json({
       message: 'Connection request sent successfully',
@@ -78,6 +91,22 @@ export const getPendingRequests = async (req, res) => {
   }
 };
 
+// Get sent requests (sent by current user)
+export const getSentRequests = async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    const sentRequests = await ConnectionRequest.find({
+      sender: userId
+    }).populate('recipient', 'name email role avatar isVerified')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(sentRequests);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching sent requests', error: error.message });
+  }
+};
+
 // Accept connection request
 export const acceptConnectionRequest = async (req, res) => {
   try {
@@ -96,6 +125,37 @@ export const acceptConnectionRequest = async (req, res) => {
 
     request.status = 'accepted';
     await request.save();
+
+    // Normalize duplicates between the same two users to avoid a pending ghost on the other side
+    try {
+      const A = request.sender.toString();
+      const B = request.recipient.toString();
+      // Delete any other requests between A and B that are not accepted (older pendings/rejects)
+      await ConnectionRequest.deleteMany({
+        _id: { $ne: request._id },
+        $or: [
+          { sender: A, recipient: B },
+          { sender: B, recipient: A }
+        ],
+        status: { $ne: 'accepted' }
+      });
+    } catch {}
+
+    // Emit socket event to both users to refresh their chat lists
+    const io = req.app.get('io');
+    if (io) {
+      // Notify the sender that their request was accepted
+      io.to(request.sender.toString()).emit('connection_accepted', {
+        userId: userId,
+        message: 'Your connection request was accepted'
+      });
+      
+      // Notify the recipient (current user) as well
+      io.to(userId).emit('connection_accepted', {
+        userId: request.sender.toString(),
+        message: 'Connection established'
+      });
+    }
 
     res.status(200).json({ message: 'Connection request accepted' });
   } catch (error) {
@@ -128,6 +188,38 @@ export const rejectConnectionRequest = async (req, res) => {
   }
 };
 
+// Delete connection request (for dismissing cards)
+export const deleteConnectionRequest = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const userId = req.userId;
+
+    // Allow deletion if user is either sender or recipient
+    const request = await ConnectionRequest.findOne({
+      _id: requestId,
+      $or: [
+        { sender: userId },
+        { recipient: userId }
+      ]
+    });
+
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // Only allow deletion of rejected or accepted requests (not pending)
+    if (request.status === 'pending') {
+      return res.status(400).json({ message: 'Cannot delete pending requests' });
+    }
+
+    await ConnectionRequest.findByIdAndDelete(requestId);
+
+    res.status(200).json({ message: 'Connection request deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting request', error: error.message });
+  }
+};
+
 // Get connected users (mutual connections)
 export const getConnectedUsers = async (req, res) => {
   try {
@@ -141,11 +233,17 @@ export const getConnectedUsers = async (req, res) => {
       ]
     }).populate('sender recipient', 'name email role avatar isVerified');
 
-    // Extract connected users (excluding current user)
-    const connectedUsers = connections.map(conn => {
+    // Extract connected users (excluding current user) and dedupe by _id
+    const seen = new Set();
+    const connectedUsers = [];
+    for (const conn of connections) {
       const otherUser = conn.sender._id.toString() === userId ? conn.recipient : conn.sender;
-      return otherUser;
-    });
+      const otherId = otherUser._id.toString();
+      if (!seen.has(otherId)) {
+        seen.add(otherId);
+        connectedUsers.push(otherUser);
+      }
+    }
 
     res.status(200).json(connectedUsers);
   } catch (error) {
@@ -163,16 +261,27 @@ export const searchUsersForConnection = async (req, res) => {
       return res.status(400).json({ message: 'Search query must be at least 2 characters' });
     }
 
-    // Search verified users by name, email, or role
-    const users = await User.find({
+    // First try exact matches
+    let users = await User.find({
       _id: { $ne: userId },
       isVerified: true,
       $or: [
-        { name: { $regex: query, $options: 'i' } },
-        { email: { $regex: query, $options: 'i' } },
-        { role: { $regex: query, $options: 'i' } }
+        { name: { $regex: `^${query}$`, $options: 'i' } },
+        { email: { $regex: `^${query}$`, $options: 'i' } }
       ]
-    }).select('name email role avatar isVerified');
+    }).select('name email role avatar isVerified').limit(1);
+
+    // If no exact match found, try partial matches but limit to 1 result
+    if (users.length === 0) {
+      users = await User.find({
+        _id: { $ne: userId },
+        isVerified: true,
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { email: { $regex: query, $options: 'i' } }
+        ]
+      }).select('name email role avatar isVerified').limit(1);
+    }
 
     // Get existing connection status for each user
     const usersWithStatus = await Promise.all(
