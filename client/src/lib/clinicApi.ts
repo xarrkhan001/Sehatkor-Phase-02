@@ -20,7 +20,9 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const BASE = 'http://localhost:4000/api/clinic';
+import { API_BASE_URL } from '@/config';
+
+const BASE = `${API_BASE_URL}/api/clinic`;
 
 export async function listServices(): Promise<ClinicServiceDoc[]> {
   const res = await fetch(`${BASE}/services`, { headers: { 'Content-Type': 'application/json', ...authHeaders() } });

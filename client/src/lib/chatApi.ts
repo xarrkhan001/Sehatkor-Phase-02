@@ -1,6 +1,8 @@
+import { API_BASE_URL } from '@/config';
+
 export async function fetchVerifiedUsers() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/users/verified', {
+  const res = await fetch(`${API_BASE_URL}/api/chat/users/verified`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -15,7 +17,7 @@ export async function fetchVerifiedUsers() {
 
 export async function getOrCreateConversation(recipientId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/conversations', {
+  const res = await fetch(`${API_BASE_URL}/api/chat/conversations`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -31,7 +33,7 @@ export async function getOrCreateConversation(recipientId: string) {
 
 export async function fetchMessages(conversationId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch(`http://localhost:4000/api/chat/messages/${conversationId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/chat/messages/${conversationId}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -43,7 +45,7 @@ export async function fetchMessages(conversationId: string) {
 
 export async function deleteMessage(messageId: string, scope: 'me' | 'everyone' = 'me') {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch(`http://localhost:4000/api/chat/messages/${messageId}?scope=${scope}`, {
+  const res = await fetch(`${API_BASE_URL}/api/chat/messages/${messageId}?scope=${scope}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +63,7 @@ export async function uploadFile(file: File) {
   const formData = new FormData();
   formData.append('file', file);
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/upload', {
+  const res = await fetch(`${API_BASE_URL}/api/upload`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     body: formData,
@@ -74,7 +76,7 @@ export async function uploadFile(file: File) {
 
 export async function fetchConversations() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/conversations', {
+  const res = await fetch(`${API_BASE_URL}/api/chat/conversations`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -86,7 +88,7 @@ export async function fetchConversations() {
 
 export async function markAsRead(conversationId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/conversations/read', {
+  const res = await fetch(`${API_BASE_URL}/api/chat/conversations/read`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -100,7 +102,7 @@ export async function markAsRead(conversationId: string) {
 
 export async function clearConversation(conversationId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch(`http://localhost:4000/api/chat/conversations/${conversationId}/messages`, {
+  const res = await fetch(`${API_BASE_URL}/api/chat/conversations/${conversationId}/messages`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -116,7 +118,7 @@ export async function clearConversation(conversationId: string) {
 
 export async function fetchMyProfile() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/user/me', {
+  const res = await fetch(`${API_BASE_URL}/api/user/me`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -128,7 +130,7 @@ export async function fetchMyProfile() {
 
 export async function updateMyProfile(updates: Record<string, any>) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/user/me', {
+  const res = await fetch(`${API_BASE_URL}/api/user/me`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
