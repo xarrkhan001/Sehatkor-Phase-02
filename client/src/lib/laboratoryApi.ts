@@ -19,9 +19,7 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-import { API_BASE_URL } from '@/config';
-
-const BASE = `${API_BASE_URL}/api/laboratory`;
+const BASE = 'http://localhost:4000/api/laboratory';
 
 export async function listTests(): Promise<LaboratoryTestDoc[]> {
   try {
