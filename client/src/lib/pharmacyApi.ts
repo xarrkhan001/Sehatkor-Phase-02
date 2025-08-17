@@ -19,9 +19,7 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-import { API_BASE_URL } from '@/config';
-
-const BASE = `${API_BASE_URL}/api/pharmacy`;
+const BASE = 'http://localhost:4000/api/pharmacy';
 
 export async function listMedicines(): Promise<MedicineDoc[]> {
   const res = await fetch(`${BASE}/medicines`, {

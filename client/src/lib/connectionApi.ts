@@ -1,6 +1,4 @@
-import { API_BASE_URL } from '@/config';
-
-const API_BASE = `${API_BASE_URL}/api/connections`;
+const API_BASE = 'http://localhost:4000/api/connections';
 
 export async function sendConnectionRequest(recipientId: string, message?: string) {
   const token = localStorage.getItem('sehatkor_token');
