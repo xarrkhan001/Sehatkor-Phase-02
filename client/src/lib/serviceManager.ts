@@ -212,10 +212,10 @@ class ServiceManager {
     };
   }
 
-  // Fetch all services from server and sync to local storage
+  // Fetch all services from server (removed local storage sync)
   static async syncServicesFromServer(): Promise<Service[]> {
     try {
-      console.log('Syncing services from server...');
+      console.log('Fetching services from server...');
       const response = await fetch('http://localhost:4000/api/user/services/public');
       
       if (!response.ok) {
@@ -246,15 +246,12 @@ class ServiceManager {
         updatedAt: service.updatedAt,
       }));
       
-      // Save to local storage
-      this.saveServices(localServices);
-      console.log('Services synced to local storage:', localServices.length);
+      console.log('Services fetched from server:', localServices.length);
       
       return localServices;
     } catch (error) {
-      console.error('Error syncing services from server:', error);
-      // Return existing local services if server fails
-      return this.getAllServices();
+      console.error('Error fetching services from server:', error);
+      throw error; // Don't fallback to local storage
     }
   }
 

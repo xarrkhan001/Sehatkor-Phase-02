@@ -95,17 +95,13 @@ const SearchPage = () => {
     }
   };
 
-  // Load real services and combine with mock services
+  // Load real services directly from database
   useEffect(() => {
     const loadServices = async () => {
       try {
-        // First try to sync from server
-        await ServiceManager.syncServicesFromServer();
-      } catch (error) {
-        console.log('Could not sync from server, using local data');
-      }
-      
-      const realServices = ServiceManager.getAllServices();
+        // Fetch directly from server without saving to local storage
+        const serverData = await ServiceManager.fetchPublicServices();
+        const realServices = serverData.services;
       
       // Convert real services to search format with proper filtering
       const formattedRealServices: SearchService[] = realServices.map((service: any) => ({
@@ -140,19 +136,18 @@ const SearchPage = () => {
         return bd - ad;
       });
       
-      setAllServices(formattedRealServices);
-      setIsLoading(false);
+        setAllServices(formattedRealServices);
+        setIsLoading(false);
+      } catch (error) {
+        console.log('Backend is offline, no services available');
+        setAllServices([]);
+        setIsLoading(false);
+      }
     };
     
     loadServices();
 
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'sehatkor_services') {
-        loadServices();
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    // Remove storage listener since we're not using local storage anymore
   }, [user?.id]);
 
   // Handle URL parameters on component mount
