@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,20 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
-import { getMyBookings, Booking, deleteBooking, deleteAllBookings } from '@/lib/bookingApi';
-import { format } from 'date-fns';
-import { toast } from 'sonner';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { mockBookings } from "@/data/mockData";
 import { 
   Calendar,
   Clock,
@@ -37,58 +24,18 @@ import {
   CheckCircle,
   AlertCircle,
   FileText,
-  Download,
-  Trash2
+  Download
 } from "lucide-react";
 
 const PatientDashboard = () => {
   const { user, logout } = useAuth();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const data = await getMyBookings();
-        setBookings(data);
-      } catch (error) {
-        console.error('Failed to fetch bookings', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBookings();
-  }, []);
-
-  const handleDeleteBooking = async (bookingId: string) => {
-    try {
-      await deleteBooking(bookingId);
-      setBookings((prevBookings) => prevBookings.filter((b) => b._id !== bookingId));
-      toast.success("Booking deleted successfully!");
-    } catch (error) {
-      console.error("Failed to delete booking", error);
-      toast.error("Failed to delete booking.");
-    }
-  };
-
-  const handleDeleteAllBookings = async () => {
-    try {
-      await deleteAllBookings();
-      setBookings([]);
-      toast.success("All your bookings have been deleted.");
-    } catch (error) {
-      console.error("Failed to delete all bookings", error);
-      toast.error("Failed to delete all bookings.");
-    }
-  };
   
-  const stats = {
-    totalBookings: bookings.length,
-    completedBookings: bookings.filter(b => b.bookingStatus === 'completed').length,
-    pendingBookings: bookings.filter(b => b.bookingStatus === 'pending' || b.bookingStatus === 'confirmed').length,
-    totalSpent: bookings.reduce((acc, b) => acc + b.serviceSnapshot.price, 0)
-  };
+  const [stats] = useState({
+    totalBookings: 8,
+    completedBookings: 5,
+    pendingBookings: 3,
+    totalSpent: 15500
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -197,87 +144,43 @@ const PatientDashboard = () => {
 
               <TabsContent value="bookings" className="space-y-4">
                 <Card className="card-healthcare">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle>Recent Bookings</CardTitle>
-                      <CardDescription>
-                        Your latest appointments and services
-                      </CardDescription>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" disabled={bookings.length === 0}>
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete All
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete all your bookings.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleDeleteAllBookings}>Delete</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                  <CardHeader>
+                    <CardTitle>Recent Bookings</CardTitle>
+                    <CardDescription>
+                      Your latest appointments and services
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {isLoading ? (
-                        <p>Loading bookings...</p>
-                      ) : bookings.length === 0 ? (
-                        <p>No bookings found.</p>
-                      ) : (
-                        bookings.slice(0, 5).map((booking) => (
-                        <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                      {mockBookings.map((booking) => (
+                        <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex-1">
-                            <h4 className="font-medium">{booking.serviceSnapshot.name}</h4>
-                            <p className="text-sm text-muted-foreground">{booking.provider.name}</p>
+                            <h4 className="font-medium">{booking.serviceName}</h4>
+                            <p className="text-sm text-muted-foreground">{booking.provider}</p>
                             <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
                               <div className="flex items-center space-x-1">
                                 <Calendar className="w-4 h-4" />
-                                <span>{format(new Date(booking.createdAt), 'PPP')}</span>
+                                <span>{booking.date}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Clock className="w-4 h-4" />
+                                <span>{booking.time}</span>
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <Badge
-                                variant={"default"}
-                                className={booking.bookingStatus === "completed" ? "bg-green-500 text-white hover:bg-green-600" : ""}
-                              >
-                                {booking.bookingStatus}
-                              </Badge>
-                              <p className="text-sm font-medium mt-1">
-                                PKR {booking.serviceSnapshot.price.toLocaleString()}
-                              </p>
-                            </div>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive">
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will permanently delete this booking.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteBooking(booking._id)}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                          <div className="text-right">
+                            <Badge
+                              variant={booking.status === "Completed" ? "default" : "secondary"}
+                              className={booking.status === "Completed" ? "bg-success" : ""}
+                            >
+                              {booking.status}
+                            </Badge>
+                            <p className="text-sm font-medium mt-1">
+                              PKR {booking.amount.toLocaleString()}
+                            </p>
                           </div>
                         </div>
-                      )))}
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

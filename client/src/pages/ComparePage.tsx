@@ -1,7 +1,4 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMode } from "@/contexts/ModeContext";
-import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +8,7 @@ import { useCompare } from "@/contexts/CompareContext";
 type SortKey = "price" | "rating" | "location";
 
 const ComparePage = () => {
-    const { items, remove, clear } = useCompare();
-  const navigate = useNavigate();
-  const { currentMode, isProvider } = useMode();
+  const { items, remove, clear } = useCompare();
   const [sortKey, setSortKey] = useState<SortKey>("price");
   const [sortAsc, setSortAsc] = useState<boolean>(true);
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
@@ -31,33 +26,6 @@ const ComparePage = () => {
     });
     return sortAsc ? copy : copy.reverse();
   }, [items, sortKey, sortAsc]);
-
-  const handleBookNow = (item: any) => {
-    if (isProvider && currentMode === 'provider') {
-      toast.error("Providers cannot book services.", {
-        description: "Please switch to patient mode to book a service.",
-        action: {
-          label: "Close",
-          onClick: () => toast.dismiss(),
-        },
-      });
-      return;
-    }
-
-    const providerData = {
-      _id: item._providerId,
-      name: item.provider,
-      email: item.providerEmail || 'No email provided',
-      role: item._providerType,
-    };
-
-    const serviceForPayment = {
-      ...item,
-      providerId: providerData,
-    };
-
-    navigate('/payment', { state: { service: serviceForPayment } });
-  };
 
   const toggleSort = (key: SortKey) => {
     if (key === sortKey) setSortAsc(prev => !prev);
@@ -204,7 +172,7 @@ const ComparePage = () => {
                       <td className="p-4 font-medium">Action</td>
                       {sorted.map(item => (
                         <td key={item.id} className="p-4">
-                          <Button size="sm" className="w-full" onClick={() => handleBookNow(item)}>Book Now</Button>
+                          <Button size="sm" className="w-full">Book Now</Button>
                         </td>
                       ))}
                     </tr>

@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ModeProvider } from "./contexts/ModeContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import FloatingChat from "./components/FloatingChat";
@@ -36,10 +35,8 @@ const HospitalsPage = lazy(() => import("./pages/HospitalsPage"));
 const LabsPage = lazy(() => import("./pages/LabsPage"));
 const PharmaciesPage = lazy(() => import("./pages/PharmaciesPage"));
 const ComparePage = lazy(() => import("./pages/ComparePage"));
-const BookingDetailPage = lazy(() => import('./pages/BookingDetailPage'));
 import { CompareProvider } from "./contexts/CompareContext";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
-import PaymentPage from "./pages/PaymentPage";
 
 const queryClient = new QueryClient();
 
@@ -59,8 +56,6 @@ const AppShell = () => {
             <Route path="/hospitals" element={<Suspense fallback={<PageSkeleton />}><HospitalsPage /></Suspense>} />
             <Route path="/labs" element={<Suspense fallback={<PageSkeleton />}><LabsPage /></Suspense>} />
             <Route path="/pharmacies" element={<Suspense fallback={<PageSkeleton />}><PharmaciesPage /></Suspense>} />
-            <Route path="/payment" element={<Suspense fallback={<PageSkeleton />}><PaymentPage /></Suspense>} />
-            <Route path="/booking/:bookingId" element={<Suspense fallback={<PageSkeleton />}><BookingDetailPage /></Suspense>} />
             <Route path="/compare" element={<Suspense fallback={<PageSkeleton />}><ComparePage /></Suspense>} />
             <Route path="/service/:id" element={<Suspense fallback={<ServiceSkeleton />}><ServiceDetailPage /></Suspense>} />
             <Route path="/register" element={<Suspense fallback={<AuthSkeleton />}><RegisterPage /></Suspense>} />
@@ -84,15 +79,13 @@ const AppShell = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <ModeProvider>
-        <CompareProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppShell />
-          </TooltipProvider>
-        </CompareProvider>
-      </ModeProvider>
+      <CompareProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppShell />
+        </TooltipProvider>
+      </CompareProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

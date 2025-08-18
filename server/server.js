@@ -15,7 +15,6 @@ import pharmacyRoutes from "./routes/pharmacy.routes.js";
 import laboratoryRoutes from "./routes/laboratory.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import connectionRoutes from "./routes/connection.routes.js";
-import bookingRoutes from "./routes/booking.routes.js";
 import {
   registerUserSocket,
   unregisterUserSocket,
@@ -57,7 +56,6 @@ app.use("/api/laboratory", laboratoryRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/connections", connectionRoutes);
-app.use("/api/bookings", bookingRoutes);
 
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
 app.get("/auth/facebook/callback", facebookCallback);

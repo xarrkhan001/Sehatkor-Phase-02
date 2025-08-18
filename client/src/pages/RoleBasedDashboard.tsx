@@ -9,7 +9,6 @@ import PharmacyDashboard from './dashboards/PharmacyDashboard';
 const RoleBasedDashboard = () => {
   const { user } = useAuth();
 
-
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">

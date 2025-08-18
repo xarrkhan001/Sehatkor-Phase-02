@@ -13,8 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ui/image-upload";
 import ServiceManager, { DoctorService } from "@/lib/serviceManager";
 import { listServices as apiList } from "@/lib/doctorApi";
-import { getProviderBookings, Booking } from '@/lib/bookingApi';
-import { format } from 'date-fns';
 import ServiceManagement from "@/components/ServiceManagement";
 import { 
   Stethoscope, 
@@ -30,8 +28,7 @@ import {
   FileText,
   Phone,
   Plus,
-  Trash2,
-  User
+  Trash2
 } from "lucide-react";
 
 const DoctorDashboard = () => {
@@ -39,8 +36,6 @@ const DoctorDashboard = () => {
   const { toast } = useToast();
   const [services, setServices] = useState<DoctorService[]>([]);
   const [specialization, setSpecialization] = useState('');
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   const specialties = [
     'Cardiologist', 'Neurologist', 'Dermatologist', 'Pediatrician', 
@@ -117,21 +112,6 @@ const DoctorDashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user) return;
-      try {
-        const providerBookings = await getProviderBookings();
-        setBookings(providerBookings);
-      } catch (error) {
-        console.error("Failed to fetch provider bookings", error);
-        toast({ title: "Error", description: "Could not fetch bookings.", variant: "destructive" });
-      } finally {
-        setIsLoadingBookings(false);
-      }
-    };
-    fetchBookings();
-  }, [user, toast]);
 
   const handleSpecialtyChange = (specialty: string) => {
     setSpecialization(specialty);
@@ -143,13 +123,11 @@ const DoctorDashboard = () => {
     });
   };
 
-  const stats = {
-    todaysPatients: bookings.filter(b => format(new Date(b.createdAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')).length,
-    completed: bookings.filter(b => b.bookingStatus === 'completed').length,
-    upcoming: bookings.filter(b => b.bookingStatus === 'pending' || b.bookingStatus === 'confirmed').length,
-  };
-
-  const todaysAppointments = bookings.filter(b => format(new Date(b.createdAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'));
+  const todayAppointments = [
+    { id: 1, patient: "Ahmad Ali", time: "10:00 AM", type: "Consultation", status: "Confirmed" },
+    { id: 2, patient: "Sara Khan", time: "11:30 AM", type: "Follow-up", status: "Waiting" },
+    { id: 3, patient: "Hassan Ahmed", time: "2:00 PM", type: "Checkup", status: "Confirmed" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -201,7 +179,7 @@ const DoctorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Today's Patients</p>
-                  <p className="text-2xl font-bold">{stats.todaysPatients}</p>
+                  <p className="text-2xl font-bold">8</p>
                 </div>
                 <Users className="w-8 h-8 text-primary" />
               </div>
@@ -213,7 +191,7 @@ const DoctorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">{stats.completed}</p>
+                  <p className="text-2xl font-bold text-success">5</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
@@ -225,7 +203,7 @@ const DoctorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Upcoming</p>
-                  <p className="text-2xl font-bold text-warning">{stats.upcoming}</p>
+                  <p className="text-2xl font-bold text-warning">3</p>
                 </div>
                 <Clock className="w-8 h-8 text-warning" />
               </div>
@@ -256,38 +234,31 @@ const DoctorDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {isLoadingBookings ? (
-                    <p>Loading appointments...</p>
-                  ) : todaysAppointments.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">No appointments scheduled for today.</div>
-                  ) : (
-                    todaysAppointments.map((booking) => (
-                      <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                            <User className="w-6 h-6 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{booking.buyer?.name || 'Patient'}</h4>
-                            <p className="text-sm text-muted-foreground">{booking.serviceSnapshot.name}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge
-                            variant={booking.bookingStatus === "confirmed" ? "success" : "default"}
-                          >
-                            {booking.bookingStatus === 'pending' ? 'New Appointment' : booking.bookingStatus}
-                          </Badge>
-                          <div className="mt-2 space-x-2">
-                            <Button size="sm" variant="outline">
-                              <Phone className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm">Start</Button>
-                          </div>
+                  {todayAppointments.map((appointment) => (
+                    <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{appointment.patient}</h4>
+                        <p className="text-sm text-muted-foreground">{appointment.type}</p>
+                        <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          <span>{appointment.time}</span>
                         </div>
                       </div>
-                    ))
-                  )}
+                      <div className="text-right">
+                        <Badge
+                          variant={appointment.status === "Confirmed" ? "default" : "secondary"}
+                        >
+                          {appointment.status}
+                        </Badge>
+                        <div className="mt-2 space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Phone className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm">Start</Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

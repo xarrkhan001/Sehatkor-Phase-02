@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,6 @@ import { useCompare } from "@/contexts/CompareContext";
 import CompareTray from "@/components/CompareTray";
 import SearchPageSkeleton from "@/components/skeletons/SearchPageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMode } from "@/contexts/ModeContext";
-import { toast } from "sonner";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 
 interface SearchService extends Service {
@@ -42,38 +40,9 @@ const SearchPage = () => {
   const [allServices, setAllServices] = useState<SearchService[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
-  const { currentMode, isProvider } = useMode();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [currentMapService, setCurrentMapService] = useState<SearchService | null>(null);
-  const navigate = useNavigate();
-
-    const handleBookNow = (service: SearchService) => {
-    if (isProvider && currentMode === 'provider') {
-      toast.error("Providers cannot book services.", {
-        description: "Please switch to patient mode to book a service.",
-        action: {
-          label: "Close",
-          onClick: () => toast.dismiss(),
-        },
-      });
-      return;
-    }
-    // We need to construct the providerId object for the payment page
-    const providerData = {
-        _id: (service as any)._providerId, 
-        name: service.provider,
-        email: (service as any).providerEmail || 'No email provided',
-        role: (service as any)._providerType
-    };
-
-    const serviceForPayment = {
-        ...service,
-        providerId: providerData
-    };
-
-    navigate('/payment', { state: { service: serviceForPayment } });
-  };
 
   // Helper function to get coordinates based on location
   const getCoordinatesForLocation = (location: string) => {
@@ -233,8 +202,8 @@ const SearchPage = () => {
       const bOwn = b._providerId && user?.id && b._providerId === user.id;
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
       if (a.isReal !== b.isReal) return a.isReal ? -1 : 1;
-      const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
-      const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+      const ad = a.createdAt ? Date.parse(a.createdAt as any) : 0;
+      const bd = b.createdAt ? Date.parse(b.createdAt as any) : 0;
       return bd - ad;
     });
   }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, highlightedService, allServices]);
@@ -534,7 +503,7 @@ const SearchPage = () => {
   </div>
     {/* Buttons */}
   <div className="flex flex-wrap gap-2">
-    <Button className="flex-1 min-w-[100px]" onClick={() => handleBookNow(service)}>
+    <Button className="flex-1 min-w-[100px]">
       <Clock className="w-4 h-4 mr-1" /> Book Now
     </Button>
     <Button
@@ -663,7 +632,7 @@ const SearchPage = () => {
                       <td className="p-4 font-medium">Action</td>
                       {selectedServicesData.map((service) => (
                         <td key={service.id} className="p-4">
-                          <Button size="sm" className="w-full" onClick={() => handleBookNow(service)}>Book Now</Button>
+                          <Button size="sm" className="w-full">Book Now</Button>
                         </td>
                       ))}
                     </tr>

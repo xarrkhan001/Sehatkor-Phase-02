@@ -14,8 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listMedicines as apiList, createMedicine as apiCreate, updateMedicine as apiUpdate, deleteMedicine as apiDelete } from "@/lib/pharmacyApi";
-import { getProviderBookings, Booking } from '@/lib/bookingApi';
-import { format } from 'date-fns';
 import { 
   ShoppingBag, 
   Calendar, 
@@ -45,9 +43,6 @@ const PharmacyDashboard = () => {
   const [medicineImageFile, setMedicineImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isAddingMedicine, setIsAddingMedicine] = useState(false);
-
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingMedicineId, setEditingMedicineId] = useState<string | null>(null);
@@ -163,23 +158,6 @@ const PharmacyDashboard = () => {
     if (savedType) setPharmacyType(savedType);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user) return;
-      setIsLoadingBookings(true);
-      try {
-        const providerBookings = await getProviderBookings();
-        setBookings(providerBookings);
-      } catch (error) {
-        console.error("Failed to fetch provider bookings", error);
-        toast({ title: "Error", description: "Could not fetch bookings.", variant: "destructive" });
-      } finally {
-        setIsLoadingBookings(false);
-      }
-    };
-    fetchBookings();
-  }, [user, toast]);
 
   const handleAddMedicine = async () => {
     if (!medicineForm.name || !user?.id) {
@@ -350,14 +328,11 @@ const PharmacyDashboard = () => {
     });
   };
 
-  const stats = {
-    todaysOrders: bookings.filter(b => format(new Date(b.createdAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')).length,
-    completed: bookings.filter(b => b.bookingStatus === 'completed').length,
-    pending: bookings.filter(b => b.bookingStatus === 'pending' || b.bookingStatus === 'confirmed').length,
-    revenueToday: bookings
-      .filter(b => format(new Date(b.createdAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'))
-      .reduce((acc, b) => acc + b.serviceSnapshot.price, 0),
-  };
+  const recentOrders = [
+    { id: 1, customer: "Ahmad Ali", medicine: "Panadol 500mg", quantity: "20 tablets", status: "Ready" },
+    { id: 2, customer: "Sara Khan", medicine: "Amoxicillin 250mg", quantity: "14 capsules", status: "Processing" },
+    { id: 3, customer: "Hassan Ahmed", medicine: "Vitamin D3", quantity: "30 tablets", status: "Delivered" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -389,7 +364,7 @@ const PharmacyDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Today's Orders</p>
-                  <p className="text-2xl font-bold">{stats.todaysOrders}</p>
+                  <p className="text-2xl font-bold">24</p>
                 </div>
                 <ShoppingBag className="w-8 h-8 text-primary" />
               </div>
@@ -401,7 +376,7 @@ const PharmacyDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">{stats.completed}</p>
+                  <p className="text-2xl font-bold text-success">18</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
@@ -413,7 +388,7 @@ const PharmacyDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-warning">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-warning">6</p>
                 </div>
                 <Clock className="w-8 h-8 text-warning" />
               </div>
@@ -425,7 +400,7 @@ const PharmacyDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  <p className="text-2xl font-bold">PKR {stats.revenueToday.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">PKR 32,000</p>
                 </div>
                 <Activity className="w-8 h-8 text-primary" />
               </div>
@@ -753,50 +728,6 @@ const PharmacyDashboard = () => {
                     <Edit className="w-4 h-4 mr-2" />
                     Edit Pharmacy Info
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
-                <CardDescription>Your most recent customer orders</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {isLoadingBookings ? (
-                    <p>Loading orders...</p>
-                  ) : bookings.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">No recent orders.</div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Medicine</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {bookings.slice(0, 5).map((booking) => (
-                          <TableRow key={booking._id}>
-                            <TableCell>
-                              <div className="font-medium">{booking.buyer?.name || 'Customer'}</div>
-                              <div className="text-sm text-muted-foreground">{booking.buyer?.email || 'No email'}</div>
-                            </TableCell>
-                            <TableCell>{booking.serviceSnapshot.name}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={booking.bookingStatus === 'completed' ? 'success' : 'default'}
-                              >
-                                {booking.bookingStatus === 'pending' ? 'New Order' : booking.bookingStatus}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
                 </div>
               </CardContent>
             </Card>

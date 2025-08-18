@@ -14,8 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listServices as apiList, createService as apiCreate, updateService as apiUpdate, deleteService as apiDelete } from "@/lib/clinicApi";
-import { getProviderBookings, Booking } from '@/lib/bookingApi';
-import { format } from 'date-fns';
 import { 
   Building, 
   Calendar, 
@@ -47,8 +45,6 @@ const ClinicDashboard = () => {
   const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isAddingService, setIsAddingService] = useState(false);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   const [serviceForm, setServiceForm] = useState({
     name: '',
@@ -107,23 +103,6 @@ const ClinicDashboard = () => {
     if (savedType) setClinicType(savedType);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user) return;
-      setIsLoadingBookings(true);
-      try {
-        const providerBookings = await getProviderBookings();
-        setBookings(providerBookings);
-      } catch (error) {
-        console.error("Failed to fetch provider bookings", error);
-        toast({ title: "Error", description: "Could not fetch bookings.", variant: "destructive" });
-      } finally {
-        setIsLoadingBookings(false);
-      }
-    };
-    fetchBookings();
-  }, [user, toast]);
 
   const saveServices = (newServices: any[]) => setServices(newServices);
 
@@ -237,15 +216,6 @@ const ClinicDashboard = () => {
     });
   };
 
-  const stats = {
-    totalPatients: new Set(bookings.map(b => b.buyer._id)).size,
-    totalBookings: bookings.length,
-    pendingBookings: bookings.filter(b => b.bookingStatus === 'pending').length,
-    monthlyRevenue: bookings
-        .filter(b => new Date(b.createdAt).getMonth() === new Date().getMonth())
-        .reduce((acc, b) => acc + b.serviceSnapshot.price, 0),
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -296,7 +266,7 @@ const ClinicDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Patients</p>
-                  <p className="text-2xl font-bold">{stats.totalPatients}</p>
+                  <p className="text-2xl font-bold">156</p>
                 </div>
                 <Users className="w-8 h-8 text-primary" />
               </div>
@@ -307,8 +277,8 @@ const ClinicDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Bookings</p>
-                  <p className="text-2xl font-bold text-warning">{stats.totalBookings}</p>
+                  <p className="text-sm text-muted-foreground">Occupied Beds</p>
+                  <p className="text-2xl font-bold text-warning">24/30</p>
                 </div>
                 <Bed className="w-8 h-8 text-warning" />
               </div>
@@ -319,8 +289,8 @@ const ClinicDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending Bookings</p>
-                  <p className="text-2xl font-bold text-success">{stats.pendingBookings}</p>
+                  <p className="text-sm text-muted-foreground">Active Doctors</p>
+                  <p className="text-2xl font-bold text-success">12</p>
                 </div>
                 <Stethoscope className="w-8 h-8 text-success" />
               </div>
@@ -332,7 +302,7 @@ const ClinicDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-2xl font-bold">PKR {stats.monthlyRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">PKR 2.4M</p>
                 </div>
                 <DollarSign className="w-8 h-8 text-primary" />
               </div>
@@ -536,50 +506,6 @@ const ClinicDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Bookings */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Recent Bookings</CardTitle>
-                <CardDescription>Latest patient bookings for your services</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoadingBookings ? (
-                  <p>Loading bookings...</p>
-                ) : bookings.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-8">No bookings found.</div>
-                ) : (
-                  <div className="space-y-4">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Patient</TableHead>
-                          <TableHead>Service</TableHead>
-                          <TableHead>Booking Status</TableHead>
-                          <TableHead>Revenue</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {bookings.slice(0, 5).map((booking) => (
-                          <TableRow key={booking._id}>
-                            <TableCell>
-                              <div className="font-medium">{booking.buyer?.name || 'Patient'}</div>
-                              <div className="text-sm text-muted-foreground">{booking.buyer?.email || 'No email'}</div>
-                            </TableCell>
-                            <TableCell>{booking.serviceSnapshot.name}</TableCell>
-                            <TableCell>
-                              <Badge variant={booking.bookingStatus === 'completed' ? 'success' : 'default'}>
-                                {booking.bookingStatus === 'pending' ? 'New Booking' : booking.bookingStatus}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>PKR {booking.serviceSnapshot.price}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
 
           {/* Profile Sidebar */}
