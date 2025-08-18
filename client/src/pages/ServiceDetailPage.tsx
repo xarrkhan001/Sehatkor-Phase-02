@@ -1,7 +1,5 @@
 import { useMemo } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useMode } from "@/contexts/ModeContext";
-import { toast } from "sonner";
+import { useParams, Link } from "react-router-dom";
 import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
 import { mockServices, Service as MockService } from "@/data/mockData";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,9 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, ArrowLeft } from "lucide-react";
 
 type Unified = {
-  _providerId: string;
-  _providerType: string;
-  providerEmail: string;
   id: string;
   name: string;
   description: string;
@@ -25,8 +20,6 @@ type Unified = {
 };
 
 const ServiceDetailPage = () => {
-    const navigate = useNavigate();
-  const { currentMode, isProvider } = useMode();
   const params = useParams();
   const id = params.id as string;
 
@@ -43,9 +36,6 @@ const ServiceDetailPage = () => {
       location: s?.location ?? "Karachi",
       provider: s.providerName,
       image: s.image,
-      _providerId: s.providerId,
-      _providerType: s.providerType,
-      providerEmail: s.providerEmail || 'No email provided',
       type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : s.category === "Surgery" ? "Surgery" : "Treatment",
     } as Unified));
     const mockMapped = mockServices.map((m: MockService) => ({
@@ -58,42 +48,10 @@ const ServiceDetailPage = () => {
       provider: m.provider,
       image: m.image,
       type: m.type,
-      _providerId: 'mock-provider-id',
-      _providerType: 'mock-provider-type',
-      providerEmail: 'mock@email.com',
     }));
     const combined = [...realMapped, ...mockMapped];
     return combined.find(x => x.id === id);
   }, [id]);
-
-  const handleBookNow = () => {
-    if (!item) return;
-
-    if (isProvider && currentMode === 'provider') {
-      toast.error("Providers cannot book services.", {
-        description: "Please switch to patient mode to book a service.",
-        action: {
-          label: "Close",
-          onClick: () => toast.dismiss(),
-        },
-      });
-      return;
-    }
-
-    const providerData = {
-      _id: item._providerId,
-      name: item.provider,
-      email: item.providerEmail,
-      role: item._providerType,
-    };
-
-    const serviceForPayment = {
-      ...item,
-      providerId: providerData,
-    };
-
-    navigate('/payment', { state: { service: serviceForPayment } });
-  };
 
   if (!item) {
     return (
@@ -147,7 +105,7 @@ const ServiceDetailPage = () => {
                     <Badge variant="outline">{item.type}</Badge>
                   </div>
                 </div>
-                <Button size="lg" onClick={handleBookNow}>Book Now</Button>
+                <Button size="lg">Book Now</Button>
               </div>
               <p className="mt-4 text-muted-foreground leading-relaxed">{item.description}</p>
               <div className="mt-6 grid sm:grid-cols-2 gap-3">

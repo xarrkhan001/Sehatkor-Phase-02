@@ -14,8 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listTests as apiList, createTest as apiCreate, updateTest as apiUpdate, deleteTest as apiDelete } from "@/lib/laboratoryApi";
-import { getProviderBookings, Booking } from '@/lib/bookingApi';
-import { format } from 'date-fns';
 import { 
   TestTube, 
   Calendar, 
@@ -80,9 +78,6 @@ const LaboratoryDashboard = () => {
   const testCategories = [
     'Blood Test', 'Urine Test', 'X-Ray', 'MRI', 'CT Scan', 'Ultrasound'
   ];
-
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   const syncServicesFromBackend = (docs: any[]) => {
     if (!user?.id) return;
@@ -163,23 +158,6 @@ const LaboratoryDashboard = () => {
     if (savedType) setLabType(savedType);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user) return;
-      setIsLoadingBookings(true);
-      try {
-        const providerBookings = await getProviderBookings();
-        setBookings(providerBookings);
-      } catch (error) {
-        console.error("Failed to fetch provider bookings", error);
-        toast({ title: "Error", description: "Could not fetch bookings.", variant: "destructive" });
-      } finally {
-        setIsLoadingBookings(false);
-      }
-    };
-    fetchBookings();
-  }, [user, toast]);
 
   const handleAddTest = async () => {
     if (!testForm.name || !user?.id) {
@@ -364,14 +342,11 @@ const LaboratoryDashboard = () => {
     });
   };
 
-  const stats = {
-    todaysTests: bookings.filter(b => format(new Date(b.createdAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')).length,
-    completed: bookings.filter(b => b.bookingStatus === 'completed').length,
-    pending: bookings.filter(b => b.bookingStatus === 'pending' || b.bookingStatus === 'confirmed').length,
-    revenueToday: bookings
-      .filter(b => format(new Date(b.createdAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'))
-      .reduce((acc, b) => acc + b.serviceSnapshot.price, 0),
-  };
+  const pendingTests = [
+    { id: 1, patient: "Ahmad Ali", test: "Blood Test Complete", time: "9:00 AM", status: "Processing" },
+    { id: 2, patient: "Sara Khan", test: "Urine Analysis", time: "10:30 AM", status: "Pending" },
+    { id: 3, patient: "Hassan Ahmed", test: "X-Ray Chest", time: "11:00 AM", status: "Ready" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -423,7 +398,7 @@ const LaboratoryDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Today's Tests</p>
-                  <p className="text-2xl font-bold">{stats.todaysTests}</p>
+                  <p className="text-2xl font-bold">42</p>
                 </div>
                 <TestTube className="w-8 h-8 text-primary" />
               </div>
@@ -435,7 +410,7 @@ const LaboratoryDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">{stats.completed}</p>
+                  <p className="text-2xl font-bold text-success">28</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
@@ -447,7 +422,7 @@ const LaboratoryDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-warning">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-warning">14</p>
                 </div>
                 <Clock className="w-8 h-8 text-warning" />
               </div>
@@ -459,7 +434,7 @@ const LaboratoryDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  <p className="text-2xl font-bold">PKR {stats.revenueToday.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">PKR 45,000</p>
                 </div>
                 <Activity className="w-8 h-8 text-primary" />
               </div>
@@ -600,41 +575,36 @@ const LaboratoryDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {isLoadingBookings ? (
-                    <p>Loading tests...</p>
-                  ) : bookings.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">No tests in queue.</div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Patient</TableHead>
-                          <TableHead>Test</TableHead>
-                          <TableHead>Time</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {bookings.slice(0, 5).map((booking) => (
-                          <TableRow key={booking._id}>
-                            <TableCell>
-                              <div className="font-medium">{booking.buyer?.name || 'Patient'}</div>
-                              <div className="text-sm text-muted-foreground">{booking.buyer?.email || 'No email'}</div>
-                            </TableCell>
-                            <TableCell>{booking.serviceSnapshot.name}</TableCell>
-                            <TableCell>{format(new Date(booking.createdAt), 'p')}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={booking.bookingStatus === "completed" ? "success" : "default"}
-                              >
-                                {booking.bookingStatus === 'pending' ? 'New Test Request' : booking.bookingStatus}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )} 
+                  {pendingTests.map((test) => (
+                    <div key={test.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{test.patient}</h4>
+                        <p className="text-sm text-muted-foreground">{test.test}</p>
+                        <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          <span>{test.time}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge
+                          variant={test.status === "Ready" ? "default" : "secondary"}
+                          className={test.status === "Ready" ? "bg-success" : ""}
+                        >
+                          {test.status}
+                        </Badge>
+                        <div className="mt-2 space-x-2">
+                          <Button size="sm" variant="outline">
+                            View
+                          </Button>
+                          {test.status === "Ready" && (
+                            <Button size="sm">
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

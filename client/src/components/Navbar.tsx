@@ -6,7 +6,6 @@ import UserBadge from "@/components/UserBadge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMode } from "@/contexts/ModeContext";
 import { 
   Menu, 
   X, 
@@ -24,16 +23,13 @@ import {
   FlaskConical,
   Pill,
   UserCircle,
-  BadgeCheck,
-  Users,
-  Briefcase
+  BadgeCheck
 } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { currentMode, switchToPatientMode, switchToProviderMode, isProvider } = useMode();
 
   const allNavItems = [
     { name: "Home", href: "/", icon: Home },
@@ -139,48 +135,6 @@ const Navbar = () => {
                       </div>
                     </div>
                   </DropdownMenuLabel>
-                  
-                  {/* Mode Toggle Section - Only for Providers */}
-                  {isProvider && (
-                    <>
-                      <DropdownMenuSeparator className="bg-gray-100" />
-                      <div className="px-4 py-2">
-                        <p className="text-xs font-medium text-gray-500 mb-2">Current Mode</p>
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={switchToPatientMode}
-                            variant={currentMode === 'patient' ? 'default' : 'outline'}
-                            size="sm"
-                            className={`flex-1 text-xs h-8 ${
-                              currentMode === 'patient' 
-                                ? 'bg-blue-500 hover:bg-blue-600 text-white' 
-                                : 'border-blue-200 text-blue-600 hover:bg-blue-50'
-                            }`}
-                          >
-                            <Users className="w-3 h-3 mr-1" />
-                            Patient
-                          </Button>
-                          <Button
-                            onClick={switchToProviderMode}
-                            variant={currentMode === 'provider' ? 'default' : 'outline'}
-                            size="sm"
-                            className={`flex-1 text-xs h-8 ${
-                              currentMode === 'provider' 
-                                ? 'bg-green-500 hover:bg-green-600 text-white' 
-                                : 'border-green-200 text-green-600 hover:bg-green-50'
-                            }`}
-                          >
-                            <Briefcase className="w-3 h-3 mr-1" />
-                            Provider
-                          </Button>
-                        </div>
-                        <p className="text-[10px] text-gray-400 mt-1 text-center">
-                          {currentMode === 'patient' ? 'You can book services' : 'Switch to patient mode to book services'}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                  
                   <DropdownMenuSeparator className="bg-gray-100" />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50 px-4 py-2 rounded-lg mx-2 my-2">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -247,55 +201,6 @@ const Navbar = () => {
               )}
             </div>
           </div>
-          
-          {/* Mode Toggle Section for Mobile - Only for Providers */}
-          {isProvider && (
-            <>
-              <div className="border-t border-gray-200 my-4"></div>
-              <div className="px-4 py-2">
-                <p className="text-xs font-medium text-gray-500 mb-2">Current Mode</p>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      switchToPatientMode();
-                      setIsOpen(false);
-                    }}
-                    variant={currentMode === 'patient' ? 'default' : 'outline'}
-                    size="sm"
-                    className={`flex-1 text-xs h-8 ${
-                      currentMode === 'patient' 
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white' 
-                        : 'border-blue-200 text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    <Users className="w-3 h-3 mr-1" />
-                    Patient
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      switchToProviderMode();
-                      setIsOpen(false);
-                    }}
-                    variant={currentMode === 'provider' ? 'default' : 'outline'}
-                    size="sm"
-                    className={`flex-1 text-xs h-8 ${
-                      currentMode === 'provider' 
-                        ? 'bg-green-500 hover:bg-green-600 text-white' 
-                        : 'border-green-200 text-green-600 hover:bg-green-50'
-                    }`}
-                  >
-                    <Briefcase className="w-3 h-3 mr-1" />
-                    Provider
-                  </Button>
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1 text-center">
-                  {currentMode === 'patient' ? 'You can book services' : 'Switch to patient mode to book services'}
-                </p>
-              </div>
-            </>
-          )}
-          
-          <div className="border-t border-gray-200 my-4"></div>
           <button
             onClick={() => {
               handleLogout();

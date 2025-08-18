@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
@@ -11,8 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMode } from "@/contexts/ModeContext";
-import { toast } from "sonner";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 
 const LabsPage = () => {
@@ -22,34 +19,6 @@ const LabsPage = () => {
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const { user } = useAuth();
-  const { currentMode, isProvider } = useMode();
-  const navigate = useNavigate();
-
-    const handleBookNow = (service: Service) => {
-    if (isProvider && currentMode === 'provider') {
-      toast.error("Providers cannot book services.", {
-        description: "Please switch to patient mode to book a service.",
-        action: {
-          label: "Close",
-          onClick: () => toast.dismiss(),
-        },
-      });
-      return;
-    }
-    const providerData = {
-      _id: (service as any)._providerId,
-      name: service.provider,
-      email: (service as any).providerEmail || 'No email provided',
-      role: 'laboratory',
-    };
-
-    const serviceForPayment = {
-      ...service,
-      providerId: providerData,
-    };
-
-    navigate('/payment', { state: { service: serviceForPayment } });
-  };
 
   useEffect(() => {
     const loadServices = async () => {
@@ -280,7 +249,7 @@ const LabsPage = () => {
 
                 {/* Buttons */}
                 <div className="flex flex-wrap gap-2">
-                  <Button className="flex-1 min-w-[100px]" onClick={() => handleBookNow(service)}>
+                  <Button className="flex-1 min-w-[100px]">
                     <Clock className="w-4 h-4 mr-1" /> Book Now
                   </Button>
                   <Button
