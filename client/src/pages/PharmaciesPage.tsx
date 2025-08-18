@@ -16,64 +16,115 @@ const PharmaciesPage = () => {
   const [pharmacyServices, setPharmacyServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState<boolean | undefined>(true);
+
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
-    const loadServices = async () => {
+    let isMounted = true;
+    const loadPage = async (nextPage: number) => {
+      setIsLoading(true);
       try {
-        // First try to sync from server
-        await ServiceManager.syncServicesFromServer();
-      } catch (error) {
-        console.log('Could not sync from server, using local data');
-      }
-      
-      const source = ServiceManager.getAllServices();
-      const realServices = source
-        .filter((service: any) => service.providerType === 'pharmacy') // Only pharmacy services
-        .map((service: any) => ({
+        const { services, hasMore: more } = await ServiceManager.fetchPublicServices({
+          type: 'pharmacy',
+          page: nextPage,
+          limit: 12,
+        });
+        if (!isMounted) return;
+        const mapped = services.map((service: any) => ({
           id: service.id,
           name: service.name,
           description: service.description,
           price: service.price,
           rating: 4.5,
-          location: service.city || "Karachi",
+          location: (service as any).city || "Karachi",
           type: "Medicine",
-          homeService: false,
+          homeService: (service as any).homeService || false,
           image: service.image,
-          provider: service.providerName || "Pharmacy",
+          provider: (service as any).providerName || "Pharmacy",
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
-          googleMapLink: service.googleMapLink,
-          city: service.city,
-          detailAddress: service.detailAddress,
-          providerPhone: service.providerPhone,
+          googleMapLink: (service as any).googleMapLink,
+          detailAddress: (service as any).detailAddress,
+          providerPhone: (service as any).providerPhone,
         }) as Service);
-      
-      // Sort: own services first, then by creation date
-      realServices.sort((a: any, b: any) => {
-        const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
-        const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
-        if (aOwn !== bOwn) return aOwn ? -1 : 1;
-        const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
-        const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
-        return bd - ad;
-      });
-      setPharmacyServices(realServices as any);
-      setIsLoading(false);
-    };
-    
-    loadServices();
-
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'sehatkor_services') {
-        loadServices();
+        setPharmacyServices(prev => {
+          const byId = new Map(prev.map(s => [s.id, s] as const));
+          for (const s of mapped) byId.set(s.id, s);
+          const arr = Array.from(byId.values());
+          arr.sort((a: any, b: any) => {
+            const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
+            const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
+            if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+            const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+            return bd - ad;
+          });
+          return arr;
+        });
+        setHasMore(more);
+      } catch (e) {
+        console.error('Failed to load services:', e);
+        if (isMounted) setHasMore(false);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    setPharmacyServices([]);
+    setPage(1);
+    loadPage(1);
+    return () => { isMounted = false; };
   }, [user?.id]);
+
+  const loadMore = async () => {
+    if (isLoading || hasMore === false) return;
+    const next = page + 1;
+    setPage(next);
+    setIsLoading(true);
+    try {
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'pharmacy', page: next, limit: 12 });
+      const mapped = services.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        rating: 4.5,
+        location: (service as any).city || "Karachi",
+        type: "Medicine",
+        homeService: (service as any).homeService || false,
+        image: service.image,
+        provider: (service as any).providerName || "Pharmacy",
+        createdAt: (service as any).createdAt,
+        _providerId: (service as any).providerId,
+        googleMapLink: (service as any).googleMapLink,
+        detailAddress: (service as any).detailAddress,
+        providerPhone: (service as any).providerPhone,
+      }) as Service);
+      setPharmacyServices(prev => {
+        const byId = new Map(prev.map(s => [s.id, s] as const));
+        for (const s of mapped) byId.set(s.id, s);
+        const arr = Array.from(byId.values());
+        arr.sort((a: any, b: any) => {
+          const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
+          const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
+          if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+          const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+          return bd - ad;
+        });
+        return arr;
+      });
+      setHasMore(more);
+    } catch (e) {
+      console.error('Failed to load more services:', e);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredServices = useMemo(() => {
     return pharmacyServices.filter(service => {
@@ -269,6 +320,13 @@ const PharmaciesPage = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+        {filteredServices.length > 0 && hasMore && (
+          <div className="flex justify-center mt-8">
+            <Button onClick={loadMore} disabled={isLoading}>
+              {isLoading ? 'Loading...' : 'Load more'}
+            </Button>
+          </div>
         )}
       </div>
 

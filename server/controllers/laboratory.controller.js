@@ -3,7 +3,7 @@ import cloudinary from '../config/cloudinary.js';
 
 export const listLaboratoryTests = async (req, res) => {
   try {
-    const tests = await LaboratoryTest.find({ providerId: req.userId }).sort({ createdAt: -1 });
+    const tests = await LaboratoryTest.find({ providerId: req.userId }).sort({ createdAt: -1 }).lean();
     res.status(200).json({ tests });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching tests', error: error.message });

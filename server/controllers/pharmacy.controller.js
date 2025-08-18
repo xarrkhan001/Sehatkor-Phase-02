@@ -5,7 +5,7 @@ import cloudinary from '../config/cloudinary.js';
 export const listMedicines = async (req, res) => {
   try {
     const providerId = req.userId;
-    const medicines = await Medicine.find({ providerId }).sort({ createdAt: -1 });
+    const medicines = await Medicine.find({ providerId }).sort({ createdAt: -1 }).lean();
     res.status(200).json({ medicines });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching medicines', error: error?.message });

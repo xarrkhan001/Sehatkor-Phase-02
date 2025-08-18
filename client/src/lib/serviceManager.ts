@@ -161,6 +161,57 @@ class ServiceManager {
     return this.getServicesByProviderType('laboratory');
   }
 
+  // Fetch public services with optional type/page/limit (no localStorage write)
+  static async fetchPublicServices(params?: { type?: Service['providerType']; page?: number; limit?: number }): Promise<{
+    services: Service[];
+    total: number;
+    byType?: { doctor: number; clinic: number; pharmacy: number; laboratory: number };
+    page?: number;
+    limit?: number;
+    hasMore?: boolean;
+  }> {
+    const query = new URLSearchParams();
+    if (params?.type) query.set('type', params.type);
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.limit) query.set('limit', String(params.limit));
+
+    const url = `http://localhost:4000/api/user/services/public${query.toString() ? `?${query.toString()}` : ''}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: Failed to fetch services`);
+    }
+    const data = await res.json();
+
+    const services: Service[] = (data.services || []).map((service: any) => ({
+      id: String(service._id),
+      name: service.name,
+      description: service.description || '',
+      price: service.price || 0,
+      category: service.category || 'Treatment',
+      providerType: service.providerType,
+      providerId: service.providerId?._id || service.providerId,
+      providerName: service.providerName || service.providerId?.name || 'Provider',
+      image: service.imageUrl,
+      duration: service.duration,
+      city: service.city,
+      detailAddress: service.detailAddress,
+      googleMapLink: service.googleMapLink,
+      providerPhone: service.providerPhone,
+      ...(service.stock != null && { stock: service.stock }),
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
+    }));
+
+    return {
+      services,
+      total: data.total ?? services.length,
+      byType: data.byType,
+      page: data.page,
+      limit: data.limit,
+      hasMore: data.hasMore,
+    };
+  }
+
   // Fetch all services from server and sync to local storage
   static async syncServicesFromServer(): Promise<Service[]> {
     try {

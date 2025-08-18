@@ -15,7 +15,7 @@ export const getVerifiedUsers = async (req, res) => {
         { sender: currentUserId, status: 'accepted' },
         { recipient: currentUserId, status: 'accepted' }
       ]
-    }).populate('sender recipient', '_id name email role avatar isVerified');
+    }).populate('sender recipient', '_id name email role avatar isVerified').lean();
 
     // Extract connected users (excluding current user)
     const connectedUsers = connections.map(conn => {
@@ -80,7 +80,7 @@ export const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
     const currentUserId = req.userId;
-    const messages = await Message.find({ conversationId, deletedFor: { $ne: currentUserId } }).sort({ createdAt: 1 });
+    const messages = await Message.find({ conversationId, deletedFor: { $ne: currentUserId } }).sort({ createdAt: 1 }).lean();
     res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching messages', error: error.message });

@@ -83,7 +83,7 @@ export const getPendingRequests = async (req, res) => {
     const pendingRequests = await ConnectionRequest.find({
       recipient: userId,
       status: 'pending'
-    }).populate('sender', 'name email role avatar isVerified');
+    }).populate('sender', 'name email role avatar isVerified').lean();
 
     res.status(200).json(pendingRequests);
   } catch (error) {
@@ -99,7 +99,7 @@ export const getSentRequests = async (req, res) => {
     const sentRequests = await ConnectionRequest.find({
       sender: userId
     }).populate('recipient', 'name email role avatar isVerified')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     res.status(200).json(sentRequests);
   } catch (error) {
@@ -231,7 +231,7 @@ export const getConnectedUsers = async (req, res) => {
         { sender: userId, status: 'accepted' },
         { recipient: userId, status: 'accepted' }
       ]
-    }).populate('sender recipient', 'name email role avatar isVerified');
+    }).populate('sender recipient', 'name email role avatar isVerified').lean();
 
     // Extract connected users (excluding current user) and dedupe by _id
     const seen = new Set();
