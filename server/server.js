@@ -1,4 +1,5 @@
 import express from "express";
+import compression from "compression";
 import dotenv from "dotenv";
 import cors from "cors";
 import http from "http";
@@ -42,6 +43,12 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+// Enable gzip compression to reduce payload sizes (safe, non-breaking)
+app.use(
+  compression({
+    threshold: 1024, // compress responses >1KB
   })
 );
 app.use(express.json());

@@ -16,65 +16,117 @@ const DoctorsPage = () => {
   const [doctorServices, setDoctorServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState<boolean | undefined>(true);
+
   const { user } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
 
   useEffect(() => {
-    const loadServices = async () => {
+    let isMounted = true;
+    const loadPage = async (nextPage: number) => {
+      setIsLoading(true);
       try {
-        // First try to sync from server
-        await ServiceManager.syncServicesFromServer();
-      } catch (error) {
-        console.log('Could not sync from server, using local data');
-      }
-      
-      const source = ServiceManager.getAllServices();
-      // Only get services from doctors (providerType === 'doctor')
-      const realServices = source
-        .filter((service: any) => service.providerType === 'doctor')
-        .map((service: any) => ({
+        const { services, hasMore: more } = await ServiceManager.fetchPublicServices({
+          type: 'doctor',
+          page: nextPage,
+          limit: 12,
+        });
+        if (!isMounted) return;
+        const mapped = services.map((service: any) => ({
           id: service.id,
           name: service.name,
           description: service.description,
           price: service.price,
           rating: 4.5,
-          location: service.city || "Karachi",
+          location: (service as any).city || "Karachi",
           type: service.category === "Surgery" ? "Surgery" : "Treatment",
-          homeService: true, // Doctors provide home service
+          homeService: true,
           image: service.image,
-          provider: service.providerName || "Doctor",
+          provider: (service as any).providerName || "Doctor",
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
-          googleMapLink: service.googleMapLink,
-          detailAddress: service.detailAddress,
-          providerPhone: service.providerPhone,
+          googleMapLink: (service as any).googleMapLink,
+          detailAddress: (service as any).detailAddress,
+          providerPhone: (service as any).providerPhone,
         }) as Service);
-      
-      // Sort: own services first, then by creation date
-      realServices.sort((a: any, b: any) => {
-        const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
-        const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
-        if (aOwn !== bOwn) return aOwn ? -1 : 1;
-        const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
-        const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
-        return bd - ad;
-      });
-      
-      setDoctorServices(realServices as any);
-      setIsLoading(false);
-    };
-    
-    loadServices();
-    
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'sehatkor_services') {
-        loadServices();
+        setDoctorServices(prev => {
+          const byId = new Map(prev.map(s => [s.id, s] as const));
+          for (const s of mapped) byId.set(s.id, s);
+          const arr = Array.from(byId.values());
+          arr.sort((a: any, b: any) => {
+            const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
+            const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
+            if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+            const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+            return bd - ad;
+          });
+          return arr;
+        });
+        setHasMore(more);
+      } catch (e) {
+        console.error('Failed to load services:', e);
+        if (isMounted) setHasMore(false);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    // initial load
+    setDoctorServices([]);
+    setPage(1);
+    loadPage(1);
+    return () => { isMounted = false; };
   }, [user?.id]);
+
+  const loadMore = async () => {
+    if (isLoading || hasMore === false) return;
+    const next = page + 1;
+    setPage(next);
+    // reuse effect's loader logic inline
+    setIsLoading(true);
+    try {
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 12 });
+      const mapped = services.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        rating: 4.5,
+        location: (service as any).city || "Karachi",
+        type: service.category === "Surgery" ? "Surgery" : "Treatment",
+        homeService: true,
+        image: service.image,
+        provider: (service as any).providerName || "Doctor",
+        createdAt: (service as any).createdAt,
+        _providerId: (service as any).providerId,
+        googleMapLink: (service as any).googleMapLink,
+        detailAddress: (service as any).detailAddress,
+        providerPhone: (service as any).providerPhone,
+      }) as Service);
+      setDoctorServices(prev => {
+        const byId = new Map(prev.map(s => [s.id, s] as const));
+        for (const s of mapped) byId.set(s.id, s);
+        const arr = Array.from(byId.values());
+        arr.sort((a: any, b: any) => {
+          const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
+          const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
+          if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+          const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+          return bd - ad;
+        });
+        return arr;
+      });
+      setHasMore(more);
+    } catch (e) {
+      console.error('Failed to load more services:', e);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredServices = useMemo(() => {
     return doctorServices.filter(service => {
@@ -141,31 +193,29 @@ const DoctorsPage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-  <div className="flex flex-col items-center text-center mb-6">
-    <h1 className="text-3xl font-bold mb-2">Find Your Doctor</h1>
-    <p className="text-lg text-gray-500 max-w-2xl">
-      Search from our network of qualified healthcare professionals
-    </p>
-  </div>
-  
-  <div className="flex justify-center">
-    <div className="relative w-full max-w-2xl">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-      <Input
-        placeholder="Search doctors by name, specialty, or location..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="pl-10 py-5 rounded-full shadow-sm focus-visible:ring-2 focus-visible:ring-primary/50"
-      />
-    </div>
-  </div>
-  
-  {filteredServices.length > 0 && (
-    <p className="text-center mt-4 text-gray-400">
-      Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
-    </p>
-  )}
-</div>
+          <div className="flex flex-col items-center text-center mb-6">
+            <h1 className="text-3xl font-bold mb-2">Find Your Doctor</h1>
+            <p className="text-lg text-gray-500 max-w-2xl">
+              Search from our network of qualified healthcare professionals
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <div className="relative w-full max-w-2xl">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search doctors by name, specialty, or location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 py-5 rounded-full shadow-sm focus-visible:ring-2 focus-visible:ring-primary/50"
+              />
+            </div>
+          </div>
+          {filteredServices.length > 0 && (
+            <p className="text-center mt-4 text-gray-400">
+              Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
+            </p>
+          )}
+        </div>
 
         {/* Results */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -177,7 +227,7 @@ const DoctorsPage = () => {
               <CardContent className="p-5">
                 {/* Image */}
                 <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
-                {service.image ? (
+                  {service.image ? (
                     <img
                       src={service.image}
                       alt={service.name}
@@ -185,8 +235,8 @@ const DoctorsPage = () => {
                     />
                   ) : (
                     <span className="text-gray-400 text-4xl">🩺</span>
-                )}
-              </div>
+                  )}
+                </div>
 
                 {/* Title and Provider */}
                 <div className="flex justify-between items-start mb-2">
@@ -226,8 +276,8 @@ const DoctorsPage = () => {
                     <span>{service.rating}</span>
                   </div>
                   <div className="flex items-center gap-1 text-gray-500">
-                  <MapPin className="w-4 h-4" />
-                  <span>{service.location}</span>
+                    <MapPin className="w-4 h-4" />
+                    <span>{service.location}</span>
                   </div>
                   {service.homeService && (
                     <div className="flex items-center gap-1 text-green-600">
@@ -280,6 +330,13 @@ const DoctorsPage = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+        {filteredServices.length > 0 && hasMore && (
+          <div className="flex justify-center mt-8">
+            <Button onClick={loadMore} disabled={isLoading}>
+              {isLoading ? 'Loading...' : 'Load more'}
+            </Button>
+          </div>
         )}
       </div>
 

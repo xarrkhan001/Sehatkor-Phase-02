@@ -8,50 +8,73 @@ import LaboratoryTest from "../models/LaboratoryTest.js";
 // Get all public services from all providers
 export const getAllPublicServices = async (req, res) => {
   try {
+    // Optional filtering & pagination
+    const type = (req.query.type || '').toString().toLowerCase();
+    const hasType = ['doctor', 'clinic', 'pharmacy', 'laboratory'].includes(type);
+    const page = Math.max(1, Number(req.query.page) || 0);
+    const limitRaw = Number(req.query.limit) || 0;
+    const limit = limitRaw > 0 ? Math.min(limitRaw, 100) : 0; // cap to 100
+
     // Fetch services from all providers with provider details
-    const [
-      doctorServices,
-      clinicServices,
-      pharmacyServices,
-      laboratoryServices,
-    ] = await Promise.all([
-      DoctorService.find({})
-        .populate("providerId", "phone")
-        .sort({ createdAt: -1 }),
-      ClinicService.find({})
-        .populate("providerId", "phone")
-        .sort({ createdAt: -1 }),
-      Medicine.find({}).populate("providerId", "phone").sort({ createdAt: -1 }),
-      LaboratoryTest.find({})
-        .populate("providerId", "phone")
-        .sort({ createdAt: -1 }),
-    ]);
+    let doctorServices = [];
+    let clinicServices = [];
+    let pharmacyServices = [];
+    let laboratoryServices = [];
+
+    // Helper to optionally apply pagination
+    const applyPaging = (q) => {
+      if (hasType && page && limit) {
+        return q.skip((page - 1) * limit).limit(limit);
+      }
+      return q;
+    };
+
+    if (!hasType || type === 'doctor') {
+      doctorServices = await applyPaging(
+        DoctorService.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+      ).lean();
+    }
+    if (!hasType || type === 'clinic') {
+      clinicServices = await applyPaging(
+        ClinicService.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+      ).lean();
+    }
+    if (!hasType || type === 'pharmacy') {
+      pharmacyServices = await applyPaging(
+        Medicine.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+      ).lean();
+    }
+    if (!hasType || type === 'laboratory') {
+      laboratoryServices = await applyPaging(
+        LaboratoryTest.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+      ).lean();
+    }
 
     // Combine all services with provider type information and phone numbers
     const allServices = [
       ...doctorServices.map((service) => ({
-        ...service.toObject(),
+        ...(service.toObject ? service.toObject() : service),
         providerType: "doctor",
         providerPhone: service.providerId?.phone || null,
       })),
       ...clinicServices.map((service) => ({
-        ...service.toObject(),
+        ...(service.toObject ? service.toObject() : service),
         providerType: "clinic",
         providerPhone: service.providerId?.phone || null,
       })),
       ...pharmacyServices.map((service) => ({
-        ...service.toObject(),
+        ...(service.toObject ? service.toObject() : service),
         providerType: "pharmacy",
         providerPhone: service.providerId?.phone || null,
       })),
       ...laboratoryServices.map((service) => ({
-        ...service.toObject(),
+        ...(service.toObject ? service.toObject() : service),
         providerType: "laboratory",
         providerPhone: service.providerId?.phone || null,
       })),
     ];
 
-    res.status(200).json({
+    const response = {
       services: allServices,
       total: allServices.length,
       byType: {
@@ -60,7 +83,13 @@ export const getAllPublicServices = async (req, res) => {
         pharmacy: pharmacyServices.length,
         laboratory: laboratoryServices.length,
       },
-    });
+    };
+    if (hasType && page && limit) {
+      response.page = page;
+      response.limit = limit;
+      response.hasMore = allServices.length === limit; // simple indicator
+    }
+    res.status(200).json(response);
   } catch (error) {
     console.error("Error fetching public services:", error);
     res.status(500).json({
@@ -72,7 +101,7 @@ export const getAllPublicServices = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
+    const user = await User.findById(req.userId).select("-password").lean();
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -122,7 +151,7 @@ export const deleteUserAccount = async (req, res) => {
 // 📌 Admin: Get all users
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find().select("-password").lean();
     res.status(200).json(users);
   } catch (error) {
     res
@@ -135,7 +164,7 @@ export const getAllUsers = async (req, res) => {
 export const getUsersByRole = async (req, res) => {
   try {
     const { role } = req.params;
-    const users = await User.find({ role }).select("-password");
+    const users = await User.find({ role }).select("-password").lean();
     res.status(200).json(users);
   } catch (error) {
     res

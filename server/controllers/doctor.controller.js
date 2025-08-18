@@ -6,7 +6,7 @@ import cloudinary from '../config/cloudinary.js';
 // 📌 Get current doctor's profile
 export const getDoctorProfile = async (req, res) => {
   try {
-    const doctor = await User.findById(req.userId).select('-password');
+    const doctor = await User.findById(req.userId).select('-password').lean();
     if (!doctor || doctor.role !== 'doctor') {
       return res.status(403).json({ message: 'Access denied' });
     }
@@ -39,7 +39,7 @@ export const updateDoctorProfile = async (req, res) => {
 // 📌 Get all verified doctors
 export const getAllDoctors = async (req, res) => {
   try {
-    const doctors = await User.find({ role: 'doctor', verified: true }).select('-password');
+    const doctors = await User.find({ role: 'doctor', verified: true }).select('-password').lean();
     res.status(200).json(doctors);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching doctors', error: error.message });
@@ -58,7 +58,7 @@ export const searchDoctors = async (req, res) => {
         { name: new RegExp(query, 'i') },
         { specialization: new RegExp(query, 'i') }
       ]
-    }).select('-password');
+    }).select('-password').lean();
 
     res.status(200).json(doctors);
   } catch (error) {
@@ -75,7 +75,7 @@ export const getDoctorById = async (req, res) => {
       _id: doctorId,
       role: 'doctor',
       verified: true
-    }).select('-password');
+    }).select('-password').lean();
 
     if (!doctor) {
       return res.status(404).json({ message: 'Doctor not found' });
@@ -90,7 +90,7 @@ export const getDoctorById = async (req, res) => {
 // ===== Doctor Services CRUD =====
 export const listDoctorServices = async (req, res) => {
   try {
-    const services = await DoctorService.find({ providerId: req.userId }).sort({ createdAt: -1 });
+    const services = await DoctorService.find({ providerId: req.userId }).sort({ createdAt: -1 }).lean();
     res.status(200).json({ services });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching services', error: error.message });
