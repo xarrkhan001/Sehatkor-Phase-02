@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 
@@ -23,7 +24,7 @@ const LabsPage = () => {
 
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
-  const { user } = useAuth();
+  const { user, mode } = useAuth();
 
   useEffect(() => {
     let isMounted = true;
@@ -135,6 +136,30 @@ const LabsPage = () => {
              service.description.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [labServices, searchTerm]);
+
+  const handleBookNow = (service: Service) => {
+    if (user && user.role !== 'patient' && mode !== 'patient') {
+      toast.error('Providers must switch to Patient Mode to book services.', {
+        description: 'Click your profile icon and use the toggle to switch modes.',
+      });
+      return;
+    }
+
+    if (user && (service as any)._providerId === user.id) {
+      toast.error("You cannot book your own service.");
+      return;
+    }
+
+    navigate('/payment', {
+      state: {
+        serviceId: service.id,
+        serviceName: service.name,
+        providerId: (service as any)._providerId || service.id,
+        providerName: service.provider,
+        providerType: 'lab'
+      }
+    });
+  };
 
   const getCoordinatesForLocation = (location: string) => {
     const locationCoordinates: Record<string, { lat: number; lng: number }> = {
@@ -305,15 +330,7 @@ const LabsPage = () => {
                 <div className="flex flex-wrap gap-2">
                   <Button 
                     className="flex-1 min-w-[100px]"
-                    onClick={() => navigate('/payment', {
-                      state: {
-                        serviceId: service.id,
-                        serviceName: service.name,
-                        providerId: (service as any)._providerId || service.id,
-                        providerName: service.provider,
-                        providerType: 'lab'
-                      }
-                    })}
+                    onClick={() => handleBookNow(service)}
                   >
                     <Clock className="w-4 h-4 mr-1" /> Book Now
                   </Button>

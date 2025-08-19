@@ -18,7 +18,7 @@ interface ServiceData {
 }
 
 const PaymentPage = () => {
-  const { user } = useAuth();
+  const { user, mode } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   
