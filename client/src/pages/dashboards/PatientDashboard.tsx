@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
-import { mockBookings } from "@/data/mockData";
 import { toast } from "sonner";
 import { 
   Calendar,
@@ -213,35 +212,48 @@ const PatientDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {mockBookings.map((booking) => (
-                        <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{booking.serviceName}</h4>
-                            <p className="text-sm text-muted-foreground">{booking.provider}</p>
-                            <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                              <div className="flex items-center space-x-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>{booking.date}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <Clock className="w-4 h-4" />
-                                <span>{booking.time}</span>
+                      {bookings.filter(b => b.status !== 'Completed').length > 0 ? (
+                        bookings.filter(b => b.status !== 'Completed').map((booking) => (
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.serviceName}</h4>
+                              <p className="text-sm text-muted-foreground">{booking.providerName}</p>
+                              <div className="flex flex-col space-y-2 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-2">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>Booked on: {new Date(booking.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                {booking.status === 'Scheduled' && booking.scheduledTime && (
+                                  <div className="flex items-center space-x-2 text-primary font-semibold">
+                                    <Clock className="w-4 h-4" />
+                                    <span>Appointment: {new Date(booking.scheduledTime).toLocaleString()}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
+                            <div className="text-right">
+                              <Badge
+                                variant={booking.status === "Completed" ? "default" : "secondary"}
+                                className={
+                                  booking.status === "Completed" ? "bg-green-600" :
+                                  booking.status === 'Scheduled' ? 'bg-blue-500' :
+                                  booking.status === 'Confirmed' ? 'bg-yellow-500' : ''
+                                }
+                              >
+                                {booking.status}
+                              </Badge>
+                              <p className="text-sm font-medium mt-1">
+                                PKR {(booking.amount || 0).toLocaleString()}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <Badge
-                              variant={booking.status === "Completed" ? "default" : "secondary"}
-                              className={booking.status === "Completed" ? "bg-success" : ""}
-                            >
-                              {booking.status}
-                            </Badge>
-                            <p className="text-sm font-medium mt-1">
-                              PKR {booking.amount.toLocaleString()}
-                            </p>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">No active bookings</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -289,36 +301,44 @@ const PatientDashboard = () => {
                               <p className="text-sm text-muted-foreground">
                                 {booking.providerName} ({booking.providerType})
                               </p>
-                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                                <div className="flex items-center space-x-1">
+                              <div className="flex flex-col space-y-2 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-2">
                                   <Calendar className="w-4 h-4" />
-                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
+                                  <span>Booked on: {new Date(booking.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <div className="flex items-center space-x-1">
-                                  <CreditCard className="w-4 h-4" />
-                                  <span>{booking.paymentMethod}</span>
-                                </div>
-                                <div className="flex items-center space-x-1">
-                                  <Phone className="w-4 h-4" />
-                                  <span>***{booking.paymentNumber.slice(-4)}</span>
-                                </div>
+                                {booking.status === 'Scheduled' && booking.scheduledTime && (
+                                  <div className="flex items-center space-x-2 text-primary font-semibold">
+                                    <Clock className="w-4 h-4" />
+                                    <span>Appointment: {new Date(booking.scheduledTime).toLocaleString()}</span>
+                                  </div>
+                                )}
+                                {booking.status === 'Scheduled' && booking.communicationChannel && (
+                                  <div className="flex items-center space-x-2">
+                                    <Phone className="w-4 h-4" />
+                                    <span>Channel: {booking.communicationChannel}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                            <div className="text-right flex items-center space-x-2">
+                            <div className="text-right flex flex-col items-end space-y-2">
                               <Badge
-                                variant={booking.status === "confirmed" ? "default" : "secondary"}
-                                className={booking.status === "confirmed" ? "bg-success" : ""}
+                                variant={booking.status === "Completed" ? "default" : "secondary"}
+                                className={
+                                  booking.status === "Completed" ? "bg-green-600" :
+                                  booking.status === 'Scheduled' ? 'bg-blue-500' :
+                                  booking.status === 'Confirmed' ? 'bg-yellow-500' : ''
+                                }
                               >
                                 {booking.status}
                               </Badge>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteBooking(booking._id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                Delete
-                              </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deleteBooking(booking._id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  Delete
+                                </Button>
                             </div>
                           </div>
                         ))}

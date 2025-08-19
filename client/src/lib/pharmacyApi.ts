@@ -10,6 +10,9 @@ export type MedicineDoc = {
   providerId: string;
   providerName: string;
   providerType: 'pharmacy';
+  googleMapLink?: string;
+  city?: string;
+  detailAddress?: string;
   createdAt: string;
   updatedAt: string;
 };

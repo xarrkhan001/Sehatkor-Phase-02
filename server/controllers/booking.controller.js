@@ -50,8 +50,7 @@ export const createBooking = async (req, res) => {
       serviceName,
       paymentMethod,
       paymentNumber,
-      status: "pending",
-    });
+          });
 
     return res.status(201).json(booking);
   } catch (error) {
@@ -99,5 +98,47 @@ export const deleteAllBookings = async (_req, res) => {
     return res.json({ deletedCount: result.deletedCount || 0 });
   } catch (error) {
     return res.status(500).json({ message: "Failed to delete all bookings", error: error?.message || error });
+  }
+};
+
+// PUT /api/bookings/:id/schedule
+export const scheduleBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledTime, communicationChannel } = req.body;
+
+    if (!scheduledTime || !communicationChannel) {
+      return res.status(400).json({ message: "scheduledTime and communicationChannel are required" });
+    }
+
+    const booking = await Booking.findByIdAndUpdate(
+      id,
+      { status: "Scheduled", scheduledTime, communicationChannel },
+      { new: true }
+    );
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.json(booking);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to schedule booking", error: error?.message || error });
+  }
+};
+
+// PUT /api/bookings/:id/complete
+export const completeBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const booking = await Booking.findByIdAndUpdate(id, { status: "Completed" }, { new: true });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.json(booking);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to complete booking", error: error?.message || error });
   }
 };

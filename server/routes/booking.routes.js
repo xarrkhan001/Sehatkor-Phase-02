@@ -6,6 +6,8 @@ import {
   getBookingsByProvider,
   deleteBooking,
   deleteAllBookings,
+  scheduleBooking,
+  completeBooking,
 } from "../controllers/booking.controller.js";
 
 const router = express.Router();
@@ -24,5 +26,11 @@ router.delete("/:id", authMiddleware, deleteBooking);
 
 // DELETE /api/bookings (delete all)
 router.delete("/", authMiddleware, deleteAllBookings);
+
+// PUT /api/bookings/:id/schedule
+router.put("/:id/schedule", authMiddleware, scheduleBooking);
+
+// PUT /api/bookings/:id/complete
+router.put("/:id/complete", authMiddleware, completeBooking);
 
 export default router;
