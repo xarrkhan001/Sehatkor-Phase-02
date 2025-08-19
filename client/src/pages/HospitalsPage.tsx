@@ -15,7 +15,7 @@ import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 
 const HospitalsPage = () => {
   const navigate = useNavigate();
-  const [clinicServices, setClinicServices] = useState<Service[]>([]);
+  const [hospitalServices, setHospitalServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);

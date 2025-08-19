@@ -152,11 +152,7 @@ const LaboratoryDashboard = () => {
       
     } catch (error) {
       console.error('Error loading tests:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load tests. Please refresh the page.",
-        variant: "destructive"
-      });
+      toast.error("Failed to load tests. Please refresh the page.");
     }
   };
 
@@ -176,7 +172,7 @@ const LaboratoryDashboard = () => {
       }
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
-      toast.error('An error occurred while fetching bookings.');
+      toast.error("An error occurred while fetching bookings.");
     } finally {
       setIsLoadingBookings(false);
     }
@@ -283,11 +279,7 @@ const LaboratoryDashboard = () => {
 
   const handleAddTest = async () => {
     if (!testForm.name || !user?.id) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -306,11 +298,7 @@ const LaboratoryDashboard = () => {
           imagePublicId = result?.public_id;
         } catch (uploadError) {
           console.error('Image upload failed:', uploadError);
-          toast({
-            title: "Warning",
-            description: "Image upload failed, but test will be added without image",
-            variant: "destructive"
-          });
+          toast.warning("Image upload failed, but test will be added without image");
         } finally {
           setIsUploadingImage(false);
         }
@@ -355,17 +343,10 @@ const LaboratoryDashboard = () => {
       // Reload tests from backend
       await reloadTests();
       
-      toast({ 
-        title: "Success", 
-        description: "Test added successfully and is now available to all users" 
-      });
+      toast.success("Test added successfully and is now available to all users");
     } catch (error: any) {
       console.error('Error adding test:', error);
-      toast({ 
-        title: "Error", 
-        description: error?.message || "Failed to add test. Please try again.", 
-        variant: "destructive" 
-      });
+      toast.error(error?.message || "Failed to add test. Please try again.");
     } finally {
       setIsAddingTest(false);
     }
@@ -376,9 +357,9 @@ const LaboratoryDashboard = () => {
       await apiDelete(testId);
       ServiceManager.deleteService(testId);
       reloadTests();
-      toast({ title: "Success", description: "Test deleted successfully" });
+      toast.success("Test deleted successfully");
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Failed to delete test", variant: "destructive" });
+      toast.error(e?.message || "Failed to delete test");
     }
   };
 
@@ -448,9 +429,9 @@ const LaboratoryDashboard = () => {
       
       setIsEditOpen(false);
       setEditingTestId(null);
-      toast({ title: "Success", description: "Test updated successfully" });
+      toast.success("Test updated successfully");
     } catch (error: any) {
-      toast({ title: "Error", description: error?.message || "Failed to update test", variant: "destructive" });
+      toast.error(error?.message || "Failed to update test");
     }
   };
 
@@ -458,10 +439,7 @@ const LaboratoryDashboard = () => {
     setLabType(type);
     localStorage.setItem(`lab_type_${user?.id}`, type);
     
-    toast({
-      title: "Success",
-      description: "Lab type updated successfully"
-    });
+    toast.success("Lab type updated successfully");
   };
 
   const pendingTests = [
@@ -877,65 +855,111 @@ const LaboratoryDashboard = () => {
                     <CardContent>
                       <div className="space-y-4">
                         {tests.length > 0 ? (
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Image</TableHead>
-                                <TableHead>Test Name</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Duration</TableHead>
-                                <TableHead>Actions</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                          <>
+                            {/* Mobile card layout */}
+                            <div className="md:hidden space-y-4">
                               {tests.map((test) => (
-                                <TableRow key={test.id}>
-                                  <TableCell>
-                                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                <div key={test.id} className="p-4 border rounded-lg">
+                                  <div className="flex items-center space-x-4">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                                       {test.image ? (
-                                        <img 
-                                          src={test.image} 
+                                        <img
+                                          src={test.image}
                                           alt={test.name}
                                           className="w-full h-full object-cover"
                                           onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.style.display = 'none';
-                                            target.nextElementSibling!.classList.remove('hidden');
+                                            (target.nextElementSibling as HTMLElement)!.classList.remove('hidden');
                                           }}
                                         />
                                       ) : null}
                                       <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
                                     </div>
-                                  </TableCell>
-                                  <TableCell className="font-medium">{test.name}</TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline">{test.category}</Badge>
-                                  </TableCell>
-                                  <TableCell>PKR {test.price.toLocaleString()}</TableCell>
-                                  <TableCell>{test.duration || 'N/A'}</TableCell>
-                                  <TableCell>
-                                    <div className="flex space-x-2">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => openEdit(test)}
-                                      >
-                                        <Edit className="w-4 h-4 mr-1" /> Edit
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => handleDeleteTest(test.id)}
-                                      >
-                                        <Trash2 className="w-4 h-4 mr-1" /> Delete
-                                      </Button>
+                                    <div className="flex-1">
+                                      <div className="flex items-center justify-between">
+                                        <h4 className="font-medium">{test.name}</h4>
+                                        <Badge variant="outline">{test.category}</Badge>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground mt-1">{test.duration || 'N/A'}</p>
+                                      <p className="text-sm font-semibold mt-1">PKR {test.price.toLocaleString()}</p>
                                     </div>
-                                  </TableCell>
-                                </TableRow>
+                                  </div>
+                                  <div className="mt-4 flex gap-2">
+                                    <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(test)}>
+                                      <Edit className="w-4 h-4 mr-1" /> Edit
+                                    </Button>
+                                    <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleDeleteTest(test.id)}>
+                                      <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                    </Button>
+                                  </div>
+                                </div>
                               ))}
-                            </TableBody>
-                          </Table>
+                            </div>
+
+                            {/* Desktop table layout */}
+                            <div className="hidden md:block">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Image</TableHead>
+                                    <TableHead>Test Name</TableHead>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>Duration</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {tests.map((test) => (
+                                    <TableRow key={test.id}>
+                                      <TableCell>
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                          {test.image ? (
+                                            <img
+                                              src={test.image}
+                                              alt={test.name}
+                                              className="w-full h-full object-cover"
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                                target.nextElementSibling!.classList.remove('hidden');
+                                              }}
+                                            />
+                                          ) : null}
+                                          <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+                                        </div>
+                                      </TableCell>
+                                      <TableCell className="font-medium">{test.name}</TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{test.category}</Badge>
+                                      </TableCell>
+                                      <TableCell>PKR {test.price.toLocaleString()}</TableCell>
+                                      <TableCell>{test.duration || 'N/A'}</TableCell>
+                                      <TableCell>
+                                        <div className="flex space-x-2">
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => openEdit(test)}
+                                          >
+                                            <Edit className="w-4 h-4 mr-1" /> Edit
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => handleDeleteTest(test.id)}
+                                          >
+                                            <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                          </Button>
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </>
                         ) : (
                           <div className="text-center text-muted-foreground py-8">
                             No tests added yet.
