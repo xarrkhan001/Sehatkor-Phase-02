@@ -33,6 +33,25 @@ export const createBooking = async (req, res) => {
         .json({ message: `Missing required fields: ${missing.join(", ")}` });
     }
 
+    // Normalize providerType to match schema enum
+    const normalizeProviderType = (t) => {
+      if (!t) return null;
+      const v = String(t).toLowerCase();
+      if (v === "doctor") return "doctor";
+      if (v === "hospital" || v === "clinic" || v === "clinic/hospital") return "hospital";
+      if (v === "lab" || v === "laboratory") return "lab";
+      if (v === "pharmacy" || v === "pharmacies") return "pharmacy";
+      return null;
+    };
+
+    const providerTypeNormalized = normalizeProviderType(providerType);
+    const allowedTypes = ["doctor", "hospital", "lab", "pharmacy"];
+    if (!providerTypeNormalized || !allowedTypes.includes(providerTypeNormalized)) {
+      return res.status(400).json({
+        message: `Invalid providerType. Received: ${providerType}. Allowed: ${allowedTypes.join(", ")}`,
+      });
+    }
+
     if (!["easypaisa", "jazzcash"].includes(paymentMethod)) {
       return res.status(400).json({ message: "Invalid paymentMethod" });
     }
@@ -45,12 +64,12 @@ export const createBooking = async (req, res) => {
       patientName,
       providerId,
       providerName,
-      providerType,
+      providerType: providerTypeNormalized,
       serviceId,
       serviceName,
       paymentMethod,
       paymentNumber,
-          });
+    });
 
     return res.status(201).json(booking);
   } catch (error) {
