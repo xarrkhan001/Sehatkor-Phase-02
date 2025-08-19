@@ -670,51 +670,214 @@ const PharmacyDashboard = () => {
                     {medicines.length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">No medicines added yet.</div>
                     ) : (
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-20">Image</TableHead>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Category</TableHead>
-                              <TableHead>Price (PKR)</TableHead>
-                              <TableHead>Stock</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {medicines.map((m) => {
-                              const iid = m._id || m.id;
-                              return (
-                              <TableRow key={String(iid)}>
-                                <TableCell>
+                      <>
+                        {/* Mobile Card List */}
+                        <div className="grid gap-4 lg:hidden">
+                          {medicines.map((m) => {
+                            const iid = m._id || m.id;
+                            return (
+                              <div key={String(iid)} className="p-4 border rounded-lg flex items-start gap-3">
+                                <div className="shrink-0">
                                   {m.imageUrl || m.image ? (
-                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-16 h-16 object-cover rounded" />
                                   ) : (
-                                    <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">💊</div>
+                                    <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">💊</div>
                                   )}
-                                </TableCell>
-                                <TableCell className="font-medium">{m.name}</TableCell>
-                                <TableCell>{m.category || '-'}</TableCell>
-                                <TableCell>{m.price ?? 0}</TableCell>
-                                <TableCell>{m.stock ?? '-'}</TableCell>
-                                <TableCell className="text-right space-x-2">
-                                  <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
-                                    <Edit className="w-4 h-4 mr-1" /> Edit
-                                  </Button>
-                                  <Button size="sm" variant="destructive" onClick={() => handleDeleteMedicine(String(iid))}>
-                                    <Trash2 className="w-4 h-4 mr-1" /> Delete
-                                  </Button>
-                                </TableCell>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <h4 className="font-medium truncate">{m.name}</h4>
+                                    <span className="text-sm text-muted-foreground">PKR {m.price ?? 0}</span>
+                                  </div>
+                                  <div className="text-sm text-muted-foreground truncate">{m.category || '-'}</div>
+                                  <div className="text-xs text-muted-foreground mt-1">Stock: {m.stock ?? '-'}</div>
+                                  <div className="flex flex-wrap gap-2 mt-3">
+                                    <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
+                                      <Edit className="w-4 h-4 mr-1" /> Edit
+                                    </Button>
+                                    <Button size="sm" variant="destructive" onClick={() => handleDeleteMedicine(String(iid))}>
+                                      <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-20">Image</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Price (PKR)</TableHead>
+                                <TableHead>Stock</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
-                            )})}
-                          </TableBody>
-                        </Table>
-                      </div>
+                            </TableHeader>
+                            <TableBody>
+                              {medicines.map((m) => {
+                                const iid = m._id || m.id;
+                                return (
+                                  <TableRow key={String(iid)}>
+                                    <TableCell>
+                                      {m.imageUrl || m.image ? (
+                                        <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                                      ) : (
+                                        <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">💊</div>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="font-medium">{m.name}</TableCell>
+                                    <TableCell>{m.category || '-'}</TableCell>
+                                    <TableCell>{m.price ?? 0}</TableCell>
+                                    <TableCell>{m.stock ?? '-'}</TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                      <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
+                                        <Edit className="w-4 h-4 mr-1" /> Edit
+                                      </Button>
+                                      <Button size="sm" variant="destructive" onClick={() => handleDeleteMedicine(String(iid))}>
+                                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* Edit Medicine Dialog */}
+              <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Edit Medicine</DialogTitle>
+                    <DialogDescription>Update medicine details and save changes</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="editMedicineName">Medicine Name *</Label>
+                      <Input
+                        id="editMedicineName"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                        placeholder="e.g., Panadol 500mg"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Medicine Image</Label>
+                      <ImageUpload
+                        onImageSelect={(file, preview) => { setEditImageFile(file); setEditImagePreview(preview); }}
+                        onImageRemove={() => { setEditImageFile(null); setEditImagePreview(''); }}
+                        currentImage={editImagePreview}
+                        placeholder="Upload medicine image"
+                        className="max-w-xs"
+                      />
+                      {isUploadingImage && (
+                        <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="editMedicinePrice">Price (PKR) *</Label>
+                        <Input
+                          id="editMedicinePrice"
+                          type="number"
+                          value={editForm.price}
+                          onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                          placeholder="e.g., 120"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="editMedicineStock">Stock Quantity</Label>
+                        <Input
+                          id="editMedicineStock"
+                          type="number"
+                          value={editForm.stock}
+                          onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
+                          placeholder="e.g., 100"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="editMedicineCategory">Category</Label>
+                      <Select value={editForm.category} onValueChange={(value) => setEditForm({ ...editForm, category: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select medicine category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {medicineCategories.map((category) => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="editMedicineDescription">Description</Label>
+                      <Textarea
+                        id="editMedicineDescription"
+                        value={editForm.description}
+                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                        placeholder="Brief description of the medicine"
+                      />
+                    </div>
+
+                    {/* Location Fields */}
+                    <div className="space-y-3 border-t pt-3">
+                      <h4 className="font-medium text-sm">Location Information</h4>
+                      <div>
+                        <Label htmlFor="editMedicineCity">City</Label>
+                        <Input
+                          id="editMedicineCity"
+                          value={editForm.city}
+                          onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                          placeholder="e.g., Karachi"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="editMedicineAddress">Detailed Address</Label>
+                        <Textarea
+                          id="editMedicineAddress"
+                          value={editForm.detailAddress}
+                          onChange={(e) => setEditForm({ ...editForm, detailAddress: e.target.value })}
+                          placeholder="e.g., Shop 123, ABC Plaza, Main Road"
+                          rows={2}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="editMedicineMapLink">Google Maps Link (Optional)</Label>
+                        <Input
+                          id="editMedicineMapLink"
+                          value={editForm.googleMapLink}
+                          onChange={(e) => setEditForm({ ...editForm, googleMapLink: e.target.value })}
+                          placeholder="https://maps.google.com/..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="w-1/2" onClick={() => setIsEditOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button className="w-1/2" onClick={handleSaveEdit}>
+                        Save Changes
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <TabsContent value="bookings">
                 <Card className="card-healthcare">
                   <CardHeader>
@@ -749,11 +912,14 @@ const PharmacyDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div className="flex-1">
-                              <h4 className="font-medium">{booking.patientName}</h4>
-                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                          <div
+                            key={booking._id}
+                            className="p-4 border rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium truncate">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground truncate">{booking.serviceName}</p>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
@@ -766,7 +932,7 @@ const PharmacyDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right flex items-center space-x-2">
+                            <div className="sm:text-right flex flex-wrap sm:flex-nowrap items-center gap-2">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
                                 className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
@@ -774,17 +940,17 @@ const PharmacyDashboard = () => {
                                 {booking.status}
                               </Badge>
                               {booking.status === 'Confirmed' && (
-                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
+                                <Button size="sm" className="sm:w-auto" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
                               )}
                               {booking.status === 'Scheduled' && (
-                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
+                                <Button size="sm" variant="outline" className="sm:w-auto" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
                               )}
                               {booking.status === 'Completed' && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => deleteBooking(booking._id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 sm:w-auto"
                                 >
                                   Delete
                                 </Button>
@@ -797,49 +963,50 @@ const PharmacyDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+              <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
+                <DialogContent className="max-w-[95vw] sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Schedule Appointment</DialogTitle>
+                    <DialogDescription>
+                      Set a time and communication channel for '{selectedBooking?.serviceName}' with {selectedBooking?.patientName}.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="scheduleTime">Appointment Time</Label>
+                      <Input 
+                        id="scheduleTime"
+                        type="datetime-local" 
+                        value={scheduleDetails.scheduledTime}
+                        onChange={(e) => setScheduleDetails(prev => ({ ...prev, scheduledTime: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="communicationChannel">Communication Channel</Label>
+                      <Select 
+                        value={scheduleDetails.communicationChannel}
+                        onValueChange={(value) => setScheduleDetails(prev => ({ ...prev, communicationChannel: value }))}
+                      >
+                        <SelectTrigger id="communicationChannel">
+                          <SelectValue placeholder="Select a channel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SehatKor Chat">SehatKor Chat</SelectItem>
+                          <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                          <SelectItem value="Phone Call">Phone Call</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsScheduling(false)}>Cancel</Button>
+                    <Button onClick={scheduleBooking}>Confirm Schedule</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </Tabs>
 
-            <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Schedule Appointment</DialogTitle>
-                  <DialogDescription>
-                    Set a time and communication channel for '{selectedBooking?.serviceName}' with {selectedBooking?.patientName}.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="scheduleTime">Appointment Time</Label>
-                    <Input 
-                      id="scheduleTime"
-                      type="datetime-local" 
-                      value={scheduleDetails.scheduledTime}
-                      onChange={(e) => setScheduleDetails(prev => ({ ...prev, scheduledTime: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="communicationChannel">Communication Channel</Label>
-                    <Select 
-                      value={scheduleDetails.communicationChannel}
-                      onValueChange={(value) => setScheduleDetails(prev => ({ ...prev, communicationChannel: value }))}
-                    >
-                      <SelectTrigger id="communicationChannel">
-                        <SelectValue placeholder="Select a channel" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="SehatKor Chat">SehatKor Chat</SelectItem>
-                        <SelectItem value="WhatsApp">WhatsApp</SelectItem>
-                        <SelectItem value="Phone Call">Phone Call</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsScheduling(false)}>Cancel</Button>
-                  <Button onClick={scheduleBooking}>Confirm Schedule</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            
           </div>
 
           {/* Profile Sidebar */}
