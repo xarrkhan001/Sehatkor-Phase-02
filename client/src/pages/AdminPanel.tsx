@@ -208,17 +208,19 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Admin Dashboard</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage SehatKor platform operations and user verifications
             </p>
           </div>
-          <Badge variant="outline" className="text-success border-success">
-            <ShieldCheck className="w-4 h-4 mr-1" />
-            Admin Access
-          </Badge>
+          <div>
+            <Badge variant="outline" className="text-success border-success w-fit">
+              <ShieldCheck className="w-4 h-4 mr-1" />
+              Admin Access
+            </Badge>
+          </div>
         </div>
 
         {/* Verified Users Card - Prominent Display */}
@@ -251,7 +253,7 @@ const AdminPanel = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="verifications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="w-full overflow-x-auto flex sm:grid sm:grid-cols-4 gap-2">
             <TabsTrigger value="verifications">Verify Entities</TabsTrigger>
             <TabsTrigger value="services">Manage Services</TabsTrigger>
             <TabsTrigger value="orders">Orders & Billing</TabsTrigger>
@@ -262,25 +264,25 @@ const AdminPanel = () => {
           <TabsContent value="verifications" className="space-y-6">
             <Card className="card-healthcare">
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <CardTitle>Pending Verifications</CardTitle>
                     <CardDescription>
                       Review and approve healthcare provider registrations
                     </CardDescription>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="relative">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <div className="relative w-full sm:w-64">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                       <Input
                         placeholder="Search users..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 w-64"
+                        className="pl-10 w-full"
                       />
                     </div>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-full sm:w-32">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -294,7 +296,45 @@ const AdminPanel = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
+                {/* Mobile Card List */}
+                <div className="space-y-3 lg:hidden">
+                  {pendingUsers.map((user: any) => (
+                    <div key={user.id || user._id} className="border rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shrink-0">
+                          {getRoleIcon(user.role)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{user.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                        </div>
+                        {user.isVerified ? (
+                          <Badge className="bg-success text-success-foreground shrink-0">Verified</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-warning border-warning shrink-0">Pending</Badge>
+                        )}
+                      </div>
+                      <div className="mt-3 text-sm text-muted-foreground">
+                        <div className="flex gap-2">
+                          <Badge variant="outline">{user.role}</Badge>
+                          <span className="truncate">{user.phone}</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline"><Eye className="w-4 h-4" /></Button>
+                        <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => handleApprove(user._id)}>
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleReject(user._id)}>
+                          <XCircle className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table */}
+                <Table className="hidden lg:table">
                   <TableHeader>
                     <TableRow>
                       <TableHead>User</TableHead>
@@ -370,7 +410,32 @@ const AdminPanel = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
+                {/* Mobile Card List */}
+                <div className="space-y-3 lg:hidden">
+                  {recentServices.map((service) => (
+                    <div key={service.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{service.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{service.provider}</p>
+                        </div>
+                        {getStatusBadge(service.status)}
+                      </div>
+                      <div className="mt-2 text-sm text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
+                        <span><span className="font-medium">Type:</span> {service.type}</span>
+                        <span><span className="font-medium">Price:</span> PKR {service.price.toLocaleString()}</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline"><Edit className="w-4 h-4" /></Button>
+                        <Button size="sm" variant="outline"><Eye className="w-4 h-4" /></Button>
+                        <Button size="sm" variant="destructive"><Trash2 className="w-4 h-4" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table */}
+                <Table className="hidden lg:table">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Service</TableHead>
