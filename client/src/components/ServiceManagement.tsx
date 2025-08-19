@@ -8,12 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ui/image-upload";
 import ServiceManager, { Service } from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { createService as doctorCreate, updateService as doctorUpdate, deleteService as doctorDelete } from "@/lib/doctorApi";
 import { Plus, Edit, Trash2, Stethoscope } from "lucide-react";
-import { toast } from "sonner";
 
 interface ServiceManagementProps {
   userId: string;
@@ -30,12 +30,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   services,
   onServicesUpdate
 }) => {
+  const { toast } = useToast();
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [serviceImage, setServiceImage] = useState<string>('');
   const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-
+  
   const [serviceForm, setServiceForm] = useState({
     name: '',
     price: '',
@@ -80,7 +81,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
   const handleAddService = async () => {
     if (!serviceForm.name || !userId) {
-      toast.error("Please fill in all required fields");
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -149,7 +154,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           } as any);
           const list = services.map(s => s.id === editingService.id ? (updatedLocal as any) : s);
           onServicesUpdate(list);
-          toast.success('Service updated successfully');
+          toast({ title: 'Success', description: 'Service updated successfully' });
         } else {
           const created = await doctorCreate({
             name: serviceForm.name,
@@ -179,7 +184,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             duration: created.duration,
           } as any);
           onServicesUpdate([...services, added]);
-          toast.success('Service added successfully');
+          toast({ title: 'Success', description: 'Service added successfully' });
         }
       } else {
         if (editingService) {
@@ -194,17 +199,21 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           if (updatedService) {
             const updatedServices = services.map(service => service.id === editingService.id ? updatedService : service);
             onServicesUpdate(updatedServices);
-            toast.success('Service updated successfully');
+            toast({ title: 'Success', description: 'Service updated successfully' });
           }
         } else {
           const newService = ServiceManager.addService(serviceData);
           onServicesUpdate([...services, newService]);
-          toast.success('Service added successfully');
+          toast({ title: 'Success', description: 'Service added successfully' });
         }
       }
     } catch (e: any) {
       console.error('Error in handleAddService:', e);
-      toast.error(e?.message || 'Failed to save service. Please check your connection and try again.');
+      toast({ 
+        title: 'Error', 
+        description: e?.message || 'Failed to save service. Please check your connection and try again.', 
+        variant: 'destructive' 
+      });
     }
 
     resetForm();
@@ -235,10 +244,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       if (success) {
         const updatedServices = services.filter(service => service.id !== serviceId);
         onServicesUpdate(updatedServices);
-        toast.success('Service deleted successfully');
+        toast({ title: 'Success', description: 'Service deleted successfully' });
       }
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to delete');
+      toast({ title: 'Error', description: e?.message || 'Failed to delete', variant: 'destructive' });
     }
   };
 
@@ -257,7 +266,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 Add Service
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
                 <DialogDescription>
@@ -289,7 +298,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="servicePrice">Price (PKR) *</Label>
                     <Input
@@ -398,121 +407,74 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             No services added yet. Click "Add Service" to get started.
           </p>
         ) : (
-          <>
-            {/* Desktop Table */}
-            <div className="hidden lg:block overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Service</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Price</TableHead>
-                    {userRole === 'pharmacy' ? (
-                      <TableHead>Stock</TableHead>
-                    ) : (
-                      <TableHead>Duration</TableHead>
-                    )}
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {services.map((service) => (
-                    <TableRow key={service.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          {service.image ? (
-                            <img 
-                              src={service.image} 
-                              alt={service.name}
-                              className="w-10 h-10 rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                              <Stethoscope className="w-5 h-5 text-primary" />
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium">{service.name}</p>
-                            <p className="text-sm text-muted-foreground">{service.description}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{service.category}</Badge>
-                      </TableCell>
-                      <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
-                      <TableCell>
-                        {userRole === 'pharmacy' && 'stock' in service ? 
-                          service.stock || 'N/A' : 
-                          service.duration ? `${service.duration} min` : 'N/A'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleEditService(service)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleDeleteService(service.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile Card List */}
-            <div className="lg:hidden space-y-4">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Service</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Price</TableHead>
+                {userRole === 'pharmacy' ? (
+                  <TableHead>Stock</TableHead>
+                ) : (
+                  <TableHead>Duration</TableHead>
+                )}
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {services.map((service) => (
-                <Card key={service.id} className="p-4">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
+                <TableRow key={service.id}>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
                       {service.image ? (
-                        <img src={service.image} alt={service.name} className="w-16 h-16 rounded-lg object-cover" />
+                        <img 
+                          src={service.image} 
+                          alt={service.name}
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
                       ) : (
-                        <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Stethoscope className="w-6 h-6 text-primary" />
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <Stethoscope className="w-5 h-5 text-primary" />
                         </div>
                       )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base truncate">{service.name}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{service.description}</p>
-                      <div className="flex flex-wrap gap-2 mt-2 text-sm text-muted-foreground">
-                        <Badge variant="outline">{service.category}</Badge>
-                        <span>PKR {service.price?.toLocaleString() || 0}</span>
-                        {userRole === 'pharmacy' && 'stock' in service ? (
-                          <span>Stock: {service.stock || 'N/A'}</span>
-                        ) : (
-                          <span>{service.duration ? `${service.duration} min` : 'N/A'}</span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => handleEditService(service)}>
-                          <Edit className="w-4 h-4 mr-1" />
-                          <span className="hidden xs:inline">Edit</span>
-                        </Button>
-                        <Button size="sm" variant="destructive" className="flex-1 min-w-0" onClick={() => handleDeleteService(service.id)}>
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          <span className="hidden xs:inline">Delete</span>
-                        </Button>
+                      <div>
+                        <p className="font-medium">{service.name}</p>
+                        <p className="text-sm text-muted-foreground">{service.description}</p>
                       </div>
                     </div>
-                  </div>
-                </Card>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{service.category}</Badge>
+                  </TableCell>
+                  <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
+                  <TableCell>
+                    {userRole === 'pharmacy' && 'stock' in service ? 
+                      service.stock || 'N/A' : 
+                      service.duration ? `${service.duration} min` : 'N/A'
+                    }
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditService(service)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => handleDeleteService(service.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ))}
-            </div>
-          </>
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

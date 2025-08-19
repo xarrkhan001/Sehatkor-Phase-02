@@ -231,7 +231,11 @@ const ClinicDashboard = () => {
 
   const handleAddService = async () => {
     if (!serviceForm.name) {
-      toast.error("Please fill in all required fields");
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -264,7 +268,10 @@ const ClinicDashboard = () => {
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
         });
-        toast.success("Service updated successfully");
+        toast({
+          title: "Success",
+          description: "Service updated successfully"
+        });
       } else {
         // Create new service
         await apiCreate({
@@ -281,7 +288,10 @@ const ClinicDashboard = () => {
           detailAddress: serviceForm.detailAddress,
           providerName: user?.name || 'Clinic',
         });
-        toast.success("Service added successfully");
+        toast({
+          title: "Success",
+          description: "Service added successfully"
+        });
       }
       
       await reloadServices();
@@ -299,7 +309,11 @@ const ClinicDashboard = () => {
       setEditingService(null);
       setIsAddServiceOpen(false);
     } catch (error) {
-      toast.error(editingService ? "Failed to update service" : "Failed to add service");
+      toast({
+        title: "Error",
+        description: editingService ? "Failed to update service" : "Failed to add service",
+        variant: "destructive"
+      });
     } finally {
       setIsAddingService(false);
     }
@@ -309,35 +323,41 @@ const ClinicDashboard = () => {
     const updatedServices = services.filter(service => service.id !== serviceId);
     saveServices(updatedServices);
     
-    toast.success("Service deleted successfully");
+    toast({
+      title: "Success",
+      description: "Service deleted successfully"
+    });
   };
 
   const handleTypeChange = (type) => {
     setClinicType(type);
     localStorage.setItem(`clinic_type_${user?.id}`, type);
     
-    toast.success("Clinic type updated successfully");
+    toast({
+      title: "Success",
+      description: "Clinic type updated successfully"
+    });
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2 truncate">{user?.name} Clinic</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{user?.name} Clinic</h1>
+            <p className="text-muted-foreground">
               Welcome to your clinic management dashboard
             </p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-            <Button variant="outline" size="sm" className="flex-shrink-0">
-              <Bell className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Notifications</span>
+          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            <Button variant="outline" size="sm">
+              <Bell className="w-4 h-4 mr-2" />
+              Notifications
             </Button>
-            <Button variant="outline" size="sm" onClick={logout} className="flex-shrink-0">
-              <LogOut className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Logout</span>
+            <Button variant="outline" size="sm" onClick={logout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
@@ -363,63 +383,63 @@ const ClinicDashboard = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Patients</p>
-                  <p className="text-xl sm:text-2xl font-bold">156</p>
+                  <p className="text-2xl font-bold">156</p>
                 </div>
-                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                <Users className="w-8 h-8 text-primary" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Occupied Beds</p>
-                  <p className="text-xl sm:text-2xl font-bold text-warning">24/30</p>
+                  <p className="text-2xl font-bold text-warning">24/30</p>
                 </div>
-                <Bed className="w-6 h-6 sm:w-8 sm:h-8 text-warning" />
+                <Bed className="w-8 h-8 text-warning" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Doctors</p>
-                  <p className="text-xl sm:text-2xl font-bold text-success">12</p>
+                  <p className="text-2xl font-bold text-success">12</p>
                 </div>
-                <Stethoscope className="w-6 h-6 sm:w-8 sm:h-8 text-success" />
+                <Stethoscope className="w-8 h-8 text-success" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-xl sm:text-2xl font-bold">PKR 2.4M</p>
+                  <p className="text-2xl font-bold">PKR 2.4M</p>
                 </div>
-                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                <DollarSign className="w-8 h-8 text-primary" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="services">
-              <TabsList className="grid w-full grid-cols-2 h-auto">
-                <TabsTrigger value="services" className="text-sm sm:text-base">Services</TabsTrigger>
-                <TabsTrigger value="bookings" className="text-sm sm:text-base">Bookings</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="services">Services</TabsTrigger>
+                <TabsTrigger value="bookings">Bookings</TabsTrigger>
               </TabsList>
               <TabsContent value="services">
                 {/* Services Management */}
@@ -437,7 +457,7 @@ const ClinicDashboard = () => {
                             Add Service
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto mx-4">
+                        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
                             <DialogDescription>
@@ -469,7 +489,7 @@ const ClinicDashboard = () => {
                               )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="servicePrice">Price (PKR) *</Label>
                                 <Input
@@ -554,133 +574,63 @@ const ClinicDashboard = () => {
                     {services.length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">No services added yet.</div>
                     ) : (
-                      <>
-                        {/* Desktop Table View */}
-                        <div className="hidden lg:block overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="w-20">Image</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Department</TableHead>
-                                <TableHead>Price (PKR)</TableHead>
-                                <TableHead>Duration</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-20">Image</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Department</TableHead>
+                              <TableHead>Price (PKR)</TableHead>
+                              <TableHead>Duration</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {services.map((m: any) => {
+                              const iid = m._id || m.id;
+                              return (
+                              <TableRow key={String(iid)}>
+                                <TableCell>
+                                  {m.imageUrl || m.image ? (
+                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                                  ) : (
+                                    <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">🏥</div>
+                                  )}
+                                </TableCell>
+                                <TableCell className="font-medium">{m.name}</TableCell>
+                                <TableCell>{m.department || m.category || '-'}</TableCell>
+                                <TableCell>{m.price ?? 0}</TableCell>
+                                <TableCell>{m.duration ?? '-'}</TableCell>
+                                <TableCell className="text-right space-x-2">
+                                  <Button size="sm" variant="outline" onClick={() => {
+                                    setEditingService(m);
+                                    setServiceForm({
+                                      name: m.name || '',
+                                      price: m.price != null ? String(m.price) : '',
+                                      duration: m.duration || '',
+                                      description: m.description || '',
+                                      department: m.department || m.category || '',
+                                      googleMapLink: m.googleMapLink || '',
+                                      city: m.city || '',
+                                      detailAddress: m.detailAddress || ''
+                                    });
+                                    setServiceImage(m.imageUrl || m.image || '');
+                                    setIsAddServiceOpen(true);
+                                  }}>
+                                    <Edit className="w-4 h-4 mr-1" /> Edit
+                                  </Button>
+                                  <Button size="sm" variant="destructive" onClick={async () => {
+                                    try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
+                                  }}>
+                                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                  </Button>
+                                </TableCell>
                               </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {services.map((m: any) => {
-                                const iid = m._id || m.id;
-                                return (
-                                <TableRow key={String(iid)}>
-                                  <TableCell>
-                                    {m.imageUrl || m.image ? (
-                                      <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
-                                    ) : (
-                                      <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">🏥</div>
-                                    )}
-                                  </TableCell>
-                                  <TableCell className="font-medium">{m.name}</TableCell>
-                                  <TableCell>{m.department || m.category || '-'}</TableCell>
-                                  <TableCell>{m.price ?? 0}</TableCell>
-                                  <TableCell>{m.duration ?? '-'}</TableCell>
-                                  <TableCell className="text-right space-x-2">
-                                    <Button size="sm" variant="outline" onClick={() => {
-                                      setEditingService(m);
-                                      setServiceForm({
-                                        name: m.name || '',
-                                        price: m.price != null ? String(m.price) : '',
-                                        duration: m.duration || '',
-                                        description: m.description || '',
-                                        department: m.department || m.category || '',
-                                        googleMapLink: m.googleMapLink || '',
-                                        city: m.city || '',
-                                        detailAddress: m.detailAddress || ''
-                                      });
-                                      setServiceImage(m.imageUrl || m.image || '');
-                                      setIsAddServiceOpen(true);
-                                    }}>
-                                      <Edit className="w-4 h-4 mr-1" /> Edit
-                                    </Button>
-                                    <Button size="sm" variant="destructive" onClick={async () => {
-                                      try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
-                                    }}>
-                                      <Trash2 className="w-4 h-4 mr-1" /> Delete
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              )})}
-                            </TableBody>
-                          </Table>
-                        </div>
-                        
-                        {/* Mobile Card View */}
-                        <div className="lg:hidden space-y-4">
-                          {services.map((m: any) => {
-                            const iid = m._id || m.id;
-                            return (
-                              <Card key={String(iid)} className="p-4">
-                                <div className="flex items-start space-x-4">
-                                  <div className="flex-shrink-0">
-                                    {m.imageUrl || m.image ? (
-                                      <img src={m.imageUrl || m.image} alt={m.name} className="w-16 h-16 object-cover rounded" />
-                                    ) : (
-                                      <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-2xl">🏥</div>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-base truncate">{m.name}</h3>
-                                    <div className="space-y-1 mt-2">
-                                      <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                                        <span className="flex items-center">
-                                          <Stethoscope className="w-3 h-3 mr-1" />
-                                          {m.department || m.category || 'General'}
-                                        </span>
-                                        <span className="flex items-center">
-                                          <DollarSign className="w-3 h-3 mr-1" />
-                                          PKR {m.price ?? 0}
-                                        </span>
-                                        {m.duration && (
-                                          <span className="flex items-center">
-                                            <Clock className="w-3 h-3 mr-1" />
-                                            {m.duration} min
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 mt-3">
-                                      <Button size="sm" variant="outline" className="flex-1 min-w-0" onClick={() => {
-                                        setEditingService(m);
-                                        setServiceForm({
-                                          name: m.name || '',
-                                          price: m.price != null ? String(m.price) : '',
-                                          duration: m.duration || '',
-                                          description: m.description || '',
-                                          department: m.department || m.category || '',
-                                          googleMapLink: m.googleMapLink || '',
-                                          city: m.city || '',
-                                          detailAddress: m.detailAddress || ''
-                                        });
-                                        setServiceImage(m.imageUrl || m.image || '');
-                                        setIsAddServiceOpen(true);
-                                      }}>
-                                        <Edit className="w-4 h-4 mr-1" /> 
-                                        <span className="hidden xs:inline">Edit</span>
-                                      </Button>
-                                      <Button size="sm" variant="destructive" className="flex-1 min-w-0" onClick={async () => {
-                                        try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
-                                      }}>
-                                        <Trash2 className="w-4 h-4 mr-1" /> 
-                                        <span className="hidden xs:inline">Delete</span>
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </>
+                            )})}
+                          </TableBody>
+                        </Table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -719,52 +669,48 @@ const ClinicDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <Card key={booking._id} className="p-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium truncate">{booking.patientName}</h4>
-                                <p className="text-sm text-muted-foreground truncate">{booking.serviceName}</p>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-sm text-muted-foreground">
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4 flex-shrink-0" />
-                                    <span className="truncate">Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                {booking.status === 'Scheduled' && booking.scheduledTime && (
+                                  <div className="flex items-center space-x-1 text-primary font-semibold">
+                                    <Clock className="w-4 h-4" />
+                                    <span>Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
                                   </div>
-                                  {booking.status === 'Scheduled' && booking.scheduledTime && (
-                                    <div className="flex items-center gap-1 text-primary font-semibold">
-                                      <Clock className="w-4 h-4 flex-shrink-0" />
-                                      <span className="truncate">Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                                <Badge
-                                  variant={booking.status === "Completed" ? "default" : "secondary"}
-                                  className={`${booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'} flex-shrink-0 justify-center`}
-                                >
-                                  {booking.status}
-                                </Badge>
-                                <div className="flex gap-2">
-                                  {booking.status === 'Confirmed' && (
-                                    <Button size="sm" className="flex-1 sm:flex-initial" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
-                                  )}
-                                  {booking.status === 'Scheduled' && (
-                                    <Button size="sm" variant="outline" className="flex-1 sm:flex-initial text-xs sm:text-sm" onClick={() => completeBooking(booking._id)}>Complete</Button>
-                                  )}
-                                  {booking.status === 'Completed' && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => deleteBooking(booking._id)}
-                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-1 sm:flex-initial"
-                                    >
-                                      Delete
-                                    </Button>
-                                  )}
-                                </div>
+                                )}
                               </div>
                             </div>
-                          </Card>
+                            <div className="text-right flex items-center space-x-2">
+                              <Badge
+                                variant={booking.status === "Completed" ? "default" : "secondary"}
+                                className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
+                              >
+                                {booking.status}
+                              </Badge>
+                              {booking.status === 'Confirmed' && (
+                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
+                              )}
+                              {booking.status === 'Scheduled' && (
+                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
+                              )}
+                              {booking.status === 'Completed' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deleteBooking(booking._id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  Delete
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -818,24 +764,22 @@ const ClinicDashboard = () => {
           </div>
 
           {/* Profile Sidebar */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-6">
             <Card className="card-healthcare">
               <CardHeader>
                 <CardTitle>Clinic Profile</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center mb-4 sm:mb-6">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Building className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Building className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-base sm:text-lg font-semibold truncate">{user?.name} Clinic</h3>
-                  <div className="flex flex-wrap justify-center gap-2 mt-2">
-                    <Badge variant="outline" className="capitalize text-xs">{user?.role}</Badge>
-                    {clinicType && (
-                      <Badge variant="secondary" className="text-xs">{clinicType}</Badge>
-                    )}
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-2 truncate">{user?.email}</p>
+                  <h3 className="text-lg font-semibold">{user?.name} Clinic</h3>
+                  <Badge variant="outline" className="capitalize">{user?.role}</Badge>
+                  {clinicType && (
+                    <Badge variant="secondary" className="mt-2">{clinicType}</Badge>
+                  )}
+                  <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
                 </div>
 
                 <div className="space-y-4">
@@ -865,18 +809,18 @@ const ClinicDashboard = () => {
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 sm:space-y-3">
-                <Button className="w-full justify-start" variant="outline" size="sm">
-                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">Manage Schedules</span>
+              <CardContent className="space-y-3">
+                <Button className="w-full justify-start" variant="outline">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Manage Schedules
                 </Button>
-                <Button className="w-full justify-start" variant="outline" size="sm">
-                  <FileText className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">Generate Reports</span>
+                <Button className="w-full justify-start" variant="outline">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Generate Reports
                 </Button>
-                <Button className="w-full justify-start" variant="outline" size="sm">
-                  <Users className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">Staff Management</span>
+                <Button className="w-full justify-start" variant="outline">
+                  <Users className="w-4 h-4 mr-2" />
+                  Staff Management
                 </Button>
               </CardContent>
             </Card>

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ui/image-upload";
 import ServiceManager, { DoctorService } from "@/lib/serviceManager";
 import { listServices as apiList } from "@/lib/doctorApi";
@@ -34,7 +35,7 @@ import {
 
 const DoctorDashboard = () => {
   const { user, logout } = useAuth();
-
+  const { toast } = useToast();
   const [services, setServices] = useState<DoctorService[]>([]);
   const [specialization, setSpecialization] = useState('');
   const [bookings, setBookings] = useState<any[]>([]);
@@ -105,7 +106,11 @@ const DoctorDashboard = () => {
         service => service.providerType === 'doctor'
       ) as DoctorService[];
       setServices(userServices);
-      toast.warning("Could not load services from server. Using local data.");
+      toast({
+        title: "Warning",
+        description: "Could not load services from server. Using local data.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -138,10 +143,17 @@ const DoctorDashboard = () => {
       });
       if (response.ok) {
         setBookings(prev => prev.filter(b => b._id !== bookingId));
-        toast.success("Booking deleted successfully");
+        toast({
+          title: "Success",
+          description: "Booking deleted successfully",
+        });
       }
     } catch (error) {
-      toast.error("Failed to delete booking");
+      toast({
+        title: "Error",
+        description: "Failed to delete booking",
+        variant: "destructive"
+      });
     }
   };
 
@@ -155,16 +167,23 @@ const DoctorDashboard = () => {
       });
       if (response.ok) {
         setBookings([]);
-        toast.success("All bookings deleted successfully");
+        toast({
+          title: "Success",
+          description: "All bookings deleted successfully",
+        });
       }
     } catch (error) {
-      toast.error("Failed to delete all bookings");
+      toast({
+        title: "Error",
+        description: "Failed to delete all bookings",
+        variant: "destructive"
+      });
     }
   };
 
   const scheduleBooking = async () => {
     if (!selectedBooking || !scheduleDetails.scheduledTime) {
-      toast.error("Please select a time for the appointment.");
+      toast({ title: "Error", description: "Please select a time for the appointment.", variant: "destructive" });
       return;
     }
 
@@ -181,14 +200,14 @@ const DoctorDashboard = () => {
       if (response.ok) {
         const updatedBooking = await response.json();
         setBookings(prev => prev.map(b => b._id === selectedBooking._id ? updatedBooking : b));
-        toast.success("Booking scheduled successfully");
+        toast({ title: "Success", description: "Booking scheduled successfully" });
         setIsScheduling(false);
         setSelectedBooking(null);
       } else {
         throw new Error('Failed to schedule booking');
       }
     } catch (error) {
-      toast.error("Failed to schedule booking");
+      toast({ title: "Error", description: "Failed to schedule booking", variant: "destructive" });
     }
   };
 
@@ -204,12 +223,12 @@ const DoctorDashboard = () => {
       if (response.ok) {
         const updatedBooking = await response.json();
         setBookings(prev => prev.map(b => b._id === bookingId ? updatedBooking : b));
-        toast.success("Booking marked as complete");
+        toast({ title: "Success", description: "Booking marked as complete" });
       } else {
         throw new Error('Failed to complete booking');
       }
     } catch (error) {
-      toast.error("Failed to complete booking");
+      toast({ title: "Error", description: "Failed to complete booking", variant: "destructive" });
     }
   };
 
@@ -227,7 +246,10 @@ const DoctorDashboard = () => {
     setSpecialization(specialty);
     localStorage.setItem(`doctor_specialization_${user?.id}`, specialty);
     
-    toast.success("Specialization updated successfully");
+    toast({
+      title: "Success",
+      description: "Specialization updated successfully"
+    });
   };
 
   const todayAppointments = [
@@ -412,14 +434,11 @@ const DoctorDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div
-                            key={booking._id}
-                            className="p-4 border rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium truncate">{booking.patientName}</h4>
-                              <p className="text-sm text-muted-foreground truncate">{booking.serviceName}</p>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
@@ -432,7 +451,7 @@ const DoctorDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="sm:text-right flex flex-wrap sm:flex-nowrap items-center gap-2">
+                            <div className="text-right flex items-center space-x-2">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
                                 className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
@@ -440,25 +459,17 @@ const DoctorDashboard = () => {
                                 {booking.status}
                               </Badge>
                               {booking.status === 'Confirmed' && (
-                                <Button
-                                  size="sm"
-                                  className="sm:w-auto"
-                                  onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}
-                                >
-                                  Schedule
-                                </Button>
+                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
                               )}
                               {booking.status === 'Scheduled' && (
-                                <Button size="sm" variant="outline" className="sm:w-auto" onClick={() => completeBooking(booking._id)}>
-                                  Mark as Complete
-                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
                               )}
                               {booking.status === 'Completed' && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => deleteBooking(booking._id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 sm:w-auto"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   Delete
                                 </Button>
@@ -473,7 +484,7 @@ const DoctorDashboard = () => {
               </TabsContent>
 
               <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
-                <DialogContent className="max-w-[95vw] sm:max-w-md">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Schedule Appointment</DialogTitle>
                     <DialogDescription>
