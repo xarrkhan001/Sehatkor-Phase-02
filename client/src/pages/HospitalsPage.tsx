@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 
 const HospitalsPage = () => {
-  const [hospitalServices, setHospitalServices] = useState<Service[]>([]);
+  const navigate = useNavigate();
+  const [clinicServices, setClinicServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -293,7 +295,18 @@ const HospitalsPage = () => {
 
                 {/* Buttons */}
                 <div className="flex flex-wrap gap-2">
-                  <Button className="flex-1 min-w-[100px]">
+                  <Button 
+                    className="flex-1 min-w-[100px]"
+                    onClick={() => navigate('/payment', {
+                      state: {
+                        serviceId: service.id,
+                        serviceName: service.name,
+                        providerId: (service as any)._providerId || service.id,
+                        providerName: service.provider,
+                        providerType: 'hospital'
+                      }
+                    })}
+                  >
                     <Clock className="w-4 h-4 mr-1" /> Book Now
                   </Button>
                   <Button

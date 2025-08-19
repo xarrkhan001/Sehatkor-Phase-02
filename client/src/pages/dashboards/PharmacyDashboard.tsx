@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listMedicines as apiList, createMedicine as apiCreate, updateMedicine as apiUpdate, deleteMedicine as apiDelete } from "@/lib/pharmacyApi";
@@ -30,13 +31,15 @@ import {
   Activity,
   Pill,
   Plus,
-  Trash2
+  Trash2,
+  Phone
 } from "lucide-react";
 
 const PharmacyDashboard = () => {
   const { user, logout } = useAuth();
-  const { toast } = useToast();
   const [medicines, setMedicines] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
   const [isAddMedicineOpen, setIsAddMedicineOpen] = useState(false);
   const [pharmacyType, setPharmacyType] = useState('');
   const [medicineImagePreview, setMedicineImagePreview] = useState('');
@@ -151,11 +154,73 @@ const PharmacyDashboard = () => {
     }
   };
 
+  const fetchBookings = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`/api/bookings/provider/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      } else {
+        toast.error('Failed to fetch bookings.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error);
+      toast.error('An error occurred while fetching bookings.');
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const deleteBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        toast.success('Booking deleted successfully');
+      } else {
+        toast.error('Failed to delete booking');
+      }
+    } catch (error) {
+      toast.error('Failed to delete booking');
+    }
+  };
+
+  const deleteAllBookings = async () => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings([]);
+        toast.success('All bookings deleted successfully');
+      } else {
+        toast.error('Failed to delete all bookings');
+      }
+    } catch (error) {
+      toast.error('Failed to delete all bookings');
+    }
+  };
+
   useEffect(() => {
-    // initial load and pharmacy type from localStorage
-    reloadMedicines();
-    const savedType = localStorage.getItem(`pharmacy_type_${user?.id}`);
-    if (savedType) setPharmacyType(savedType);
+    if (user?.id) {
+      reloadMedicines();
+      fetchBookings();
+      const savedType = localStorage.getItem(`pharmacy_type_${user.id}`);
+      if (savedType) setPharmacyType(savedType);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -256,7 +321,7 @@ const PharmacyDashboard = () => {
       await apiDelete(medicineId);
       ServiceManager.deleteService(medicineId);
       reloadMedicines();
-      toast({ title: "Success", description: "Medicine deleted" });
+      toast.success("Medicine deleted");
     } catch (e: any) {
       toast({ title: "Error", description: e?.message || "Failed to delete medicine", variant: "destructive" });
     }
@@ -312,7 +377,7 @@ const PharmacyDashboard = () => {
       await reloadMedicines();
       setIsEditOpen(false);
       setEditingMedicineId(null);
-      toast({ title: "Updated", description: "Medicine updated successfully" });
+      toast.success("Medicine updated successfully");
     } catch (error: any) {
       toast({ title: "Error", description: error?.message || 'Failed to update', variant: 'destructive' });
     }
@@ -412,282 +477,268 @@ const PharmacyDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Medicines Management */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Medicine Inventory</CardTitle>
-                    <CardDescription>Manage your pharmacy inventory</CardDescription>
-                  </div>
-                  <Dialog open={isAddMedicineOpen} onOpenChange={setIsAddMedicineOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Medicine
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Add New Medicine</DialogTitle>
-                        <DialogDescription>
-                          Add a new medicine to your inventory
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-3">
-                        <div>
-                          <Label htmlFor="medicineName">Medicine Name *</Label>
-                          <Input
-                            id="medicineName"
-                            value={medicineForm.name}
-                            onChange={(e) => setMedicineForm({...medicineForm, name: e.target.value})}
-                            placeholder="e.g., Panadol 500mg"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label>Medicine Image</Label>
-                          <ImageUpload
-                            onImageSelect={(file, preview) => { setMedicineImageFile(file); setMedicineImagePreview(preview); }}
-                            onImageRemove={() => { setMedicineImageFile(null); setMedicineImagePreview(''); }}
-                            currentImage={medicineImagePreview}
-                            placeholder="Upload medicine image"
-                            className="max-w-xs"
-                          />
-                          {isUploadingImage && (
-                            <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="medicinePrice">Price (PKR) *</Label>
-                            <Input
-                              id="medicinePrice"
-                              type="number"
-                              value={medicineForm.price}
-                              onChange={(e) => setMedicineForm({...medicineForm, price: e.target.value})}
-                              placeholder="e.g., 120"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="medicineStock">Stock Quantity</Label>
-                            <Input
-                              id="medicineStock"
-                              type="number"
-                              value={medicineForm.stock}
-                              onChange={(e) => setMedicineForm({...medicineForm, stock: e.target.value})}
-                              placeholder="e.g., 100"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="medicineCategory">Category</Label>
-                          <Select value={medicineForm.category} onValueChange={(value) => setMedicineForm({...medicineForm, category: value})}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select medicine category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {medicineCategories.map((category) => (
-                                <SelectItem key={category} value={category}>{category}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="medicineDescription">Description</Label>
-                          <Textarea
-                            id="medicineDescription"
-                            value={medicineForm.description}
-                            onChange={(e) => setMedicineForm({...medicineForm, description: e.target.value})}
-                            placeholder="Brief description of the medicine"
-                          />
-                        </div>
-                        {/* Location Fields */}
-                        <div className="space-y-3 border-t pt-3">
-                          <h4 className="font-medium text-sm">Location Information</h4>
-                          <div>
-                            <Label htmlFor="medicineCity">City</Label>
-                            <Input
-                              id="medicineCity"
-                              value={medicineForm.city}
-                              onChange={(e) => setMedicineForm({...medicineForm, city: e.target.value})}
-                              placeholder="e.g., Karachi"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="medicineAddress">Detailed Address</Label>
-                            <Textarea
-                              id="medicineAddress"
-                              value={medicineForm.detailAddress}
-                              onChange={(e) => setMedicineForm({...medicineForm, detailAddress: e.target.value})}
-                              placeholder="e.g., Shop 123, ABC Plaza, Main Road"
-                              rows={2}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="medicineMapLink">Google Maps Link (Optional)</Label>
-                            <Input
-                              id="medicineMapLink"
-                              value={medicineForm.googleMapLink}
-                              onChange={(e) => setMedicineForm({...medicineForm, googleMapLink: e.target.value})}
-                              placeholder="https://maps.google.com/..."
-                            />
-                          </div>
-                        </div>
-                         <Button onClick={handleAddMedicine} className="w-full" disabled={isUploadingImage || isAddingMedicine}>
-                          {isAddingMedicine ? 'Adding Medicine...' : 'Add Medicine'}
-                        </Button>
+            <Tabs defaultValue="medicines">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="medicines">Medicines</TabsTrigger>
+                <TabsTrigger value="bookings">Bookings</TabsTrigger>
+              </TabsList>
+              <TabsContent value="medicines">
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Medicine Inventory</CardTitle>
+                        <CardDescription>Manage your pharmacy inventory</CardDescription>
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground py-4">
-                  Medicines added here will appear in search, services, and pharmacies listings.
-                </p>
-
-                {medicines.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-8">No medicines added yet.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-20">Image</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Price (PKR)</TableHead>
-                          <TableHead>Stock</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {medicines.map((m) => {
-                          const iid = m._id || m.id;
-                          return (
-                          <TableRow key={String(iid)}>
-                            <TableCell>
-                              {m.imageUrl || m.image ? (
-                                <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
-                              ) : (
-                                <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">💊</div>
+                      <Dialog open={isAddMedicineOpen} onOpenChange={setIsAddMedicineOpen}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Medicine
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Add New Medicine</DialogTitle>
+                            <DialogDescription>
+                              Add a new medicine to your inventory
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-3">
+                            <div>
+                              <Label htmlFor="medicineName">Medicine Name *</Label>
+                              <Input
+                                id="medicineName"
+                                value={medicineForm.name}
+                                onChange={(e) => setMedicineForm({...medicineForm, name: e.target.value})}
+                                placeholder="e.g., Panadol 500mg"
+                              />
+                            </div>
+                            
+                            <div>
+                              <Label>Medicine Image</Label>
+                              <ImageUpload
+                                onImageSelect={(file, preview) => { setMedicineImageFile(file); setMedicineImagePreview(preview); }}
+                                onImageRemove={() => { setMedicineImageFile(null); setMedicineImagePreview(''); }}
+                                currentImage={medicineImagePreview}
+                                placeholder="Upload medicine image"
+                                className="max-w-xs"
+                              />
+                              {isUploadingImage && (
+                                <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                               )}
-                            </TableCell>
-                            <TableCell className="font-medium">{m.name}</TableCell>
-                            <TableCell>{m.category || '-'}</TableCell>
-                            <TableCell>{m.price ?? 0}</TableCell>
-                            <TableCell>{m.stock ?? '-'}</TableCell>
-                            <TableCell className="text-right space-x-2">
-                              <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
-                                <Edit className="w-4 h-4 mr-1" /> Edit
-                              </Button>
-                              <Button size="sm" variant="destructive" onClick={() => handleDeleteMedicine(String(iid))}>
-                                <Trash2 className="w-4 h-4 mr-1" /> Delete
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        )})}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                            </div>
 
-            {/* Edit Medicine Dialog */}
-            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Edit Medicine</DialogTitle>
-                  <DialogDescription>Update medicine details and image</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="editName">Medicine Name *</Label>
-                    <Input id="editName" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>Medicine Image</Label>
-                    <ImageUpload
-                      onImageSelect={(file, preview) => { setEditImageFile(file); setEditImagePreview(preview); }}
-                      onImageRemove={() => { setEditImageFile(null); setEditImagePreview(''); }}
-                      currentImage={editImagePreview}
-                      placeholder="Upload medicine image"
-                      className="max-w-xs"
-                    />
-                    {isUploadingImage && (
-                      <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="medicinePrice">Price (PKR) *</Label>
+                                <Input
+                                  id="medicinePrice"
+                                  type="number"
+                                  value={medicineForm.price}
+                                  onChange={(e) => setMedicineForm({...medicineForm, price: e.target.value})}
+                                  placeholder="e.g., 120"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="medicineStock">Stock Quantity</Label>
+                                <Input
+                                  id="medicineStock"
+                                  type="number"
+                                  value={medicineForm.stock}
+                                  onChange={(e) => setMedicineForm({...medicineForm, stock: e.target.value})}
+                                  placeholder="e.g., 100"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="medicineCategory">Category</Label>
+                              <Select value={medicineForm.category} onValueChange={(value) => setMedicineForm({...medicineForm, category: value})}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select medicine category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {medicineCategories.map((category) => (
+                                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor="medicineDescription">Description</Label>
+                              <Textarea
+                                id="medicineDescription"
+                                value={medicineForm.description}
+                                onChange={(e) => setMedicineForm({...medicineForm, description: e.target.value})}
+                                placeholder="Brief description of the medicine"
+                              />
+                            </div>
+                            {/* Location Fields */}
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Location Information</h4>
+                              <div>
+                                <Label htmlFor="medicineCity">City</Label>
+                                <Input
+                                  id="medicineCity"
+                                  value={medicineForm.city}
+                                  onChange={(e) => setMedicineForm({...medicineForm, city: e.target.value})}
+                                  placeholder="e.g., Karachi"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="medicineAddress">Detailed Address</Label>
+                                <Textarea
+                                  id="medicineAddress"
+                                  value={medicineForm.detailAddress}
+                                  onChange={(e) => setMedicineForm({...medicineForm, detailAddress: e.target.value})}
+                                  placeholder="e.g., Shop 123, ABC Plaza, Main Road"
+                                  rows={2}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="medicineMapLink">Google Maps Link (Optional)</Label>
+                                <Input
+                                  id="medicineMapLink"
+                                  value={medicineForm.googleMapLink}
+                                  onChange={(e) => setMedicineForm({...medicineForm, googleMapLink: e.target.value})}
+                                  placeholder="https://maps.google.com/..."
+                                />
+                              </div>
+                            </div>
+                             <Button onClick={handleAddMedicine} className="w-full" disabled={isUploadingImage || isAddingMedicine}>
+                              {isAddingMedicine ? 'Adding Medicine...' : 'Add Medicine'}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground py-4">
+                      Medicines added here will appear in search, services, and pharmacies listings.
+                    </p>
+
+                    {medicines.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">No medicines added yet.</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-20">Image</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Category</TableHead>
+                              <TableHead>Price (PKR)</TableHead>
+                              <TableHead>Stock</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {medicines.map((m) => {
+                              const iid = m._id || m.id;
+                              return (
+                              <TableRow key={String(iid)}>
+                                <TableCell>
+                                  {m.imageUrl || m.image ? (
+                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                                  ) : (
+                                    <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">💊</div>
+                                  )}
+                                </TableCell>
+                                <TableCell className="font-medium">{m.name}</TableCell>
+                                <TableCell>{m.category || '-'}</TableCell>
+                                <TableCell>{m.price ?? 0}</TableCell>
+                                <TableCell>{m.stock ?? '-'}</TableCell>
+                                <TableCell className="text-right space-x-2">
+                                  <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
+                                    <Edit className="w-4 h-4 mr-1" /> Edit
+                                  </Button>
+                                  <Button size="sm" variant="destructive" onClick={() => handleDeleteMedicine(String(iid))}>
+                                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            )})}
+                          </TableBody>
+                        </Table>
+                      </div>
                     )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="editPrice">Price (PKR) *</Label>
-                      <Input id="editPrice" type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="bookings">
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Patient Bookings</CardTitle>
+                        <CardDescription>Bookings from patients for your services</CardDescription>
+                      </div>
+                      {bookings.length > 0 && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={deleteAllBookings}
+                        >
+                          Delete All
+                        </Button>
+                      )}
                     </div>
-                    <div>
-                      <Label htmlFor="editStock">Stock Quantity</Label>
-                      <Input id="editStock" type="number" value={editForm.stock} onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })} />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="editCategory">Category</Label>
-                    <Select value={editForm.category} onValueChange={(value) => setEditForm({ ...editForm, category: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select medicine category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(['Tablets','Capsules','Syrups','Injections','Ointments','Drops','Other'] as const).map((category) => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                  </CardHeader>
+                  <CardContent>
+                    {isLoadingBookings ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="text-muted-foreground mt-2">Loading bookings...</p>
+                      </div>
+                    ) : bookings.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">No bookings yet</p>
+                        <p className="text-sm text-muted-foreground">Patient bookings will appear here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {bookings.map((booking) => (
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Phone className="w-4 h-4" />
+                                  <span>{booking.paymentMethod}: ***{booking.paymentNumber.slice(-4)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right flex items-center space-x-2">
+                              <Badge
+                                variant={booking.status === "confirmed" ? "default" : "secondary"}
+                                className={booking.status === "confirmed" ? "bg-success" : ""}
+                              >
+                                {booking.status}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteBooking(booking._id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="editDesc">Description</Label>
-                    <Textarea id="editDesc" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
-                  </div>
-
-                  {/* Location Fields */}
-                  <div className="space-y-3 border-t pt-3">
-                    <h4 className="font-medium text-sm">Location Information</h4>
-                    <div>
-                      <Label htmlFor="editMedicineCity">City</Label>
-                      <Input
-                        id="editMedicineCity"
-                        value={editForm.city}
-                        onChange={(e) => setEditForm({...editForm, city: e.target.value})}
-                        placeholder="e.g., Karachi"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="editMedicineAddress">Detailed Address</Label>
-                      <Textarea
-                        id="editMedicineAddress"
-                        value={editForm.detailAddress}
-                        onChange={(e) => setEditForm({...editForm, detailAddress: e.target.value})}
-                        placeholder="e.g., Shop 123, ABC Plaza, Main Road"
-                        rows={2}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="editMedicineMapLink">Google Maps Link (Optional)</Label>
-                      <Input
-                        id="editMedicineMapLink"
-                        value={editForm.googleMapLink}
-                        onChange={(e) => setEditForm({...editForm, googleMapLink: e.target.value})}
-                        placeholder="https://maps.google.com/..."
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button className="flex-1" onClick={handleSaveEdit} disabled={isUploadingImage}>Save</Button>
-                    <Button className="flex-1" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Profile Sidebar */}

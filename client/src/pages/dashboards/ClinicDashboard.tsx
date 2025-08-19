@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listServices as apiList, createService as apiCreate, updateService as apiUpdate, deleteService as apiDelete } from "@/lib/clinicApi";
@@ -31,13 +32,15 @@ import {
   Activity,
   Plus,
   Trash2,
-  DollarSign
+  DollarSign,
+  Phone
 } from "lucide-react";
 
 const ClinicDashboard = () => {
   const { user, logout } = useAuth();
-  const { toast } = useToast();
   const [services, setServices] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [clinicType, setClinicType] = useState('');
@@ -97,10 +100,73 @@ const ClinicDashboard = () => {
     }
   };
 
+  const fetchBookings = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`/api/bookings/provider/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      } else {
+        toast.error('Failed to fetch bookings.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error);
+      toast.error('An error occurred while fetching bookings.');
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const deleteBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        toast.success('Booking deleted successfully');
+      } else {
+        toast.error('Failed to delete booking');
+      }
+    } catch (error) {
+      toast.error('Failed to delete booking');
+    }
+  };
+
+  const deleteAllBookings = async () => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings([]);
+        toast.success('All bookings deleted successfully');
+      } else {
+        toast.error('Failed to delete all bookings');
+      }
+    } catch (error) {
+      toast.error('Failed to delete all bookings');
+    }
+  };
+
   useEffect(() => {
-    reloadServices();
-    const savedType = localStorage.getItem(`clinic_type_${user?.id}`);
-    if (savedType) setClinicType(savedType);
+    if (user?.id) {
+      reloadServices();
+      fetchBookings();
+      const savedType = localStorage.getItem(`clinic_type_${user.id}`);
+      if (savedType) setClinicType(savedType);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -313,198 +379,278 @@ const ClinicDashboard = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* Services Management */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Clinic Services</CardTitle>
-                    <CardDescription>Manage your clinic services and pricing</CardDescription>
-                  </div>
-                  <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Service
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
-                        <DialogDescription>
-                          {editingService ? 'Update the service details' : 'Add a new service to your clinic'}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-3">
-                        <div>
-                          <Label htmlFor="serviceName">Service Name *</Label>
-                          <Input
-                            id="serviceName"
-                            value={serviceForm.name}
-                            onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
-                            placeholder="e.g., X-Ray Scan"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label>Service Image</Label>
-                          <ImageUpload
-                            onImageSelect={(file, preview) => { setServiceImageFile(file); setServiceImage(preview); }}
-                            onImageRemove={() => { setServiceImageFile(null); setServiceImage(''); }}
-                            currentImage={serviceImage}
-                            placeholder="Upload service image"
-                            className="max-w-xs"
-                          />
-                          {isUploadingImage && (
-                            <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="servicePrice">Price (PKR) *</Label>
-                            <Input
-                              id="servicePrice"
-                              type="number"
-                              value={serviceForm.price}
-                              onChange={(e) => setServiceForm({...serviceForm, price: e.target.value})}
-                              placeholder="e.g., 3000"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="serviceDuration">Duration (minutes)</Label>
-                            <Input
-                              id="serviceDuration"
-                              value={serviceForm.duration}
-                              onChange={(e) => setServiceForm({...serviceForm, duration: e.target.value})}
-                              placeholder="e.g., 45"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="serviceDepartment">Department</Label>
-                          <Input
-                            id="serviceDepartment"
-                            value={serviceForm.department}
-                            onChange={(e) => setServiceForm({...serviceForm, department: e.target.value})}
-                            placeholder="e.g., Cardiology"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="serviceDescription">Description</Label>
-                          <Textarea
-                            id="serviceDescription"
-                            value={serviceForm.description}
-                            onChange={(e) => setServiceForm({...serviceForm, description: e.target.value})}
-                            placeholder="Brief description of the service"
-                          />
-                        </div>
-                        
-                        {/* Location Fields */}
-                        <div className="space-y-3 border-t pt-3">
-                          <h4 className="font-medium text-sm">Location Information</h4>
-                          <div>
-                            <Label htmlFor="serviceCity">City</Label>
-                            <Input
-                              id="serviceCity"
-                              value={serviceForm.city}
-                              onChange={(e) => setServiceForm({...serviceForm, city: e.target.value})}
-                              placeholder="e.g., Karachi"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="serviceAddress">Detailed Address</Label>
-                            <Textarea
-                              id="serviceAddress"
-                              value={serviceForm.detailAddress}
-                              onChange={(e) => setServiceForm({...serviceForm, detailAddress: e.target.value})}
-                              placeholder="Complete address with landmarks"
-                              rows={2}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="serviceGoogleMap">Google Maps Link (Optional)</Label>
-                            <Input
-                              id="serviceGoogleMap"
-                              value={serviceForm.googleMapLink}
-                              onChange={(e) => setServiceForm({...serviceForm, googleMapLink: e.target.value})}
-                              placeholder="https://maps.google.com/..."
-                            />
-                          </div>
-                        </div>
-                        <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
-                          {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
-                        </Button>
+            <Tabs defaultValue="services">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="services">Services</TabsTrigger>
+                <TabsTrigger value="bookings">Bookings</TabsTrigger>
+              </TabsList>
+              <TabsContent value="services">
+                {/* Services Management */}
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Clinic Services</CardTitle>
+                        <CardDescription>Manage your clinic services and pricing</CardDescription>
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground py-4">Services added here will appear in search, services, and hospitals listings.</p>
-                {services.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-8">No services added yet.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-20">Image</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Department</TableHead>
-                          <TableHead>Price (PKR)</TableHead>
-                          <TableHead>Duration</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {services.map((m: any) => {
-                          const iid = m._id || m.id;
-                          return (
-                          <TableRow key={String(iid)}>
-                            <TableCell>
-                              {m.imageUrl || m.image ? (
-                                <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
-                              ) : (
-                                <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">🏥</div>
+                      <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Service
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
+                            <DialogDescription>
+                              {editingService ? 'Update the service details' : 'Add a new service to your clinic'}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-3">
+                            <div>
+                              <Label htmlFor="serviceName">Service Name *</Label>
+                              <Input
+                                id="serviceName"
+                                value={serviceForm.name}
+                                onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
+                                placeholder="e.g., X-Ray Scan"
+                              />
+                            </div>
+                            
+                            <div>
+                              <Label>Service Image</Label>
+                              <ImageUpload
+                                onImageSelect={(file, preview) => { setServiceImageFile(file); setServiceImage(preview); }}
+                                onImageRemove={() => { setServiceImageFile(null); setServiceImage(''); }}
+                                currentImage={serviceImage}
+                                placeholder="Upload service image"
+                                className="max-w-xs"
+                              />
+                              {isUploadingImage && (
+                                <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                               )}
-                            </TableCell>
-                            <TableCell className="font-medium">{m.name}</TableCell>
-                            <TableCell>{m.department || m.category || '-'}</TableCell>
-                            <TableCell>{m.price ?? 0}</TableCell>
-                            <TableCell>{m.duration ?? '-'}</TableCell>
-                            <TableCell className="text-right space-x-2">
-                              <Button size="sm" variant="outline" onClick={() => {
-                                setEditingService(m);
-                                setServiceForm({
-                                  name: m.name || '',
-                                  price: m.price != null ? String(m.price) : '',
-                                  duration: m.duration || '',
-                                  description: m.description || '',
-                                  department: m.department || m.category || '',
-                                  googleMapLink: m.googleMapLink || '',
-                                  city: m.city || '',
-                                  detailAddress: m.detailAddress || ''
-                                });
-                                setServiceImage(m.imageUrl || m.image || '');
-                                setIsAddServiceOpen(true);
-                              }}>
-                                <Edit className="w-4 h-4 mr-1" /> Edit
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="servicePrice">Price (PKR) *</Label>
+                                <Input
+                                  id="servicePrice"
+                                  type="number"
+                                  value={serviceForm.price}
+                                  onChange={(e) => setServiceForm({...serviceForm, price: e.target.value})}
+                                  placeholder="e.g., 3000"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="serviceDuration">Duration (minutes)</Label>
+                                <Input
+                                  id="serviceDuration"
+                                  value={serviceForm.duration}
+                                  onChange={(e) => setServiceForm({...serviceForm, duration: e.target.value})}
+                                  placeholder="e.g., 45"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="serviceDepartment">Department</Label>
+                              <Input
+                                id="serviceDepartment"
+                                value={serviceForm.department}
+                                onChange={(e) => setServiceForm({...serviceForm, department: e.target.value})}
+                                placeholder="e.g., Cardiology"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="serviceDescription">Description</Label>
+                              <Textarea
+                                id="serviceDescription"
+                                value={serviceForm.description}
+                                onChange={(e) => setServiceForm({...serviceForm, description: e.target.value})}
+                                placeholder="Brief description of the service"
+                              />
+                            </div>
+                            
+                            {/* Location Fields */}
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Location Information</h4>
+                              <div>
+                                <Label htmlFor="serviceCity">City</Label>
+                                <Input
+                                  id="serviceCity"
+                                  value={serviceForm.city}
+                                  onChange={(e) => setServiceForm({...serviceForm, city: e.target.value})}
+                                  placeholder="e.g., Karachi"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="serviceAddress">Detailed Address</Label>
+                                <Textarea
+                                  id="serviceAddress"
+                                  value={serviceForm.detailAddress}
+                                  onChange={(e) => setServiceForm({...serviceForm, detailAddress: e.target.value})}
+                                  placeholder="Complete address with landmarks"
+                                  rows={2}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="serviceGoogleMap">Google Maps Link (Optional)</Label>
+                                <Input
+                                  id="serviceGoogleMap"
+                                  value={serviceForm.googleMapLink}
+                                  onChange={(e) => setServiceForm({...serviceForm, googleMapLink: e.target.value})}
+                                  placeholder="https://maps.google.com/..."
+                                />
+                              </div>
+                            </div>
+                            <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
+                              {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground py-4">Services added here will appear in search, services, and hospitals listings.</p>
+                    {services.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">No services added yet.</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-20">Image</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Department</TableHead>
+                              <TableHead>Price (PKR)</TableHead>
+                              <TableHead>Duration</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {services.map((m: any) => {
+                              const iid = m._id || m.id;
+                              return (
+                              <TableRow key={String(iid)}>
+                                <TableCell>
+                                  {m.imageUrl || m.image ? (
+                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                                  ) : (
+                                    <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">🏥</div>
+                                  )}
+                                </TableCell>
+                                <TableCell className="font-medium">{m.name}</TableCell>
+                                <TableCell>{m.department || m.category || '-'}</TableCell>
+                                <TableCell>{m.price ?? 0}</TableCell>
+                                <TableCell>{m.duration ?? '-'}</TableCell>
+                                <TableCell className="text-right space-x-2">
+                                  <Button size="sm" variant="outline" onClick={() => {
+                                    setEditingService(m);
+                                    setServiceForm({
+                                      name: m.name || '',
+                                      price: m.price != null ? String(m.price) : '',
+                                      duration: m.duration || '',
+                                      description: m.description || '',
+                                      department: m.department || m.category || '',
+                                      googleMapLink: m.googleMapLink || '',
+                                      city: m.city || '',
+                                      detailAddress: m.detailAddress || ''
+                                    });
+                                    setServiceImage(m.imageUrl || m.image || '');
+                                    setIsAddServiceOpen(true);
+                                  }}>
+                                    <Edit className="w-4 h-4 mr-1" /> Edit
+                                  </Button>
+                                  <Button size="sm" variant="destructive" onClick={async () => {
+                                    try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
+                                  }}>
+                                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            )})}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="bookings">
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Patient Bookings</CardTitle>
+                        <CardDescription>Bookings from patients for your services</CardDescription>
+                      </div>
+                      {bookings.length > 0 && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={deleteAllBookings}
+                        >
+                          Delete All
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {isLoadingBookings ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="text-muted-foreground mt-2">Loading bookings...</p>
+                      </div>
+                    ) : bookings.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">No bookings yet</p>
+                        <p className="text-sm text-muted-foreground">Patient bookings will appear here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {bookings.map((booking) => (
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Phone className="w-4 h-4" />
+                                  <span>{booking.paymentMethod}: ***{booking.paymentNumber.slice(-4)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right flex items-center space-x-2">
+                              <Badge
+                                variant={booking.status === "confirmed" ? "default" : "secondary"}
+                                className={booking.status === "confirmed" ? "bg-success" : ""}
+                              >
+                                {booking.status}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteBooking(booking._id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Delete
                               </Button>
-                              <Button size="sm" variant="destructive" onClick={async () => {
-                                try { await apiDelete(String(iid)); await reloadServices(); toast({ title: 'Success', description: 'Service deleted' }); } catch (e: any) { toast({ title: 'Error', description: e?.message || 'Failed', variant: 'destructive' }); }
-                              }}>
-                                <Trash2 className="w-4 h-4 mr-1" /> Delete
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        )})}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
 
           </div>
 

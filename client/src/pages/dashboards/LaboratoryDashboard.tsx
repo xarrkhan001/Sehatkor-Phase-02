@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listTests as apiList, createTest as apiCreate, updateTest as apiUpdate, deleteTest as apiDelete } from "@/lib/laboratoryApi";
@@ -30,13 +31,15 @@ import {
   Microscope,
   Activity,
   Plus,
-  Trash2
+  Trash2,
+  Phone
 } from "lucide-react";
 
 const LaboratoryDashboard = () => {
   const { user, logout } = useAuth();
-  const { toast } = useToast();
   const [tests, setTests] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
   const [isAddTestOpen, setIsAddTestOpen] = useState(false);
   const [labType, setLabType] = useState('');
   const [testImagePreview, setTestImagePreview] = useState('');
@@ -151,11 +154,73 @@ const LaboratoryDashboard = () => {
     }
   };
 
+  const fetchBookings = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`/api/bookings/provider/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      } else {
+        toast.error('Failed to fetch bookings.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error);
+      toast.error('An error occurred while fetching bookings.');
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const deleteBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        toast.success('Booking deleted successfully');
+      } else {
+        toast.error('Failed to delete booking');
+      }
+    } catch (error) {
+      toast.error('Failed to delete booking');
+    }
+  };
+
+  const deleteAllBookings = async () => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings([]);
+        toast.success('All bookings deleted successfully');
+      } else {
+        toast.error('Failed to delete all bookings');
+      }
+    } catch (error) {
+      toast.error('Failed to delete all bookings');
+    }
+  };
+
   useEffect(() => {
-    // initial load and lab type from localStorage
-    reloadTests();
-    const savedType = localStorage.getItem(`lab_type_${user?.id}`);
-    if (savedType) setLabType(savedType);
+    if (user?.id) {
+      reloadTests();
+      fetchBookings();
+      const savedType = localStorage.getItem(`lab_type_${user.id}`);
+      if (savedType) setLabType(savedType);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -567,254 +632,336 @@ const LaboratoryDashboard = () => {
                 </div>
               </DialogContent>
             </Dialog>
-            {/* Test Queue */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Test Queue</CardTitle>
-                <CardDescription>Pending and active diagnostic tests</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {pendingTests.map((test) => (
-                    <div key={test.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{test.patient}</h4>
-                        <p className="text-sm text-muted-foreground">{test.test}</p>
-                        <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          <span>{test.time}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge
-                          variant={test.status === "Ready" ? "default" : "secondary"}
-                          className={test.status === "Ready" ? "bg-success" : ""}
-                        >
-                          {test.status}
-                        </Badge>
-                        <div className="mt-2 space-x-2">
-                          <Button size="sm" variant="outline">
-                            View
-                          </Button>
-                          {test.status === "Ready" && (
-                            <Button size="sm">
-                              <Download className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Lab Tests Management */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Lab Tests</CardTitle>
-                    <CardDescription>Manage your diagnostic tests and pricing</CardDescription>
-                  </div>
-                  <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Test
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Add New Test</DialogTitle>
-                        <DialogDescription>
-                          Add a new diagnostic test to your lab
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-3">
-                        <div>
-                          <Label htmlFor="testName">Test Name *</Label>
-                          <Input
-                            id="testName"
-                            value={testForm.name}
-                            onChange={(e) => setTestForm({...testForm, name: e.target.value})}
-                            placeholder="e.g., Complete Blood Count"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label>Test Image</Label>
-                          <ImageUpload
-                            onImageSelect={(file, preview) => {
-                              setTestImageFile(file);
-                              setTestImagePreview(preview);
-                            }}
-                            onImageRemove={() => {
-                              setTestImageFile(null);
-                              setTestImagePreview('');
-                            }}
-                            currentImage={testImagePreview}
-                            placeholder="Upload test image"
-                            className="max-w-xs"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="testPrice">Price (PKR) *</Label>
-                            <Input
-                              id="testPrice"
-                              type="number"
-                              value={testForm.price}
-                              onChange={(e) => setTestForm({...testForm, price: e.target.value})}
-                              placeholder="e.g., 1500"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="testDuration">Duration (hours)</Label>
-                            <Input
-                              id="testDuration"
-                              value={testForm.duration}
-                              onChange={(e) => setTestForm({...testForm, duration: e.target.value})}
-                              placeholder="e.g., 2"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="testCategory">Category</Label>
-                          <Select value={testForm.category} onValueChange={(value) => setTestForm({...testForm, category: value})}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select test category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {testCategories.map((category) => (
-                                <SelectItem key={category} value={category}>{category}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="testDescription">Description</Label>
-                          <Textarea
-                            id="testDescription"
-                            value={testForm.description}
-                            onChange={(e) => setTestForm({...testForm, description: e.target.value})}
-                            placeholder="Brief description of the test"
-                          />
-                        </div>
-                        
-                        {/* Location Fields */}
-                        <div className="space-y-3 border-t pt-3">
-                          <h4 className="font-medium text-sm">Location Information</h4>
-                          <div>
-                            <Label htmlFor="testCity">City</Label>
-                            <Input
-                              id="testCity"
-                              value={testForm.city}
-                              onChange={(e) => setTestForm({...testForm, city: e.target.value})}
-                              placeholder="e.g., Karachi"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="testAddress">Detailed Address</Label>
-                            <Textarea
-                              id="testAddress"
-                              value={testForm.detailAddress}
-                              onChange={(e) => setTestForm({...testForm, detailAddress: e.target.value})}
-                              placeholder="e.g., Floor 2, Medical Plaza, Main Road"
-                              rows={2}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="testMapLink">Google Maps Link (Optional)</Label>
-                            <Input
-                              id="testMapLink"
-                              value={testForm.googleMapLink}
-                              onChange={(e) => setTestForm({...testForm, googleMapLink: e.target.value})}
-                              placeholder="https://maps.google.com/..."
-                            />
-                          </div>
-                        </div>
-                        
-                        <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
-                          {isAddingTest ? 'Adding Test...' : 'Add Test'}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {tests.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Image</TableHead>
-                          <TableHead>Test Name</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Duration</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {tests.map((test) => (
-                          <TableRow key={test.id}>
-                            <TableCell>
-                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                {test.image ? (
-                                  <img 
-                                    src={test.image} 
-                                    alt={test.name}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      target.nextElementSibling!.classList.remove('hidden');
-                                    }}
-                                  />
-                                ) : null}
-                                <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+            <Tabs defaultValue="tests">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="tests">Tests</TabsTrigger>
+                <TabsTrigger value="bookings">Bookings</TabsTrigger>
+              </TabsList>
+              <TabsContent value="tests">
+                <div className="space-y-6">
+                  {/* Test Queue */}
+                  <Card className="card-healthcare">
+                    <CardHeader>
+                      <CardTitle>Test Queue</CardTitle>
+                      <CardDescription>Pending and active diagnostic tests</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {pendingTests.map((test) => (
+                          <div key={test.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{test.patient}</h4>
+                              <p className="text-sm text-muted-foreground">{test.test}</p>
+                              <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
+                                <Clock className="w-4 h-4" />
+                                <span>{test.time}</span>
                               </div>
-                            </TableCell>
-                            <TableCell className="font-medium">{test.name}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{test.category}</Badge>
-                            </TableCell>
-                            <TableCell>PKR {test.price.toLocaleString()}</TableCell>
-                            <TableCell>{test.duration || 'N/A'}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => openEdit(test)}
-                                >
-                                  <Edit className="w-4 h-4" />
+                            </div>
+                            <div className="text-right">
+                              <Badge
+                                variant={test.status === "Ready" ? "default" : "secondary"}
+                                className={test.status === "Ready" ? "bg-success" : ""}
+                              >
+                                {test.status}
+                              </Badge>
+                              <div className="mt-2 space-x-2">
+                                <Button size="sm" variant="outline">
+                                  View
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDeleteTest(test.id)}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                {test.status === "Ready" && (
+                                  <Button size="sm">
+                                    <Download className="w-4 h-4" />
+                                  </Button>
+                                )}
                               </div>
-                            </TableCell>
-                          </TableRow>
+                            </div>
+                          </div>
                         ))}
-                      </TableBody>
-                    </Table>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      No tests added yet. Add your first test to get started.
-                    </p>
-                  )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Lab Tests Management */}
+                  <Card className="card-healthcare">
+                    <CardHeader>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle>Lab Tests</CardTitle>
+                          <CardDescription>Manage your diagnostic tests and pricing</CardDescription>
+                        </div>
+                        <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
+                          <DialogTrigger asChild>
+                            <Button>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Test
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Add New Test</DialogTitle>
+                              <DialogDescription>
+                                Add a new diagnostic test to your lab
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-3">
+                              <div>
+                                <Label htmlFor="testName">Test Name *</Label>
+                                <Input
+                                  id="testName"
+                                  value={testForm.name}
+                                  onChange={(e) => setTestForm({...testForm, name: e.target.value})}
+                                  placeholder="e.g., Complete Blood Count"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label>Test Image</Label>
+                                <ImageUpload
+                                  onImageSelect={(file, preview) => {
+                                    setTestImageFile(file);
+                                    setTestImagePreview(preview);
+                                  }}
+                                  onImageRemove={() => {
+                                    setTestImageFile(null);
+                                    setTestImagePreview('');
+                                  }}
+                                  currentImage={testImagePreview}
+                                  placeholder="Upload test image"
+                                  className="max-w-xs"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="testPrice">Price (PKR) *</Label>
+                                  <Input
+                                    id="testPrice"
+                                    type="number"
+                                    value={testForm.price}
+                                    onChange={(e) => setTestForm({...testForm, price: e.target.value})}
+                                    placeholder="e.g., 1500"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="testDuration">Duration (hours)</Label>
+                                  <Input
+                                    id="testDuration"
+                                    value={testForm.duration}
+                                    onChange={(e) => setTestForm({...testForm, duration: e.target.value})}
+                                    placeholder="e.g., 2"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <Label htmlFor="testCategory">Category</Label>
+                                <Select value={testForm.category} onValueChange={(value) => setTestForm({...testForm, category: value})}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select test category" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {testCategories.map((category) => (
+                                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label htmlFor="testDescription">Description</Label>
+                                <Textarea
+                                  id="testDescription"
+                                  value={testForm.description}
+                                  onChange={(e) => setTestForm({...testForm, description: e.target.value})}
+                                  placeholder="Brief description of the test"
+                                />
+                              </div>
+                              
+                              {/* Location Fields */}
+                              <div className="space-y-3 border-t pt-3">
+                                <h4 className="font-medium text-sm">Location Information</h4>
+                                <div>
+                                  <Label htmlFor="testCity">City</Label>
+                                  <Input
+                                    id="testCity"
+                                    value={testForm.city}
+                                    onChange={(e) => setTestForm({...testForm, city: e.target.value})}
+                                    placeholder="e.g., Karachi"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="testAddress">Detailed Address</Label>
+                                  <Textarea
+                                    id="testAddress"
+                                    value={testForm.detailAddress}
+                                    onChange={(e) => setTestForm({...testForm, detailAddress: e.target.value})}
+                                    placeholder="e.g., Floor 2, Medical Plaza, Main Road"
+                                    rows={2}
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="testMapLink">Google Maps Link (Optional)</Label>
+                                  <Input
+                                    id="testMapLink"
+                                    value={testForm.googleMapLink}
+                                    onChange={(e) => setTestForm({...testForm, googleMapLink: e.target.value})}
+                                    placeholder="https://maps.google.com/..."
+                                  />
+                                </div>
+                              </div>
+                              
+                              <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
+                                {isAddingTest ? 'Adding Test...' : 'Add Test'}
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {tests.length > 0 ? (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Image</TableHead>
+                                <TableHead>Test Name</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Duration</TableHead>
+                                <TableHead>Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {tests.map((test) => (
+                                <TableRow key={test.id}>
+                                  <TableCell>
+                                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                      {test.image ? (
+                                        <img 
+                                          src={test.image} 
+                                          alt={test.name}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            target.nextElementSibling!.classList.remove('hidden');
+                                          }}
+                                        />
+                                      ) : null}
+                                      <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="font-medium">{test.name}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline">{test.category}</Badge>
+                                  </TableCell>
+                                  <TableCell>PKR {test.price.toLocaleString()}</TableCell>
+                                  <TableCell>{test.duration || 'N/A'}</TableCell>
+                                  <TableCell>
+                                    <div className="flex space-x-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => openEdit(test)}
+                                      >
+                                        <Edit className="w-4 h-4 mr-1" /> Edit
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => handleDeleteTest(test.id)}
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        ) : (
+                          <div className="text-center text-muted-foreground py-8">
+                            No tests added yet.
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
+              </TabsContent>
+              <TabsContent value="bookings">
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Patient Bookings</CardTitle>
+                        <CardDescription>Bookings from patients for your services</CardDescription>
+                      </div>
+                      {bookings.length > 0 && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={deleteAllBookings}
+                        >
+                          Delete All
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {isLoadingBookings ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="text-muted-foreground mt-2">Loading bookings...</p>
+                      </div>
+                    ) : bookings.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">No bookings yet</p>
+                        <p className="text-sm text-muted-foreground">Patient bookings will appear here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {bookings.map((booking) => (
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Phone className="w-4 h-4" />
+                                  <span>{booking.paymentMethod}: ***{booking.paymentNumber.slice(-4)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right flex items-center space-x-2">
+                              <Badge
+                                variant={booking.status === "confirmed" ? "default" : "secondary"}
+                                className={booking.status === "confirmed" ? "bg-success" : ""}
+                              >
+                                {booking.status}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteBooking(booking._id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Profile Sidebar */}
