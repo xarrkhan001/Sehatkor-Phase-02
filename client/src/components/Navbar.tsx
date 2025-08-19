@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import UserBadge from "@/components/UserBadge";
@@ -31,7 +31,39 @@ import {
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout, mode, toggleMode } = useAuth();
+
+  const handleModeToggle = () => {
+    const newMode = mode === 'patient' ? 'provider' : 'patient';
+    toggleMode();
+
+    // Only navigate if user is currently on a dashboard page
+    const isDashboardPage = location.pathname.startsWith('/dashboard');
+    
+    if (isDashboardPage) {
+      if (newMode === 'patient') {
+        navigate('/dashboard/patient');
+      } else {
+        switch (user?.role) {
+          case 'doctor':
+            navigate('/dashboard/doctor');
+            break;
+          case 'clinic/hospital':
+            navigate('/dashboard/clinic');
+            break;
+          case 'laboratory':
+            navigate('/dashboard/laboratory');
+            break;
+          case 'pharmacy':
+            navigate('/dashboard/pharmacy');
+            break;
+          default:
+            navigate('/');
+        }
+      }
+    }
+  };
 
   const allNavItems = [
     { name: "Home", href: "/", icon: Home },
@@ -165,17 +197,33 @@ const Navbar = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-100" />
                   {user && user.role !== 'patient' && (
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent px-4 py-2 rounded-lg mx-2 my-1 cursor-pointer">
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent px-4 py-3 rounded-xl mx-2 my-2 cursor-pointer hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
-                          <Repeat className="mr-2 h-4 w-4" />
-                          <span>Patient Mode</span>
+                          <div className={`p-1.5 rounded-lg mr-3 transition-all duration-300 ${
+                            mode === 'patient' 
+                              ? 'bg-blue-100 text-blue-600' 
+                              : 'bg-red-100 text-red-600'
+                          }`}>
+                            <Repeat className="h-4 w-4" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-gray-900">
+                              {mode === 'patient' ? 'Patient Mode' : 'Provider Mode'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {mode === 'patient' ? 'Switch to Provider' : 'Switch to Patient'}
+                            </span>
+                          </div>
                         </div>
-                        <Switch
-                          checked={mode === 'patient'}
-                          onCheckedChange={toggleMode}
-                          aria-label="Toggle patient mode"
-                        />
+                        <div className="flex items-center">
+                          <Switch
+                            checked={mode === 'patient'}
+                            onCheckedChange={handleModeToggle}
+                            aria-label="Toggle mode"
+                            className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-red-500"
+                          />
+                        </div>
                       </div>
                     </DropdownMenuItem>
                   )}
