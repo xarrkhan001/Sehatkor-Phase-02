@@ -40,6 +40,12 @@ const DoctorDashboard = () => {
   const [specialization, setSpecialization] = useState('');
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [scheduleDetails, setScheduleDetails] = useState({
+    scheduledTime: '',
+    communicationChannel: 'SehatKor Chat',
+  });
 
   const specialties = [
     'Cardiologist', 'Neurologist', 'Dermatologist', 'Pediatrician', 
@@ -172,6 +178,57 @@ const DoctorDashboard = () => {
         description: "Failed to delete all bookings",
         variant: "destructive"
       });
+    }
+  };
+
+  const scheduleBooking = async () => {
+    if (!selectedBooking || !scheduleDetails.scheduledTime) {
+      toast({ title: "Error", description: "Please select a time for the appointment.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/bookings/${selectedBooking._id}/schedule`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+        body: JSON.stringify(scheduleDetails),
+      });
+
+      if (response.ok) {
+        const updatedBooking = await response.json();
+        setBookings(prev => prev.map(b => b._id === selectedBooking._id ? updatedBooking : b));
+        toast({ title: "Success", description: "Booking scheduled successfully" });
+        setIsScheduling(false);
+        setSelectedBooking(null);
+      } else {
+        throw new Error('Failed to schedule booking');
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to schedule booking", variant: "destructive" });
+    }
+  };
+
+  const completeBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+
+      if (response.ok) {
+        const updatedBooking = await response.json();
+        setBookings(prev => prev.map(b => b._id === bookingId ? updatedBooking : b));
+        toast({ title: "Success", description: "Booking marked as complete" });
+      } else {
+        throw new Error('Failed to complete booking');
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to complete booking", variant: "destructive" });
     }
   };
 
@@ -384,29 +441,39 @@ const DoctorDashboard = () => {
                               <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                   <Calendar className="w-4 h-4" />
-                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
+                                  <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <div className="flex items-center space-x-1">
-                                  <Phone className="w-4 h-4" />
-                                  <span>{booking.paymentMethod}: ***{booking.paymentNumber.slice(-4)}</span>
-                                </div>
+                                {booking.status === 'Scheduled' && booking.scheduledTime && (
+                                  <div className="flex items-center space-x-1 text-primary font-semibold">
+                                    <Clock className="w-4 h-4" />
+                                    <span>Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <div className="text-right flex items-center space-x-2">
                               <Badge
-                                variant={booking.status === "confirmed" ? "default" : "secondary"}
-                                className={booking.status === "confirmed" ? "bg-success" : ""}
+                                variant={booking.status === "Completed" ? "default" : "secondary"}
+                                className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
                               >
                                 {booking.status}
                               </Badge>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteBooking(booking._id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                Delete
-                              </Button>
+                              {booking.status === 'Confirmed' && (
+                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
+                              )}
+                              {booking.status === 'Scheduled' && (
+                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
+                              )}
+                              {booking.status === 'Completed' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deleteBooking(booking._id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  Delete
+                                </Button>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -415,6 +482,48 @@ const DoctorDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Schedule Appointment</DialogTitle>
+                    <DialogDescription>
+                      Set a time and communication channel for '{selectedBooking?.serviceName}' with {selectedBooking?.patientName}.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="scheduleTime">Appointment Time</Label>
+                      <Input 
+                        id="scheduleTime"
+                        type="datetime-local" 
+                        value={scheduleDetails.scheduledTime}
+                        onChange={(e) => setScheduleDetails(prev => ({ ...prev, scheduledTime: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="communicationChannel">Communication Channel</Label>
+                      <Select 
+                        value={scheduleDetails.communicationChannel}
+                        onValueChange={(value) => setScheduleDetails(prev => ({ ...prev, communicationChannel: value }))}
+                      >
+                        <SelectTrigger id="communicationChannel">
+                          <SelectValue placeholder="Select a channel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SehatKor Chat">SehatKor Chat</SelectItem>
+                          <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                          <SelectItem value="Phone Call">Phone Call</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsScheduling(false)}>Cancel</Button>
+                    <Button onClick={scheduleBooking}>Confirm Schedule</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <TabsContent value="services" className="space-y-4">
                 <ServiceManagement

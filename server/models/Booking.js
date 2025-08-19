@@ -21,9 +21,12 @@ const BookingSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
-      default: "pending",
+      enum: ["Confirmed", "Scheduled", 'Completed', "Cancelled"],
+      default: "Confirmed",
     },
+
+    scheduledTime: { type: Date },
+    communicationChannel: { type: String },
   },
   { timestamps: true }
 );
