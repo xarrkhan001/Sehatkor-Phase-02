@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ interface SearchService extends Service {
 }
 
 const SearchPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [serviceType, setServiceType] = useState<string>("all");
@@ -197,8 +199,8 @@ const SearchPage = () => {
       const bOwn = b._providerId && user?.id && b._providerId === user.id;
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
       if (a.isReal !== b.isReal) return a.isReal ? -1 : 1;
-      const ad = a.createdAt ? Date.parse(a.createdAt as any) : 0;
-      const bd = b.createdAt ? Date.parse(b.createdAt as any) : 0;
+      const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
       return bd - ad;
     });
   }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, highlightedService, allServices]);
@@ -498,7 +500,20 @@ const SearchPage = () => {
   </div>
     {/* Buttons */}
   <div className="flex flex-wrap gap-2">
-    <Button className="flex-1 min-w-[100px]">
+    <Button 
+      className="flex-1 min-w-[100px]"
+      onClick={() => navigate('/payment', {
+        state: {
+          serviceId: service.id,
+          serviceName: service.name,
+          providerId: (service as any)._providerId || service.id,
+          providerName: service.provider,
+          providerType: (service as any).category === 'Doctor' ? 'doctor' : 
+                       (service as any).category === 'Hospital' ? 'hospital' :
+                       (service as any).category === 'Laboratory' ? 'lab' : 'pharmacy'
+        }
+      })}
+    >
       <Clock className="w-4 h-4 mr-1" /> Book Now
     </Button>
     <Button
@@ -627,7 +642,23 @@ const SearchPage = () => {
                       <td className="p-4 font-medium">Action</td>
                       {selectedServicesData.map((service) => (
                         <td key={service.id} className="p-4">
-                          <Button size="sm" className="w-full">Book Now</Button>
+                          <Button 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => navigate('/payment', {
+                              state: {
+                                serviceId: service.id,
+                                serviceName: service.name,
+                                providerId: (service as any)._providerId || service.id,
+                                providerName: service.provider,
+                                providerType: (service as any).category === 'Doctor' ? 'doctor' : 
+                                             (service as any).category === 'Hospital' ? 'hospital' :
+                                             (service as any).category === 'Laboratory' ? 'lab' : 'pharmacy'
+                              }
+                            })}
+                          >
+                            Book Now
+                          </Button>
                         </td>
                       ))}
                     </tr>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { mockBookings } from "@/data/mockData";
+import { toast } from "sonner";
 import { 
   Calendar,
   Clock,
@@ -29,6 +30,8 @@ import {
 
 const PatientDashboard = () => {
   const { user, logout } = useAuth();
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [stats] = useState({
     totalBookings: 8,
@@ -36,6 +39,63 @@ const PatientDashboard = () => {
     pendingBookings: 3,
     totalSpent: 15500
   });
+
+  const fetchBookings = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`/api/bookings/patient/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        toast.success('Booking deleted successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to delete booking');
+    }
+  };
+
+  const deleteAllBookings = async () => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings([]);
+        toast.success('All bookings deleted successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to delete all bookings');
+    }
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, [user?.id]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,8 +196,9 @@ const PatientDashboard = () => {
           {/* Tabs Section */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="bookings">My Bookings</TabsTrigger>
+                <TabsTrigger value="history">Booking History</TabsTrigger>
                 <TabsTrigger value="orders">Medicine Orders</TabsTrigger>
                 <TabsTrigger value="reports">Health Reports</TabsTrigger>
               </TabsList>
@@ -182,6 +243,87 @@ const PatientDashboard = () => {
                         </div>
                       ))}
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="history" className="space-y-4">
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>My Booking History</CardTitle>
+                        <CardDescription>
+                          All your bookings and payment history
+                        </CardDescription>
+                      </div>
+                      {bookings.length > 0 && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={deleteAllBookings}
+                        >
+                          Delete All
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {isLoading ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="text-muted-foreground mt-2">Loading bookings...</p>
+                      </div>
+                    ) : bookings.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">No bookings found</p>
+                        <p className="text-sm text-muted-foreground">Your booking history will appear here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {bookings.map((booking) => (
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.serviceName}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {booking.providerName} ({booking.providerType})
+                              </p>
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <CreditCard className="w-4 h-4" />
+                                  <span>{booking.paymentMethod}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Phone className="w-4 h-4" />
+                                  <span>***{booking.paymentNumber.slice(-4)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right flex items-center space-x-2">
+                              <Badge
+                                variant={booking.status === "confirmed" ? "default" : "secondary"}
+                                className={booking.status === "confirmed" ? "bg-success" : ""}
+                              >
+                                {booking.status}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteBooking(booking._id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

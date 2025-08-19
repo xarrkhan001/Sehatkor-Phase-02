@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ui/image-upload";
 import ServiceManager, { DoctorService } from "@/lib/serviceManager";
 import { listServices as apiList } from "@/lib/doctorApi";
 import ServiceManagement from "@/components/ServiceManagement";
+import { toast } from "sonner";
 import { 
   Stethoscope, 
   Calendar, 
@@ -36,6 +38,8 @@ const DoctorDashboard = () => {
   const { toast } = useToast();
   const [services, setServices] = useState<DoctorService[]>([]);
   const [specialization, setSpecialization] = useState('');
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   const specialties = [
     'Cardiologist', 'Neurologist', 'Dermatologist', 'Pediatrician', 
@@ -104,9 +108,77 @@ const DoctorDashboard = () => {
     }
   };
 
+  const fetchBookings = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`/api/bookings/provider/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error);
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const deleteBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        toast({
+          title: "Success",
+          description: "Booking deleted successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete booking",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteAllBookings = async () => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings([]);
+        toast({
+          title: "Success",
+          description: "All bookings deleted successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete all bookings",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     if (!user?.id) return;
     reloadServices();
+    fetchBookings();
     const savedSpecialization = localStorage.getItem(`doctor_specialization_${user.id}`);
     if (savedSpecialization) setSpecialization(savedSpecialization);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -226,66 +298,150 @@ const DoctorDashboard = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-6">
-            {/* Today's Appointments */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Today's Appointments</CardTitle>
-                <CardDescription>Your scheduled patients for today</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {todayAppointments.map((appointment) => (
-                    <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{appointment.patient}</h4>
-                        <p className="text-sm text-muted-foreground">{appointment.type}</p>
-                        <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          <span>{appointment.time}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge
-                          variant={appointment.status === "Confirmed" ? "default" : "secondary"}
-                        >
-                          {appointment.status}
-                        </Badge>
-                        <div className="mt-2 space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Phone className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm">Start</Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <Tabs defaultValue="appointments" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="appointments">Appointments</TabsTrigger>
+                <TabsTrigger value="bookings">Bookings</TabsTrigger>
+                <TabsTrigger value="services">Services</TabsTrigger>
+              </TabsList>
 
-            <ServiceManagement
-              userId={user?.id || ''}
-              userRole="doctor"
-              userName={user?.name || 'Doctor'}
-              services={services as any}
-              onServicesUpdate={(newServices) => {
-                setServices(newServices as DoctorService[]);
-                // keep ServiceManager in sync using ids in current services
-                const docs = (newServices as any[]).map(s => ({
-                  _id: s.id,
-                  name: s.name,
-                  description: s.description,
-                  price: s.price,
-                  category: s.category,
-                  duration: (s as any).duration,
-                  imageUrl: s.image,
-                  providerName: s.providerName,
-                  createdAt: (s as any).createdAt,
-                  updatedAt: (s as any).updatedAt,
-                }));
-                syncLocalFromDocs(docs);
-              }}
-            />
+              <TabsContent value="appointments" className="space-y-4">
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <CardTitle>Today's Appointments</CardTitle>
+                    <CardDescription>Your scheduled patients for today</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {todayAppointments.map((appointment) => (
+                        <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{appointment.patient}</h4>
+                            <p className="text-sm text-muted-foreground">{appointment.type}</p>
+                            <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4" />
+                              <span>{appointment.time}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <Badge
+                              variant={appointment.status === "Confirmed" ? "default" : "secondary"}
+                            >
+                              {appointment.status}
+                            </Badge>
+                            <div className="mt-2 space-x-2">
+                              <Button size="sm" variant="outline">
+                                <Phone className="w-4 h-4" />
+                              </Button>
+                              <Button size="sm">Start</Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="bookings" className="space-y-4">
+                <Card className="card-healthcare">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Patient Bookings</CardTitle>
+                        <CardDescription>Bookings from patients for your services</CardDescription>
+                      </div>
+                      {bookings.length > 0 && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={deleteAllBookings}
+                        >
+                          Delete All
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {isLoadingBookings ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="text-muted-foreground mt-2">Loading bookings...</p>
+                      </div>
+                    ) : bookings.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">No bookings yet</p>
+                        <p className="text-sm text-muted-foreground">Patient bookings will appear here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {bookings.map((booking) => (
+                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Phone className="w-4 h-4" />
+                                  <span>{booking.paymentMethod}: ***{booking.paymentNumber.slice(-4)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right flex items-center space-x-2">
+                              <Badge
+                                variant={booking.status === "confirmed" ? "default" : "secondary"}
+                                className={booking.status === "confirmed" ? "bg-success" : ""}
+                              >
+                                {booking.status}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteBooking(booking._id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="services" className="space-y-4">
+                <ServiceManagement
+                  userId={user?.id || ''}
+                  userRole="doctor"
+                  userName={user?.name || 'Doctor'}
+                  services={services as any}
+                  onServicesUpdate={(newServices) => {
+                    setServices(newServices as DoctorService[]);
+                    // keep ServiceManager in sync using ids in current services
+                    const docs = (newServices as any[]).map(s => ({
+                      _id: s.id,
+                      name: s.name,
+                      description: s.description,
+                      price: s.price,
+                      category: s.category,
+                      duration: (s as any).duration,
+                      imageUrl: s.image,
+                      providerName: s.providerName,
+                      createdAt: (s as any).createdAt,
+                      updatedAt: (s as any).updatedAt,
+                    }));
+                    syncLocalFromDocs(docs);
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Profile Sidebar */}
