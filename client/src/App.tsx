@@ -22,7 +22,12 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
-const RoleBasedDashboard = lazy(() => import("./pages/RoleBasedDashboard"));
+const DashboardRedirectPage = lazy(() => import("./pages/DashboardRedirectPage"));
+const PatientDashboard = lazy(() => import("./pages/dashboards/PatientDashboard"));
+const DoctorDashboard = lazy(() => import("./pages/dashboards/DoctorDashboard"));
+const ClinicDashboard = lazy(() => import("./pages/dashboards/ClinicDashboard"));
+const LaboratoryDashboard = lazy(() => import("./pages/dashboards/LaboratoryDashboard"));
+const PharmacyDashboard = lazy(() => import("./pages/dashboards/PharmacyDashboard"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
@@ -63,7 +68,12 @@ const AppShell = () => {
             <Route path="/register" element={<Suspense fallback={<AuthSkeleton />}><RegisterPage /></Suspense>} />
             <Route path="/login" element={<Suspense fallback={<AuthSkeleton />}><LoginPage /></Suspense>} />
             <Route path="/auth/callback" element={<Suspense fallback={<AuthSkeleton />}><OAuthCallbackPage /></Suspense>} />
-            <Route path="/dashboard" element={<Suspense fallback={<DashboardSkeleton />}><RoleBasedDashboard /></Suspense>} />
+            <Route path="/dashboard" element={<Suspense fallback={<DashboardSkeleton />}><DashboardRedirectPage /></Suspense>} />
+            <Route path="/dashboard/patient" element={<Suspense fallback={<DashboardSkeleton />}><PatientDashboard /></Suspense>} />
+            <Route path="/dashboard/doctor" element={<Suspense fallback={<DashboardSkeleton />}><DoctorDashboard /></Suspense>} />
+            <Route path="/dashboard/clinic" element={<Suspense fallback={<DashboardSkeleton />}><ClinicDashboard /></Suspense>} />
+            <Route path="/dashboard/laboratory" element={<Suspense fallback={<DashboardSkeleton />}><LaboratoryDashboard /></Suspense>} />
+            <Route path="/dashboard/pharmacy" element={<Suspense fallback={<DashboardSkeleton />}><PharmacyDashboard /></Suspense>} />
             <Route path="/blog" element={<Suspense fallback={<BlogSkeleton />}><BlogPage /></Suspense>} />
             <Route path="/contact" element={<Suspense fallback={<PageSkeleton />}><ContactPage /></Suspense>} />
             <Route path="/admin" element={<Suspense fallback={<AdminSkeleton />}><AdminPanel /></Suspense>} />

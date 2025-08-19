@@ -9,6 +9,8 @@ interface User {
   avatar?: string;
 }
 
+type UserMode = 'patient' | 'provider';
+
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
@@ -16,6 +18,8 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   updateCurrentUser: (partial: Partial<User>) => void;
+  mode: UserMode;
+  toggleMode: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,12 +34,23 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [mode, setMode] = useState<UserMode>('patient');
 
   useEffect(() => {
     // Check for saved user in localStorage
     const savedUser = localStorage.getItem('sehatkor_current_user') || localStorage.getItem('sehatkor_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      // Set initial mode
+      const savedMode = localStorage.getItem('sehatkor_user_mode') as UserMode;
+      if (savedMode) {
+        setMode(savedMode);
+      } else if (parsedUser.role !== 'patient') {
+        setMode('provider');
+      } else {
+        setMode('patient');
+      }
     }
   }, []);
 
@@ -101,8 +116,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
+    setMode('patient');
     localStorage.removeItem('sehatkor_current_user');
     localStorage.removeItem('sehatkor_user');
+    localStorage.removeItem('sehatkor_user_mode');
+    localStorage.removeItem('sehatkor_token');
+  };
+
+  const toggleMode = () => {
+    if (user?.role === 'patient') return; // Patients can't switch modes
+    setMode(prevMode => {
+      const newMode = prevMode === 'provider' ? 'patient' : 'provider';
+      localStorage.setItem('sehatkor_user_mode', newMode);
+      return newMode;
+    });
   };
 
   const value = {
@@ -111,6 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     logout,
     isAuthenticated: !!user,
+    mode,
+    toggleMode,
     updateCurrentUser: (partial: Partial<User>) => {
       setUser((prev) => {
         const next = { ...(prev as User), ...partial } as User;

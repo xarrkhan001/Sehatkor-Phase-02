@@ -6,6 +6,7 @@ import UserBadge from "@/components/UserBadge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { Switch } from "@/components/ui/switch";
 import { 
   Menu, 
   X, 
@@ -23,13 +24,14 @@ import {
   FlaskConical,
   Pill,
   UserCircle,
-  BadgeCheck
+  BadgeCheck,
+  Repeat
 } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, mode, toggleMode } = useAuth();
 
   const allNavItems = [
     { name: "Home", href: "/", icon: Home },
@@ -40,13 +42,39 @@ const Navbar = () => {
     { name: "Pharmacies", href: "/pharmacies", icon: Pill },
     { name: "Blog", href: "/blog", icon: BookOpen },
     { name: "Contact", href: "/contact", icon: Phone },
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, requiresAuth: true },
+    { name: "Dashboard", href: "", icon: LayoutDashboard, requiresAuth: true },
     { name: "Register", href: "/register", icon: UserPlus, requiresAuth: false },
     { name: "Login", href: "/login", icon: LogIn, requiresAuth: false },
   ];
 
+  const getDashboardPath = () => {
+    if (!user) return "/login";
+    if (user.role === 'patient' || mode === 'patient') {
+      return "/dashboard/patient";
+    }
+    switch (user.role) {
+      case 'doctor':
+        return '/dashboard/doctor';
+      case 'clinic/hospital':
+        return '/dashboard/clinic';
+      case 'laboratory':
+        return '/dashboard/laboratory';
+      case 'pharmacy':
+        return '/dashboard/pharmacy';
+      default:
+        return '/login';
+    }
+  };
+
   // Filter navigation items based on authentication status
-  const navItems = allNavItems.filter(item => {
+  const navItems = allNavItems
+  .map(item => {
+    if (item.name === "Dashboard") {
+      return { ...item, href: getDashboardPath() };
+    }
+    return item;
+  })
+  .filter(item => {
     if (item.requiresAuth === false) {
       return !user; // Show login/register only when not logged in
     }
@@ -136,6 +164,21 @@ const Navbar = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-100" />
+                  {user && user.role !== 'patient' && (
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent px-4 py-2 rounded-lg mx-2 my-1 cursor-pointer">
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center">
+                          <Repeat className="mr-2 h-4 w-4" />
+                          <span>Patient Mode</span>
+                        </div>
+                        <Switch
+                          checked={mode === 'patient'}
+                          onCheckedChange={toggleMode}
+                          aria-label="Toggle patient mode"
+                        />
+                      </div>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50 px-4 py-2 rounded-lg mx-2 my-2">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
