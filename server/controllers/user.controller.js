@@ -9,8 +9,10 @@ import LaboratoryTest from "../models/LaboratoryTest.js";
 export const getAllPublicServices = async (req, res) => {
   try {
     // Optional filtering & pagination
-    const type = (req.query.type || '').toString().toLowerCase();
-    const hasType = ['doctor', 'clinic', 'pharmacy', 'laboratory'].includes(type);
+    const type = (req.query.type || "").toString().toLowerCase();
+    const hasType = ["doctor", "clinic", "pharmacy", "laboratory"].includes(
+      type
+    );
     const page = Math.max(1, Number(req.query.page) || 0);
     const limitRaw = Number(req.query.limit) || 0;
     const limit = limitRaw > 0 ? Math.min(limitRaw, 100) : 0; // cap to 100
@@ -29,24 +31,32 @@ export const getAllPublicServices = async (req, res) => {
       return q;
     };
 
-    if (!hasType || type === 'doctor') {
+    if (!hasType || type === "doctor") {
       doctorServices = await applyPaging(
-        DoctorService.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+        DoctorService.find({})
+          .populate("providerId", "phone")
+          .sort({ createdAt: -1 })
       ).lean();
     }
-    if (!hasType || type === 'clinic') {
+    if (!hasType || type === "clinic") {
       clinicServices = await applyPaging(
-        ClinicService.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+        ClinicService.find({})
+          .populate("providerId", "phone")
+          .sort({ createdAt: -1 })
       ).lean();
     }
-    if (!hasType || type === 'pharmacy') {
+    if (!hasType || type === "pharmacy") {
       pharmacyServices = await applyPaging(
-        Medicine.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+        Medicine.find({})
+          .populate("providerId", "phone")
+          .sort({ createdAt: -1 })
       ).lean();
     }
-    if (!hasType || type === 'laboratory') {
+    if (!hasType || type === "laboratory") {
       laboratoryServices = await applyPaging(
-        LaboratoryTest.find({}).populate("providerId", "phone").sort({ createdAt: -1 })
+        LaboratoryTest.find({})
+          .populate("providerId", "phone")
+          .sort({ createdAt: -1 })
       ).lean();
     }
 
