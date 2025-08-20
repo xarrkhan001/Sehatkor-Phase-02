@@ -18,13 +18,10 @@ import {
   Bell,
   Star,
   Heart,
-  ShoppingCart,
   CreditCard,
   Settings,
   CheckCircle,
-  AlertCircle,
-  FileText,
-  Download
+  AlertCircle
 } from "lucide-react";
 
 const PatientDashboard = () => {
@@ -195,11 +192,9 @@ const PatientDashboard = () => {
           {/* Tabs Section */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="bookings">My Bookings</TabsTrigger>
                 <TabsTrigger value="history">Booking History</TabsTrigger>
-                <TabsTrigger value="orders">Medicine Orders</TabsTrigger>
-                <TabsTrigger value="reports">Health Reports</TabsTrigger>
               </TabsList>
 
               <TabsContent value="bookings" className="space-y-4">
@@ -347,52 +342,6 @@ const PatientDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-
-              <TabsContent value="orders" className="space-y-4">
-                <Card className="card-healthcare">
-                  <CardHeader>
-                    <CardTitle>Medicine Orders</CardTitle>
-                    <CardDescription>
-                      Track your medicine purchases and deliveries
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">No medicine orders yet</p>
-                      <Button className="mt-4">Browse Medicines</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="reports" className="space-y-4">
-                <Card className="card-healthcare">
-                  <CardHeader>
-                    <CardTitle>Health Reports</CardTitle>
-                    <CardDescription>
-                      Access your lab results and medical reports
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <FileText className="w-8 h-8 text-primary" />
-                          <div>
-                            <h4 className="font-medium">Blood Test Complete</h4>
-                            <p className="text-sm text-muted-foreground">Excel Labs • Jan 15, 2024</p>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="outline">
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
           </div>
 
@@ -444,10 +393,6 @@ const PatientDashboard = () => {
                 <Button className="w-full justify-start" variant="outline">
                   <Heart className="w-4 h-4 mr-2" />
                   Health Checkup
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Order Medicine
                 </Button>
                 <Button className="w-full justify-start" variant="outline">
                   <Settings className="w-4 h-4 mr-2" />
