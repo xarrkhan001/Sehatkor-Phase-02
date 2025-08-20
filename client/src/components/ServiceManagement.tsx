@@ -254,19 +254,19 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   return (
     <Card className="card-healthcare">
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <CardTitle>My Services</CardTitle>
             <CardDescription>Manage your services and pricing</CardDescription>
           </div>
           <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
+              <Button onClick={resetForm} className="shrink-0 self-start sm:self-auto w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Service
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
                 <DialogDescription>
@@ -291,14 +291,14 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     onImageRemove={() => { setServiceImageFile(null); setServiceImage(''); }}
                     currentImage={serviceImage}
                     placeholder="Upload service image"
-                    className="max-w-xs"
+                    className="w-full sm:max-w-xs"
                   />
                   {isUploadingImage && (
                     <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="servicePrice">Price (PKR) *</Label>
                     <Input
@@ -407,74 +407,121 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             No services added yet. Click "Add Service" to get started.
           </p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Service</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                {userRole === 'pharmacy' ? (
-                  <TableHead>Stock</TableHead>
-                ) : (
-                  <TableHead>Duration</TableHead>
-                )}
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            {/* Mobile cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
               {services.map((service) => (
-                <TableRow key={service.id}>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      {service.image ? (
-                        <img 
-                          src={service.image} 
-                          alt={service.name}
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Stethoscope className="w-5 h-5 text-primary" />
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-medium">{service.name}</p>
-                        <p className="text-sm text-muted-foreground">{service.description}</p>
+                <div key={service.id} className="border rounded-lg p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    {service.image ? (
+                      <img src={service.image} alt={service.name} className="w-12 h-12 rounded-lg object-cover" />
+                    ) : (
+                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Stethoscope className="w-6 h-6 text-primary" />
                       </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-semibold truncate">{service.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{service.description}</p>
                     </div>
-                  </TableCell>
-                  <TableCell>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline">{service.category}</Badge>
-                  </TableCell>
-                  <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
-                  <TableCell>
-                    {userRole === 'pharmacy' && 'stock' in service ? 
-                      service.stock || 'N/A' : 
-                      service.duration ? `${service.duration} min` : 'N/A'
-                    }
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleEditService(service)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => handleDeleteService(service.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                    <span className="text-sm font-medium">PKR {service.price?.toLocaleString() || 0}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {userRole === 'pharmacy' && 'stock' in service ? (
+                        <>{(service as any).stock || 'N/A'} in stock</>
+                      ) : (
+                        <>{service.duration ? `${service.duration} min` : 'N/A'}</>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => handleEditService(service)}>
+                      <Edit className="w-4 h-4 mr-1" /> Edit
+                    </Button>
+                    <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleDeleteService(service.id)}>
+                      <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    </Button>
+                  </div>
+                </div>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-[700px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      {userRole === 'pharmacy' ? (
+                        <TableHead>Stock</TableHead>
+                      ) : (
+                        <TableHead>Duration</TableHead>
+                      )}
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {services.map((service) => (
+                      <TableRow key={service.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-3 min-w-0">
+                            {service.image ? (
+                              <img 
+                                src={service.image} 
+                                alt={service.name}
+                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Stethoscope className="w-5 h-5 text-primary" />
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-medium truncate max-w-[240px]">{service.name}</p>
+                              <p className="text-sm text-muted-foreground truncate max-w-[260px]">{service.description}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{service.category}</Badge>
+                        </TableCell>
+                        <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
+                        <TableCell>
+                          {userRole === 'pharmacy' && 'stock' in service ? 
+                            (service as any).stock || 'N/A' : 
+                            service.duration ? `${service.duration} min` : 'N/A'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleEditService(service)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => handleDeleteService(service.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>

@@ -28,7 +28,6 @@ import {
   Edit,
   Star,
   FileText,
-  Phone,
   Plus,
   Trash2
 } from "lucide-react";
@@ -252,11 +251,7 @@ const DoctorDashboard = () => {
     });
   };
 
-  const todayAppointments = [
-    { id: 1, patient: "Ahmad Ali", time: "10:00 AM", type: "Consultation", status: "Confirmed" },
-    { id: 2, patient: "Sara Khan", time: "11:30 AM", type: "Follow-up", status: "Waiting" },
-    { id: 3, patient: "Hassan Ahmed", time: "2:00 PM", type: "Checkup", status: "Confirmed" },
-  ];
+  
 
   return (
     <div className="min-h-screen bg-background">
@@ -269,7 +264,7 @@ const DoctorDashboard = () => {
               Welcome to your medical practice dashboard
             </p>
           </div>
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-4 md:mt-0">
             <Button variant="outline" size="sm">
               <Bell className="w-4 h-4 mr-2" />
               Notifications
@@ -285,7 +280,7 @@ const DoctorDashboard = () => {
         {!user?.isVerified && (
           <Card className="mb-8 border-warning bg-warning/5">
             <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-4 space-y-3 sm:space-y-0">
                 <AlertCircle className="w-5 h-5 text-warning mt-0.5" />
                 <div className="flex-1">
                   <h3 className="font-semibold text-warning mb-1">Medical License Verification Pending</h3>
@@ -304,7 +299,7 @@ const DoctorDashboard = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="card-healthcare">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Today's Patients</p>
@@ -316,7 +311,7 @@ const DoctorDashboard = () => {
           </Card>
 
           <Card className="card-healthcare">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Completed</p>
@@ -328,7 +323,7 @@ const DoctorDashboard = () => {
           </Card>
 
           <Card className="card-healthcare">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Upcoming</p>
@@ -340,7 +335,7 @@ const DoctorDashboard = () => {
           </Card>
 
           <Card className="card-healthcare">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Rating</p>
@@ -353,57 +348,18 @@ const DoctorDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-6">
-            <Tabs defaultValue="appointments" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="appointments">Appointments</TabsTrigger>
-                <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                <TabsTrigger value="services">Services</TabsTrigger>
+            <Tabs defaultValue="bookings" className="space-y-6">
+              <TabsList className="w-full -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto flex gap-2 sm:grid sm:grid-cols-2 snap-x snap-mandatory">
+                <TabsTrigger value="bookings" className="shrink-0 whitespace-nowrap snap-start">Bookings</TabsTrigger>
+                <TabsTrigger value="services" className="shrink-0 whitespace-nowrap snap-start">Services</TabsTrigger>
               </TabsList>
-
-              <TabsContent value="appointments" className="space-y-4">
-                <Card className="card-healthcare">
-                  <CardHeader>
-                    <CardTitle>Today's Appointments</CardTitle>
-                    <CardDescription>Your scheduled patients for today</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {todayAppointments.map((appointment) => (
-                        <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{appointment.patient}</h4>
-                            <p className="text-sm text-muted-foreground">{appointment.type}</p>
-                            <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
-                              <Clock className="w-4 h-4" />
-                              <span>{appointment.time}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <Badge
-                              variant={appointment.status === "Confirmed" ? "default" : "secondary"}
-                            >
-                              {appointment.status}
-                            </Badge>
-                            <div className="mt-2 space-x-2">
-                              <Button size="sm" variant="outline">
-                                <Phone className="w-4 h-4" />
-                              </Button>
-                              <Button size="sm">Start</Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
               <TabsContent value="bookings" className="space-y-4">
                 <Card className="card-healthcare">
                   <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <CardTitle>Patient Bookings</CardTitle>
                         <CardDescription>Bookings from patients for your services</CardDescription>
@@ -413,6 +369,7 @@ const DoctorDashboard = () => {
                           variant="destructive" 
                           size="sm"
                           onClick={deleteAllBookings}
+                          className="shrink-0 self-start sm:self-auto w-full sm:w-auto"
                         >
                           Delete All
                         </Button>
@@ -434,11 +391,11 @@ const DoctorDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div className="flex-1">
-                              <h4 className="font-medium">{booking.patientName}</h4>
-                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium truncate">{booking.patientName}</h4>
+                              <p className="text-sm text-muted-foreground truncate">{booking.serviceName}</p>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
@@ -451,10 +408,10 @@ const DoctorDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right flex items-center space-x-2">
+                            <div className="w-full sm:w-auto text-left sm:text-right flex flex-wrap items-center gap-2 justify-start sm:justify-end">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
-                                className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
+                                className={(booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500') + " text-xs px-2 py-0.5"}
                               >
                                 {booking.status}
                               </Badge>
@@ -484,7 +441,7 @@ const DoctorDashboard = () => {
               </TabsContent>
 
               <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
-                <DialogContent>
+                <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Schedule Appointment</DialogTitle>
                     <DialogDescription>
