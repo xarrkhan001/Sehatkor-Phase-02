@@ -350,12 +350,12 @@ const ClinicDashboard = () => {
               Welcome to your clinic management dashboard
             </p>
           </div>
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <Button variant="outline" size="sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mt-4 md:mt-0 w-full md:w-auto">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Bell className="w-4 h-4 mr-2" />
               Notifications
             </Button>
-            <Button variant="outline" size="sm" onClick={logout}>
+            <Button variant="outline" size="sm" onClick={logout} className="w-full sm:w-auto">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
@@ -457,7 +457,7 @@ const ClinicDashboard = () => {
                             Add Service
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
                             <DialogDescription>
@@ -574,36 +574,33 @@ const ClinicDashboard = () => {
                     {services.length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">No services added yet.</div>
                     ) : (
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-20">Image</TableHead>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Department</TableHead>
-                              <TableHead>Price (PKR)</TableHead>
-                              <TableHead>Duration</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {services.map((m: any) => {
-                              const iid = m._id || m.id;
-                              return (
-                              <TableRow key={String(iid)}>
-                                <TableCell>
+                      <>
+                        {/* Mobile cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+                          {services.map((m: any) => {
+                            const iid = m._id || m.id;
+                            return (
+                              <div key={String(iid)} className="border rounded-lg p-4 flex flex-col gap-3">
+                                <div className="flex items-center gap-3">
                                   {m.imageUrl || m.image ? (
-                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-12 h-12 rounded-lg object-cover" />
                                   ) : (
-                                    <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">🏥</div>
+                                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">🏥</div>
                                   )}
-                                </TableCell>
-                                <TableCell className="font-medium">{m.name}</TableCell>
-                                <TableCell>{m.department || m.category || '-'}</TableCell>
-                                <TableCell>{m.price ?? 0}</TableCell>
-                                <TableCell>{m.duration ?? '-'}</TableCell>
-                                <TableCell className="text-right space-x-2">
-                                  <Button size="sm" variant="outline" onClick={() => {
+                                  <div className="min-w-0">
+                                    <p className="font-semibold truncate">{m.name}</p>
+                                    {m.description && (
+                                      <p className="text-xs text-muted-foreground truncate">{m.description}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 text-sm">
+                                  <Badge variant="outline">{m.department || m.category || '-'}</Badge>
+                                  <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
+                                  <span className="text-muted-foreground">{m.duration ? `${m.duration} min` : '-'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button size="sm" variant="outline" className="flex-1" onClick={() => {
                                     setEditingService(m);
                                     setServiceForm({
                                       name: m.name || '',
@@ -620,17 +617,77 @@ const ClinicDashboard = () => {
                                   }}>
                                     <Edit className="w-4 h-4 mr-1" /> Edit
                                   </Button>
-                                  <Button size="sm" variant="destructive" onClick={async () => {
+                                  <Button size="sm" variant="destructive" className="flex-1" onClick={async () => {
                                     try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
                                   }}>
                                     <Trash2 className="w-4 h-4 mr-1" /> Delete
                                   </Button>
-                                </TableCell>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Desktop table */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-20">Image</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Department</TableHead>
+                                <TableHead>Price (PKR)</TableHead>
+                                <TableHead>Duration</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
-                            )})}
-                          </TableBody>
-                        </Table>
-                      </div>
+                            </TableHeader>
+                            <TableBody>
+                              {services.map((m: any) => {
+                                const iid = m._id || m.id;
+                                return (
+                                  <TableRow key={String(iid)}>
+                                    <TableCell>
+                                      {m.imageUrl || m.image ? (
+                                        <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                                      ) : (
+                                        <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">🏥</div>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="font-medium">{m.name}</TableCell>
+                                    <TableCell>{m.department || m.category || '-'}</TableCell>
+                                    <TableCell>{m.price ?? 0}</TableCell>
+                                    <TableCell>{m.duration ?? '-'}</TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                      <Button size="sm" variant="outline" onClick={() => {
+                                        setEditingService(m);
+                                        setServiceForm({
+                                          name: m.name || '',
+                                          price: m.price != null ? String(m.price) : '',
+                                          duration: m.duration || '',
+                                          description: m.description || '',
+                                          department: m.department || m.category || '',
+                                          googleMapLink: m.googleMapLink || '',
+                                          city: m.city || '',
+                                          detailAddress: m.detailAddress || ''
+                                        });
+                                        setServiceImage(m.imageUrl || m.image || '');
+                                        setIsAddServiceOpen(true);
+                                      }}>
+                                        <Edit className="w-4 h-4 mr-1" /> Edit
+                                      </Button>
+                                      <Button size="sm" variant="destructive" onClick={async () => {
+                                        try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
+                                      }}>
+                                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </>
                     )}
                   </CardContent>
                 </Card>
@@ -638,7 +695,7 @@ const ClinicDashboard = () => {
               <TabsContent value="bookings">
                 <Card className="card-healthcare">
                   <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <CardTitle>Patient Bookings</CardTitle>
                         <CardDescription>Bookings from patients for your services</CardDescription>
@@ -648,6 +705,7 @@ const ClinicDashboard = () => {
                           variant="destructive" 
                           size="sm"
                           onClick={deleteAllBookings}
+                          className="shrink-0 self-start sm:self-auto w-full sm:w-auto"
                         >
                           Delete All
                         </Button>
@@ -669,11 +727,11 @@ const ClinicDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div className="flex-1">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
+                            <div className="flex-1 min-w-0">
                               <h4 className="font-medium">{booking.patientName}</h4>
                               <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
@@ -686,7 +744,7 @@ const ClinicDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right flex items-center space-x-2">
+                            <div className="sm:text-right flex items-center gap-2 flex-wrap">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
                                 className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
@@ -694,10 +752,10 @@ const ClinicDashboard = () => {
                                 {booking.status}
                               </Badge>
                               {booking.status === 'Confirmed' && (
-                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
+                                <Button size="sm" className="w-full sm:w-auto" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
                               )}
                               {booking.status === 'Scheduled' && (
-                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
+                                <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
                               )}
                               {booking.status === 'Completed' && (
                                 <Button
@@ -720,7 +778,7 @@ const ClinicDashboard = () => {
             </Tabs>
 
             <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
-              <DialogContent>
+              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Schedule Appointment</DialogTitle>
                   <DialogDescription>
