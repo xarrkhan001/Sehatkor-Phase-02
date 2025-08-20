@@ -253,11 +253,9 @@ const AdminPanel = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="verifications" className="space-y-6">
-          <TabsList className="w-full overflow-x-auto flex sm:grid sm:grid-cols-4 gap-2">
+          <TabsList className="w-full overflow-x-auto flex sm:grid md:grid-cols-2 gap-0 lg:gap-2">
             <TabsTrigger value="verifications">Verify Entities</TabsTrigger>
             <TabsTrigger value="services">Manage Services</TabsTrigger>
-            <TabsTrigger value="orders">Orders & Billing</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
           {/* User Verifications */}
