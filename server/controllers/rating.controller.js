@@ -1,23 +1,23 @@
-import Rating from '../models/Rating.js';
-import DoctorService from '../models/DoctorService.js';
-import ClinicService from '../models/ClinicService.js';
-import LaboratoryTest from '../models/LaboratoryTest.js';
-import Medicine from '../models/Medicine.js';
-import User from '../models/User.js';
+import Rating from "../models/Rating.js";
+import DoctorService from "../models/DoctorService.js";
+import ClinicService from "../models/ClinicService.js";
+import LaboratoryTest from "../models/LaboratoryTest.js";
+import Medicine from "../models/Medicine.js";
+import User from "../models/User.js";
 
 // Get service model based on type
 const getServiceModel = (serviceType) => {
   switch (serviceType) {
-    case 'doctor':
+    case "doctor":
       return DoctorService;
-    case 'clinic':
+    case "clinic":
       return ClinicService;
-    case 'laboratory':
+    case "laboratory":
       return LaboratoryTest;
-    case 'pharmacy':
+    case "pharmacy":
       return Medicine;
     default:
-      throw new Error('Invalid service type');
+      throw new Error("Invalid service type");
   }
 };
 
@@ -25,25 +25,25 @@ const getServiceModel = (serviceType) => {
 const updateServiceRating = async (serviceId, serviceType) => {
   try {
     const ServiceModel = getServiceModel(serviceType);
-    
+
     // Calculate average rating
     const ratingStats = await Rating.aggregate([
       { $match: { serviceId: serviceId } },
       {
         $group: {
           _id: null,
-          averageRating: { $avg: '$rating' },
-          totalRatings: { $sum: 1 }
-        }
-      }
+          averageRating: { $avg: "$rating" },
+          totalRatings: { $sum: 1 },
+        },
+      },
     ]);
 
     const stats = ratingStats[0] || { averageRating: 0, totalRatings: 0 };
-    
+
     // Update service with new rating
     await ServiceModel.findByIdAndUpdate(serviceId, {
       averageRating: Math.round(stats.averageRating * 10) / 10, // Round to 1 decimal
-      totalRatings: stats.totalRatings
+      totalRatings: stats.totalRatings,
     });
 
     return stats;
@@ -55,12 +55,12 @@ const updateServiceRating = async (serviceId, serviceType) => {
 // Add or update rating
 export const addRating = async (req, res) => {
   try {
-    if (process.env.DEBUG_RATINGS === 'true') {
-      console.log('Rating request received:', {
+    if (process.env.DEBUG_RATINGS === "true") {
+      console.log("Rating request received:", {
         body: req.body,
         userId: req.userId,
         userRole: req.userRole,
-        headers: req.headers.authorization ? 'Token present' : 'No token'
+        headers: req.headers.authorization ? "Token present" : "No token",
       });
     }
 
@@ -70,45 +70,60 @@ export const addRating = async (req, res) => {
 
     // Basic validations
     if (!patientId) {
-      if (process.env.DEBUG_RATINGS === 'true') console.log('No patientId found');
-      return res.status(401).json({ message: 'Unauthorized - No user ID found' });
+      if (process.env.DEBUG_RATINGS === "true")
+        console.log("No patientId found");
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - No user ID found" });
     }
     if (!serviceId || !serviceType) {
-      if (process.env.DEBUG_RATINGS === 'true') console.log('Missing serviceId or serviceType:', { serviceId, serviceType });
-      return res.status(400).json({ message: 'serviceId and serviceType are required' });
+      if (process.env.DEBUG_RATINGS === "true")
+        console.log("Missing serviceId or serviceType:", {
+          serviceId,
+          serviceType,
+        });
+      return res
+        .status(400)
+        .json({ message: "serviceId and serviceType are required" });
     }
-    const allowedTypes = ['doctor', 'clinic', 'laboratory', 'pharmacy'];
+    const allowedTypes = ["doctor", "clinic", "laboratory", "pharmacy"];
     if (!allowedTypes.includes(serviceType)) {
-      return res.status(400).json({ message: 'Invalid service type' });
+      return res.status(400).json({ message: "Invalid service type" });
     }
 
     // Validate rating
     if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+      return res
+        .status(400)
+        .json({ message: "Rating must be between 1 and 5" });
     }
 
     // Patients only
-    if (userRole && userRole !== 'patient') {
-      return res.status(403).json({ message: 'Only patients can submit ratings' });
+    if (userRole && userRole !== "patient") {
+      return res
+        .status(403)
+        .json({ message: "Only patients can submit ratings" });
     }
 
     // Get service to find providerId
     const ServiceModel = getServiceModel(serviceType);
     const service = await ServiceModel.findById(serviceId);
-    
+
     if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
+      return res.status(404).json({ message: "Service not found" });
     }
 
     // Prevent providers from rating their own services
     if (String(service.providerId) === String(patientId)) {
-      return res.status(403).json({ message: 'You cannot rate your own service' });
+      return res
+        .status(403)
+        .json({ message: "You cannot rate your own service" });
     }
 
     // Resolve patient name (optional)
     let patientName = undefined;
     try {
-      const user = await User.findById(patientId).select('name');
+      const user = await User.findById(patientId).select("name");
       patientName = user?.name;
     } catch (_) {
       // ignore name resolution failure
@@ -120,7 +135,7 @@ export const addRating = async (req, res) => {
     if (existingRating) {
       // Update existing rating
       existingRating.rating = rating;
-      existingRating.review = review || '';
+      existingRating.review = review || "";
       await existingRating.save();
     } else {
       // Create new rating
@@ -130,8 +145,8 @@ export const addRating = async (req, res) => {
         patientId,
         providerId: service.providerId,
         rating,
-        review: review || '',
-        patientName: patientName || 'Patient'
+        review: review || "",
+        patientName: patientName || "Patient",
       });
     }
 
@@ -139,20 +154,21 @@ export const addRating = async (req, res) => {
     const stats = await updateServiceRating(serviceId, serviceType);
 
     res.status(200).json({
-      message: existingRating ? 'Rating updated successfully' : 'Rating added successfully',
+      message: existingRating
+        ? "Rating updated successfully"
+        : "Rating added successfully",
       averageRating: stats.averageRating,
-      totalRatings: stats.totalRatings
+      totalRatings: stats.totalRatings,
     });
-
   } catch (error) {
-    if (process.env.DEBUG_RATINGS === 'true') {
-      console.error('Add rating error:', error);
-      console.error('Stack trace:', error.stack);
+    if (process.env.DEBUG_RATINGS === "true") {
+      console.error("Add rating error:", error);
+      console.error("Stack trace:", error.stack);
     }
-    res.status(500).json({ 
-      message: 'Internal server error', 
+    res.status(500).json({
+      message: "Internal server error",
       error: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      details: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 };
@@ -164,7 +180,7 @@ export const getServiceRatings = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
 
     const ratings = await Rating.find({ serviceId })
-      .populate('patientId', 'name')
+      .populate("patientId", "name")
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -175,11 +191,10 @@ export const getServiceRatings = async (req, res) => {
       ratings,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      total
+      total,
     });
-
   } catch (error) {
-    console.error('Get service ratings error:', error);
+    console.error("Get service ratings error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -191,7 +206,7 @@ export const getProviderRatings = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
 
     const ratings = await Rating.find({ providerId })
-      .populate('patientId', 'name')
+      .populate("patientId", "name")
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -204,10 +219,10 @@ export const getProviderRatings = async (req, res) => {
       {
         $group: {
           _id: null,
-          averageRating: { $avg: '$rating' },
-          totalRatings: { $sum: 1 }
-        }
-      }
+          averageRating: { $avg: "$rating" },
+          totalRatings: { $sum: 1 },
+        },
+      },
     ]);
 
     const stats = ratingStats[0] || { averageRating: 0, totalRatings: 0 };
@@ -218,11 +233,10 @@ export const getProviderRatings = async (req, res) => {
       currentPage: page,
       total,
       averageRating: Math.round(stats.averageRating * 10) / 10,
-      totalRatings: stats.totalRatings
+      totalRatings: stats.totalRatings,
     });
-
   } catch (error) {
-    console.error('Get provider ratings error:', error);
+    console.error("Get provider ratings error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -236,7 +250,9 @@ export const deleteRating = async (req, res) => {
     const rating = await Rating.findOne({ _id: ratingId, patientId });
 
     if (!rating) {
-      return res.status(404).json({ message: 'Rating not found or unauthorized' });
+      return res
+        .status(404)
+        .json({ message: "Rating not found or unauthorized" });
     }
 
     await Rating.findByIdAndDelete(ratingId);
@@ -244,10 +260,9 @@ export const deleteRating = async (req, res) => {
     // Update service average rating
     await updateServiceRating(rating.serviceId, rating.serviceType);
 
-    res.status(200).json({ message: 'Rating deleted successfully' });
-
+    res.status(200).json({ message: "Rating deleted successfully" });
   } catch (error) {
-    console.error('Delete rating error:', error);
+    console.error("Delete rating error:", error);
     res.status(500).json({ message: error.message });
   }
 };
