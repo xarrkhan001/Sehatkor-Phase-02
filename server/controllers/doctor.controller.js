@@ -91,7 +91,8 @@ export const getDoctorById = async (req, res) => {
 export const listDoctorServices = async (req, res) => {
   try {
     const services = await DoctorService.find({ providerId: req.userId }).sort({ createdAt: -1 }).lean();
-    res.status(200).json({ services });
+    const formattedServices = services.map(s => ({ ...s, id: s._id }));
+    res.status(200).json({ services: formattedServices });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching services', error: error.message });
   }

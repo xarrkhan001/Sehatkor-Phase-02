@@ -6,7 +6,8 @@ export const listMedicines = async (req, res) => {
   try {
     const providerId = req.userId;
     const medicines = await Medicine.find({ providerId }).sort({ createdAt: -1 }).lean();
-    res.status(200).json({ medicines });
+    const formattedMedicines = medicines.map(m => ({ ...m, id: m._id }));
+    res.status(200).json({ medicines: formattedMedicines });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching medicines', error: error?.message });
   }

@@ -17,6 +17,7 @@ import laboratoryRoutes from "./routes/laboratory.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import connectionRoutes from "./routes/connection.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
+import ratingRoutes from "./routes/rating.routes.js";
 import {
   registerUserSocket,
   unregisterUserSocket,
@@ -65,6 +66,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/connections", connectionRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/ratings", ratingRoutes);
 
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
 app.get("/auth/facebook/callback", facebookCallback);
@@ -242,10 +244,14 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, (err) => {
+server.listen(PORT, '0.0.0.0', (err) => {
   if (err) {
     console.error("❌ Failed to start server:", err);
     process.exit(1);
   }
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+  if (process.env.DEBUG_SERVER === 'true') {
+    console.log(`📡 API endpoints available at http://localhost:${PORT}/api/`);
+    console.log(`🔍 Test rating endpoint: http://localhost:${PORT}/api/ratings/test`);
+  }
 });

@@ -11,6 +11,8 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2 } from "lucide-react";
+import RatingBadge from "@/components/RatingBadge";
+import RatingModal from "@/components/RatingModal";
 import { Service } from "@/data/mockData";
 import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
 import { useCompare } from "@/contexts/CompareContext";
@@ -46,6 +48,8 @@ const SearchPage = () => {
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [currentMapService, setCurrentMapService] = useState<SearchService | null>(null);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedRatingService, setSelectedRatingService] = useState<SearchService | null>(null);
 
   // Helper function to get coordinates based on location
   const getCoordinatesForLocation = (location: string) => {
@@ -99,58 +103,59 @@ const SearchPage = () => {
   };
 
   // Load real services directly from database
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        // Fetch directly from server without saving to local storage
-        const serverData = await ServiceManager.fetchPublicServices();
-        const realServices = serverData.services;
-      
-      // Convert real services to search format with proper filtering
-      const formattedRealServices: SearchService[] = realServices.map((service: any) => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        rating: service?.rating ?? 4.5,
-        provider: service.providerName,
-        location: service.city || "Karachi",
-        type: mapServiceTypeToSearch(service),
-        homeService: service.providerType === 'doctor',
-        isReal: true,
-        image: service.image,
-        coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
-        address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
-        googleMapLink: service.googleMapLink,
-        detailAddress: service.detailAddress,
-        createdAt: (service as any).createdAt,
-        _providerId: (service as any).providerId,
-        _providerType: service.providerType, // Add provider type for filtering
-        providerPhone: service.providerPhone, // Add provider phone for WhatsApp
-      }));
-
-      // Sort: own services first, then by creation date
-      formattedRealServices.sort((a: any, b: any) => {
-        const aOwn = a._providerId && user?.id && a._providerId === user.id;
-        const bOwn = b._providerId && user?.id && b._providerId === user.id;
-        if (aOwn !== bOwn) return aOwn ? -1 : 1;
-        const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
-        const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
-        return bd - ad;
-      });
-      
-        setAllServices(formattedRealServices);
-        setIsLoading(false);
-      } catch (error) {
-        console.log('Backend is offline, no services available');
-        setAllServices([]);
-        setIsLoading(false);
-      }
-    };
+  const loadServices = async () => {
+    try {
+      // Fetch directly from server without saving to local storage
+      const serverData = await ServiceManager.fetchPublicServices();
+      const realServices = serverData.services;
     
-    loadServices();
+    // Convert real services to search format with proper filtering
+    const formattedRealServices: SearchService[] = realServices.map((service: any) => ({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      rating: service?.averageRating ?? 0,
+      provider: service.providerName,
+      location: service.city || "Karachi",
+      type: mapServiceTypeToSearch(service),
+      homeService: service.providerType === 'doctor',
+      isReal: true,
+      image: service.image,
+      coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
+      address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
+      googleMapLink: service.googleMapLink,
+      detailAddress: service.detailAddress,
+      createdAt: (service as any).createdAt,
+      _providerId: (service as any).providerId,
+      _providerType: service.providerType,
+      providerPhone: service.providerPhone,
+      totalRatings: service.totalRatings || 0,
+    }));
 
-    // Remove storage listener since we're not using local storage anymore
+    // Sort: own services first, then by rating (highest first), then by creation date
+    formattedRealServices.sort((a: any, b: any) => {
+      const aOwn = a._providerId && user?.id && a._providerId === user.id;
+      const bOwn = b._providerId && user?.id && b._providerId === user.id;
+      if (aOwn !== bOwn) return aOwn ? -1 : 1;
+      // Sort by rating (highest first)
+      if (a.rating !== b.rating) return b.rating - a.rating;
+      const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+      return bd - ad;
+    });
+    
+      setAllServices(formattedRealServices);
+      setIsLoading(false);
+    } catch (error) {
+      console.log('Backend is offline, no services available');
+      setAllServices([]);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadServices();
   }, [user?.id]);
 
   // Handle URL parameters on component mount
@@ -171,7 +176,7 @@ const SearchPage = () => {
       const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            service.provider.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = serviceType === "all" || service.type === serviceType;
-      const matchesLocation = location === "all" || service.location.includes(location);
+      const matchesLocation = location === "all" || service.location?.includes(location);
       const matchesPrice = service.price >= priceRange[0] && service.price <= priceRange[1];
       const matchesRating = service.rating >= minRating;
       const matchesHomeService = !homeServiceOnly || service.homeService;
@@ -200,6 +205,8 @@ const SearchPage = () => {
       const bOwn = b._providerId && user?.id && b._providerId === user.id;
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
       if (a.isReal !== b.isReal) return a.isReal ? -1 : 1;
+      // Sort by rating (highest first)
+      if (a.rating !== b.rating) return b.rating - a.rating;
       const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
       const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
       return bd - ad;
@@ -234,6 +241,24 @@ const SearchPage = () => {
   const toggleServiceSelection = (serviceId: string) => {
     setSelectedServices(prev => prev.includes(serviceId) ? prev.filter(id => id !== serviceId) : [...prev, serviceId]);
     toggleGlobalCompare(serviceId);
+  };
+
+  const handleRateService = (service: SearchService) => {
+    if (!user) {
+      toast.error('Please login to rate services');
+      return;
+    }
+    if (user.role !== 'patient' && mode !== 'patient') {
+      toast.error('Only patients can rate services');
+      return;
+    }
+    setSelectedRatingService(service);
+    setRatingModalOpen(true);
+  };
+
+  const handleRatingSubmitted = () => {
+    // Refresh services to get updated ratings
+    loadServices();
   };
 
   const selectedServicesData = allServices.filter(service => 
@@ -498,12 +523,13 @@ const SearchPage = () => {
     {service.description}
   </p>
 
-  {/* Rating, Location, Home Service, WhatsApp */}
+  {/* Rating Badge, Location, Home Service, WhatsApp */}
   <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-    <div className="flex items-center gap-1">
-      <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-      <span>{service.rating}</span>
-    </div>
+    <RatingBadge 
+      rating={service.rating} 
+      totalRatings={(service as any).totalRatings}
+      size="sm"
+    />
     <div className="flex items-center gap-1 text-gray-500">
       <MapPin className="w-4 h-4" />
       <span>{service.location}</span>
@@ -549,6 +575,15 @@ const SearchPage = () => {
     >
       View Details
     </Button>
+    {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+      <Button
+        variant="outline"
+        onClick={() => handleRateService(service)}
+        className="flex-1 min-w-[100px]"
+      >
+        <Star className="w-4 h-4 mr-1" /> Rate
+      </Button>
+    )}
   </div>
 </CardContent>
       </Card>
@@ -716,6 +751,21 @@ const SearchPage = () => {
             </div>
           </div>
         </div>
+      )}
+      {/* Rating Modal */}
+      {selectedRatingService && (
+        <RatingModal
+          isOpen={ratingModalOpen}
+          onClose={() => setRatingModalOpen(false)}
+          serviceId={selectedRatingService.id}
+          serviceType={(selectedRatingService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
+          serviceName={selectedRatingService.name}
+          onRatingSubmitted={() => {
+            setRatingModalOpen(false);
+            setSelectedRatingService(null);
+            loadServices();
+          }}
+        />
       )}
       <CompareTray />
     </div>

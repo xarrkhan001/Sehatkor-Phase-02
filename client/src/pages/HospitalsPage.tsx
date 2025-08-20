@@ -13,6 +13,8 @@ import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
+import RatingBadge from "@/components/RatingBadge";
+import RatingModal from "@/components/RatingModal";
 
 const HospitalsPage = () => {
   const navigate = useNavigate();
@@ -25,6 +27,8 @@ const HospitalsPage = () => {
   const { user, mode } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -42,7 +46,7 @@ const HospitalsPage = () => {
           name: service.name,
           description: service.description,
           price: service.price,
-          rating: 4.5,
+          rating: service.averageRating || service.rating || 0,
           location: (service as any).city || "Karachi",
           type: service.category === "Surgery" ? "Surgery" : "Treatment",
           homeService: false,
@@ -54,6 +58,7 @@ const HospitalsPage = () => {
           city: (service as any).city,
           detailAddress: (service as any).detailAddress,
           providerPhone: (service as any).providerPhone,
+          totalRatings: (service as any).totalRatings,
         }) as Service);
         setHospitalServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -63,6 +68,9 @@ const HospitalsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            const ar = (a as any).rating ?? 0;
+            const br = (b as any).rating ?? 0;
+            if (br !== ar) return br - ar;
             const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
             const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
             return bd - ad;
@@ -95,7 +103,7 @@ const HospitalsPage = () => {
         name: service.name,
         description: service.description,
         price: service.price,
-        rating: 4.5,
+        rating: service.averageRating || service.rating || 0,
         location: (service as any).city || "Karachi",
         type: service.category === "Surgery" ? "Surgery" : "Treatment",
         homeService: false,
@@ -107,6 +115,7 @@ const HospitalsPage = () => {
         city: (service as any).city,
         detailAddress: (service as any).detailAddress,
         providerPhone: (service as any).providerPhone,
+        totalRatings: (service as any).totalRatings,
       }) as Service);
       setHospitalServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -116,6 +125,9 @@ const HospitalsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          const ar = (a as any).rating ?? 0;
+          const br = (b as any).rating ?? 0;
+          if (br !== ar) return br - ar;
           const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
           const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
           return bd - ad;
@@ -138,6 +150,48 @@ const HospitalsPage = () => {
              service.description.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [hospitalServices, searchTerm]);
+
+  const handleRateService = (service: Service) => {
+    if (!user) {
+      toast.error('Please login to rate services');
+      return;
+    }
+    if (user.role !== 'patient' && mode !== 'patient') {
+      toast.error('Only patients can rate services');
+      return;
+    }
+    setSelectedRatingService(service);
+    setRatingModalOpen(true);
+  };
+
+  const handleRatingSubmitted = async () => {
+    setRatingModalOpen(false);
+    setSelectedRatingService(null);
+    // Simple refresh of first page to reflect updated ratings
+    try {
+      const { services } = await ServiceManager.fetchPublicServices({ type: 'clinic', page: 1, limit: 12 });
+      const mapped = services.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        rating: service.averageRating || service.rating || 0,
+        location: (service as any).city || "Karachi",
+        type: service.category === "Surgery" ? "Surgery" : "Treatment",
+        homeService: false,
+        image: service.image,
+        provider: (service as any).providerName || "Hospital",
+        createdAt: (service as any).createdAt,
+        _providerId: (service as any).providerId,
+        googleMapLink: (service as any).googleMapLink,
+        city: (service as any).city,
+        detailAddress: (service as any).detailAddress,
+        providerPhone: (service as any).providerPhone,
+        totalRatings: (service as any).totalRatings,
+      }) as Service);
+      setHospitalServices(mapped);
+    } catch {}
+  };
 
   const handleBookNow = (service: Service) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
@@ -226,7 +280,6 @@ const HospitalsPage = () => {
               Search from our network of healthcare facilities
             </p>
           </div>
-          
           <div className="flex justify-center">
             <div className="relative w-full max-w-2xl">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -238,7 +291,6 @@ const HospitalsPage = () => {
               />
             </div>
           </div>
-          
           {filteredServices.length > 0 && (
             <p className="text-center mt-4 text-gray-400">
               Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
@@ -284,32 +336,24 @@ const HospitalsPage = () => {
                         ? "Free"
                         : `PKR ${service.price.toLocaleString()}`}
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs px-2 py-0.5 bg-purple-50 text-purple-600 border-purple-100"
-                    >
+                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-purple-50 text-purple-600 border-purple-100">
                       {service.type}
                     </Badge>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                  {service.description}
-                </p>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{service.description}</p>
 
                 {/* Rating, Location, WhatsApp */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span>{service.rating}</span>
-                  </div>
+                  <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} size="sm" />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
                     <span>{service.location}</span>
                   </div>
                   {(service as any).providerPhone && (
-                    <ServiceWhatsAppButton 
+                    <ServiceWhatsAppButton
                       phoneNumber={(service as any).providerPhone}
                       serviceName={service.name}
                       providerName={service.provider}
@@ -320,24 +364,18 @@ const HospitalsPage = () => {
 
                 {/* Buttons */}
                 <div className="flex flex-wrap gap-2">
-                  <Button 
-                    className="flex-1 min-w-[100px]"
-                    onClick={() => handleBookNow(service)}
-                  >
+                  <Button className="flex-1 min-w-[100px]" onClick={() => handleBookNow(service)}>
                     <Clock className="w-4 h-4 mr-1" /> Book Now
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowLocationMap(service.id)}
-                    className="flex-1 min-w-[100px]"
-                  >
+                  <Button variant="outline" onClick={() => setShowLocationMap(service.id)} className="flex-1 min-w-[100px]">
                     <MapPin className="w-4 h-4 mr-1" /> Location
                   </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => (window.location.href = `/service/${service.id}`)}
-                    className="flex-1 min-w-[100px]"
-                  >
+                  {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                    <Button variant="secondary" onClick={() => handleRateService(service)} className="flex-1 min-w-[100px]">
+                      Rate
+                    </Button>
+                  )}
+                  <Button variant="secondary" onClick={() => (window.location.href = `/service/${service.id}`)} className="flex-1 min-w-[100px]">
                     View Details
                   </Button>
                 </div>
@@ -372,34 +410,23 @@ const HospitalsPage = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{currentMapService.name}</h3>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowLocationMap(null)}
-                className="h-8 w-8"
-              >
+              <Button variant="ghost" size="icon" onClick={() => setShowLocationMap(null)}>
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            
             <div className="space-y-3">
               <div>
                 <p className="text-sm font-medium text-gray-600">Location</p>
                 <p className="text-base">{currentMapService.location}</p>
               </div>
-              
               {currentMapService.address && (
                 <div>
                   <p className="text-sm font-medium text-gray-600">Address</p>
                   <p className="text-base">{currentMapService.address}</p>
                 </div>
               )}
-              
               {currentMapService.googleMapLink && (
-                <Button 
-                  className="w-full mt-4"
-                  onClick={() => window.open(currentMapService.googleMapLink, '_blank')}
-                >
+                <Button className="w-full mt-4" onClick={() => window.open(currentMapService.googleMapLink, '_blank')}>
                   <MapPin className="w-4 h-4 mr-2" />
                   Open in Google Maps
                 </Button>
@@ -407,6 +434,18 @@ const HospitalsPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Rating Modal */}
+      {selectedRatingService && (
+        <RatingModal
+          isOpen={ratingModalOpen}
+          onClose={() => setRatingModalOpen(false)}
+          serviceId={selectedRatingService.id}
+          serviceType="clinic"
+          serviceName={selectedRatingService.name}
+          onRatingSubmitted={handleRatingSubmitted}
+        />
       )}
     </div>
   );
