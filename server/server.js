@@ -18,6 +18,7 @@ import chatRoutes from "./routes/chat.routes.js";
 import connectionRoutes from "./routes/connection.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import ratingRoutes from "./routes/rating.routes.js";
+import documentRoutes from "./routes/document.routes.js";
 import {
   registerUserSocket,
   unregisterUserSocket,
@@ -58,6 +59,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api", documentRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/clinic", clinicRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);

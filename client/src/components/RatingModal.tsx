@@ -11,7 +11,7 @@ interface RatingModalProps {
   serviceId: string;
   serviceType: 'doctor' | 'clinic' | 'laboratory' | 'pharmacy';
   serviceName: string;
-  onRatingSubmitted?: (rating: number) => void;
+  onRatingSubmitted?: (newRatingData: { averageRating: number; totalRatings: number }) => void;
 }
 
 const RatingModal = ({ 
@@ -73,7 +73,9 @@ const RatingModal = ({
           title: "Rating Submitted",
           description: "Thank you for your feedback!",
         });
-        onRatingSubmitted?.(rating);
+        if (response.ok && data) {
+          onRatingSubmitted?.({ averageRating: data.averageRating, totalRatings: data.totalRatings });
+        }
         onClose();
         setRating(0);
         setReview("");

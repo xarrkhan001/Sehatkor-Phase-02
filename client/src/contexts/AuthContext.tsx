@@ -64,6 +64,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { password: _, ...userWithoutPassword } = foundUser;
         setUser(userWithoutPassword);
         localStorage.setItem('sehatkor_current_user', JSON.stringify(userWithoutPassword));
+        // Set mode based on role
+        const newMode: UserMode = userWithoutPassword.role !== 'patient' ? 'provider' : 'patient';
+        setMode(newMode);
+        localStorage.setItem('sehatkor_user_mode', newMode);
         return true;
       }
       return false;
@@ -78,6 +82,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         localStorage.setItem('sehatkor_token', token);
       }
+      // Set mode based on role
+      const newMode: UserMode = normalizedUser.role !== 'patient' ? 'provider' : 'patient';
+      setMode(newMode);
+      localStorage.setItem('sehatkor_user_mode', newMode);
       return true;
     }
   };
@@ -107,6 +115,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { password: _, ...userWithoutPassword } = newUser;
       setUser(userWithoutPassword);
       localStorage.setItem('sehatkor_user', JSON.stringify(userWithoutPassword));
+      // Set mode based on role
+      const newMode: UserMode = userWithoutPassword.role !== 'patient' ? 'provider' : 'patient';
+      setMode(newMode);
+      localStorage.setItem('sehatkor_user_mode', newMode);
       
       return true;
     } catch (error) {

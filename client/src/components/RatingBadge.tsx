@@ -4,12 +4,44 @@ import { Star } from "lucide-react";
 interface RatingBadgeProps {
   rating: number;
   totalRatings?: number;
+  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
   showStars?: boolean;
   size?: "sm" | "md" | "lg";
 }
 
-const RatingBadge = ({ rating, totalRatings, showStars = true, size = "md" }: RatingBadgeProps) => {
-  const getRatingBadge = (rating: number) => {
+const RatingBadge = ({ rating, totalRatings, ratingBadge, showStars = true, size = "md" }: RatingBadgeProps) => {
+  const getRatingBadge = (rating: number, ratingBadge?: "excellent" | "good" | "normal" | "poor" | null) => {
+    // Use backend ratingBadge if available, otherwise derive from numeric rating
+    if (ratingBadge) {
+      switch (ratingBadge) {
+        case "excellent":
+          return {
+            label: "Excellent",
+            variant: "default" as const,
+            className: "bg-green-500 hover:bg-green-600 text-white border-green-500"
+          };
+        case "good":
+          return {
+            label: "Good",
+            variant: "secondary" as const,
+            className: "bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
+          };
+        case "normal":
+          return {
+            label: "Normal",
+            variant: "outline" as const,
+            className: "bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border-yellow-300"
+          };
+        case "poor":
+          return {
+            label: "Poor",
+            variant: "outline" as const,
+            className: "bg-red-100 hover:bg-red-200 text-red-700 border-red-300"
+          };
+      }
+    }
+    
+    // Fallback to numeric rating logic
     if (rating >= 4.5) {
       return {
         label: "Excellent",
@@ -26,7 +58,7 @@ const RatingBadge = ({ rating, totalRatings, showStars = true, size = "md" }: Ra
       return {
         label: "Normal",
         variant: "outline" as const,
-        className: "bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300"
+        className: "bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border-yellow-300"
       };
     } else {
       return {
@@ -37,7 +69,7 @@ const RatingBadge = ({ rating, totalRatings, showStars = true, size = "md" }: Ra
     }
   };
 
-  const badge = getRatingBadge(rating);
+  const badge = getRatingBadge(rating, ratingBadge);
   
   const sizeClasses = {
     sm: "text-xs px-2 py-1",

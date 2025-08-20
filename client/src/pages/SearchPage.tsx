@@ -115,7 +115,8 @@ const SearchPage = () => {
       name: service.name,
       description: service.description,
       price: service.price,
-      rating: service?.averageRating ?? 0,
+      rating: service.averageRating || service.rating || 0,
+      ratingBadge: (service as any).ratingBadge || null,
       provider: service.providerName,
       location: service.city || "Karachi",
       type: mapServiceTypeToSearch(service),
@@ -256,9 +257,32 @@ const SearchPage = () => {
     setRatingModalOpen(true);
   };
 
-  const handleRatingSubmitted = () => {
-    // Refresh services to get updated ratings
-    loadServices();
+  const handleRatingSubmitted = async (serviceId: string, newRatingData: { averageRating: number; totalRatings: number }, serviceType: string) => {
+    // Optimistic UI update
+    setAllServices(prevServices =>
+      prevServices.map(service =>
+        service.id === serviceId
+          ? {
+              ...service,
+              rating: newRatingData.averageRating,
+              totalRatings: newRatingData.totalRatings,
+            }
+          : service
+      )
+    );
+
+    // Fetch the updated service from the backend to get the new ratingBadge
+    try {
+      const updatedService = await ServiceManager.fetchServiceById(serviceId, serviceType);
+      setAllServices(prevServices =>
+        prevServices.map(service =>
+          service.id === serviceId ? { ...service, ...updatedService, rating: updatedService.averageRating } : service
+        )
+      );
+    } catch (error) {
+      console.error('Failed to fetch updated service:', error);
+      // Optional: revert optimistic update on error
+    }
   };
 
   const selectedServicesData = allServices.filter(service => 
@@ -760,10 +784,12 @@ const SearchPage = () => {
           serviceId={selectedRatingService.id}
           serviceType={(selectedRatingService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
           serviceName={selectedRatingService.name}
-          onRatingSubmitted={() => {
+          onRatingSubmitted={(newRatingData) => {
             setRatingModalOpen(false);
+            if (selectedRatingService) {
+              handleRatingSubmitted(selectedRatingService.id, newRatingData, (selectedRatingService as any)._providerType);
+            }
             setSelectedRatingService(null);
-            loadServices();
           }}
         />
       )}

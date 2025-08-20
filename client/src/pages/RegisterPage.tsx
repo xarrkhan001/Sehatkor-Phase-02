@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,7 +27,9 @@ import {
   Stethoscope,
   Clock,
   Users,
-  CreditCard
+  CreditCard,
+  FileText,
+  X
 } from "lucide-react";
 import { generateUserId } from "@/data/mockData";
 
@@ -83,6 +86,9 @@ const RegisterPage = () => {
   const [showGoogleAdditionalFields, setShowGoogleAdditionalFields] = useState(false);
   const [googleProfile, setGoogleProfile] = useState<any>(null);
   const [googleIdToken, setGoogleIdToken] = useState<string>('');
+  const [providerDoc, setProviderDoc] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showDocModal, setShowDocModal] = useState(false);
 
   const roles = [
     { value: "patient", label: "Patient", icon: User, description: "Book appointments and manage health records", gradient: "from-blue-500 to-cyan-500", bgColor: "bg-blue-50", iconColor: "text-blue-600" },
@@ -238,39 +244,10 @@ const RegisterPage = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.role) {
-      toast({
-        title: "Error",
-        description: "Please select a role",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error", 
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!acceptTerms) {
-      toast({
-        title: "Error",
-        description: "Please accept the terms and conditions",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const performRegistration = async () => {
     setIsSubmitting(true);
 
-    // Only Patient is auto-verified and logged in
+    // Patients can use the app immediately; providers require admin verification
     const isPatient = formData.role === "patient";
     const userPayload = {
       id: generateUserId(),
@@ -320,32 +297,37 @@ const RegisterPage = () => {
         setIsSubmitting(false);
         return;
       }
-      if (isPatient) {
-        // Auto-login patient if registration returns a token
-        if (data.token && data.user) {
-          await register({
-            name: data.user.name,
-            email: data.user.email,
-            role: data.user.role,
-            password: formData.password // original password
-          });
-          toast({
-            title: 'Registration Successful!',
-            description: 'Welcome to SehatKor! You are now logged in.',
-          });
-          navigate('/');
-        } else {
-          toast({
-            title: 'Registration Error',
-            description: 'Could not log you in automatically. Please login manually.',
-            variant: 'destructive'
-          });
-          navigate('/login');
+      if (!isPatient) {
+        // For providers: if a document is selected and token returned, upload it now
+        if (data?.token && providerDoc) {
+          try {
+            const fd = new FormData();
+            fd.append('file', providerDoc);
+            const upRes = await fetch('http://localhost:4000/api/documents/upload', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${data.token}` },
+              body: fd,
+            });
+            const upData = await upRes.json();
+            if (!upRes.ok) {
+              toast({ title: 'Document Upload Failed', description: upData?.message || 'Please try again', variant: 'destructive' });
+            } else {
+              toast({ title: 'Documents Received', description: 'Your document has been submitted for admin verification.' });
+            }
+          } catch (docErr: any) {
+            toast({ title: 'Document Upload Error', description: docErr?.message || 'Failed to upload document', variant: 'destructive' });
+          }
         }
-      } else {
         toast({
           title: 'Registration Submitted!',
           description: `Your registration as ${formData.role} has been submitted. Please wait for admin verification before you can log in.`,
+        });
+        navigate('/login');
+      } else {
+        // Patients are verified immediately but should login manually
+        toast({
+          title: 'Registration Successful!',
+          description: 'Your patient account is ready. Please sign in to continue.',
         });
         navigate('/login');
       }
@@ -360,13 +342,52 @@ const RegisterPage = () => {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.role) {
+      toast({
+        title: "Error",
+        description: "Please select a role",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error", 
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!acceptTerms) {
+      toast({
+        title: "Error",
+        description: "Please accept the terms and conditions",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For provider roles, if no document selected yet, open modal first
+    if (formData.role !== 'patient' && !providerDoc) {
+      setShowDocModal(true);
+      return;
+    }
+
+    await performRegistration();
+  };
+
   const getRoleSpecificFields = () => {
     if (formData.role === "patient") return null;
 
     return (
       <>
         {/* Business Information */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Building className="w-5 h-5" />
             Business Information
@@ -421,7 +442,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Address & Location */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <MapPin className="w-5 h-5" />
             Address & Location
@@ -485,7 +506,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Services Offered */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Stethoscope className="w-5 h-5" />
             Services Offered
@@ -506,7 +527,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Staff Details */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Users className="w-5 h-5" />
             Staff Details (Optional)
@@ -547,7 +568,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Operating Hours */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Clock className="w-5 h-5" />
             Operating Hours
@@ -575,7 +596,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Bank Details */}
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <CreditCard className="w-5 h-5" />
             Bank/Payment Information (Optional)
@@ -627,12 +648,87 @@ const RegisterPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Documents Required */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Upload className="w-5 h-5" />
+            Documents Required
+          </h3>
+          <div className="rounded-xl border-2 border-dashed p-6 md:p-8 text-center bg-gradient-to-br from-gray-50 to-white hover:from-gray-50/80 transition-colors">
+            <p className="text-sm text-muted-foreground mb-3">Please attach copies of the following documents:</p>
+            <ul className="text-sm text-muted-foreground list-disc list-inside mb-5 text-left inline-block">
+              <li>Business Registration / License</li>
+              <li>CNIC of Owner / Admin</li>
+              <li>PMDC/PMC Certificate (for Doctors)</li>
+            </ul>
+
+            <input
+              ref={fileInputRef}
+              id="providerDoc"
+              type="file"
+              className="hidden"
+              accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                if (f && f.size > 25 * 1024 * 1024) {
+                  toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                  setProviderDoc(null);
+                  return;
+                }
+                setProviderDoc(f);
+              }}
+            />
+
+            <label
+              htmlFor="providerDoc"
+              className="group inline-flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all"
+            >
+              <span className="w-9 h-9 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
+                <Upload className="w-5 h-5 text-white" />
+              </span>
+              <span className="text-sm text-gray-700">
+                <span className="font-medium">Click to upload</span>
+                <span className="text-muted-foreground"> • PDF, DOC, DOCX • up to 25MB</span>
+              </span>
+            </label>
+
+            {providerDoc && (
+              <div className="mt-4 flex items-center justify-center">
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 border">
+                  <span className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-white" />
+                  </span>
+                  <div className="text-left">
+                    <p className="text-sm font-medium truncate max-w-[220px]" title={providerDoc.name}>{providerDoc.name}</p>
+                    <p className="text-xs text-muted-foreground">{(providerDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="ml-1"
+                    onClick={() => {
+                      setProviderDoc(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <p className="mt-3 text-xs text-muted-foreground">Only one file allowed. Accepted types: PDF/DOC/DOCX. Max 25MB.</p>
+          </div>
+        </div>
       </>
     );
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
       <div className="container mx-auto max-w-4xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
@@ -646,7 +742,7 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        <Card className="card-healthcare">
+        <Card className="card-healthcare border shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl">Health Services Provider Registration</CardTitle>
             <CardDescription>
@@ -1020,7 +1116,7 @@ const RegisterPage = () => {
               </div>
 
               {/* Basic Information */}
-              <div className="space-y-4">
+              <div className="space-y-4 rounded-xl border bg-white/60 p-5">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <User className="w-5 h-5" />
                   Basic Information
@@ -1029,59 +1125,89 @@ const RegisterPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Full Name*</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      placeholder="Enter full name"
-                      required
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <User className="w-4 h-4" />
+                      </span>
+                      <Input
+                        id="name"
+                        className="pl-9"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        placeholder="Enter full name"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="email">Email Address*</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      placeholder="Enter email address"
-                      required
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Mail className="w-4 h-4" />
+                      </span>
+                      <Input
+                        id="email"
+                        type="email"
+                        className="pl-9"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        placeholder="Enter email address"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="phone">Whatsapp Number*</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                      placeholder="+92 300 1234567"
-                      required
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                      </span>
+                      <Input
+                        id="phone"
+                        className="pl-9"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        placeholder="+92 300 1234567"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="phoneAlternate">Alternate Phone Numbers</Label>
-                    <Input
-                      id="phoneAlternate"
-                      value={formData.phoneAlternate}
-                      onChange={(e) => handleInputChange("phoneAlternate", e.target.value)}
-                      placeholder="+92 300 1234567"
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                      </span>
+                      <Input
+                        id="phoneAlternate"
+                        className="pl-9"
+                        value={formData.phoneAlternate}
+                        onChange={(e) => handleInputChange("phoneAlternate", e.target.value)}
+                        placeholder="+92 300 1234567"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="cnic">CNIC Number*</Label>
-                    <Input
-                      id="cnic"
-                      value={formData.cnic}
-                      onChange={(e) => handleInputChange("cnic", e.target.value)}
-                      placeholder="12345-1234567-1"
-                      required
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <IdCard className="w-4 h-4" />
+                      </span>
+                      <Input
+                        id="cnic"
+                        className="pl-9"
+                        value={formData.cnic}
+                        onChange={(e) => handleInputChange("cnic", e.target.value)}
+                        placeholder="12345-1234567-1"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="city">City*</Label>
@@ -1107,7 +1233,7 @@ const RegisterPage = () => {
               {getRoleSpecificFields()}
 
               {/* Security */}
-              <div className="space-y-4">
+              <div className="space-y-4 rounded-xl border bg-white/60 p-5">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Lock className="w-5 h-5" />
                   Security
@@ -1116,58 +1242,43 @@ const RegisterPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="password">Password *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => handleInputChange("password", e.target.value)}
-                      placeholder="Create a strong password"
-                      required
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Lock className="w-4 h-4" />
+                      </span>
+                      <Input
+                        id="password"
+                        type="password"
+                        className="pl-9"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        placeholder="Create a strong password"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                      placeholder="Confirm your password"
-                      required
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <Lock className="w-4 h-4" />
+                      </span>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        className="pl-9"
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                        placeholder="Confirm your password"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Document Upload */}
-              {formData.role && formData.role !== "patient" && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Upload className="w-5 h-5" />
-                    Documents Required
-                  </h3>
-                  
-                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                    <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground mb-4">
-                      Please attach copies of the following documents:
-                    </p>
-                    <ul className="text-sm text-muted-foreground mb-4 space-y-1">
-                      <li>• Business Registration / License</li>
-                      <li>• CNIC of Owner / Admin</li>
-                      {formData.role === "pharmacy" && <li>• Drug License</li>}
-                      {formData.role === "laboratory" && <li>• Lab Accreditation Certificate</li>}
-                      {formData.role === "doctor" && <li>• PMDC/PMC Certificate</li>}
-                    </ul>
-                    <Button type="button" variant="outline">
-                      Choose Files
-                    </Button>
-                  </div>
-                </div>
-              )}
-
               {/* Agreement */}
-              <div className="space-y-4">
+              <div className="space-y-4 rounded-xl border bg-white/60 p-5">
                 <h3 className="text-lg font-semibold">Agreement & Declaration</h3>
                 <div className="bg-muted/50 p-4 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-4">
@@ -1198,12 +1309,113 @@ const RegisterPage = () => {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full py-6 text-lg"
+                className="w-full py-6 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Submitting Registration..." : "Submit Registration"}
               </Button>
             </form>
+
+            {/* Document Upload Modal for Providers */}
+            <Dialog open={showDocModal} onOpenChange={setShowDocModal}>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Upload Verification Document</DialogTitle>
+                  <DialogDescription>
+                    Please upload your business/clinic verification document. You can also skip and submit now; you may be asked to provide it later during verification.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="rounded-xl border-2 border-dashed p-6 text-center bg-gradient-to-br from-gray-50 to-white">
+                  <input
+                    ref={fileInputRef}
+                    id="providerDocModal"
+                    type="file"
+                    className="hidden"
+                    accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      if (f && f.size > 25 * 1024 * 1024) {
+                        toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                        setProviderDoc(null);
+                        return;
+                      }
+                      setProviderDoc(f);
+                    }}
+                  />
+
+                  <label
+                    htmlFor="providerDocModal"
+                    className="group inline-flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all"
+                  >
+                    <span className="w-9 h-9 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
+                      <Upload className="w-5 h-5 text-white" />
+                    </span>
+                    <span className="text-sm text-gray-700">
+                      <span className="font-medium">Click to upload</span>
+                      <span className="text-muted-foreground"> • PDF, DOC, DOCX • up to 25MB</span>
+                    </span>
+                  </label>
+
+                  {providerDoc && (
+                    <div className="mt-4 flex items-center justify-center">
+                      <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 border">
+                        <span className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-white" />
+                        </span>
+                        <div className="text-left">
+                          <p className="text-sm font-medium truncate max-w-[260px]" title={providerDoc.name}>{providerDoc.name}</p>
+                          <p className="text-xs text-muted-foreground">{(providerDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="ml-1"
+                          onClick={() => {
+                            setProviderDoc(null);
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="mt-3 text-xs text-muted-foreground">Only one file allowed. Accepted types: PDF/DOC/DOCX. Max 25MB.</p>
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowDocModal(false);
+                      performRegistration();
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    Skip and Submit
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      if (!providerDoc) {
+                        toast({ title: 'No file selected', description: 'Please choose a document to upload or skip.', variant: 'destructive' });
+                        return;
+                      }
+                      setShowDocModal(false);
+                      await performRegistration();
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    Upload & Submit
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             <div className="mt-6 text-center">
               <p className="text-muted-foreground">
