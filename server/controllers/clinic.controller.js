@@ -6,7 +6,8 @@ export const listClinicServices = async (req, res) => {
     const services = await ClinicService.find({ providerId: req.userId }).sort({
       createdAt: -1,
     }).lean();
-    res.status(200).json({ services });
+    const formattedServices = services.map(s => ({ ...s, id: s._id }));
+    res.status(200).json({ services: formattedServices });
   } catch (error) {
     res
       .status(500)

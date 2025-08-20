@@ -15,6 +15,8 @@ const LaboratoryTestSchema = new mongoose.Schema(
     providerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     providerName: { type: String, required: true },
     providerType: { type: String, enum: ['laboratory'], default: 'laboratory' },
+    averageRating: { type: Number, default: 0, min: 0, max: 5 },
+    totalRatings: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
+import RatingBadge from "@/components/RatingBadge";
+import RatingModal from "@/components/RatingModal";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
@@ -25,6 +27,8 @@ const DoctorsPage = () => {
   const { user, mode } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -42,7 +46,7 @@ const DoctorsPage = () => {
           name: service.name,
           description: service.description,
           price: service.price,
-          rating: 4.5,
+          rating: service.averageRating || service.rating || 0,
           location: (service as any).city || "Karachi",
           type: service.category === "Surgery" ? "Surgery" : "Treatment",
           homeService: true,
@@ -53,6 +57,7 @@ const DoctorsPage = () => {
           googleMapLink: (service as any).googleMapLink,
           detailAddress: (service as any).detailAddress,
           providerPhone: (service as any).providerPhone,
+          totalRatings: (service as any).totalRatings || 0,
         }) as Service);
         setDoctorServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -62,6 +67,9 @@ const DoctorsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            const ar = (a as any).rating ?? 0;
+            const br = (b as any).rating ?? 0;
+            if (br !== ar) return br - ar;
             const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
             const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
             return bd - ad;
@@ -96,7 +104,7 @@ const DoctorsPage = () => {
         name: service.name,
         description: service.description,
         price: service.price,
-        rating: 4.5,
+        rating: service.averageRating || service.rating || 0,
         location: (service as any).city || "Karachi",
         type: service.category === "Surgery" ? "Surgery" : "Treatment",
         homeService: true,
@@ -107,6 +115,7 @@ const DoctorsPage = () => {
         googleMapLink: (service as any).googleMapLink,
         detailAddress: (service as any).detailAddress,
         providerPhone: (service as any).providerPhone,
+        totalRatings: (service as any).totalRatings || 0,
       }) as Service);
       setDoctorServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -116,6 +125,9 @@ const DoctorsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          const ar = (a as any).rating ?? 0;
+          const br = (b as any).rating ?? 0;
+          if (br !== ar) return br - ar;
           const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
           const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
           return bd - ad;
@@ -161,6 +173,50 @@ const DoctorsPage = () => {
         providerType: 'doctor'
       }
     });
+  };
+
+  const handleRateService = (service: Service) => {
+    if (!user) {
+      toast.error('Please login to rate services');
+      return;
+    }
+    if (user.role !== 'patient' && mode !== 'patient') {
+      toast.error('Only patients can rate services');
+      return;
+    }
+    setSelectedRatingService(service);
+    setRatingModalOpen(true);
+  };
+
+  const handleRatingSubmit = async () => {
+    // Refresh services to get updated ratings
+    try {
+      const { services } = await ServiceManager.fetchPublicServices({
+        type: 'doctor',
+        page: 1,
+        limit: 12 * page, // Get all loaded pages
+      });
+      const mapped = services.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        rating: service.averageRating || service.rating || 0,
+        location: (service as any).city || "Karachi",
+        type: service.category === "Surgery" ? "Surgery" : "Treatment",
+        homeService: true,
+        image: service.image,
+        provider: (service as any).providerName || "Doctor",
+        createdAt: (service as any).createdAt,
+        _providerId: (service as any).providerId,
+        googleMapLink: (service as any).googleMapLink,
+        detailAddress: (service as any).detailAddress,
+        providerPhone: (service as any).providerPhone,
+      }) as Service);
+      setDoctorServices(mapped);
+    } catch (error) {
+      console.error('Failed to refresh services:', error);
+    }
   };
 
   const getCoordinatesForLocation = (location: string) => {
@@ -298,10 +354,10 @@ const DoctorsPage = () => {
 
                 {/* Rating, Location, Home Service, WhatsApp */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span>{service.rating}</span>
-                  </div>
+                  <RatingBadge 
+                    rating={service.rating} 
+                    totalRatings={(service as any).totalRatings || 0}
+                  />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
                     <span>{service.location}</span>
@@ -337,6 +393,15 @@ const DoctorsPage = () => {
                   >
                     <MapPin className="w-4 h-4 mr-1" /> Location
                   </Button>
+                  {user && user.role === 'patient' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleRateService(service)}
+                      className="flex-1 min-w-[100px]"
+                    >
+                      <Star className="w-4 h-4 mr-1" /> Rate
+                    </Button>
+                  )}
                   <Button
                     variant="secondary"
                     onClick={() => (window.location.href = `/service/${service.id}`)}
@@ -411,6 +476,21 @@ const DoctorsPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Rating Modal */}
+      {selectedRatingService && (
+        <RatingModal
+          isOpen={ratingModalOpen}
+          onClose={() => {
+            setRatingModalOpen(false);
+            setSelectedRatingService(null);
+          }}
+          serviceId={selectedRatingService.id}
+          serviceName={selectedRatingService.name}
+          serviceType="doctor"
+          onRatingSubmitted={handleRatingSubmit}
+        />
       )}
     </div>
   );

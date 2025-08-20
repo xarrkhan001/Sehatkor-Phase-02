@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
+import RatingBadge from "@/components/RatingBadge";
+import RatingModal from "@/components/RatingModal";
 
 const PharmaciesPage = () => {
   const navigate = useNavigate();
@@ -24,6 +26,9 @@ const PharmaciesPage = () => {
 
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
+
   const { user, mode } = useAuth();
 
   useEffect(() => {
@@ -42,10 +47,10 @@ const PharmaciesPage = () => {
           name: service.name,
           description: service.description,
           price: service.price,
-          rating: 4.5,
+          rating: service.averageRating || service.rating || 0,
           location: (service as any).city || "Karachi",
-          type: "Medicine",
-          homeService: (service as any).homeService || false,
+          type: (service as any).category || "Pharmacy",
+          homeService: false,
           image: service.image,
           provider: (service as any).providerName || "Pharmacy",
           createdAt: (service as any).createdAt,
@@ -53,6 +58,7 @@ const PharmaciesPage = () => {
           googleMapLink: (service as any).googleMapLink,
           detailAddress: (service as any).detailAddress,
           providerPhone: (service as any).providerPhone,
+          totalRatings: (service as any).totalRatings,
         }) as Service);
         setPharmacyServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -62,12 +68,16 @@ const PharmaciesPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            const ar = (a as any).rating ?? 0;
+            const br = (b as any).rating ?? 0;
+            if (br !== ar) return br - ar;
             const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
             const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
             return bd - ad;
           });
           return arr;
         });
+
         setHasMore(more);
       } catch (e) {
         console.error('Failed to load services:', e);
@@ -94,10 +104,10 @@ const PharmaciesPage = () => {
         name: service.name,
         description: service.description,
         price: service.price,
-        rating: 4.5,
+        rating: service.averageRating || service.rating || 0,
         location: (service as any).city || "Karachi",
-        type: "Medicine",
-        homeService: (service as any).homeService || false,
+        type: (service as any).category || "Pharmacy",
+        homeService: false,
         image: service.image,
         provider: (service as any).providerName || "Pharmacy",
         createdAt: (service as any).createdAt,
@@ -105,6 +115,7 @@ const PharmaciesPage = () => {
         googleMapLink: (service as any).googleMapLink,
         detailAddress: (service as any).detailAddress,
         providerPhone: (service as any).providerPhone,
+        totalRatings: (service as any).totalRatings,
       }) as Service);
       setPharmacyServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -114,12 +125,16 @@ const PharmaciesPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          const ar = (a as any).rating ?? 0;
+          const br = (b as any).rating ?? 0;
+          if (br !== ar) return br - ar;
           const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
           const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
           return bd - ad;
         });
         return arr;
       });
+
       setHasMore(more);
     } catch (e) {
       console.error('Failed to load more services:', e);
@@ -136,6 +151,46 @@ const PharmaciesPage = () => {
              service.description.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [pharmacyServices, searchTerm]);
+
+  const handleRateService = (service: Service) => {
+    if (!user) {
+      toast.error('Please login to rate services');
+      return;
+    }
+    if (user.role !== 'patient' && mode !== 'patient') {
+      toast.error('Only patients can rate services');
+      return;
+    }
+    setSelectedRatingService(service);
+    setRatingModalOpen(true);
+  };
+
+  const handleRatingSubmitted = async () => {
+    setRatingModalOpen(false);
+    setSelectedRatingService(null);
+    try {
+      const { services } = await ServiceManager.fetchPublicServices({ type: 'pharmacy', page: 1, limit: 12 });
+      const mapped = services.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        rating: service.averageRating || service.rating || 0,
+        location: (service as any).city || 'Karachi',
+        type: (service as any).category || 'Pharmacy',
+        homeService: false,
+        image: service.image,
+        provider: (service as any).providerName || 'Pharmacy',
+        createdAt: (service as any).createdAt,
+        _providerId: (service as any).providerId,
+        googleMapLink: (service as any).googleMapLink,
+        detailAddress: (service as any).detailAddress,
+        providerPhone: (service as any).providerPhone,
+        totalRatings: (service as any).totalRatings,
+      }) as Service);
+      setPharmacyServices(mapped);
+    } catch {}
+  };
 
   const handleBookNow = (service: Service) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
@@ -294,10 +349,7 @@ const PharmaciesPage = () => {
 
                 {/* Rating, Location, WhatsApp */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span>{service.rating}</span>
-                  </div>
+                  <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} size="sm" />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
                     <span>{service.location}</span>
@@ -327,6 +379,15 @@ const PharmaciesPage = () => {
                   >
                     <MapPin className="w-4 h-4 mr-1" /> Location
                   </Button>
+                  {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleRateService(service)}
+                      className="flex-1 min-w-[100px]"
+                    >
+                      Rate
+                    </Button>
+                  )}
                   <Button
                     variant="secondary"
                     onClick={() => (window.location.href = `/service/${service.id}`)}
@@ -401,6 +462,17 @@ const PharmaciesPage = () => {
             </div>
           </div>
         </div>
+      )}
+      {/* Rating Modal */}
+      {selectedRatingService && (
+        <RatingModal
+          isOpen={ratingModalOpen}
+          onClose={() => setRatingModalOpen(false)}
+          serviceId={selectedRatingService.id}
+          serviceType="pharmacy"
+          serviceName={selectedRatingService.name}
+          onRatingSubmitted={handleRatingSubmitted}
+        />
       )}
     </div>
   );

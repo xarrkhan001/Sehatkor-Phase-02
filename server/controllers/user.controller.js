@@ -50,27 +50,43 @@ export const getAllPublicServices = async (req, res) => {
       ).lean();
     }
 
-    // Combine all services with provider type information and phone numbers
+    // Combine all services with provider type information, phone numbers, and rating data
     const allServices = [
       ...doctorServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
+        id: service._id,
         providerType: "doctor",
         providerPhone: service.providerId?.phone || null,
+        rating: service.averageRating || 0,
+        averageRating: service.averageRating || 0,
+        totalRatings: service.totalRatings || 0,
       })),
       ...clinicServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
+        id: service._id,
         providerType: "clinic",
         providerPhone: service.providerId?.phone || null,
+        rating: service.averageRating || 0,
+        averageRating: service.averageRating || 0,
+        totalRatings: service.totalRatings || 0,
       })),
       ...pharmacyServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
+        id: service._id,
         providerType: "pharmacy",
         providerPhone: service.providerId?.phone || null,
+        rating: service.averageRating || 0,
+        averageRating: service.averageRating || 0,
+        totalRatings: service.totalRatings || 0,
       })),
       ...laboratoryServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
+        id: service._id,
         providerType: "laboratory",
         providerPhone: service.providerId?.phone || null,
+        rating: service.averageRating || 0,
+        averageRating: service.averageRating || 0,
+        totalRatings: service.totalRatings || 0,
       })),
     ];
 

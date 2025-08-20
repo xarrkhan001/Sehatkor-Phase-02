@@ -21,6 +21,8 @@ const ClinicServiceSchema = new mongoose.Schema(
     },
     providerName: { type: String, required: true },
     providerType: { type: String, enum: ["clinic"], default: "clinic" },
+    averageRating: { type: Number, default: 0, min: 0, max: 5 },
+    totalRatings: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
