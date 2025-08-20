@@ -231,11 +231,7 @@ const ClinicDashboard = () => {
 
   const handleAddService = async () => {
     if (!serviceForm.name) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -243,19 +239,24 @@ const ClinicDashboard = () => {
     const parsedPrice = serviceForm.price ? parseFloat(serviceForm.price) : 0;
 
     try {
-      let imageUrl: string | undefined;
-      let imagePublicId: string | undefined;
+      let imageUrl: string | undefined = undefined;
+      let imagePublicId: string | undefined = undefined;
       if (serviceImageFile) {
         setIsUploadingImage(true);
         try {
           const up = await uploadFile(serviceImageFile);
-          imageUrl = up?.url; imagePublicId = up?.public_id;
-        } finally { setIsUploadingImage(false); }
+          imageUrl = up?.url;
+          imagePublicId = up?.public_id;
+        } catch (e) {
+          toast.warning("Image upload failed, adding service without image");
+        } finally {
+          setIsUploadingImage(false);
+        }
       }
 
       if (editingService) {
-        // Update existing service
-        await apiUpdate(String(editingService._id || editingService.id), {
+        const id = (editingService as any)._id || (editingService as any).id;
+        await apiUpdate(String(id), {
           name: serviceForm.name,
           description: serviceForm.description,
           price: parsedPrice,
@@ -267,13 +268,10 @@ const ClinicDashboard = () => {
           googleMapLink: serviceForm.googleMapLink,
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
+          providerName: user?.name || 'Clinic',
         });
-        toast({
-          title: "Success",
-          description: "Service updated successfully"
-        });
+        toast.success("Service updated successfully");
       } else {
-        // Create new service
         await apiCreate({
           name: serviceForm.name,
           description: serviceForm.description,
@@ -288,12 +286,9 @@ const ClinicDashboard = () => {
           detailAddress: serviceForm.detailAddress,
           providerName: user?.name || 'Clinic',
         });
-        toast({
-          title: "Success",
-          description: "Service added successfully"
-        });
+        toast.success("Service added successfully");
       }
-      
+
       await reloadServices();
       setServiceForm({
         name: '',
@@ -305,44 +300,32 @@ const ClinicDashboard = () => {
         city: '',
         detailAddress: ''
       });
-      setServiceImage(''); setServiceImageFile(null);
+      setServiceImage('');
+      setServiceImageFile(null);
       setEditingService(null);
       setIsAddServiceOpen(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: editingService ? "Failed to update service" : "Failed to add service",
-        variant: "destructive"
-      });
+      toast.error(editingService ? "Failed to update service" : "Failed to add service");
     } finally {
       setIsAddingService(false);
     }
   };
 
-  const handleDeleteService = (serviceId) => {
+  const handleDeleteService = (serviceId: string) => {
     const updatedServices = services.filter(service => service.id !== serviceId);
     saveServices(updatedServices);
-    
-    toast({
-      title: "Success",
-      description: "Service deleted successfully"
-    });
+    toast.success("Service deleted successfully");
   };
 
-  const handleTypeChange = (type) => {
+  const handleTypeChange = (type: string) => {
     setClinicType(type);
     localStorage.setItem(`clinic_type_${user?.id}`, type);
-    
-    toast({
-      title: "Success",
-      description: "Clinic type updated successfully"
-    });
+    toast.success("Clinic type updated successfully");
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+    <div className="min-h-screen  p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">{user?.name} Clinic</h1>
