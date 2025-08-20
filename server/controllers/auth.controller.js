@@ -78,9 +78,11 @@ export const login = async (req, res) => {
     if (!match)
       return res.status(401).json({ message: 'Invalid credentials' });
 
-    // Optionally check for verification if needed
-    // if (!user.isVerified)
-    //   return res.status(403).json({ message: 'Account not verified by admin' });
+    // Enforce verification for provider roles only; patients can login immediately
+    const providerRoles = ['doctor', 'clinic/hospital', 'laboratory', 'pharmacy'];
+    if (providerRoles.includes(user.role) && !user.isVerified) {
+      return res.status(403).json({ message: 'Account not verified by admin' });
+    }
 
     const token = generateToken(user);
     const userResponse = user.toObject();

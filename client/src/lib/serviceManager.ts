@@ -17,6 +17,15 @@ export interface BaseService {
   image?: string;
   createdAt: string;
   updatedAt: string;
+  totalRatings?: number;
+  ratingBadge?: string;
+  city?: string;
+  detailAddress?: string;
+  googleMapLink?: string;
+  location?: string;
+  rating?: number;
+  providerPhone?: string;
+  averageRating?: number;
 }
 
 export interface DoctorService extends BaseService {
@@ -84,9 +93,7 @@ class ServiceManager {
       const locIdx = Math.floor(Math.random() * cityOptions.length);
       const enriched: Service = {
         ...(svc as Service),
-        // @ts-expect-error: extra field for consumers using any-mapping
         location: (svc as any).location ?? cityOptions[locIdx],
-        // @ts-expect-error: extra field for consumers using any-mapping
         rating: (svc as any).rating ?? (4 + Math.random() * 1),
       };
       variants.push(enriched);
@@ -110,9 +117,7 @@ class ServiceManager {
           // keep same name/category/providerType to ensure "same product"
           createdAt: now,
           updatedAt: now,
-          // @ts-expect-error: extra field for consumers using any-mapping
           location: altLoc,
-          // @ts-expect-error: extra field for consumers using any-mapping
           rating: altRating,
         };
 
@@ -209,6 +214,38 @@ class ServiceManager {
       page: data.page,
       limit: data.limit,
       hasMore: data.hasMore,
+    };
+  }
+
+  // Fetch a single public service by ID
+  static async fetchServiceById(serviceId: string, type: Service['providerType']): Promise<Service> {
+    const url = `http://localhost:4000/api/user/services/public/${serviceId}?type=${type}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: Failed to fetch service ${serviceId}`);
+    }
+    const service = await res.json();
+
+    return {
+      id: String(service._id),
+      name: service.name,
+      description: service.description || '',
+      price: service.price || 0,
+      category: service.category || 'Treatment',
+      providerType: service.providerType,
+      providerId: service.providerId?._id || service.providerId,
+      providerName: service.providerName || service.providerId?.name || 'Provider',
+      image: service.imageUrl,
+      duration: service.duration,
+      city: service.city,
+      detailAddress: service.detailAddress,
+      googleMapLink: service.googleMapLink,
+      providerPhone: service.providerPhone,
+      totalRatings: service.totalRatings,
+      ratingBadge: service.ratingBadge,
+      ...(service.stock != null && { stock: service.stock }),
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
     };
   }
 

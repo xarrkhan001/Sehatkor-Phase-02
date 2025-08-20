@@ -74,8 +74,8 @@ const LoginPage = () => {
         setIsSubmitting(false);
         return;
       }
-      // Block unverified providers (except patients)
-      if (["doctor", "clinic", "laboratory", "pharmacy"].includes(data.user.role) && !data.user.isVerified) {
+      // Block only unverified providers; patients can login immediately
+      if (["doctor", "clinic/hospital", "laboratory", "pharmacy"].includes(data.user.role) && !data.user.isVerified) {
         toast({
           title: "Admin Verification Required",
           description: "Your account is pending admin approval. Please wait for verification before logging in.",
@@ -115,19 +115,20 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center ">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-10">
       <div className="w-full max-w-md">
         {/* Logo and Header */}
-        <div className="text-center mb-2">
-          <div className="flex items-center justify-center mb-2">
-            <div className="flex items-center justify-center w-12 h-12 bg-red-500 rounded-full">
+        <div className="text-center mb-4">
+          <div className="flex items-center justify-center mb-3">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-red-600 to-rose-600 shadow-lg shadow-red-500/20">
               <Stethoscope className="w-7 h-7 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Sehat Kor</h1>
+          <h1 className="text-3xl font-bold mb-1 tracking-tight">SehatKor</h1>
+          <p className="text-sm text-muted-foreground">Welcome back — sign in to continue</p>
         </div>
 
-        <Card className="card-healthcare">
+        <Card className="border shadow-xl shadow-black/5 bg-white/70 backdrop-blur-sm rounded-2xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Sign In</CardTitle>
             <CardDescription className="text-center">
@@ -147,7 +148,7 @@ const LoginPage = () => {
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     placeholder="Enter your email"
-                    className="pl-10"
+                    className="pl-10 focus-visible:ring-2 focus-visible:ring-indigo-500/40"
                     required
                   />
                 </div>
@@ -163,7 +164,7 @@ const LoginPage = () => {
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 focus-visible:ring-2 focus-visible:ring-indigo-500/40"
                     required
                   />
                   <Button
@@ -206,7 +207,7 @@ const LoginPage = () => {
 
               <Button
                 type="submit"
-                className="w-full py-6 text-lg"
+                className="w-full py-6 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -227,7 +228,7 @@ const LoginPage = () => {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">or continue with</span>
+                  <span className="bg-white/80 backdrop-blur px-2 text-muted-foreground rounded-md">or continue with</span>
                 </div>
               </div>
 
@@ -257,6 +258,15 @@ const LoginPage = () => {
                           throw new Error(data.message || 'Google sign-in failed');
                         }
                       } else {
+                        // Block only unverified providers on Google login too
+                        if (["doctor", "clinic/hospital", "laboratory", "pharmacy"].includes(data.user.role) && !data.user.isVerified) {
+                          toast({
+                            title: 'Admin Verification Required',
+                            description: 'Your account is pending admin approval. Please wait for verification before logging in.',
+                            variant: 'destructive'
+                          });
+                          return;
+                        }
                         // Successful login
                         await login({ ...data.user, id: data.user._id }, data.token);
                         if (data.user.role === 'patient') {

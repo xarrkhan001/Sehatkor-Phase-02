@@ -70,6 +70,7 @@ export const getAllPublicServices = async (req, res) => {
         rating: service.averageRating || 0,
         averageRating: service.averageRating || 0,
         totalRatings: service.totalRatings || 0,
+        ratingBadge: service.ratingBadge || null,
       })),
       ...clinicServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
@@ -79,6 +80,7 @@ export const getAllPublicServices = async (req, res) => {
         rating: service.averageRating || 0,
         averageRating: service.averageRating || 0,
         totalRatings: service.totalRatings || 0,
+        ratingBadge: service.ratingBadge || null,
       })),
       ...pharmacyServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
@@ -88,6 +90,7 @@ export const getAllPublicServices = async (req, res) => {
         rating: service.averageRating || 0,
         averageRating: service.averageRating || 0,
         totalRatings: service.totalRatings || 0,
+        ratingBadge: service.ratingBadge || null,
       })),
       ...laboratoryServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
@@ -97,6 +100,7 @@ export const getAllPublicServices = async (req, res) => {
         rating: service.averageRating || 0,
         averageRating: service.averageRating || 0,
         totalRatings: service.totalRatings || 0,
+        ratingBadge: service.ratingBadge || null,
       })),
     ];
 
@@ -171,6 +175,56 @@ export const deleteUserAccount = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error deleting account", error: error.message });
+  }
+};
+
+export const getPublicServiceById = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+    const { type } = req.query;
+
+    if (!serviceId || !type) {
+      return res.status(400).json({ message: "Service ID and type are required" });
+    }
+
+    const modelMap = {
+      doctor: DoctorService,
+      clinic: ClinicService,
+      pharmacy: Medicine,
+      laboratory: LaboratoryTest,
+    };
+
+    const ServiceModel = modelMap[type];
+    let service = null;
+
+    if (ServiceModel) {
+      service = await ServiceModel.findById(serviceId)
+        .populate("providerId", "phone")
+        .lean();
+    }
+
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    const serviceObject = {
+      ...(service.toObject ? service.toObject() : service),
+      id: service._id,
+      providerType: type,
+      providerPhone: service.providerId?.phone || null,
+      rating: service.averageRating || 0,
+      averageRating: service.averageRating || 0,
+      totalRatings: service.totalRatings || 0,
+      ratingBadge: service.ratingBadge || null,
+    };
+
+    res.status(200).json(serviceObject);
+  } catch (error) {
+    console.error("Error fetching public service by ID:", error);
+    res.status(500).json({
+      message: "Error fetching service",
+      error: error.message,
+    });
   }
 };
 

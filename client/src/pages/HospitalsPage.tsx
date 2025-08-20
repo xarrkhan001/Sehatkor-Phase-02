@@ -59,6 +59,7 @@ const HospitalsPage = () => {
           detailAddress: (service as any).detailAddress,
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings,
+          ratingBadge: (service as any).ratingBadge || null,
         }) as Service);
         setHospitalServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -347,7 +348,7 @@ const HospitalsPage = () => {
 
                 {/* Rating, Location, WhatsApp */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                  <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} size="sm" />
+                  <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} ratingBadge={(service as any).ratingBadge} size="sm" />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
                     <span>{service.location}</span>

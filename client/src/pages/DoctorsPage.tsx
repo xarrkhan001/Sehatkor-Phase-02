@@ -58,6 +58,7 @@ const DoctorsPage = () => {
           detailAddress: (service as any).detailAddress,
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings || 0,
+          ratingBadge: (service as any).ratingBadge || null,
         }) as Service);
         setDoctorServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -188,34 +189,37 @@ const DoctorsPage = () => {
     setRatingModalOpen(true);
   };
 
-  const handleRatingSubmit = async () => {
-    // Refresh services to get updated ratings
+  const handleRatingSubmit = async (serviceId: string, newRatingData: { averageRating: number; totalRatings: number }) => {
+    // Optimistic UI update
+    setDoctorServices(prevServices =>
+      prevServices.map(service =>
+        service.id === serviceId
+          ? {
+              ...service,
+              rating: newRatingData.averageRating,
+              totalRatings: newRatingData.totalRatings,
+            }
+          : service
+      )
+    );
+
+    // Fetch updated service data from backend
     try {
-      const { services } = await ServiceManager.fetchPublicServices({
-        type: 'doctor',
-        page: 1,
-        limit: 12 * page, // Get all loaded pages
-      });
-      const mapped = services.map((service: any) => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        rating: service.averageRating || service.rating || 0,
-        location: (service as any).city || "Karachi",
-        type: service.category === "Surgery" ? "Surgery" : "Treatment",
-        homeService: true,
-        image: service.image,
-        provider: (service as any).providerName || "Doctor",
-        createdAt: (service as any).createdAt,
-        _providerId: (service as any).providerId,
-        googleMapLink: (service as any).googleMapLink,
-        detailAddress: (service as any).detailAddress,
-        providerPhone: (service as any).providerPhone,
-      }) as Service);
-      setDoctorServices(mapped);
+      const updatedService = await ServiceManager.fetchServiceById(serviceId, 'doctor');
+      if (updatedService) {
+        setDoctorServices(prevServices =>
+          prevServices.map(service =>
+            service.id === serviceId ? { 
+              ...service, 
+              ...updatedService, 
+              rating: updatedService.averageRating || updatedService.rating, 
+            } : service
+          )
+        );
+      }
     } catch (error) {
-      console.error('Failed to refresh services:', error);
+      console.error('Failed to refresh service after rating:', error);
+      // Optionally revert optimistic update on error
     }
   };
 
@@ -357,6 +361,7 @@ const DoctorsPage = () => {
                   <RatingBadge 
                     rating={service.rating} 
                     totalRatings={(service as any).totalRatings || 0}
+                    ratingBadge={(service as any).ratingBadge}
                   />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
@@ -489,7 +494,13 @@ const DoctorsPage = () => {
           serviceId={selectedRatingService.id}
           serviceName={selectedRatingService.name}
           serviceType="doctor"
-          onRatingSubmitted={handleRatingSubmit}
+          onRatingSubmitted={(newRatingData) => {
+            setRatingModalOpen(false);
+            if (selectedRatingService) {
+              handleRatingSubmit(selectedRatingService.id, newRatingData);
+            }
+            setSelectedRatingService(null);
+          }}
         />
       )}
     </div>

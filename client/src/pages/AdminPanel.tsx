@@ -24,12 +24,14 @@ import {
   ShoppingBag,
   AlertTriangle,
   TrendingUp,
-  Activity
+  Activity,
+  Download
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import VerifiedUsersCard from "@/components/VerifiedUsersCard";
 
 const AdminPanel = () => {
+  const getAuthToken = () => localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [users, setUsers] = useState<any[]>([]);
@@ -41,12 +43,13 @@ const AdminPanel = () => {
     totalLabs: 0,
     totalHospitals: 0
   });
+  const [pendingDocs, setPendingDocs] = useState<any[]>([]);
 
   // Fetch pending users from backend
   const fetchPendingUsers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
       const res = await fetch('http://localhost:4000/api/admin/pending', {
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +77,7 @@ const AdminPanel = () => {
   // Fetch admin stats from backend
   const fetchAdminStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
       const res = await fetch('http://localhost:4000/api/admin/stats', {
         headers: {
           'Content-Type': 'application/json',
@@ -101,6 +104,7 @@ const AdminPanel = () => {
   useEffect(() => { 
     fetchPendingUsers(); 
     fetchAdminStats();
+    fetchPendingDocuments();
   }, []);
 
   const statsData = [
@@ -122,10 +126,45 @@ const AdminPanel = () => {
 
   const { toast } = useToast();
 
+  const getDownloadUrl = (url: string) => {
+    if (!url) return '#';
+    // Add fl_attachment flag to Cloudinary URL to force download
+    return url.replace('/upload/', '/upload/fl_attachment/');
+  };
+
+  // Documents: fetch pending
+  const fetchPendingDocuments = async () => {
+    try {
+      const res = await fetch('http://localhost:4000/api/documents/pending', {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Failed to fetch documents');
+      setPendingDocs(data.documents || []);
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to fetch documents', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    try {
+      const res = await fetch(`http://localhost:4000/api/documents/${docId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Failed to delete');
+      toast({ title: 'Deleted', description: 'The document has been deleted successfully.' });
+      fetchPendingDocuments();
+    } catch (err: any) {
+      toast({ title: 'Deletion Error', description: err.message || 'Try again', variant: 'destructive' });
+    }
+  };
+
   const handleApprove = async (userId: string) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
       const res = await fetch(`http://localhost:4000/api/admin/verify/${userId}`, {
         method: 'PATCH',
         headers: { 
@@ -152,7 +191,7 @@ const AdminPanel = () => {
   const handleReject = async (userId: string) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
       const res = await fetch(`http://localhost:4000/api/admin/verify/${userId}`, {
         method: 'PATCH',
         headers: { 
@@ -253,9 +292,10 @@ const AdminPanel = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="verifications" className="space-y-6">
-          <TabsList className="w-full overflow-x-auto flex sm:grid md:grid-cols-2 gap-0 lg:gap-2">
+          <TabsList className="w-full overflow-x-auto flex sm:grid md:grid-cols-3 gap-0 lg:gap-2">
             <TabsTrigger value="verifications">Verify Entities</TabsTrigger>
             <TabsTrigger value="services">Manage Services</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
           </TabsList>
 
           {/* User Verifications */}
@@ -344,7 +384,7 @@ const AdminPanel = () => {
                   </TableHeader>
                   <TableBody>
                     {pendingUsers.map((user: any) => (
-                      <TableRow key={user.id}>
+                      <TableRow key={user._id || user.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
@@ -471,6 +511,66 @@ const AdminPanel = () => {
                         </TableCell>
                       </TableRow>
                     ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Documents Management */}
+          <TabsContent value="documents" className="space-y-6">
+            <Card className="card-healthcare">
+              <CardHeader>
+                <CardTitle>Pending Provider Documents</CardTitle>
+                <CardDescription>Review, download, verify, or delete uploaded documents</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Provider</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>File</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingDocs.map((doc: any) => (
+                      <TableRow key={doc._id}>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{doc.userId?.name || '—'}</span>
+                            <span className="text-sm text-muted-foreground">{doc.userId?.email}</span>
+                            <span className="text-sm text-muted-foreground">{doc.userId?.phone}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{doc.userId?.role}</Badge>
+                        </TableCell>
+                        <TableCell>
+                                                    <a href={getDownloadUrl(doc.url)} download={doc.fileName || 'document'} className="inline-flex items-center gap-2 underline">
+                            <Download className="w-4 h-4" /> {doc.fileName || 'Document'}
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">{doc.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="destructive" onClick={() => handleDeleteDocument(doc._id)}>
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {pendingDocs.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">No pending documents</TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>

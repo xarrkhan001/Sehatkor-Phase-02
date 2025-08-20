@@ -22,6 +22,7 @@ const LaboratoryTestSchema = new mongoose.Schema(
     providerType: { type: String, enum: ["laboratory"], default: "laboratory" },
     averageRating: { type: Number, default: 0, min: 0, max: 5 },
     totalRatings: { type: Number, default: 0 },
+    ratingBadge: { type: String, enum: ["excellent", "good", "normal", "poor"], default: undefined },
   },
   { timestamps: true }
 );
