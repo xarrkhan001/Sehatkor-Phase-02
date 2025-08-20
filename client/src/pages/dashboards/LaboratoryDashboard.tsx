@@ -152,11 +152,7 @@ const LaboratoryDashboard = () => {
       
     } catch (error) {
       console.error('Error loading tests:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load tests. Please refresh the page.",
-        variant: "destructive"
-      });
+      toast.error('Failed to load tests. Please refresh the page.');
     }
   };
 
@@ -283,11 +279,7 @@ const LaboratoryDashboard = () => {
 
   const handleAddTest = async () => {
     if (!testForm.name || !user?.id) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -306,11 +298,7 @@ const LaboratoryDashboard = () => {
           imagePublicId = result?.public_id;
         } catch (uploadError) {
           console.error('Image upload failed:', uploadError);
-          toast({
-            title: "Warning",
-            description: "Image upload failed, but test will be added without image",
-            variant: "destructive"
-          });
+          toast.warning("Image upload failed, but test will be added without image");
         } finally {
           setIsUploadingImage(false);
         }
@@ -355,17 +343,10 @@ const LaboratoryDashboard = () => {
       // Reload tests from backend
       await reloadTests();
       
-      toast({ 
-        title: "Success", 
-        description: "Test added successfully and is now available to all users" 
-      });
+      toast.success("Test added successfully and is now available to all users");
     } catch (error: any) {
       console.error('Error adding test:', error);
-      toast({ 
-        title: "Error", 
-        description: error?.message || "Failed to add test. Please try again.", 
-        variant: "destructive" 
-      });
+      toast.error(error?.message || "Failed to add test. Please try again.");
     } finally {
       setIsAddingTest(false);
     }
@@ -376,9 +357,9 @@ const LaboratoryDashboard = () => {
       await apiDelete(testId);
       ServiceManager.deleteService(testId);
       reloadTests();
-      toast({ title: "Success", description: "Test deleted successfully" });
+      toast.success("Test deleted successfully");
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Failed to delete test", variant: "destructive" });
+      toast.error(e?.message || "Failed to delete test");
     }
   };
 
@@ -448,20 +429,17 @@ const LaboratoryDashboard = () => {
       
       setIsEditOpen(false);
       setEditingTestId(null);
-      toast({ title: "Success", description: "Test updated successfully" });
+      toast.success("Test updated successfully");
     } catch (error: any) {
-      toast({ title: "Error", description: error?.message || "Failed to update test", variant: "destructive" });
+      toast.error(error?.message || "Failed to update test");
     }
   };
 
-  const handleTypeChange = (type) => {
+  const handleTypeChange = (type: string) => {
     setLabType(type);
     localStorage.setItem(`lab_type_${user?.id}`, type);
     
-    toast({
-      title: "Success",
-      description: "Lab type updated successfully"
-    });
+    toast.success("Lab type updated successfully");
   };
 
   const pendingTests = [
@@ -481,12 +459,12 @@ const LaboratoryDashboard = () => {
               Manage diagnostic tests and lab operations
             </p>
           </div>
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <Button variant="outline" size="sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mt-4 md:mt-0 w-full md:w-auto">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Bell className="w-4 h-4 mr-2" />
               Notifications
             </Button>
-            <Button variant="outline" size="sm" onClick={logout}>
+            <Button variant="outline" size="sm" onClick={logout} className="w-full sm:w-auto">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
@@ -569,7 +547,7 @@ const LaboratoryDashboard = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Edit Test Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Test</DialogTitle>
                   <DialogDescription>
@@ -604,7 +582,7 @@ const LaboratoryDashboard = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="editTestPrice">Price (PKR) *</Label>
                       <Input
@@ -742,19 +720,19 @@ const LaboratoryDashboard = () => {
                   {/* Lab Tests Management */}
                   <Card className="card-healthcare">
                     <CardHeader>
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                           <CardTitle>Lab Tests</CardTitle>
                           <CardDescription>Manage your diagnostic tests and pricing</CardDescription>
                         </div>
                         <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
                           <DialogTrigger asChild>
-                            <Button>
+                            <Button className="w-full sm:w-auto">
                               <Plus className="w-4 h-4 mr-2" />
                               Add Test
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                          <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>Add New Test</DialogTitle>
                               <DialogDescription>
@@ -771,7 +749,7 @@ const LaboratoryDashboard = () => {
                                   placeholder="e.g., Complete Blood Count"
                                 />
                               </div>
-                              
+
                               <div>
                                 <Label>Test Image</Label>
                                 <ImageUpload
@@ -789,7 +767,7 @@ const LaboratoryDashboard = () => {
                                 />
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                   <Label htmlFor="testPrice">Price (PKR) *</Label>
                                   <Input
@@ -832,7 +810,7 @@ const LaboratoryDashboard = () => {
                                   placeholder="Brief description of the test"
                                 />
                               </div>
-                              
+
                               {/* Location Fields */}
                               <div className="space-y-3 border-t pt-3">
                                 <h4 className="font-medium text-sm">Location Information</h4>
@@ -865,7 +843,7 @@ const LaboratoryDashboard = () => {
                                   />
                                 </div>
                               </div>
-                              
+
                               <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
                                 {isAddingTest ? 'Adding Test...' : 'Add Test'}
                               </Button>
@@ -877,65 +855,104 @@ const LaboratoryDashboard = () => {
                     <CardContent>
                       <div className="space-y-4">
                         {tests.length > 0 ? (
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Image</TableHead>
-                                <TableHead>Test Name</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Duration</TableHead>
-                                <TableHead>Actions</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                          <>
+                            {/* Mobile cards */}
+                            <div className="grid gap-4 md:hidden">
                               {tests.map((test) => (
-                                <TableRow key={test.id}>
-                                  <TableCell>
-                                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                <div key={test.id} className="p-4 border rounded-lg shadow-sm">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                                       {test.image ? (
-                                        <img 
-                                          src={test.image} 
+                                        <img
+                                          src={test.image}
                                           alt={test.name}
                                           className="w-full h-full object-cover"
                                           onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.style.display = 'none';
-                                            target.nextElementSibling!.classList.remove('hidden');
+                                            (target.nextElementSibling as HTMLElement)!.classList.remove('hidden');
                                           }}
                                         />
                                       ) : null}
-                                      <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+                                      <span className={`${test.image ? 'hidden' : ''} text-gray-400 text-lg`}>🔬</span>
                                     </div>
-                                  </TableCell>
-                                  <TableCell className="font-medium">{test.name}</TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline">{test.category}</Badge>
-                                  </TableCell>
-                                  <TableCell>PKR {test.price.toLocaleString()}</TableCell>
-                                  <TableCell>{test.duration || 'N/A'}</TableCell>
-                                  <TableCell>
-                                    <div className="flex space-x-2">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => openEdit(test)}
-                                      >
-                                        <Edit className="w-4 h-4 mr-1" /> Edit
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => handleDeleteTest(test.id)}
-                                      >
-                                        <Trash2 className="w-4 h-4 mr-1" /> Delete
-                                      </Button>
+                                    <div className="flex-1">
+                                      <div className="font-medium">{test.name}</div>
+                                      <div className="text-sm text-muted-foreground line-clamp-2">{test.description}</div>
+                                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                                        <Badge variant="outline">{test.category}</Badge>
+                                        <span className="text-sm">PKR {test.price.toLocaleString()}</span>
+                                        <span className="text-xs text-muted-foreground">{test.duration || 'N/A'}</span>
+                                      </div>
                                     </div>
-                                  </TableCell>
-                                </TableRow>
+                                  </div>
+                                  <div className="mt-3 grid grid-cols-2 gap-2">
+                                    <Button size="sm" variant="outline" onClick={() => openEdit(test)} className="w-full">
+                                      <Edit className="w-4 h-4 mr-1" /> Edit
+                                    </Button>
+                                    <Button size="sm" variant="destructive" onClick={() => handleDeleteTest(test.id)} className="w-full">
+                                      <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                    </Button>
+                                  </div>
+                                </div>
                               ))}
-                            </TableBody>
-                          </Table>
+                            </div>
+
+                            {/* Desktop table */}
+                            <div className="hidden md:block">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Image</TableHead>
+                                    <TableHead>Test Name</TableHead>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>Duration</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {tests.map((test) => (
+                                    <TableRow key={test.id}>
+                                      <TableCell>
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                          {test.image ? (
+                                            <img
+                                              src={test.image}
+                                              alt={test.name}
+                                              className="w-full h-full object-cover"
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                                target.nextElementSibling!.classList.remove('hidden');
+                                              }}
+                                            />
+                                          ) : null}
+                                          <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+                                        </div>
+                                      </TableCell>
+                                      <TableCell className="font-medium">{test.name}</TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{test.category}</Badge>
+                                      </TableCell>
+                                      <TableCell>PKR {test.price.toLocaleString()}</TableCell>
+                                      <TableCell>{test.duration || 'N/A'}</TableCell>
+                                      <TableCell>
+                                        <div className="flex space-x-2">
+                                          <Button size="sm" variant="outline" onClick={() => openEdit(test)}>
+                                            <Edit className="w-4 h-4 mr-1" /> Edit
+                                          </Button>
+                                          <Button size="sm" variant="destructive" onClick={() => handleDeleteTest(test.id)}>
+                                            <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                          </Button>
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </>
                         ) : (
                           <div className="text-center text-muted-foreground py-8">
                             No tests added yet.
@@ -949,7 +966,7 @@ const LaboratoryDashboard = () => {
               <TabsContent value="bookings">
                 <Card className="card-healthcare">
                   <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
                         <CardTitle>Patient Bookings</CardTitle>
                         <CardDescription>Bookings from patients for your services</CardDescription>
@@ -959,6 +976,7 @@ const LaboratoryDashboard = () => {
                           variant="destructive" 
                           size="sm"
                           onClick={deleteAllBookings}
+                          className="w-full sm:w-auto"
                         >
                           Delete All
                         </Button>
@@ -980,22 +998,22 @@ const LaboratoryDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
                             <div className="flex-1">
                               <h4 className="font-medium">{booking.patientName}</h4>
                               <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                                <div className="flex items-center space-x-1">
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <div className="flex items-center space-x-1">
+                                <div className="flex items-center gap-1">
                                   <Phone className="w-4 h-4" />
                                   <span>{booking.paymentMethod}: ***{booking.paymentNumber.slice(-4)}</span>
                                 </div>
                               </div>
                             </div>
-                            <div className="text-right flex items-center space-x-2">
+                            <div className="flex items-center gap-2 sm:justify-end w-full sm:w-auto">
                               <Badge
                                 variant={booking.status === "confirmed" ? "default" : "secondary"}
                                 className={booking.status === "confirmed" ? "bg-success" : ""}
@@ -1021,9 +1039,9 @@ const LaboratoryDashboard = () => {
               <TabsContent value="bookings">
                 <Card className="card-healthcare">
                   <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <CardTitle>All Bookings</CardTitle>
-                      <Button variant="outline" size="sm" onClick={deleteAllBookings} disabled={bookings.length === 0}>
+                      <Button variant="outline" size="sm" onClick={deleteAllBookings} disabled={bookings.length === 0} className="w-full sm:w-auto">
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete All
                       </Button>
@@ -1038,24 +1056,24 @@ const LaboratoryDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
                             <div className="flex-1">
                               <h4 className="font-medium">{booking.patientName}</h4>
                               <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                                <div className="flex items-center space-x-1">
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 {booking.status === 'Scheduled' && booking.scheduledTime && (
-                                  <div className="flex items-center space-x-1 text-primary font-semibold">
+                                  <div className="flex items-center gap-1 text-primary font-semibold">
                                     <Clock className="w-4 h-4" />
                                     <span>Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
-                            <div className="text-right flex items-center space-x-2">
+                            <div className="flex flex-wrap items-center gap-2 sm:justify-end w-full sm:w-auto">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
                                 className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
@@ -1063,17 +1081,17 @@ const LaboratoryDashboard = () => {
                                 {booking.status}
                               </Badge>
                               {booking.status === 'Confirmed' && (
-                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
+                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }} className="w-full sm:w-auto">Schedule</Button>
                               )}
                               {booking.status === 'Scheduled' && (
-                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
+                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)} className="w-full sm:w-auto">Mark as Complete</Button>
                               )}
                               {booking.status === 'Completed' && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => deleteBooking(booking._id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="w-full sm:w-auto text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   Delete
                                 </Button>
@@ -1089,7 +1107,7 @@ const LaboratoryDashboard = () => {
             </Tabs>
 
             <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
-              <DialogContent>
+              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Schedule Appointment</DialogTitle>
                   <DialogDescription>
