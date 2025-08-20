@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,9 +30,23 @@ import {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, mode, toggleMode } = useAuth();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 10);
+    };
+
+    // Only add scroll listener on homepage
+    if (location.pathname === '/') {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, [location.pathname]);
 
   const handleModeToggle = () => {
     const newMode = mode === 'patient' ? 'provider' : 'patient';
@@ -66,17 +80,17 @@ const Navbar = () => {
   };
 
   const allNavItems = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Services", href: "/search", icon: Grid3X3 },
-    { name: "Doctors", href: "/doctors", icon: UserCircle },
-    { name: "Hospitals", href: "/hospitals", icon: Hospital },
-    { name: "Labs", href: "/labs", icon: FlaskConical },
-    { name: "Pharmacies", href: "/pharmacies", icon: Pill },
-    { name: "Blog", href: "/blog", icon: BookOpen },
-    { name: "Contact", href: "/contact", icon: Phone },
-    { name: "Dashboard", href: "", icon: LayoutDashboard, requiresAuth: true },
-    { name: "Register", href: "/register", icon: UserPlus, requiresAuth: false },
-    { name: "Login", href: "/login", icon: LogIn, requiresAuth: false },
+    { name: "Home", href: "/", icon: Home, color: "text-blue-600" },
+    { name: "Services", href: "/search", icon: Grid3X3, color: "text-purple-600" },
+    { name: "Doctors", href: "/doctors", icon: UserCircle, color: "text-green-600" },
+    { name: "Hospitals", href: "/hospitals", icon: Hospital, color: "text-red-600" },
+    { name: "Labs", href: "/labs", icon: FlaskConical, color: "text-orange-600" },
+    { name: "Pharmacies", href: "/pharmacies", icon: Pill, color: "text-teal-600" },
+    { name: "Blog", href: "/blog", icon: BookOpen, color: "text-indigo-600" },
+    { name: "Contact", href: "/contact", icon: Phone, color: "text-emerald-600" },
+    { name: "Dashboard", href: "", icon: LayoutDashboard, color: "text-slate-600", requiresAuth: true },
+    { name: "Register", href: "/register", icon: UserPlus, color: "text-cyan-600", requiresAuth: false },
+    { name: "Login", href: "/login", icon: LogIn, color: "text-violet-600", requiresAuth: false },
   ];
 
   const getDashboardPath = () => {
@@ -123,7 +137,11 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md shadow-sm overflow-visible">
+    <nav className={`${location.pathname === '/' ? 'fixed' : 'sticky'} top-0 z-50 w-full border-b overflow-visible transition-all duration-300 ${
+      location.pathname === '/' && isScrolled 
+        ? 'bg-white/50 backdrop-blur-xl shadow-xl border-gray-200/30' 
+        : 'bg-white/95 backdrop-blur-md shadow-sm border-gray-200'
+    }`}>
       <div className="container mx-auto px-4 relative">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -145,14 +163,14 @@ const Navbar = () => {
                   className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
                     isActive(item.href)
                       ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                   }`}
                 >
                   <Icon className={`w-4 h-4 transition-all duration-300 ${
                     isActive(item.href) 
                       ? "text-white drop-shadow-sm" 
-                      : "text-gray-500 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
-                  }`} />
+                      : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
+                  }`} strokeWidth={2.5} />
                   <span className=" transition-all duration-300">{item.name}</span>
                 </Link>
               );
@@ -264,14 +282,14 @@ const Navbar = () => {
             className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
               isActive(item.href)
                 ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
             }`}
           >
             <Icon className={`w-5 h-5 transition-all duration-300 ${
               isActive(item.href) 
                 ? "text-white drop-shadow-sm" 
-                : "text-gray-500 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
-            }`} />
+                : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
+            }`} strokeWidth={2.5} />
             <span className="group-hover:font-semibold transition-all duration-300">{item.name}</span>
           </Link>
         );

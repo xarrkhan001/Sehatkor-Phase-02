@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MapPin, Star, CheckCircle, ArrowRight, Minimize2, Maximize2, X, Search, Sparkles } from "lucide-react";
 import { Button as UIButton } from "@/components/ui/button";
-import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
-import { mockServices, Service as MockService } from "@/data/mockData";
+import ServiceManager from "@/lib/serviceManager";
 import { useNavigate } from "react-router-dom";
 
 type Unified = {
@@ -16,10 +15,15 @@ type Unified = {
   description: string;
   price: number;
   rating: number;
-  location: string;
+  location: string; // Combined for display
+  city?: string;
+  detailAddress?: string;
+  googleMapLink?: string;
   provider: string;
   image?: string;
   type: "Treatment" | "Medicine" | "Test" | "Surgery";
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 const CompareExplorer = () => {
@@ -30,35 +34,44 @@ const CompareExplorer = () => {
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [services, setServices] = useState<Unified[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const allItems: Unified[] = useMemo(() => {
-    const source = (ServiceManager as any).getAllServicesWithVariants
-      ? (ServiceManager as any).getAllServicesWithVariants()
-      : ServiceManager.getAllServices();
-    const real = source.map((s: any) => ({
-      id: s.id,
-      name: s.name,
-      description: s.description,
-      price: s.price,
-      rating: s?.rating ?? 4.5,
-      location: s?.location ?? "Karachi",
-      provider: s.providerName,
-      image: s.image,
-      type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : s.category === "Surgery" ? "Surgery" : "Treatment",
-    } as Unified));
-    const mocks = mockServices.map((m: MockService) => ({
-      id: m.id,
-      name: m.name,
-      description: m.description,
-      price: m.price,
-      rating: m.rating,
-      location: m.location,
-      provider: m.provider,
-      image: m.image,
-      type: m.type,
-    }));
-    return [...real, ...mocks];
+  // Fetch live services from backend only (no localStorage/mocks)
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await ServiceManager.fetchPublicServices({ limit: 500 });
+        const unified: Unified[] = (res.services || []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          price: s.price,
+          rating: (s as any)?.rating ?? 4.5,
+          location: [s.detailAddress, s.city].filter(Boolean).join(', ') || 'Location not provided',
+          city: s.city,
+          detailAddress: s.detailAddress,
+          googleMapLink: s.googleMapLink,
+          provider: s.providerName,
+          image: (s as any)?.image,
+          type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : (s as any)?.category === "Surgery" ? "Surgery" : "Treatment",
+          createdAt: (s as any)?.createdAt,
+          updatedAt: (s as any)?.updatedAt,
+        }));
+        if (isMounted) setServices(unified);
+      } catch (e) {
+        console.error("Failed to fetch services for CompareExplorer", e);
+        if (isMounted) setServices([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => { isMounted = false; };
   }, []);
+
+  const allItems: Unified[] = useMemo(() => services, [services]);
 
   const names = useMemo(() => Array.from(new Set(allItems.map(i => i.name))).sort(), [allItems]);
   const filteredNames = useMemo(() => {
@@ -82,52 +95,13 @@ const CompareExplorer = () => {
   const limitedOfferings = useMemo(() => offerings.slice(0, 6), [offerings]);
   const selected = useMemo(() => offerings.filter(i => selectedIds.includes(i.id)), [offerings, selectedIds]);
 
-  // Newly added products (prefer real services by createdAt, fallback to mocks)
+  // Newly added products from backend data only
   const newlyAdded = useMemo(() => {
-    try {
-      const real = ((ServiceManager.getAllServices?.() as any[]) || [])
-        .slice()
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 3)
-        .map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          description: s.description,
-          price: s.price,
-          rating: (s as any)?.rating ?? 4.6,
-          location: (s as any)?.location ?? "Karachi",
-          provider: s.providerName,
-          image: s.image,
-          type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : s.category === "Surgery" ? "Surgery" : "Treatment",
-        } as Unified));
-      if (real.length === 3) return real;
-      const needed = 3 - real.length;
-      const mockFill = mockServices.slice(-needed).map((m) => ({
-        id: m.id,
-        name: m.name,
-        description: m.description,
-        price: m.price,
-        rating: m.rating,
-        location: m.location,
-        provider: m.provider,
-        image: m.image,
-        type: m.type,
-      } as Unified));
-      return [...real, ...mockFill];
-    } catch {
-      return mockServices.slice(0, 3).map((m) => ({
-        id: m.id,
-        name: m.name,
-        description: m.description,
-        price: m.price,
-        rating: m.rating,
-        location: m.location,
-        provider: m.provider,
-        image: m.image,
-        type: m.type,
-      } as Unified));
-    }
-  }, []);
+    return services
+      .slice()
+      .sort((a: any, b: any) => new Date((b as any)?.createdAt || 0).getTime() - new Date((a as any)?.createdAt || 0).getTime())
+      .slice(0, 3);
+  }, [services]);
 
   // Auto-select when only one match, and support Enter-to-select
   useEffect(() => {
@@ -158,11 +132,7 @@ const CompareExplorer = () => {
 
   const currentMapService = useMemo(() => {
     if (!showLocationMap) return null;
-    const svc = allItems.find(s => s.id === showLocationMap);
-    if (!svc) return null;
-    const coordinates = getCoordinatesForLocation(svc.location);
-    const address = getMockAddress(svc.provider, svc.name, svc.location);
-    return { ...svc, coordinates, address } as any;
+    return allItems.find(s => s.id === showLocationMap) || null;
   }, [showLocationMap, allItems]);
 
   const toggleSelect = (id: string) => {
@@ -266,8 +236,8 @@ const CompareExplorer = () => {
                               </div>
                             </div>
                             <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                              <MapPin className="w-3 h-3" />
-                              {item.location}
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{item.location}</span>
                             </div>
                             <div className="mt-2 flex gap-2">
                               <Button size="sm" variant="outline" className="h-7 px-2 flex-1" onClick={() => setShowLocationMap(item.id)}>Location</Button>
@@ -310,11 +280,21 @@ const CompareExplorer = () => {
                           </div>
                         </div>
                         <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                          <MapPin className="w-4 h-4" />
-                          {item.location}
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">{item.location}</span>
                         </div>
                         <div className="mt-3 flex gap-2">
-                          <Button  variant="outline"  className="flex-1 px-1 text-xs" onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}>
+                          <Button
+                            variant="outline"
+                            className="flex-1 px-1 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (item.googleMapLink) {
+                                window.open(item.googleMapLink, '_blank', 'noopener,noreferrer');
+                              } else {
+                                setShowLocationMap(item.id);
+                              }
+                            }}>
                             View Location
                           </Button>
                           <Button  variant="secondary" className="flex-1 px-1 text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/service/${item.id}`); }}>
@@ -379,9 +359,19 @@ const CompareExplorer = () => {
                           {selected.map(s => (
                             <td key={s.id} className="p-4">
                               <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4" />
-                                {s.location}
-                                <UIButton size="sm" variant="ghost" className="h-7 px-2 ml-2" onClick={() => setShowLocationMap(s.id)}>
+                                <MapPin className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">{s.location}</span>
+                                <UIButton
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2 ml-2"
+                                  onClick={() => {
+                                    if (s.googleMapLink) {
+                                      window.open(s.googleMapLink, '_blank', 'noopener,noreferrer');
+                                    } else {
+                                      setShowLocationMap(s.id);
+                                    }
+                                  }}>
                                   View Location
                                 </UIButton>
                               </div>
@@ -439,49 +429,40 @@ const CompareExplorer = () => {
       </Card>
       {showLocationMap && currentMapService && (
         <div
-          className={`fixed z-50 bg-background shadow-xl rounded-lg border transition-all duration-300
-            ${isMapExpanded ?
-              // Expanded: full-width on small screens; centered modal on large screens
-              'w-[calc(100vw-2rem)] h-[80vh] top-4 left-4 right-4 bottom-auto md:w-[calc(100vw-4rem)] md:left-8 md:right-8 lg:w-[720px] lg:h-[80vh] lg:top-1/2 lg:left-1/2 lg:right-auto lg:bottom-auto lg:-translate-x-1/2 lg:-translate-y-1/2'
-              :
-              // Collapsed (dock bottom-right on desktop)
-              'w-[calc(100vw-2rem)] h-64 bottom-4 left-4 right-4 md:w-80 md:right-4 md:left-auto'
-            }
-          `}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setShowLocationMap(null)}
         >
-          <div className="relative w-full h-full">
-            <div className="absolute top-0 left-0 right-0 bg-background z-10 p-3 flex justify-between items-center border-b">
-              <div className="max-w-[70%]">
-                <h3 className="font-semibold truncate">{currentMapService.name}</h3>
-                <p className="text-sm text-muted-foreground truncate">{currentMapService.address}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => setIsMapExpanded(!isMapExpanded)} className="h-8 w-8">
-                  {isMapExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => { setShowLocationMap(null); setIsMapExpanded(false); }} className="h-8 w-8">
+          <Card className="w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>{currentMapService.name}</span>
+                <Button variant="ghost" size="icon" onClick={() => setShowLocationMap(null)} className="h-7 w-7">
                   <X className="w-4 h-4" />
                 </Button>
-              </div>
-            </div>
-            <div className="absolute top-12 bottom-0 left-0 right-0 bg-muted flex items-center justify-center">
-              <div className="w-full h-full flex flex-col">
-                <div className="flex-1 bg-gray-200 relative">
-                  <MapPin
-                    className="w-12 h-12 text-red-500 absolute"
-                    style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
-                  />
+              </CardTitle>
+              <CardDescription>{currentMapService.provider}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div>
+                  <h4 className="font-semibold text-sm">City</h4>
+                  <p className="text-muted-foreground">{currentMapService.city || 'Not available'}</p>
                 </div>
-                <div className="p-4 bg-white border-t">
-                  <p className="font-medium">{currentMapService.location}</p>
-                  <p className="text-sm text-muted-foreground">{currentMapService.address}</p>
-                  <p className="text-xs mt-2">
-                    Coordinates: {currentMapService.coordinates.lat.toFixed(4)}, {currentMapService.coordinates.lng.toFixed(4)}
-                  </p>
+                <div>
+                  <h4 className="font-semibold text-sm">Address</h4>
+                  <p className="text-muted-foreground">{currentMapService.detailAddress || 'Not available'}</p>
                 </div>
               </div>
-            </div>
-          </div>
+              {currentMapService.googleMapLink && (
+                <Button 
+                  className="w-full mt-4"
+                  onClick={() => window.open(currentMapService.googleMapLink, '_blank', 'noopener,noreferrer')}
+                >
+                  Open in Google Maps
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </section>
