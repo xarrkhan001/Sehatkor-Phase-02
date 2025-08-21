@@ -12,6 +12,22 @@ const DoctorServiceSchema = new mongoose.Schema(
     googleMapLink: { type: String },
     city: { type: String },
     detailAddress: { type: String },
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+      },
+    ],
+    ratings: [
+      {
+        rating: { type: String, enum: ["Excellent", "Very Good", "Good"] },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      },
+    ],
+    ratingBadge: {
+      type: String,
+      default: "No Rating",
+    },
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -20,9 +36,6 @@ const DoctorServiceSchema = new mongoose.Schema(
     },
     providerName: { type: String, required: true },
     providerType: { type: String, enum: ["doctor"], default: "doctor" },
-    averageRating: { type: Number, default: 0, min: 0, max: 5 },
-    totalRatings: { type: Number, default: 0 },
-    ratingBadge: { type: String, enum: ["excellent", "good", "normal", "poor"], default: undefined },
   },
   { timestamps: true }
 );

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
 import { mockServices, Service as MockService } from "@/data/mockData";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, ArrowLeft } from "lucide-react";
+import RatingModal from "@/components/RatingModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Unified = {
   id: string;
@@ -17,11 +19,15 @@ type Unified = {
   provider: string;
   image?: string;
   type: "Treatment" | "Medicine" | "Test" | "Surgery";
+  providerType?: 'doctor' | 'clinic' | 'laboratory' | 'pharmacy';
+  isReal?: boolean;
 };
 
 const ServiceDetailPage = () => {
   const params = useParams();
   const id = params.id as string;
+  const { user, mode } = useAuth();
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
 
   const item: Unified | undefined = useMemo(() => {
     const source = (ServiceManager as any).getAllServicesWithVariants
@@ -37,6 +43,8 @@ const ServiceDetailPage = () => {
       provider: s.providerName,
       image: s.image,
       type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : s.category === "Surgery" ? "Surgery" : "Treatment",
+      providerType: s.providerType as Unified['providerType'],
+      isReal: true,
     } as Unified));
     const mockMapped = mockServices.map((m: MockService) => ({
       id: m.id,
@@ -48,6 +56,7 @@ const ServiceDetailPage = () => {
       provider: m.provider,
       image: m.image,
       type: m.type,
+      isReal: false,
     }));
     const combined = [...realMapped, ...mockMapped];
     return combined.find(x => x.id === id);
@@ -105,7 +114,12 @@ const ServiceDetailPage = () => {
                     <Badge variant="outline">{item.type}</Badge>
                   </div>
                 </div>
-                <Button size="lg">Book Now</Button>
+                <div className="flex gap-2">
+                  <Button size="lg">Book Now</Button>
+                  {item.isReal && user && (user.role === 'patient' || mode === 'patient') && (
+                    <Button size="lg" variant="outline" onClick={() => setIsRatingModalOpen(true)}>Rate</Button>
+                  )}
+                </div>
               </div>
               <p className="mt-4 text-muted-foreground leading-relaxed">{item.description}</p>
               <div className="mt-6 grid sm:grid-cols-2 gap-3">
@@ -126,6 +140,17 @@ const ServiceDetailPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Rating Modal */}
+      {item.isReal && item.providerType && (
+        <RatingModal
+          isOpen={isRatingModalOpen}
+          onClose={() => setIsRatingModalOpen(false)}
+          serviceId={item.id}
+          serviceType={item.providerType}
+          serviceName={item.name}
+        />
+      )}
     </div>
   );
 };

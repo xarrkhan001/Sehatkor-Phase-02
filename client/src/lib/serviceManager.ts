@@ -18,7 +18,7 @@ export interface BaseService {
   createdAt: string;
   updatedAt: string;
   totalRatings?: number;
-  ratingBadge?: string;
+  ratingBadge?: 'excellent' | 'good' | 'normal' | 'poor' | null;
   city?: string;
   detailAddress?: string;
   googleMapLink?: string;
@@ -202,6 +202,10 @@ class ServiceManager {
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
       providerPhone: service.providerPhone,
+      totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
+      ratingBadge: service.ratingBadge ?? null,
+      rating: service.averageRating ?? service.rating ?? 0,
+      averageRating: service.averageRating ?? service.rating ?? 0,
       ...(service.stock != null && { stock: service.stock }),
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
@@ -241,8 +245,10 @@ class ServiceManager {
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
       providerPhone: service.providerPhone,
-      totalRatings: service.totalRatings,
-      ratingBadge: service.ratingBadge,
+      totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
+      ratingBadge: service.ratingBadge ?? null,
+      rating: service.averageRating ?? service.rating ?? 0,
+      averageRating: service.averageRating ?? service.rating ?? 0,
       ...(service.stock != null && { stock: service.stock }),
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
@@ -260,6 +266,7 @@ class ServiceManager {
       }
       
       const data = await response.json();
+
       console.log('Server services received:', data);
       
       // Convert server data to local format
@@ -278,6 +285,10 @@ class ServiceManager {
         detailAddress: service.detailAddress,
         googleMapLink: service.googleMapLink,
         providerPhone: service.providerPhone,
+        totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
+        ratingBadge: service.ratingBadge ?? null,
+        rating: service.averageRating ?? service.rating ?? 0,
+        averageRating: service.averageRating ?? service.rating ?? 0,
         ...(service.stock != null && { stock: service.stock }),
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,

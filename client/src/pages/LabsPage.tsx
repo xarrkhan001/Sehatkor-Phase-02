@@ -12,6 +12,7 @@ import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock } from "lucide-rea
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
@@ -30,6 +31,7 @@ const LabsPage = () => {
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
 
   const { user, mode } = useAuth();
+  const { socket } = useSocket();
 
   useEffect(() => {
     let isMounted = true;
@@ -92,6 +94,31 @@ const LabsPage = () => {
     loadPage(1);
     return () => { isMounted = false; };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
+      setLabServices(prevServices =>
+        prevServices.map(service =>
+          service.id === data.serviceId
+            ? {
+                ...service,
+                rating: data.averageRating,
+                totalRatings: data.totalRatings,
+                ratingBadge: data.ratingBadge,
+              }
+            : service
+        )
+      );
+    };
+
+    socket.on('rating_updated', handleRatingUpdate);
+
+    return () => {
+      socket.off('rating_updated', handleRatingUpdate);
+    };
+  }, [socket]);
 
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
@@ -166,32 +193,6 @@ const LabsPage = () => {
     setRatingModalOpen(true);
   };
 
-  const handleRatingSubmitted = async () => {
-    setRatingModalOpen(false);
-    setSelectedRatingService(null);
-    try {
-      const { services } = await ServiceManager.fetchPublicServices({ type: 'laboratory', page: 1, limit: 12 });
-      const mapped = services.map((service: any) => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        rating: service.averageRating || service.rating || 0,
-        location: (service as any).city || 'Karachi',
-        type: 'Test',
-        homeService: false,
-        image: service.image,
-        provider: (service as any).providerName || 'Laboratory',
-        createdAt: (service as any).createdAt,
-        _providerId: (service as any).providerId,
-        googleMapLink: (service as any).googleMapLink,
-        detailAddress: (service as any).detailAddress,
-        providerPhone: (service as any).providerPhone,
-        totalRatings: (service as any).totalRatings,
-      }) as Service);
-      setLabServices(mapped);
-    } catch {}
-  };
 
   const handleBookNow = (service: Service) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
@@ -489,11 +490,13 @@ const LabsPage = () => {
       {selectedRatingService && (
         <RatingModal
           isOpen={ratingModalOpen}
-          onClose={() => setRatingModalOpen(false)}
+          onClose={() => {
+            setRatingModalOpen(false);
+            setSelectedRatingService(null);
+          }}
           serviceId={selectedRatingService.id}
           serviceType="laboratory"
           serviceName={selectedRatingService.name}
-          onRatingSubmitted={handleRatingSubmitted}
         />
       )}
     </div>

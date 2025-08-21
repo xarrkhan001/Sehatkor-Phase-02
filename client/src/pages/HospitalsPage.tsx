@@ -12,6 +12,7 @@ import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "luci
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
@@ -25,6 +26,7 @@ const HospitalsPage = () => {
   const [hasMore, setHasMore] = useState<boolean | undefined>(true);
 
   const { user, mode } = useAuth();
+  const { socket } = useSocket();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
@@ -91,6 +93,31 @@ const HospitalsPage = () => {
     loadPage(1);
     return () => { isMounted = false; };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
+      setHospitalServices(prevServices =>
+        prevServices.map(service =>
+          service.id === data.serviceId
+            ? {
+                ...service,
+                rating: data.averageRating,
+                totalRatings: data.totalRatings,
+                ratingBadge: data.ratingBadge,
+              }
+            : service
+        )
+      );
+    };
+
+    socket.on('rating_updated', handleRatingUpdate);
+
+    return () => {
+      socket.off('rating_updated', handleRatingUpdate);
+    };
+  }, [socket]);
 
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
@@ -165,34 +192,6 @@ const HospitalsPage = () => {
     setRatingModalOpen(true);
   };
 
-  const handleRatingSubmitted = async () => {
-    setRatingModalOpen(false);
-    setSelectedRatingService(null);
-    // Simple refresh of first page to reflect updated ratings
-    try {
-      const { services } = await ServiceManager.fetchPublicServices({ type: 'clinic', page: 1, limit: 12 });
-      const mapped = services.map((service: any) => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        rating: service.averageRating || service.rating || 0,
-        location: (service as any).city || "Karachi",
-        type: service.category === "Surgery" ? "Surgery" : "Treatment",
-        homeService: false,
-        image: service.image,
-        provider: (service as any).providerName || "Hospital",
-        createdAt: (service as any).createdAt,
-        _providerId: (service as any).providerId,
-        googleMapLink: (service as any).googleMapLink,
-        city: (service as any).city,
-        detailAddress: (service as any).detailAddress,
-        providerPhone: (service as any).providerPhone,
-        totalRatings: (service as any).totalRatings,
-      }) as Service);
-      setHospitalServices(mapped);
-    } catch {}
-  };
 
   const handleBookNow = (service: Service) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
@@ -465,7 +464,6 @@ const HospitalsPage = () => {
           serviceId={selectedRatingService.id}
           serviceType="clinic"
           serviceName={selectedRatingService.name}
-          onRatingSubmitted={handleRatingSubmitted}
         />
       )}
     </div>

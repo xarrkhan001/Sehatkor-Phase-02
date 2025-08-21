@@ -1,14 +1,17 @@
 export interface Service {
   id: string;
+  _id?: string;
   name: string;
   price: number;
   rating: number;
+  ratingBadge?: 'excellent' | 'good' | 'normal' | 'poor';
   location: string;
   type: "Treatment" | "Medicine" | "Test" | "Surgery";
   homeService: boolean;
   image: string;
   description: string;
   provider: string;
+  providerType?: 'doctor' | 'clinic' | 'laboratory' | 'pharmacy';
 }
 
 export interface BlogPost {

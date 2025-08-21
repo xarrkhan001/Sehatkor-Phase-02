@@ -14,6 +14,7 @@ import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 
 const DoctorsPage = () => {
@@ -25,6 +26,7 @@ const DoctorsPage = () => {
   const [hasMore, setHasMore] = useState<boolean | undefined>(true);
 
   const { user, mode } = useAuth();
+  const { socket } = useSocket();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
@@ -91,6 +93,31 @@ const DoctorsPage = () => {
     loadPage(1);
     return () => { isMounted = false; };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
+      setDoctorServices(prevServices =>
+        prevServices.map(service =>
+          service.id === data.serviceId
+            ? {
+                ...service,
+                rating: data.averageRating,
+                totalRatings: data.totalRatings,
+                ratingBadge: data.ratingBadge,
+              }
+            : service
+        )
+      );
+    };
+
+    socket.on('rating_updated', handleRatingUpdate);
+
+    return () => {
+      socket.off('rating_updated', handleRatingUpdate);
+    };
+  }, [socket]);
 
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
@@ -189,39 +216,6 @@ const DoctorsPage = () => {
     setRatingModalOpen(true);
   };
 
-  const handleRatingSubmit = async (serviceId: string, newRatingData: { averageRating: number; totalRatings: number }) => {
-    // Optimistic UI update
-    setDoctorServices(prevServices =>
-      prevServices.map(service =>
-        service.id === serviceId
-          ? {
-              ...service,
-              rating: newRatingData.averageRating,
-              totalRatings: newRatingData.totalRatings,
-            }
-          : service
-      )
-    );
-
-    // Fetch updated service data from backend
-    try {
-      const updatedService = await ServiceManager.fetchServiceById(serviceId, 'doctor');
-      if (updatedService) {
-        setDoctorServices(prevServices =>
-          prevServices.map(service =>
-            service.id === serviceId ? { 
-              ...service, 
-              ...updatedService, 
-              rating: updatedService.averageRating || updatedService.rating, 
-            } : service
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Failed to refresh service after rating:', error);
-      // Optionally revert optimistic update on error
-    }
-  };
 
   const getCoordinatesForLocation = (location: string) => {
     const locationCoordinates: Record<string, { lat: number; lng: number }> = {
@@ -514,13 +508,6 @@ const DoctorsPage = () => {
           serviceId={selectedRatingService.id}
           serviceName={selectedRatingService.name}
           serviceType="doctor"
-          onRatingSubmitted={(newRatingData) => {
-            setRatingModalOpen(false);
-            if (selectedRatingService) {
-              handleRatingSubmit(selectedRatingService.id, newRatingData);
-            }
-            setSelectedRatingService(null);
-          }}
         />
       )}
     </div>
