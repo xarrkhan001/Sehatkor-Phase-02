@@ -12,6 +12,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { GoogleLogin } from '@react-oauth/google';
+import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
+import * as Yup from 'yup';
 import { 
   User, 
   Mail, 
@@ -33,8 +35,132 @@ import {
 } from "lucide-react";
 import { generateUserId } from "@/data/mockData";
 
+// Validation Schema
+const getValidationSchema = (role: string) => {
+  const baseSchema = {
+    role: Yup.string().required('Please select a role'),
+    name: Yup.string()
+      .min(2, 'Name must be at least 2 characters')
+      .max(50, 'Name must be less than 50 characters')
+      .matches(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces')
+      .required('Full name is required'),
+    email: Yup.string()
+      .email('Please enter a valid email address')
+      .required('Email address is required'),
+    phone: Yup.string()
+      .matches(/^\+92[0-9]{10}$/, 'Phone number must be in format +92XXXXXXXXXX')
+      .required('WhatsApp number is required'),
+    phoneAlternate: Yup.string()
+      .matches(/^(\+92[0-9]{10})?$/, 'Alternate phone must be in format +92XXXXXXXXXX'),
+    cnic: Yup.string()
+      .matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1')
+      .required('CNIC number is required'),
+    city: Yup.string().required('Please select your city'),
+    password: Yup.string()
+      .min(8, 'Password must be at least 8 characters')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number')
+      .required('Password is required'),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password')], 'Passwords must match')
+      .required('Please confirm your password')
+  };
+
+  // Role-specific validations
+  const roleSpecificSchema: any = {};
+
+  if (role === 'doctor') {
+    roleSpecificSchema.licenseNumber = Yup.string()
+      .min(3, 'License number must be at least 3 characters')
+      .required('License number is required for doctors');
+    roleSpecificSchema.designation = Yup.string()
+      .min(2, 'Designation must be at least 2 characters')
+      .required('Designation is required for doctors');
+    roleSpecificSchema.specialization = Yup.string()
+      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+      .notRequired()
+      .min(2, 'Specialization must be at least 2 characters');
+  }
+
+  if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(role)) {
+    roleSpecificSchema.businessName = Yup.string()
+      .min(2, 'Business name must be at least 2 characters')
+      .required('Business name is required');
+    roleSpecificSchema.licenseNumber = Yup.string()
+      .min(3, 'License number must be at least 3 characters')
+      .required('License/Registration number is required');
+    roleSpecificSchema.designation = Yup.string()
+      .min(2, 'Designation must be at least 2 characters')
+      .required('Designation is required');
+    roleSpecificSchema.address = Yup.string()
+      .min(10, 'Address must be at least 10 characters')
+      .required('Complete address is required');
+    roleSpecificSchema.province = Yup.string()
+      .required('Please select your province');
+  }
+
+  // Optional fields with validation when provided
+  roleSpecificSchema.mapsLocation = Yup.string()
+    .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+    .notRequired()
+    .url('Please enter a valid URL for Google Maps location');
+  
+  roleSpecificSchema.description = Yup.string()
+    .max(500, 'Description must be less than 500 characters');
+
+  // Staff details validation (numbers only when provided)
+  roleSpecificSchema.staffDetails = Yup.object({
+    doctors: Yup.string().matches(/^[0-9]*$/, 'Must be a valid number'),
+    specialists: Yup.string().matches(/^[0-9]*$/, 'Must be a valid number'),
+    nurses: Yup.string().matches(/^[0-9]*$/, 'Must be a valid number')
+  });
+
+  // Bank details validation (optional but validated when provided)
+  roleSpecificSchema.bankDetails = Yup.object({
+    bankName: Yup.string()
+      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+      .notRequired()
+      .min(2, 'Bank name must be at least 2 characters'),
+    accountTitle: Yup.string()
+      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+      .notRequired()
+      .min(2, 'Account title must be at least 2 characters'),
+    accountNumber: Yup.string()
+      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+      .notRequired()
+      .matches(/^[0-9A-Z-]*$/, 'Account number can only contain numbers, letters, and hyphens')
+      .min(10, 'Account number must be at least 10 characters'),
+    paymentMode: Yup.string()
+      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+      .notRequired()
+  });
+
+  // Operating hours validation
+  const daySchema = Yup.object({
+    open: Yup.string()
+      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+      .notRequired()
+      .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format'),
+    close: Yup.string()
+      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
+      .notRequired()
+      .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format')
+  });
+
+  roleSpecificSchema.operatingHours = Yup.object({
+    monday: daySchema,
+    tuesday: daySchema,
+    wednesday: daySchema,
+    thursday: daySchema,
+    friday: daySchema,
+    saturday: daySchema,
+    sunday: daySchema
+  });
+
+  return Yup.object({ ...baseSchema, ...roleSpecificSchema });
+};
+
 const RegisterPage = () => {
-  const [formData, setFormData] = useState({
+  const initialValues = {
     role: "patient",
     name: "",
     email: "",
@@ -75,7 +201,7 @@ const RegisterPage = () => {
       accountNumber: "",
       paymentMode: ""
     }
-  });
+  };
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -110,41 +236,73 @@ const RegisterPage = () => {
 
   const paymentModes = ["Bank Transfer", "Easypaisa/JazzCash", "Manual Settlement"];
 
-  const handleInputChange = (field: string, value: string | boolean | string[]) => {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...(prev[parent as keyof typeof prev] as any),
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
+  // Helper functions for Formik and non-Formik contexts
+  const handleInputChange = (
+    field: string,
+    value: string | boolean | string[],
+    setFieldValue?: (field: string, value: any) => void
+  ) => {
+    if (setFieldValue) {
+      setFieldValue(field, value);
+      return;
     }
+    // Fallback to local state for non-Formik sections (e.g., Google Additional Fields)
+    setCurrentFormValues((prev) => {
+      const next = { ...prev } as any;
+      if (field.includes('.')) {
+        const parts = field.split('.');
+        let ref = next;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const p = parts[i];
+          ref[p] = ref[p] ?? {};
+          ref = ref[p];
+        }
+        ref[parts[parts.length - 1]] = value;
+      } else {
+        (next as any)[field] = value;
+      }
+      return next;
+    });
   };
 
-  const handleOperatingHoursChange = (day: string, type: 'open' | 'close', value: string) => {
-    setFormData(prev => ({
+  const handleOperatingHoursChange = (
+    day: string,
+    type: 'open' | 'close',
+    value: string,
+    setFieldValue?: (field: string, value: any) => void
+  ) => {
+    if (setFieldValue) {
+      setFieldValue(`operatingHours.${day}.${type}`, value);
+      return;
+    }
+    setCurrentFormValues((prev) => ({
       ...prev,
       operatingHours: {
         ...prev.operatingHours,
         [day]: {
-          ...prev.operatingHours[day as keyof typeof prev.operatingHours],
-          [type]: value
-        }
-      }
+          ...((prev as any).operatingHours?.[day] || {}),
+          [type]: value,
+        },
+      },
     }));
   };
 
-  const handleServiceToggle = (service: string) => {
-    const currentServices = formData.servicesOffered;
-    if (currentServices.includes(service)) {
-      handleInputChange('servicesOffered', currentServices.filter(s => s !== service));
-    } else {
-      handleInputChange('servicesOffered', [...currentServices, service]);
+  const handleServiceToggle = (
+    service: string,
+    currentServices: string[],
+    setFieldValue?: (field: string, value: any) => void
+  ) => {
+    const next = currentServices.includes(service)
+      ? currentServices.filter((s) => s !== service)
+      : [...currentServices, service];
+    if (setFieldValue) {
+      setFieldValue('servicesOffered', next);
+      return;
     }
+    setCurrentFormValues((prev) => ({
+      ...prev,
+      servicesOffered: next,
+    }));
   };
 
   const handleGoogleRegistrationComplete = async () => {
@@ -159,16 +317,19 @@ const RegisterPage = () => {
 
     // Validate required fields
     const requiredFields = ['phone', 'cnic', 'address', 'city', 'province'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData] || (formData[field as keyof typeof formData] as string).trim() === '');
+    const missingFields = requiredFields.filter((field) => {
+      const v = (currentFormValues as any)[field];
+      return !v || (typeof v === 'string' && v.trim() === '');
+    });
     
     // Role-specific required fields
-    if (formData.role === 'doctor' && (!formData.licenseNumber || formData.licenseNumber.trim() === '')) {
+    if (currentFormValues.role === 'doctor' && (!currentFormValues.licenseNumber || currentFormValues.licenseNumber.trim() === '')) {
       missingFields.push('licenseNumber');
     }
-    if (formData.role === 'doctor' && (!formData.designation || formData.designation.trim() === '')) {
+    if (currentFormValues.role === 'doctor' && (!currentFormValues.designation || currentFormValues.designation.trim() === '')) {
       missingFields.push('designation');
     }
-    if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(formData.role) && (!formData.businessName || formData.businessName.trim() === '')) {
+    if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) && (!currentFormValues.businessName || currentFormValues.businessName.trim() === '')) {
       missingFields.push('businessName');
     }
 
@@ -194,49 +355,73 @@ const RegisterPage = () => {
 
     try {
       const additionalFields = {
-        phone: formData.phone,
-        cnic: formData.cnic,
-        licenseNumber: formData.licenseNumber,
-        businessName: formData.businessName,
-        address: formData.address,
-        city: formData.city,
-        province: formData.province,
-        designation: formData.designation
+        phone: currentFormValues.phone,
+        cnic: currentFormValues.cnic,
+        licenseNumber: currentFormValues.licenseNumber,
+        businessName: currentFormValues.businessName,
+        address: currentFormValues.address,
+        city: currentFormValues.city,
+        province: currentFormValues.province,
+        designation: currentFormValues.designation,
       };
 
-      const res = await fetch('http://localhost:4000/api/auth/google', {
+      // Complete Google registration with additional fields
+      const res = await fetch('http://localhost:4000/api/auth/google/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          idToken: googleIdToken, 
-          role: formData.role,
-          additionalFields
-        })
+        body: JSON.stringify({
+          idToken: googleIdToken,
+          role: currentFormValues.role || 'patient',
+          ...additionalFields,
+        }),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Google registration failed');
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to complete Google registration');
+      }
 
-      if (data.requiresVerification) {
-        // Non-patient user registered successfully but needs admin verification
-        toast({ 
-          title: 'Registration Submitted!', 
-          description: `Your registration as ${formData.role} has been submitted. Please wait for admin verification before you can log in.`
+      const isPatient = (currentFormValues.role === 'patient');
+      if (!isPatient) {
+        // Providers: optionally upload document if selected and token returned
+        if (data?.token && providerDoc) {
+          try {
+            const fd = new FormData();
+            fd.append('file', providerDoc);
+            const upRes = await fetch('http://localhost:4000/api/documents/upload', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${data.token}` },
+              body: fd,
+            });
+            const upData = await upRes.json();
+            if (!upRes.ok) {
+              toast({ title: 'Document Upload Failed', description: upData?.message || 'Please try again', variant: 'destructive' });
+            } else {
+              toast({ title: 'Documents Received', description: 'Your document has been submitted for admin verification.' });
+            }
+          } catch (docErr: any) {
+            toast({ title: 'Document Upload Error', description: docErr?.message || 'Failed to upload document', variant: 'destructive' });
+          }
+        }
+        toast({
+          title: 'Registration Submitted!',
+          description: `Your registration as ${currentFormValues.role} has been submitted. Please wait for admin verification before you can log in.`,
         });
+        setShowGoogleAdditionalFields(false);
         navigate('/login');
       } else {
-        // Patient user or existing verified user - log them in
+        // Patients: log them in immediately
         await login({ ...data.user, id: data.user._id }, data.token);
         toast({ 
           title: 'Welcome!', 
           description: 'Successfully signed in with Google.' 
         });
+        setShowGoogleAdditionalFields(false);
         navigate('/');
       }
     } catch (err: any) {
       toast({ 
         title: 'Google Registration Failed', 
-        description: err.message || 'Try again', 
+        description: err?.message || 'Try again', 
         variant: 'destructive' 
       });
     } finally {
@@ -244,36 +429,42 @@ const RegisterPage = () => {
     }
   };
 
+  const [currentFormValues, setCurrentFormValues] = useState<typeof initialValues>(initialValues);
+
   const performRegistration = async () => {
+    await performRegistrationWithValues(currentFormValues);
+  };
+
+  const performRegistrationWithValues = async (values: typeof initialValues) => {
     setIsSubmitting(true);
 
     // Patients can use the app immediately; providers require admin verification
-    const isPatient = formData.role === "patient";
+    const isPatient = values.role === "patient";
     const userPayload = {
       id: generateUserId(),
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      phoneAlternate: formData.phoneAlternate,
-      cnic: formData.cnic,
-      role: formData.role,
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      phoneAlternate: values.phoneAlternate,
+      cnic: values.cnic,
+      role: values.role,
       isVerified: isPatient ? true : false,
-      password: formData.password,
-      licenseNumber: formData.licenseNumber,
-      businessName: formData.businessName,
-      address: formData.address,
-      city: formData.city,
-      province: formData.province,
-      mapsLocation: formData.mapsLocation,
-      specialization: formData.specialization,
-      description: formData.description,
-      designation: formData.designation,
-      servicesOffered: formData.servicesOffered,
-      deliveryAvailable: formData.deliveryAvailable,
-      service24x7: formData.service24x7,
-      operatingHours: formData.operatingHours,
-      staffDetails: formData.staffDetails,
-      bankDetails: formData.bankDetails
+      password: values.password,
+      licenseNumber: values.licenseNumber,
+      businessName: values.businessName,
+      address: values.address,
+      city: values.city,
+      province: values.province,
+      mapsLocation: values.mapsLocation,
+      specialization: values.specialization,
+      description: values.description,
+      designation: values.designation,
+      servicesOffered: values.servicesOffered,
+      deliveryAvailable: values.deliveryAvailable,
+      service24x7: values.service24x7,
+      operatingHours: values.operatingHours,
+      staffDetails: values.staffDetails,
+      bankDetails: values.bankDetails
     };
 
     try {
@@ -284,7 +475,7 @@ const RegisterPage = () => {
         },
         body: JSON.stringify({
           ...userPayload,
-          confirmPassword: formData.confirmPassword // backend expects this field
+          confirmPassword: values.confirmPassword // backend expects this field
         })
       });
       const data = await response.json();
@@ -320,7 +511,7 @@ const RegisterPage = () => {
         }
         toast({
           title: 'Registration Submitted!',
-          description: `Your registration as ${formData.role} has been submitted. Please wait for admin verification before you can log in.`,
+          description: `Your registration as ${values.role} has been submitted. Please wait for admin verification before you can log in.`,
         });
         navigate('/login');
       } else {
@@ -342,27 +533,7 @@ const RegisterPage = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.role) {
-      toast({
-        title: "Error",
-        description: "Please select a role",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error", 
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const handleFormSubmit = async (values: typeof initialValues) => {
     if (!acceptTerms) {
       toast({
         title: "Error",
@@ -372,17 +543,83 @@ const RegisterPage = () => {
       return;
     }
 
+    // Store current form values for modal usage
+    setCurrentFormValues(values);
+
     // For provider roles, if no document selected yet, open modal first
-    if (formData.role !== 'patient' && !providerDoc) {
+    if (values.role !== 'patient' && !providerDoc) {
       setShowDocModal(true);
       return;
     }
 
-    await performRegistration();
+    await performRegistrationWithValues(values);
   };
 
-  const getRoleSpecificFields = () => {
-    if (formData.role === "patient") return null;
+  // Custom Field Components with Error Display
+  const FormField = ({ name, label, required = false, children, className = "" }: {
+    name: string;
+    label: string;
+    required?: boolean;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div className={className}>
+      <Label htmlFor={name}>
+        {label}{required && " *"}
+      </Label>
+      {children}
+      <ErrorMessage name={name} component="div" className="text-sm text-red-500 mt-1" />
+    </div>
+  );
+
+  const FormikInput = ({ name, ...props }: any) => (
+    <Field name={name}>
+      {({ field, meta }: any) => (
+        <Input
+          {...field}
+          {...props}
+          className={`${props.className || ''} ${meta.touched && meta.error ? 'border-red-500' : ''}`}
+        />
+      )}
+    </Field>
+  );
+
+  const FormikTextarea = ({ name, ...props }: any) => (
+    <Field name={name}>
+      {({ field, meta }: any) => (
+        <Textarea
+          {...field}
+          {...props}
+          className={`${props.className || ''} ${meta.touched && meta.error ? 'border-red-500' : ''}`}
+        />
+      )}
+    </Field>
+  );
+
+  const FormikSelect = ({ name, placeholder, children, onValueChange, ...props }: any) => (
+    <Field name={name}>
+      {({ field, form, meta }: any) => (
+        <Select
+          value={field.value}
+          onValueChange={(value) => {
+            form.setFieldValue(name, value);
+            if (onValueChange) onValueChange(value);
+          }}
+          {...props}
+        >
+          <SelectTrigger className={meta.touched && meta.error ? 'border-red-500' : ''}>
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {children}
+          </SelectContent>
+        </Select>
+      )}
+    </Field>
+  );
+
+  const getRoleSpecificFields = (values: any, setFieldValue: any) => {
+    if (values.role === "patient") return null;
 
     return (
       <>
@@ -394,49 +631,38 @@ const RegisterPage = () => {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="businessName">Business/Facility Name *</Label>
-              <Input
-                id="businessName"
-                value={formData.businessName}
-                onChange={(e) => handleInputChange("businessName", e.target.value)}
+            <FormField
+              name="businessName"
+              label="Business/Facility Name"
+              required={['clinic/hospital', 'laboratory', 'pharmacy'].includes(values.role)}
+            >
+              <FormikInput
+                name="businessName"
                 placeholder="Enter business name"
-                required
               />
-            </div>
-            <div>
-              <Label htmlFor="designation">Designation/Role *</Label>
-              <Input
-                id="designation"
-                value={formData.designation}
-                onChange={(e) => handleInputChange("designation", e.target.value)}
+            </FormField>
+            <FormField name="designation" label="Designation/Role" required>
+              <FormikInput
+                name="designation"
                 placeholder="e.g., CEO, Medical Director"
-                required
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="licenseNumber">Registration/License Number *</Label>
-              <Input
-                id="licenseNumber"
-                value={formData.licenseNumber}
-                onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
+            <FormField name="licenseNumber" label="Registration/License Number" required>
+              <FormikInput
+                name="licenseNumber"
                 placeholder="Enter license number"
-                required
               />
-            </div>
-            {formData.role === "doctor" && (
-              <div>
-                <Label htmlFor="specialization">Specialization</Label>
-                <Input
-                  id="specialization"
-                  value={formData.specialization}
-                  onChange={(e) => handleInputChange("specialization", e.target.value)}
+            </FormField>
+            {values.role === "doctor" && (
+              <FormField name="specialization" label="Specialization (Optional)">
+                <FormikInput
+                  name="specialization"
                   placeholder="e.g., Cardiology, Pediatrics"
                 />
-              </div>
+              </FormField>
             )}
           </div>
         </div>
@@ -448,60 +674,63 @@ const RegisterPage = () => {
             Address & Location
           </h3>
           
-          <div>
-            <Label htmlFor="address">Complete Address *</Label>
-            <Textarea
-              id="address"
-              value={formData.address}
-              onChange={(e) => handleInputChange("address", e.target.value)}
+          <FormField
+            name="address"
+            label="Complete Address"
+            required={['clinic/hospital', 'laboratory', 'pharmacy'].includes(values.role)}
+          >
+            <FormikTextarea
+              name="address"
               placeholder="Enter complete address"
               rows={3}
-              required
             />
-          </div>
+          </FormField>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="province">Province/State *</Label>
-              <Select value={formData.province} onValueChange={(value) => handleInputChange("province", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select province" />
-                </SelectTrigger>
-                <SelectContent>
-                  {provinces.map((province) => (
-                    <SelectItem key={province} value={province}>{province}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="mapsLocation">Google Maps Location Link</Label>
-              <Input
-                id="mapsLocation"
-                value={formData.mapsLocation}
-                onChange={(e) => handleInputChange("mapsLocation", e.target.value)}
+            <FormField
+              name="province"
+              label="Province/State"
+              required={['clinic/hospital', 'laboratory', 'pharmacy'].includes(values.role)}
+            >
+              <FormikSelect name="province" placeholder="Select province">
+                {provinces.map((province) => (
+                  <SelectItem key={province} value={province}>{province}</SelectItem>
+                ))}
+              </FormikSelect>
+            </FormField>
+            <FormField name="mapsLocation" label="Google Maps Location Link">
+              <FormikInput
+                name="mapsLocation"
                 placeholder="https://maps.google.com/..."
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="deliveryAvailable"
-                checked={formData.deliveryAvailable}
-                onCheckedChange={(checked) => handleInputChange("deliveryAvailable", checked as boolean)}
-              />
-              <Label htmlFor="deliveryAvailable">Delivery/Visit Available</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="service24x7"
-                checked={formData.service24x7}
-                onCheckedChange={(checked) => handleInputChange("service24x7", checked as boolean)}
-              />
-              <Label htmlFor="service24x7">24/7 Service</Label>
-            </div>
+            <Field name="deliveryAvailable">
+              {({ field, form }: any) => (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="deliveryAvailable"
+                    checked={field.value}
+                    onCheckedChange={(checked) => form.setFieldValue('deliveryAvailable', checked)}
+                  />
+                  <Label htmlFor="deliveryAvailable">Delivery/Visit Available</Label>
+                </div>
+              )}
+            </Field>
+            <Field name="service24x7">
+              {({ field, form }: any) => (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="service24x7"
+                    checked={field.value}
+                    onCheckedChange={(checked) => form.setFieldValue('service24x7', checked)}
+                  />
+                  <Label htmlFor="service24x7">24/7 Service</Label>
+                </div>
+              )}
+            </Field>
           </div>
         </div>
 
@@ -512,18 +741,22 @@ const RegisterPage = () => {
             Services Offered
           </h3>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {servicesOptions.map((service) => (
-              <div key={service} className="flex items-center space-x-2">
-                <Checkbox
-                  id={service}
-                  checked={formData.servicesOffered.includes(service)}
-                  onCheckedChange={() => handleServiceToggle(service)}
-                />
-                <Label htmlFor={service} className="text-sm">{service}</Label>
+          <Field name="servicesOffered">
+            {({ field, form }: any) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {servicesOptions.map((service) => (
+                  <div key={service} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={service}
+                      checked={field.value.includes(service)}
+                      onCheckedChange={() => handleServiceToggle(service, field.value, form.setFieldValue)}
+                    />
+                    <Label htmlFor={service} className="text-sm">{service}</Label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </Field>
         </div>
 
         {/* Staff Details */}
@@ -534,36 +767,27 @@ const RegisterPage = () => {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="doctors">Number of Doctors</Label>
-              <Input
-                id="doctors"
+            <FormField name="staffDetails.doctors" label="Number of Doctors">
+              <FormikInput
+                name="staffDetails.doctors"
                 type="number"
-                value={formData.staffDetails.doctors}
-                onChange={(e) => handleInputChange("staffDetails.doctors", e.target.value)}
                 placeholder="0"
               />
-            </div>
-            <div>
-              <Label htmlFor="specialists">Number of Specialists</Label>
-              <Input
-                id="specialists"
+            </FormField>
+            <FormField name="staffDetails.specialists" label="Number of Specialists">
+              <FormikInput
+                name="staffDetails.specialists"
                 type="number"
-                value={formData.staffDetails.specialists}
-                onChange={(e) => handleInputChange("staffDetails.specialists", e.target.value)}
                 placeholder="0"
               />
-            </div>
-            <div>
-              <Label htmlFor="nurses">Number of Nurses/Technicians</Label>
-              <Input
-                id="nurses"
+            </FormField>
+            <FormField name="staffDetails.nurses" label="Number of Nurses/Technicians">
+              <FormikInput
+                name="staffDetails.nurses"
                 type="number"
-                value={formData.staffDetails.nurses}
-                onChange={(e) => handleInputChange("staffDetails.nurses", e.target.value)}
                 placeholder="0"
               />
-            </div>
+            </FormField>
           </div>
         </div>
 
@@ -575,21 +799,25 @@ const RegisterPage = () => {
           </h3>
           
           <div className="space-y-3">
-            {Object.keys(formData.operatingHours).map((day) => (
+            {Object.keys(values.operatingHours).map((day) => (
               <div key={day} className="grid grid-cols-3 gap-4 items-center">
                 <Label className="capitalize">{day}</Label>
-                <Input
-                  type="time"
-                  value={formData.operatingHours[day as keyof typeof formData.operatingHours].open}
-                  onChange={(e) => handleOperatingHoursChange(day, 'open', e.target.value)}
-                  placeholder="Open Time"
-                />
-                <Input
-                  type="time"
-                  value={formData.operatingHours[day as keyof typeof formData.operatingHours].close}
-                  onChange={(e) => handleOperatingHoursChange(day, 'close', e.target.value)}
-                  placeholder="Close Time"
-                />
+                <div>
+                  <FormikInput
+                    name={`operatingHours.${day}.open`}
+                    type="time"
+                    placeholder="Open Time"
+                  />
+                  <ErrorMessage name={`operatingHours.${day}.open`} component="div" className="text-sm text-red-500 mt-1" />
+                </div>
+                <div>
+                  <FormikInput
+                    name={`operatingHours.${day}.close`}
+                    type="time"
+                    placeholder="Close Time"
+                  />
+                  <ErrorMessage name={`operatingHours.${day}.close`} component="div" className="text-sm text-red-500 mt-1" />
+                </div>
               </div>
             ))}
           </div>
@@ -603,49 +831,34 @@ const RegisterPage = () => {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="bankName">Bank Name</Label>
-              <Input
-                id="bankName"
-                value={formData.bankDetails.bankName}
-                onChange={(e) => handleInputChange("bankDetails.bankName", e.target.value)}
+            <FormField name="bankDetails.bankName" label="Bank Name">
+              <FormikInput
+                name="bankDetails.bankName"
                 placeholder="Enter bank name"
               />
-            </div>
-            <div>
-              <Label htmlFor="accountTitle">Account Title</Label>
-              <Input
-                id="accountTitle"
-                value={formData.bankDetails.accountTitle}
-                onChange={(e) => handleInputChange("bankDetails.accountTitle", e.target.value)}
+            </FormField>
+            <FormField name="bankDetails.accountTitle" label="Account Title">
+              <FormikInput
+                name="bankDetails.accountTitle"
                 placeholder="Enter account title"
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="accountNumber">Account Number/IBAN</Label>
-              <Input
-                id="accountNumber"
-                value={formData.bankDetails.accountNumber}
-                onChange={(e) => handleInputChange("bankDetails.accountNumber", e.target.value)}
+            <FormField name="bankDetails.accountNumber" label="Account Number/IBAN">
+              <FormikInput
+                name="bankDetails.accountNumber"
                 placeholder="Enter account number"
               />
-            </div>
-            <div>
-              <Label htmlFor="paymentMode">Payment Mode</Label>
-              <Select value={formData.bankDetails.paymentMode} onValueChange={(value) => handleInputChange("bankDetails.paymentMode", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select payment mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  {paymentModes.map((mode) => (
-                    <SelectItem key={mode} value={mode}>{mode}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            </FormField>
+            <FormField name="bankDetails.paymentMode" label="Payment Mode">
+              <FormikSelect name="bankDetails.paymentMode" placeholder="Select payment mode">
+                {paymentModes.map((mode) => (
+                  <SelectItem key={mode} value={mode}>{mode}</SelectItem>
+                ))}
+              </FormikSelect>
+            </FormField>
           </div>
         </div>
 
@@ -765,7 +978,7 @@ const RegisterPage = () => {
                       const res = await fetch('http://localhost:4000/api/auth/google', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ idToken, role: formData.role || 'patient' })
+                        body: JSON.stringify({ idToken, role: currentFormValues.role || 'patient' })
                       });
                       const data = await res.json();
                       
@@ -778,10 +991,10 @@ const RegisterPage = () => {
                         // New user, need additional fields
                         setGoogleProfile(data.profile);
                         setGoogleIdToken(idToken);
-                        setFormData(prev => ({
+                        setCurrentFormValues((prev) => ({
                           ...prev,
                           name: data.profile.name,
-                          email: data.profile.email
+                          email: data.profile.email,
                         }));
                         setShowGoogleAdditionalFields(true);
                         toast({ 
@@ -813,7 +1026,7 @@ const RegisterPage = () => {
                   onClick={() => {
                     try {
                       setFacebookLoading(true);
-                      const role = formData.role || 'patient';
+                      const role = currentFormValues.role || 'patient';
                       // Start OAuth flow on backend; backend will redirect to Facebook and then back to client callback
                       window.location.href = `http://localhost:4000/api/auth/facebook?role=${encodeURIComponent(role)}`;
                     } finally {
@@ -861,7 +1074,7 @@ const RegisterPage = () => {
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                       {roles.map((role) => {
                         const Icon = role.icon;
-                        const isSelected = formData.role === role.value;
+                        const isSelected = currentFormValues.role === role.value;
                         return (
                           <div
                             key={role.value}
@@ -914,7 +1127,7 @@ const RegisterPage = () => {
                         <Label htmlFor="google-phone">Phone Number *</Label>
                         <Input
                           id="google-phone"
-                          value={formData.phone}
+                          value={currentFormValues.phone}
                           onChange={(e) => handleInputChange("phone", e.target.value)}
                           placeholder="+92 300 1234567"
                           required
@@ -924,7 +1137,7 @@ const RegisterPage = () => {
                         <Label htmlFor="google-cnic">CNIC Number *</Label>
                         <Input
                           id="google-cnic"
-                          value={formData.cnic}
+                          value={currentFormValues.cnic}
                           onChange={(e) => handleInputChange("cnic", e.target.value)}
                           placeholder="12345-1234567-1"
                           required
@@ -933,21 +1146,23 @@ const RegisterPage = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="google-address">Complete Address *</Label>
+                      <Label htmlFor="google-address">
+                        Complete Address {['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) ? '*' : ''}
+                      </Label>
                       <Textarea
                         id="google-address"
-                        value={formData.address}
+                        value={currentFormValues.address}
                         onChange={(e) => handleInputChange("address", e.target.value)}
                         placeholder="Enter complete address"
                         rows={3}
-                        required
+                        required={['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role)}
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="google-city">City *</Label>
-                        <Select value={formData.city} onValueChange={(value) => handleInputChange("city", value)}>
+                        <Select value={currentFormValues.city} onValueChange={(value) => handleInputChange("city", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select your city" />
                           </SelectTrigger>
@@ -964,8 +1179,10 @@ const RegisterPage = () => {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="google-province">Province *</Label>
-                        <Select value={formData.province} onValueChange={(value) => handleInputChange("province", value)}>
+                        <Label htmlFor="google-province">
+                          Province *{['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) ? '*' : ''}
+                        </Label>
+                        <Select value={currentFormValues.province} onValueChange={(value) => handleInputChange("province", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select province" />
                           </SelectTrigger>
@@ -979,13 +1196,13 @@ const RegisterPage = () => {
                     </div>
 
                     {/* Role-specific fields for Google registration */}
-                    {formData.role === 'doctor' && (
+                    {currentFormValues.role === 'doctor' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="google-license">License Number *</Label>
                           <Input
                             id="google-license"
-                            value={formData.licenseNumber}
+                            value={currentFormValues.licenseNumber}
                             onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
                             placeholder="Enter license number"
                             required
@@ -995,7 +1212,7 @@ const RegisterPage = () => {
                           <Label htmlFor="google-designation">Designation *</Label>
                           <Input
                             id="google-designation"
-                            value={formData.designation}
+                            value={currentFormValues.designation}
                             onChange={(e) => handleInputChange("designation", e.target.value)}
                             placeholder="e.g., Medical Officer, Consultant"
                             required
@@ -1004,12 +1221,12 @@ const RegisterPage = () => {
                       </div>
                     )}
 
-                    {['clinic/hospital', 'laboratory', 'pharmacy'].includes(formData.role) && (
+                    {['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) && (
                       <div>
                         <Label htmlFor="google-business">Business Name *</Label>
                         <Input
                           id="google-business"
-                          value={formData.businessName}
+                          value={currentFormValues.businessName}
                           onChange={(e) => handleInputChange("businessName", e.target.value)}
                           placeholder="Enter business/facility name"
                           required
@@ -1064,55 +1281,88 @@ const RegisterPage = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8" style={{ display: showGoogleAdditionalFields ? 'none' : 'block' }}>
+            <Formik
+              initialValues={initialValues}
+              validate={(values) => {
+                try {
+                  getValidationSchema(values.role).validateSync(values, { abortEarly: false });
+                  return {};
+                } catch (err: any) {
+                  const errors: Record<string, any> = {};
+                  if (err.inner && Array.isArray(err.inner)) {
+                    err.inner.forEach((e: any) => {
+                      if (e.path && !errors[e.path]) errors[e.path] = e.message;
+                    });
+                  } else if (err.path) {
+                    errors[err.path] = err.message;
+                  }
+                  return errors;
+                }
+              }}
+              onSubmit={handleFormSubmit}
+            >
+              {({ values, setFieldValue, errors, touched, setFieldTouched, submitForm, validateForm, setTouched }) => (
+                <Form className="space-y-8" style={{ display: showGoogleAdditionalFields ? 'none' : 'block' }}>
               {/* Role Selection */}
               <div>
                 <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {roles.map((role) => {
-                    const Icon = role.icon;
-                    const isSelected = formData.role === role.value;
-                    return (
-                      <div
-                        key={role.value}
-                        className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${
-                          isSelected ? "scale-105" : ""
-                        }`}
-                        onClick={() => handleInputChange("role", role.value)}
-                      >
-                        <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[120px] ${
-                          isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
-                        }`}>
-                          <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${
-                            isSelected ? role.bgColor : "hover:" + role.bgColor
-                          } transition-all duration-300`}>
-                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${
-                              isSelected ? "scale-110" : "group-hover:scale-110"
+                <Field name="role">
+                  {({ field, form }: any) => (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {roles.map((role) => {
+                        const Icon = role.icon;
+                        const isSelected = field.value === role.value;
+                        return (
+                          <div
+                            key={role.value}
+                            className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${
+                              isSelected ? "scale-105" : ""
+                            }`}
+                            onClick={() => {
+                              form.setFieldValue('role', role.value);
+                              form.setFieldTouched('role', true);
+                              // Force re-validation with new schema
+                              setTimeout(() => {
+                                form.validateForm();
+                              }, 0);
+                            }}
+                          >
+                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[120px] ${
+                              isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
                             }`}>
-                              <Icon className="w-4 h-4 text-white" />
-                            </div>
-                            
-                            <h3 className={`text-sm font-bold text-center mb-1 ${role.iconColor} transition-colors duration-300`}>
-                              {role.label}
-                            </h3>
-                            
-                            <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
-                              {role.description}
-                            </p>
-                            
-                            {isSelected && (
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
-                                <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
+                              <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${
+                                isSelected ? role.bgColor : "hover:" + role.bgColor
+                              } transition-all duration-300`}>
+                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${
+                                  isSelected ? "scale-110" : "group-hover:scale-110"
+                                }`}>
+                                  <Icon className="w-4 h-4 text-white" />
+                                </div>
+                                
+                                <h3 className={`text-sm font-bold text-center mb-1 ${role.iconColor} transition-colors duration-300`}>
+                                  {role.label}
+                                </h3>
+                                
+                                <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
+                                  {role.description}
+                                </p>
+                                
+                                {isSelected && (
+                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
+                                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </Field>
+                <ErrorMessage name="role" component="div" className="text-sm text-red-500 mt-2" />
               </div>
 
               {/* Basic Information */}
@@ -1123,114 +1373,89 @@ const RegisterPage = () => {
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name*</Label>
+                  <FormField name="name" label="Full Name" required>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <User className="w-4 h-4" />
                       </span>
-                      <Input
-                        id="name"
+                      <FormikInput
+                        name="name"
                         className="pl-9"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
                         placeholder="Enter full name"
-                        required
                       />
                     </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email Address*</Label>
+                  </FormField>
+                  <FormField name="email" label="Email Address" required>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <Mail className="w-4 h-4" />
                       </span>
-                      <Input
-                        id="email"
+                      <FormikInput
+                        name="email"
                         type="email"
                         className="pl-9"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
                         placeholder="Enter email address"
-                        required
                       />
                     </div>
-                  </div>
+                  </FormField>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="phone">Whatsapp Number*</Label>
+                  <FormField name="phone" label="Whatsapp Number" required>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <Phone className="w-4 h-4" />
                       </span>
-                      <Input
-                        id="phone"
+                      <FormikInput
+                        name="phone"
                         className="pl-9"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
                         placeholder="+92 300 1234567"
-                        required
                       />
                     </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="phoneAlternate">Alternate Phone Numbers</Label>
+                  </FormField>
+                  <FormField name="phoneAlternate" label="Alternate Phone Numbers">
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <Phone className="w-4 h-4" />
                       </span>
-                      <Input
-                        id="phoneAlternate"
+                      <FormikInput
+                        name="phoneAlternate"
                         className="pl-9"
-                        value={formData.phoneAlternate}
-                        onChange={(e) => handleInputChange("phoneAlternate", e.target.value)}
                         placeholder="+92 300 1234567"
                       />
                     </div>
-                  </div>
+                  </FormField>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="cnic">CNIC Number*</Label>
+                  <FormField name="cnic" label="CNIC Number" required>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <IdCard className="w-4 h-4" />
                       </span>
-                      <Input
-                        id="cnic"
+                      <FormikInput
+                        name="cnic"
                         className="pl-9"
-                        value={formData.cnic}
-                        onChange={(e) => handleInputChange("cnic", e.target.value)}
                         placeholder="12345-1234567-1"
-                        required
                       />
                     </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="city">City*</Label>
-                    <Select value={formData.city} onValueChange={(value) => handleInputChange("city", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your city" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Karachi">Karachi</SelectItem>
-                        <SelectItem value="Lahore">Lahore</SelectItem>
-                        <SelectItem value="Islamabad">Islamabad</SelectItem>
-                        <SelectItem value="Faisalabad">Faisalabad</SelectItem>
-                        <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
-                        <SelectItem value="Multan">Multan</SelectItem>
-                        <SelectItem value="Peshawar">Peshawar</SelectItem>
-                        <SelectItem value="Quetta">Quetta</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  </FormField>
+                  <FormField name="city" label="City" required>
+                    <FormikSelect name="city" placeholder="Select your city">
+                      <SelectItem value="Karachi">Karachi</SelectItem>
+                      <SelectItem value="Lahore">Lahore</SelectItem>
+                      <SelectItem value="Islamabad">Islamabad</SelectItem>
+                      <SelectItem value="Faisalabad">Faisalabad</SelectItem>
+                      <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
+                      <SelectItem value="Multan">Multan</SelectItem>
+                      <SelectItem value="Peshawar">Peshawar</SelectItem>
+                      <SelectItem value="Quetta">Quetta</SelectItem>
+                    </FormikSelect>
+                  </FormField>
                 </div>
               </div>
 
-              {getRoleSpecificFields()}
+              {getRoleSpecificFields(values, setFieldValue)}
 
               {/* Security */}
               <div className="space-y-4 rounded-xl border bg-white/60 p-5">
@@ -1240,40 +1465,32 @@ const RegisterPage = () => {
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="password">Password *</Label>
+                  <FormField name="password" label="Password" required>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <Lock className="w-4 h-4" />
                       </span>
-                      <Input
-                        id="password"
+                      <FormikInput
+                        name="password"
                         type="password"
                         className="pl-9"
-                        value={formData.password}
-                        onChange={(e) => handleInputChange("password", e.target.value)}
                         placeholder="Create a strong password"
-                        required
                       />
                     </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                  </FormField>
+                  <FormField name="confirmPassword" label="Confirm Password" required>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <Lock className="w-4 h-4" />
                       </span>
-                      <Input
-                        id="confirmPassword"
+                      <FormikInput
+                        name="confirmPassword"
                         type="password"
                         className="pl-9"
-                        value={formData.confirmPassword}
-                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                         placeholder="Confirm your password"
-                        required
                       />
                     </div>
-                  </div>
+                  </FormField>
                 </div>
               </div>
 
@@ -1308,13 +1525,32 @@ const RegisterPage = () => {
 
               {/* Submit Button */}
               <Button
-                type="submit"
+                type="button"
                 className="w-full py-6 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
                 disabled={isSubmitting}
+                onClick={async () => {
+                  // Validate form before attempting submit to surface errors via toast
+                  const validationErrors = await validateForm();
+                  if (validationErrors && Object.keys(validationErrors).length > 0) {
+                    // Mark all fields as touched so errors show up
+                    setTouched(
+                      Object.keys(validationErrors).reduce((acc: any, key: string) => {
+                        acc[key] = true;
+                        return acc;
+                      }, {}),
+                      true
+                    );
+                    toast({ title: 'Please fix the highlighted errors', description: 'Some required fields are missing or invalid.', variant: 'destructive' });
+                    return;
+                  }
+                  await submitForm();
+                }}
               >
                 {isSubmitting ? "Submitting Registration..." : "Submit Registration"}
               </Button>
-            </form>
+                </Form>
+              )}
+            </Formik>
 
             {/* Document Upload Modal for Providers */}
             <Dialog open={showDocModal} onOpenChange={setShowDocModal}>
