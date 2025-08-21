@@ -254,7 +254,7 @@ const HospitalsPage = () => {
 
   if (isLoading && hospitalServices.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-100">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-8">
             <div className="flex flex-col items-center text-center mb-6">
@@ -271,49 +271,69 @@ const HospitalsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col items-center text-center mb-6">
-            <h1 className="text-3xl font-bold mb-2">Find Hospitals & Clinics</h1>
-            <p className="text-lg text-gray-500 max-w-2xl">
-              Search from our network of healthcare facilities
-            </p>
-          </div>
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-2xl">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search hospitals by name, location, or specialty..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 py-5 rounded-full shadow-sm focus-visible:ring-2 focus-visible:ring-primary/50"
-              />
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            {/* Left: Title + Subtitle */}
+            <div className="text-left">
+              <h1 className="text-3xl font-bold mb-1">Find Hospitals & Clinics</h1>
+              <p className="text-base md:text-lg text-gray-500">
+                Search from our network of healthcare facilities
+              </p>
+            </div>
+
+            {/* Right: Search */}
+            <div className="w-full md:w-auto">
+              {/* Top row: label (left) and results (right) */}
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <span className="text-base md:text-lg font-semibold text-gray-700">Search hospitals</span>
+                {filteredServices.length > 0 && (
+                  <span className="text-xs font-light text-gray-700">
+                    Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
+                  </span>
+                )}
+              </div>
+              {/* Input aligned to the right on md+ */}
+              <div className="relative md:self-end md:ml-auto">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  id="hospital-search"
+                  placeholder="Search hospitals by name, location, or specialty..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full md:w-[360px] pl-9 h-11 rounded-md border border-gray-300 bg-white/90 text-gray-800 placeholder:text-gray-400 shadow-sm transition focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 hover:border-gray-400"
+                />
+              </div>
             </div>
           </div>
-          {filteredServices.length > 0 && (
-            <p className="text-center mt-4 text-gray-400">
-              Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
-            </p>
-          )}
         </div>
 
         {/* Results */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredServices.map((service) => (
             <Card
               key={service.id}
-              className="shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200"
+              className="shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50"
             >
               <CardContent className="p-5">
                 {/* Image */}
-                <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
+                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
                   {service.image ? (
                     <img
                       src={service.image}
                       alt={service.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // prevent infinite loop
+                        target.style.display = 'none';
+                        const fallback = document.createElement('span');
+                        fallback.className = 'text-gray-400 text-4xl';
+                        fallback.textContent = '🏥';
+                        target.parentElement?.appendChild(fallback);
+                      }}
                     />
                   ) : (
                     <span className="text-gray-400 text-4xl">🏥</span>
