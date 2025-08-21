@@ -24,7 +24,8 @@ import {
   AlertTriangle,
   TrendingUp,
   Activity,
-  Download
+  Download,
+  Stethoscope
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +34,7 @@ const AdminPanel = () => {
   const [showGate, setShowGate] = useState(true);
   const [gateEmail, setGateEmail] = useState("");
   const [gatePassword, setGatePassword] = useState("");
+  const [animateIn, setAnimateIn] = useState(false);
   const { toast } = useToast();
 
   const handleGateSubmit = (e?: React.FormEvent) => {
@@ -46,6 +48,16 @@ const AdminPanel = () => {
       toast({ title: "Invalid credentials", description: "Email or password is incorrect.", variant: "destructive" });
     }
   };
+
+  // Trigger a subtle entrance animation for the gate form
+  useEffect(() => {
+    if (showGate) {
+      const t = setTimeout(() => setAnimateIn(true), 30);
+      return () => clearTimeout(t);
+    } else {
+      setAnimateIn(false);
+    }
+  }, [showGate]);
 
   // Soft surface gradient per card color
   const getCardSurface = (color: string) => {
@@ -280,9 +292,26 @@ const AdminPanel = () => {
     <div className="relative min-h-screen bg-background">
       {/* Gate Modal Overlay */}
       {showGate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 p-4">
-          <div className="w-full max-w-md">
-            <Card className="shadow-2xl border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 overflow-hidden">
+          {/* Top Navbar-like Header */}
+          <div className="fixed top-0 left-0 right-0 z-10">
+            <div className="w-full">
+              <div className="h-14 px-0 flex items-center justify-between bg-white/90 backdrop-blur border-b border-gray-200 shadow-sm">
+                <div className="flex items-center gap-2 min-w-0 ml-3 sm:ml-6">
+                  <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-600 ring-1 ring-red-100">
+                    <Stethoscope className="w-4.5 h-4.5" />
+                  </div>
+                  <span className="font-semibold text-gray-900 text-base sm:text-lg truncate">SehatKor</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm sm:text-base mr-3 sm:mr-6">
+                  <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                  <span className="font-medium text-gray-700">Admin Panel</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className={`w-full max-w-md mt-24 px-4 transition-all duration-500 ease-out ${animateIn ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-3 scale-[0.98]'}`}>
+            <Card className="shadow-2xl border border-gray-100 rounded-2xl overflow-hidden min-h-[430px]">
               <CardHeader className="text-center pb-4">
                 <div className="mx-auto mb-3 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md ring-4 ring-indigo-100">
                   <ShieldCheck className="w-7 h-7" />
@@ -290,8 +319,8 @@ const AdminPanel = () => {
                 <CardTitle className="text-2xl">SehatKor Admin Panel</CardTitle>
                 <CardDescription>Type your admin email and password to continue</CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleGateSubmit} className="space-y-5">
+              <CardContent className="pt-2 pb-8">
+                <form onSubmit={handleGateSubmit} className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Email</label>
                     <Input
