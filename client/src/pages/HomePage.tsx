@@ -249,7 +249,7 @@ const HomePage = () => {
       </section>
 
       {/* Comparison Explorer (styled section) */}
-      <section className="py-16 bg-gradient-to-b from-white to-muted/30">
+      <section className="py-16 bg-gray-200 mx-[calc(50%-50vw)]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 text-center">
             <Badge variant="secondary" className="mb-2">Smart Compare</Badge>

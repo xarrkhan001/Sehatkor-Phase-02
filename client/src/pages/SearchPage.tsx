@@ -50,6 +50,11 @@ const SearchPage = () => {
   const [currentMapService, setCurrentMapService] = useState<SearchService | null>(null);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<SearchService | null>(null);
+  // Desktop sidebar slide-in animation
+  const [sidebarReady, setSidebarReady] = useState(false);
+  // Desktop click-to-toggle sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen((v) => !v);
 
   // Helper function to get coordinates based on location
   const getCoordinatesForLocation = (location: string) => {
@@ -158,6 +163,12 @@ const SearchPage = () => {
   useEffect(() => {
     loadServices();
   }, [user?.id]);
+
+  // Trigger desktop sidebar slide-in
+  useEffect(() => {
+    const t = setTimeout(() => setSidebarReady(true), 50);
+    return () => clearTimeout(t);
+  }, []);
 
   // Handle URL parameters on component mount
   useEffect(() => {
@@ -340,41 +351,62 @@ const SearchPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
+    <div className="min-h-screen bg-gray-100 relative">
       <div className="container mx-auto px-4 py-8">
         {/* Search Header */}
-        <div className="mb-8">
-         <div className="flex items-center justify-between">
-         <h1 className="text-3xl font-bold mb-4">Search Healthcare Services</h1>
-         <p className="text-xl font-light text-gray-400">
-                Found {filteredServices.length} services
-              </p>
-         </div>
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search for services, providers, or treatments..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+        <div className="mb-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            {/* Left: Title above + Input below */}
+            <div className="w-full md:max-w-[420px]">
+              <h1 className="text-3xl font-bold mb-2">Search Healthcare Services</h1>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search for services, providers, or treatments..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 h-11 rounded-md border border-gray-300 bg-white/90 text-gray-800 placeholder:text-gray-400 shadow-sm transition focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 hover:border-gray-400"
+                />
+              </div>
+              {/* Mobile: Filters toggle */}
+              <div className="flex justify-start mt-2 md:mt-3 lg:hidden">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filters
+                </Button>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-            </Button>
+            {/* Right: Results count */}
+            <div className="w-full md:w-auto md:text-right">
+              <span className="text-xs font-light text-gray-700">
+                Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
+        {/* Desktop: Large Filters icon trigger (click to open/close) */}
+        <div className="hidden lg:flex items-center mb-3">
+          <button
+            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/95 shadow-sm px-4 py-2 text-gray-700 hover:border-primary hover:text-primary transition"
+            onClick={toggleSidebar}
+            aria-label="Toggle filters"
+            aria-pressed={isSidebarOpen}
+          >
+            <Filter className="w-5 h-5" />
+            <span className="font-medium">Filters</span>
+          </button>
+        </div>
+
+        <div className="grid lg:grid-cols-6 gap-8">
           {/* Filters Sidebar */}
-          <div className={`lg:col-span-1 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-            <Card className="sticky  top-24">
+          <div
+            className={`${showFilters ? 'block lg:hidden' : 'hidden'} ${isSidebarOpen ? 'lg:block' : 'lg:hidden'} lg:col-span-2 lg:transform lg:transition-all lg:duration-300 lg:ease-out ${sidebarReady ? 'lg:opacity-100 lg:translate-x-0' : 'lg:opacity-0 lg:-translate-x-4'}`}
+          >
+            <Card className="sticky top-24 z-30 rounded-xl border border-gray-200 shadow-lg bg-white/95 backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Filters</CardTitle>
@@ -407,14 +439,46 @@ const SearchPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Locations</SelectItem>
-                      <SelectItem value="Clifton">Clifton, Karachi</SelectItem>
-                      <SelectItem value="Defence">Defence, Karachi</SelectItem>
-                      <SelectItem value="Gulshan">Gulshan, Karachi</SelectItem>
-                      <SelectItem value="North Nazimabad">North Nazimabad</SelectItem>
-                      <SelectItem value="PECHS">PECHS, Karachi</SelectItem>
-                      <SelectItem value="Bahadurabad">Bahadurabad</SelectItem>
-                      <SelectItem value="Lahore">Lahore</SelectItem>
-                      <SelectItem value="Islamabad">Islamabad</SelectItem>
+                      {/* Sindh */}
+                      <SelectItem value="Karachi">Karachi (Sindh)</SelectItem>
+                      <SelectItem value="Hyderabad">Hyderabad (Sindh)</SelectItem>
+                      <SelectItem value="Sukkur">Sukkur (Sindh)</SelectItem>
+                      <SelectItem value="Larkana">Larkana (Sindh)</SelectItem>
+                      <SelectItem value="Nawabshah">Nawabshah (Sindh)</SelectItem>
+                      <SelectItem value="Mirpur Khas">Mirpur Khas (Sindh)</SelectItem>
+                      {/* Punjab */}
+                      <SelectItem value="Lahore">Lahore (Punjab)</SelectItem>
+                      <SelectItem value="Faisalabad">Faisalabad (Punjab)</SelectItem>
+                      <SelectItem value="Rawalpindi">Rawalpindi (Punjab)</SelectItem>
+                      <SelectItem value="Multan">Multan (Punjab)</SelectItem>
+                      <SelectItem value="Gujranwala">Gujranwala (Punjab)</SelectItem>
+                      <SelectItem value="Sialkot">Sialkot (Punjab)</SelectItem>
+                      <SelectItem value="Bahawalpur">Bahawalpur (Punjab)</SelectItem>
+                      <SelectItem value="Sargodha">Sargodha (Punjab)</SelectItem>
+                      <SelectItem value="Gujrat">Gujrat (Punjab)</SelectItem>
+                      <SelectItem value="Sheikhupura">Sheikhupura (Punjab)</SelectItem>
+                      {/* Khyber Pakhtunkhwa */}
+                      <SelectItem value="Peshawar">Peshawar (KPK)</SelectItem>
+                      <SelectItem value="Mardan">Mardan (KPK)</SelectItem>
+                      <SelectItem value="Lund Khwar">Lund Khwar (KPK)</SelectItem>
+                      <SelectItem value="Shergarh">Shergarh (KPK)</SelectItem>
+                      <SelectItem value="Abbottabad">Abbottabad (KPK)</SelectItem>
+                      <SelectItem value="Swat">Swat/Mingora (KPK)</SelectItem>
+                      <SelectItem value="Kohat">Kohat (KPK)</SelectItem>
+                      <SelectItem value="Dera Ismail Khan">Dera Ismail Khan (KPK)</SelectItem>
+                      <SelectItem value="Mansehra">Mansehra (KPK)</SelectItem>
+                      <SelectItem value="Bannu">Bannu (KPK)</SelectItem>
+                      {/* Balochistan */}
+                      <SelectItem value="Quetta">Quetta (Balochistan)</SelectItem>
+                      <SelectItem value="Gwadar">Gwadar (Balochistan)</SelectItem>
+                      <SelectItem value="Khuzdar">Khuzdar (Balochistan)</SelectItem>
+                      <SelectItem value="Turbat">Turbat (Balochistan)</SelectItem>
+                      <SelectItem value="Chaman">Chaman (Balochistan)</SelectItem>
+                      <SelectItem value="Sibi">Sibi (Balochistan)</SelectItem>
+                      <SelectItem value="Zhob">Zhob (Balochistan)</SelectItem>
+                      <SelectItem value="Hub">Hub (Balochistan)</SelectItem>
+                      {/* Capital Territory */}
+                      <SelectItem value="Islamabad">Islamabad (ICT)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -438,21 +502,7 @@ const SearchPage = () => {
                   </div>
                 </div>
 
-                {/* Rating */}
-                <div>
-                  <Label className="text-base font-medium">Minimum Rating</Label>
-                  <Select value={minRating.toString()} onValueChange={(value) => setMinRating(Number(value))}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select rating" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">Any Rating</SelectItem>
-                      <SelectItem value="3">3+ Stars</SelectItem>
-                      <SelectItem value="4">4+ Stars</SelectItem>
-                      <SelectItem value="4.5">4.5+ Stars</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                
 
                 {/* Home Service */}
                 <div className="flex items-center space-x-2">
@@ -470,7 +520,7 @@ const SearchPage = () => {
           </div>
 
           {/* Results */}
-          <div className="lg:col-span-3">
+          <div className={`${isSidebarOpen ? 'lg:col-span-4' : 'lg:col-span-6'}`}>
             <div className="flex items-center justify-between">
               
               {selectedServices.length > 0 && (
@@ -480,7 +530,7 @@ const SearchPage = () => {
               )}
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={`grid gap-6 sm:grid-cols-2 ${isSidebarOpen ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
   {filteredServices.map((service) => {
     const isHighlighted =
       highlightedService &&
@@ -489,23 +539,30 @@ const SearchPage = () => {
     return (
       <Card
         key={service.id}
-        className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 ${
+        className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 ${
           isHighlighted ? "ring-2 ring-primary bg-primary/5" : ""
         }`}
       >
        <CardContent className="p-5">
   {/* Image */}
-  <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
-    {service.isReal && service.image ? (
+  <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
+    {service.image ? (
       <img
         src={service.image}
         alt={service.name}
         className="w-full h-full object-cover"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.onerror = null; // prevent infinite loop
+          target.style.display = 'none';
+          const fallback = document.createElement('span');
+          fallback.className = 'text-gray-400 text-4xl';
+          fallback.textContent = getServiceEmoji(service.type);
+          target.parentElement?.appendChild(fallback);
+        }}
       />
     ) : (
-      <span className="text-gray-400 text-sm">
-        {service.isReal ? getServiceEmoji(service.type) : "No Image"}
-      </span>
+      <span className="text-gray-400 text-4xl">{getServiceEmoji(service.type)}</span>
     )}
   </div>
 
