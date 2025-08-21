@@ -246,14 +246,16 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', (err) => {
+server.listen(PORT, "0.0.0.0", (err) => {
   if (err) {
     console.error("❌ Failed to start server:", err);
     process.exit(1);
   }
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-  if (process.env.DEBUG_SERVER === 'true') {
+  if (process.env.DEBUG_SERVER === "true") {
     console.log(`📡 API endpoints available at http://localhost:${PORT}/api/`);
-    console.log(`🔍 Test rating endpoint: http://localhost:${PORT}/api/ratings/test`);
+    console.log(
+      `🔍 Test rating endpoint: http://localhost:${PORT}/api/ratings/test`
+    );
   }
 });
