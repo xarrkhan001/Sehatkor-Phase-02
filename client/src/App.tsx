@@ -42,6 +42,7 @@ const PharmaciesPage = lazy(() => import("./pages/PharmaciesPage"));
 const ComparePage = lazy(() => import("./pages/ComparePage"));
 const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 import { CompareProvider } from "./contexts/CompareContext";
+import { SocketProvider } from "./context/SocketContext";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
 
 const queryClient = new QueryClient();
@@ -91,13 +92,15 @@ const AppShell = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CompareProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AppShell />
-        </TooltipProvider>
-      </CompareProvider>
+      <SocketProvider>
+        <CompareProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AppShell />
+          </TooltipProvider>
+        </CompareProvider>
+      </SocketProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

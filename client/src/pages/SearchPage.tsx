@@ -21,6 +21,7 @@ import SearchPageSkeleton from "@/components/skeletons/SearchPageSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
+import { useSocket } from "@/context/SocketContext";
 
 interface SearchService extends Service {
   isReal?: boolean;
@@ -28,6 +29,8 @@ interface SearchService extends Service {
   address?: string;
   providerPhone?: string;
   googleMapLink?: string;
+  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  totalRatings?: number;
 }
 
 const SearchPage = () => {
@@ -40,21 +43,53 @@ const SearchPage = () => {
   const [minRating, setMinRating] = useState(0);
   const [homeServiceOnly, setHomeServiceOnly] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
-  const [highlightedService, setHighlightedService] = useState<string | null>(null);
-  const [allServices, setAllServices] = useState<SearchService[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const { socket } = useSocket();
   const { user, mode } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [currentMapService, setCurrentMapService] = useState<SearchService | null>(null);
-  const [ratingModalOpen, setRatingModalOpen] = useState(false);
-  const [selectedRatingService, setSelectedRatingService] = useState<SearchService | null>(null);
-  // Desktop sidebar slide-in animation
+  const [allServices, setAllServices] = useState<SearchService[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sidebarReady, setSidebarReady] = useState(false);
-  // Desktop click-to-toggle sidebar
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const toggleSidebar = () => setIsSidebarOpen((v) => !v);
+  const [highlightedService, setHighlightedService] = useState<string | null>(null);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    type EventA = { serviceId: string; averageRating?: number; totalRatings?: number; ratingBadge?: string };
+    type EventB = { serviceId: string; serviceType?: string; ratingBadge?: string; averageRating?: number; totalRatings?: number };
+    const handleRatingUpdate = (data: EventA | EventB) => {
+      setAllServices(prev =>
+        prev.map(service => {
+          const isSameService = service.id === (data as any).serviceId;
+          const matchesType = (data as any).serviceType ? (service as any)._providerType === (data as any).serviceType : true;
+          if (!isSameService || !matchesType) return service;
+
+          const next: any = { ...service };
+          if (typeof (data as any).averageRating === 'number') next.rating = (data as any).averageRating;
+          if (typeof (data as any).totalRatings === 'number') next.totalRatings = (data as any).totalRatings;
+          const incomingBadge = (data as any).ratingBadge as string | undefined;
+          const allowed = ["excellent", "good", "normal", "poor"] as const;
+          if (incomingBadge && (allowed as readonly string[]).includes(incomingBadge)) {
+            next.ratingBadge = incomingBadge as typeof allowed[number];
+          }
+          return next as SearchService;
+        })
+      );
+    };
+
+    socket.on("rating_updated", handleRatingUpdate);
+
+    return () => {
+      socket.off("rating_updated", handleRatingUpdate);
+    };
+  }, [socket]);
 
   // Helper function to get coordinates based on location
   const getCoordinatesForLocation = (location: string) => {
@@ -264,37 +299,10 @@ const SearchPage = () => {
       toast.error('Only patients can rate services');
       return;
     }
-    setSelectedRatingService(service);
-    setRatingModalOpen(true);
+    setSelectedService(service);
+    setIsRatingModalOpen(true);
   };
 
-  const handleRatingSubmitted = async (serviceId: string, newRatingData: { averageRating: number; totalRatings: number }, serviceType: string) => {
-    // Optimistic UI update
-    setAllServices(prevServices =>
-      prevServices.map(service =>
-        service.id === serviceId
-          ? {
-              ...service,
-              rating: newRatingData.averageRating,
-              totalRatings: newRatingData.totalRatings,
-            }
-          : service
-      )
-    );
-
-    // Fetch the updated service from the backend to get the new ratingBadge
-    try {
-      const updatedService = await ServiceManager.fetchServiceById(serviceId, serviceType);
-      setAllServices(prevServices =>
-        prevServices.map(service =>
-          service.id === serviceId ? { ...service, ...updatedService, rating: updatedService.averageRating } : service
-        )
-      );
-    } catch (error) {
-      console.error('Failed to fetch updated service:', error);
-      // Optional: revert optimistic update on error
-    }
-  };
 
   const selectedServicesData = allServices.filter(service => 
     selectedServices.includes(service.id)
@@ -608,6 +616,7 @@ const SearchPage = () => {
   <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
     <RatingBadge 
       rating={service.rating} 
+      ratingBadge={service.ratingBadge}
       totalRatings={(service as any).totalRatings}
       size="sm"
     />
@@ -773,13 +782,24 @@ const SearchPage = () => {
                       <td className="p-4 font-medium">Action</td>
                       {selectedServicesData.map((service) => (
                         <td key={service.id} className="p-4">
-                          <Button 
-                            size="sm" 
-                            className="w-full"
-                            onClick={() => handleBookNow(service)}
-                          >
-                            Book Now
-                          </Button>
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => setSelectedService(service)}
+                            >
+                              View Details
+                            </Button>
+                            <Button
+                              className="w-full"
+                              onClick={() => {
+                                setSelectedService(service);
+                                setIsRatingModalOpen(true);
+                              }}
+                            >
+                              Rate
+                            </Button>
+                          </div>
                         </td>
                       ))}
                     </tr>
@@ -834,20 +854,13 @@ const SearchPage = () => {
         </div>
       )}
       {/* Rating Modal */}
-      {selectedRatingService && (
+      {selectedService && (
         <RatingModal
-          isOpen={ratingModalOpen}
-          onClose={() => setRatingModalOpen(false)}
-          serviceId={selectedRatingService.id}
-          serviceType={(selectedRatingService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
-          serviceName={selectedRatingService.name}
-          onRatingSubmitted={(newRatingData) => {
-            setRatingModalOpen(false);
-            if (selectedRatingService) {
-              handleRatingSubmitted(selectedRatingService.id, newRatingData, (selectedRatingService as any)._providerType);
-            }
-            setSelectedRatingService(null);
-          }}
+          isOpen={isRatingModalOpen}
+          onClose={() => setIsRatingModalOpen(false)}
+          serviceId={selectedService.id}
+          serviceType={(selectedService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
+          serviceName={selectedService.name}
         />
       )}
       <CompareTray />

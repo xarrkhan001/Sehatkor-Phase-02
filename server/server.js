@@ -28,6 +28,7 @@ import {
 import Conversation from "./models/Conversation.js";
 import Message from "./models/Message.js";
 import { facebookCallback } from "./apis/index.js";
+import { getModelForServiceType } from "./utils/serviceModelMapper.js";
 
 dotenv.config();
 connectDB();
@@ -237,6 +238,116 @@ io.on("connection", (socket) => {
     } catch (err) {
       if (callback)
         callback({ success: false, error: err?.message || "Failed to delete" });
+    }
+  });
+
+  socket.on("submit_rating", async (payload, callback) => {
+    try {
+      const { serviceId, serviceType, rating } = payload || {};
+      if (!serviceId || !serviceType || !rating) {
+        return callback?.({ success: false, error: "Missing required fields" });
+      }
+
+      const Model = getModelForServiceType(serviceType);
+      if (!Model) {
+        return callback?.({ success: false, error: "Invalid service type" });
+      }
+
+      const service = await Model.findById(serviceId);
+      if (!service) {
+        return callback?.({ success: false, error: "Service not found" });
+      }
+
+      // Normalize incoming rating to the schema's title enum and helpers
+      const toTitle = (val) => {
+        if (typeof val === "string") {
+          const v = val.trim().toLowerCase();
+          if (v === "excellent") return "Excellent";
+          if (v === "very good") return "Very Good";
+          if (v === "good") return "Good";
+        }
+        if (typeof val === "number") {
+          if (val >= 4.5) return "Excellent";
+          if (val >= 3.5) return "Very Good";
+          if (val > 0) return "Good";
+        }
+        return "Good"; // safe default
+      };
+
+      const titleToNumeric = (title) => {
+        const t = (title || "").toString().trim().toLowerCase();
+        if (t === "excellent") return 5;
+        if (t === "very good") return 4;
+        if (t === "good") return 3;
+        return 0;
+      };
+
+      const titleToBadge = (title) => {
+        const n = titleToNumeric(title);
+        if (n >= 4.5) return "excellent";
+        if (n >= 3.5) return "good"; // map Very Good -> good badge
+        if (n > 0) return "normal";  // map Good -> normal badge
+        return null;
+      };
+
+      const titleInput = toTitle(rating);
+
+      // Add the new rating as title to satisfy enum schema
+      service.ratings.push({ rating: titleInput, user: socket.userId });
+
+      // Helper to map numeric rating to category
+      const toCategory = (n) => {
+        if (n >= 4.5) return "excellent";
+        if (n >= 3.5) return "good";
+        if (n > 0) return "normal";
+        return null;
+      };
+
+      // Compute averageRating and totalRatings
+      const numericRatings = (service.ratings || []).map((r) => titleToNumeric(r.rating));
+      const totalRatings = numericRatings.length;
+      const averageRating = totalRatings
+        ? numericRatings.reduce((a, b) => a + b, 0) / totalRatings
+        : 0;
+
+      // Determine majority category among individual rating categories
+      const categoryCounts = (service.ratings || []).reduce((acc, r) => {
+        const cat = titleToBadge(r.rating);
+        if (!cat) return acc;
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+      }, {});
+
+      let ratingBadge = null;
+      let maxCount = -1;
+      for (const cat of ["excellent", "good", "normal"]) {
+        const count = categoryCounts[cat] || 0;
+        if (count > maxCount) {
+          maxCount = count;
+          ratingBadge = cat;
+        }
+      }
+      // If no category votes yet, derive from average as fallback
+      if (!ratingBadge) ratingBadge = toCategory(averageRating) || null;
+
+      // Persist if model contains these fields (safe assigns)
+      try { service.rating = averageRating; } catch {}
+      try { service.totalRatings = totalRatings; } catch {}
+      try { service.ratingBadge = ratingBadge; } catch {}
+      await service.save();
+
+      // Broadcast the updated rating to all clients
+      io.emit("rating_updated", {
+        serviceId,
+        serviceType,
+        averageRating,
+        totalRatings,
+        ratingBadge,
+      });
+
+      callback?.({ success: true, averageRating, totalRatings, ratingBadge });
+    } catch (err) {
+      callback?.({ success: false, error: err.message });
     }
   });
 
