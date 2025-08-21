@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockUsers, mockServices } from "@/data/mockData";
+// removed unused mock data import
 import { 
   CheckCircle, 
   XCircle, 
@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   Search,
   Filter,
-  Edit,
   Trash2,
   Eye,
   UserCheck,
@@ -28,9 +27,37 @@ import {
   Download
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import VerifiedUsersCard from "@/components/VerifiedUsersCard";
 
 const AdminPanel = () => {
+  // Simple in-page gate for /admin route
+  const [showGate, setShowGate] = useState(true);
+  const [gateEmail, setGateEmail] = useState("");
+  const [gatePassword, setGatePassword] = useState("");
+  const { toast } = useToast();
+
+  const handleGateSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const validEmail = "test@gmail.com";
+    const validPassword = "12345678";
+    if (gateEmail.trim().toLowerCase() === validEmail && gatePassword === validPassword) {
+      setShowGate(false);
+      toast({ title: "Access granted", description: "Welcome to the Admin Panel." });
+    } else {
+      toast({ title: "Invalid credentials", description: "Email or password is incorrect.", variant: "destructive" });
+    }
+  };
+
+  // Soft surface gradient per card color
+  const getCardSurface = (color: string) => {
+    if (color.includes('blue')) return 'from-blue-500/5 to-white';
+    if (color.includes('green')) return 'from-green-500/5 to-white';
+    if (color.includes('indigo')) return 'from-indigo-500/5 to-white';
+    if (color.includes('purple')) return 'from-purple-500/5 to-white';
+    if (color.includes('orange')) return 'from-orange-500/5 to-white';
+    if (color.includes('red')) return 'from-red-500/5 to-white';
+    return 'from-gray-400/5 to-white';
+  };
+
   const getAuthToken = () => localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -117,14 +144,9 @@ const AdminPanel = () => {
 
   const pendingUsers = users.filter((user: any) => !user.isVerified && user.role !== 'patient');
 
-  const recentServices = [
-    { id: "1", name: "Heart Surgery", provider: "Cardiac Hospital", type: "Surgery", status: "Pending", price: 150000 },
-    { id: "2", name: "Blood Pressure Monitor", provider: "MedEquip Store", type: "Equipment", status: "Approved", price: 5000 },
-    { id: "3", name: "CT Scan", provider: "Advanced Imaging", type: "Test", status: "Pending", price: 8000 },
-    { id: "4", name: "Insulin Injection", provider: "Diabetes Care", type: "Medicine", status: "Rejected", price: 500 }
-  ];
+  // removed Manage Services demo data
 
-  const { toast } = useToast();
+  // toast already initialized above for gate
 
   const getDownloadUrl = (url: string) => {
     if (!url) return '#';
@@ -215,18 +237,7 @@ const AdminPanel = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Approved":
-        return <Badge className="bg-success text-success-foreground">Approved</Badge>;
-      case "Pending":
-        return <Badge variant="outline" className="text-warning border-warning">Pending</Badge>;
-      case "Rejected":
-        return <Badge variant="outline" className="text-destructive border-destructive">Rejected</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  // removed getStatusBadge (used only in Manage Services)
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -243,9 +254,75 @@ const AdminPanel = () => {
     }
   };
 
+  // Helper to map icon color -> soft gradient background for badge
+  const getIconBg = (color: string) => {
+    if (color.includes('blue')) return 'from-blue-500/10 to-blue-600/10 text-blue-600';
+    if (color.includes('green')) return 'from-green-500/10 to-green-600/10 text-green-600';
+    if (color.includes('indigo')) return 'from-indigo-500/10 to-indigo-600/10 text-indigo-600';
+    if (color.includes('purple')) return 'from-purple-500/10 to-purple-600/10 text-purple-600';
+    if (color.includes('orange')) return 'from-orange-500/10 to-orange-600/10 text-orange-600';
+    if (color.includes('red')) return 'from-red-500/10 to-red-600/10 text-red-600';
+    return 'from-gray-400/10 to-gray-500/10 text-gray-700';
+  };
+
+  // Accent gradient for top bar per card color
+  const getAccentBar = (color: string) => {
+    if (color.includes('blue')) return 'from-blue-400/40 via-blue-500/40 to-blue-600/40';
+    if (color.includes('green')) return 'from-green-400/40 via-green-500/40 to-green-600/40';
+    if (color.includes('indigo')) return 'from-indigo-400/40 via-indigo-500/40 to-indigo-600/40';
+    if (color.includes('purple')) return 'from-purple-400/40 via-purple-500/40 to-purple-600/40';
+    if (color.includes('orange')) return 'from-orange-400/40 via-orange-500/40 to-orange-600/40';
+    if (color.includes('red')) return 'from-red-400/40 via-red-500/40 to-red-600/40';
+    return 'from-gray-400/40 via-gray-500/40 to-gray-600/40';
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="relative min-h-screen bg-background">
+      {/* Gate Modal Overlay */}
+      {showGate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 p-4">
+          <div className="w-full max-w-md">
+            <Card className="shadow-2xl border border-gray-100 rounded-2xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto mb-3 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md ring-4 ring-indigo-100">
+                  <ShieldCheck className="w-7 h-7" />
+                </div>
+                <CardTitle className="text-2xl">SehatKor Admin Panel</CardTitle>
+                <CardDescription>Type your admin email and password to continue</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleGateSubmit} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email</label>
+                    <Input
+                      type="email"
+                      value={gateEmail}
+                      onChange={(e) => setGateEmail(e.target.value)}
+                      placeholder="Type your admin email"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Password</label>
+                    <Input
+                      type="password"
+                      value={gatePassword}
+                      onChange={(e) => setGatePassword(e.target.value)}
+                      placeholder="Type your admin password"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-600/90 text-white">
+                    Continue
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      <div className={`container mx-auto px-4 py-8 transition ${showGate ? 'pointer-events-none select-none' : ''}`} aria-hidden={showGate}>
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
           <div>
@@ -262,27 +339,36 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        {/* Verified Users Card - Prominent Display */}
-        <div className="mb-8">
-          <VerifiedUsersCard />
-        </div>
+        {/* Removed: Top Verified Users Card */}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {statsData.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card key={index} className="card-healthcare">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{stat.title}</p>
-                      <p className="text-2xl font-bold">{stat.value}</p>
-                      <p className={`text-sm ${stat.change.startsWith('+') ? 'text-success' : 'text-destructive'}`}>
-                        {stat.change} from last month
+              <Card
+                key={index}
+                className="relative border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-0.5 rounded-2xl bg-white hover:border-gray-200 overflow-hidden"
+              >
+                <div className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${getAccentBar(stat.color)}`} />
+                <CardContent className="p-5">
+                  <div className={`flex items-start justify-between gap-4 p-3 rounded-xl bg-gradient-to-br ${getCardSurface(stat.color)}`}>
+                    <div className="min-w-0">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
+                        {stat.title}
+                      </p>
+                      <p className="text-3xl font-semibold leading-tight">{stat.value}</p>
+                      <p
+                        className={`mt-1 text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-500'}`}
+                      >
+                        {stat.change || 'from last month'}
                       </p>
                     </div>
-                    <Icon className={`w-8 h-8 ${stat.color}`} />
+                    <div className="shrink-0">
+                      <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr ${getIconBg(stat.color)} ring-1 ring-black/5`}>
+                        <Icon className={`w-5 h-5`} />
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -292,9 +378,8 @@ const AdminPanel = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="verifications" className="space-y-6">
-          <TabsList className="w-full overflow-x-auto flex sm:grid md:grid-cols-3 gap-0 lg:gap-2">
+          <TabsList className="w-full overflow-x-auto flex sm:grid md:grid-cols-2 gap-0 lg:gap-2">
             <TabsTrigger value="verifications">Verify Entities</TabsTrigger>
-            <TabsTrigger value="services">Manage Services</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
           </TabsList>
 
@@ -438,84 +523,7 @@ const AdminPanel = () => {
             </Card>
           </TabsContent>
 
-          {/* Service Management */}
-          <TabsContent value="services" className="space-y-6">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Service Management</CardTitle>
-                <CardDescription>
-                  Approve, edit, or remove healthcare services
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Mobile Card List */}
-                <div className="space-y-3 lg:hidden">
-                  {recentServices.map((service) => (
-                    <div key={service.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{service.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{service.provider}</p>
-                        </div>
-                        {getStatusBadge(service.status)}
-                      </div>
-                      <div className="mt-2 text-sm text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-                        <span><span className="font-medium">Type:</span> {service.type}</span>
-                        <span><span className="font-medium">Price:</span> PKR {service.price.toLocaleString()}</span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Button size="sm" variant="outline"><Edit className="w-4 h-4" /></Button>
-                        <Button size="sm" variant="outline"><Eye className="w-4 h-4" /></Button>
-                        <Button size="sm" variant="destructive"><Trash2 className="w-4 h-4" /></Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Desktop Table */}
-                <Table className="hidden lg:table">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Provider</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recentServices.map((service) => (
-                      <TableRow key={service.id}>
-                        <TableCell>
-                          <p className="font-medium">{service.name}</p>
-                        </TableCell>
-                        <TableCell>{service.provider}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{service.type}</Badge>
-                        </TableCell>
-                        <TableCell>PKR {service.price.toLocaleString()}</TableCell>
-                        <TableCell>{getStatusBadge(service.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button size="sm" variant="outline">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="outline">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="destructive">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* Removed: Service Management */}
 
           {/* Documents Management */}
           <TabsContent value="documents" className="space-y-6">
