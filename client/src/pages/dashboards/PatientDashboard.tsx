@@ -272,6 +272,12 @@ const PatientDashboard = () => {
                                     <span>Appointment: {new Date(booking.scheduledTime).toLocaleString()}</span>
                                   </div>
                                 )}
+                                {booking.status === 'Scheduled' && booking.communicationChannel && (
+                                  <div className="flex items-center space-x-2">
+                                    <Phone className="w-4 h-4" />
+                                    <span>Channel: {booking.communicationChannel}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
