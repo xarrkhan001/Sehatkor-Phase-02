@@ -41,6 +41,7 @@ const ClinicDashboard = () => {
   const [services, setServices] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
+  const [bookingPrices, setBookingPrices] = useState<Record<string, number>>({});
   const [isScheduling, setIsScheduling] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [scheduleDetails, setScheduleDetails] = useState({
@@ -228,6 +229,49 @@ const ClinicDashboard = () => {
   }, [user?.id]);
 
   const saveServices = (newServices: any[]) => setServices(newServices);
+
+  // Normalize and resolve booking prices like PatientDashboard
+  const getBookingPrice = (booking: any): number => {
+    const raw = booking?.amount ?? booking?.price ?? booking?.servicePrice ?? booking?.service?.price ?? booking?.serviceData?.price ?? 0;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : 0;
+  };
+
+  const resolveBookingPrice = (booking: any): number => {
+    const p = getBookingPrice(booking);
+    return p > 0 ? p : (bookingPrices[booking._id] ?? 0);
+  };
+
+  useEffect(() => {
+    const loadMissingPrices = async () => {
+      const updates: Record<string, number> = {};
+      for (const b of bookings) {
+        const localPrice = getBookingPrice(b);
+        if (localPrice > 0) continue;
+        if (!b?.serviceId || !b?.providerType) continue;
+        const normalizeProviderType = (t: string): 'clinic' | 'doctor' | 'laboratory' | 'pharmacy' => {
+          const low = (t || '').toString().toLowerCase();
+          if (low === 'lab' || low === 'laboratory') return 'laboratory';
+          if (low === 'hospital' || low === 'hospitals' || low === 'clinic') return 'clinic';
+          if (low === 'doctor' || low === 'doctors') return 'doctor';
+          if (low === 'pharmacy' || low === 'pharmacies') return 'pharmacy';
+          return 'clinic';
+        };
+        try {
+          const svc = await ServiceManager.fetchServiceById(String(b.serviceId), normalizeProviderType(b.providerType));
+          if (svc?.price != null) {
+            updates[b._id] = Number(svc.price) || 0;
+          }
+        } catch {}
+      }
+      if (Object.keys(updates).length) {
+        setBookingPrices(prev => ({ ...prev, ...updates }));
+      }
+    };
+    if (bookings?.length) {
+      loadMissingPrices();
+    }
+  }, [bookings]);
 
   const handleAddService = async () => {
     if (!serviceForm.name) {
@@ -728,6 +772,11 @@ const ClinicDashboard = () => {
                               </div>
                             </div>
                             <div className="sm:text-right flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-medium mt-1">
+                                {resolveBookingPrice(booking) === 0
+                                  ? 'Free'
+                                  : `PKR ${resolveBookingPrice(booking).toLocaleString()}`}
+                              </p>
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
                                 className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
