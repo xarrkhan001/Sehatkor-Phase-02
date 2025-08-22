@@ -213,7 +213,11 @@ const LabsPage = () => {
         serviceName: service.name,
         providerId: (service as any)._providerId || service.id,
         providerName: service.provider,
-        providerType: 'lab'
+        providerType: 'lab',
+        price: Number((service as any).price ?? 0),
+        image: service.image,
+        location: (service as any).location,
+        phone: (service as any).providerPhone
       }
     });
   };
