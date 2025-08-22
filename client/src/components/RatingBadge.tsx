@@ -4,12 +4,13 @@ import { Star } from "lucide-react";
 interface RatingBadgeProps {
   rating?: number;
   totalRatings?: number;
-  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  ratingBadge?: "excellent" | "good" | "normal" | "poor" | "Excellent" | "Good" | "Normal" | "Poor" | null;
   showStars?: boolean;
   size?: "sm" | "md" | "lg";
+  yourBadge?: "excellent" | "good" | "normal" | "poor" | null;
 }
 
-const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = true, size = "md" }: RatingBadgeProps) => {
+const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = true, size = "md", yourBadge = null }: RatingBadgeProps) => {
   const safeRating = Number.isFinite(rating) ? rating : 0;
   const getRatingBadge = (numeric: number, ratingBadge?: "excellent" | "good" | "normal" | "poor" | null) => {
     // Use backend ratingBadge if available, otherwise derive from numeric rating
@@ -19,19 +20,19 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
           return {
             label: "Excellent",
             variant: "default" as const,
-            className: "bg-green-500 hover:bg-green-600 text-white border-green-500"
+            className: "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 hover:from-yellow-400 hover:via-amber-600 hover:to-yellow-600 text-white border-amber-400"
           };
         case "good":
           return {
-            label: "Good",
+            label: "Very Good",
             variant: "secondary" as const,
-            className: "bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
+            className: "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 hover:from-emerald-400 hover:via-emerald-600 hover:to-emerald-700 text-white border-emerald-300"
           };
         case "normal":
           return {
-            label: "Normal",
-            variant: "outline" as const,
-            className: "bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border-yellow-300"
+            label: "Good",
+            variant: "secondary" as const,
+            className: "bg-gradient-to-r from-purple-400 via-violet-500 to-fuchsia-600 hover:from-purple-500 hover:via-violet-600 hover:to-fuchsia-700 text-white border-violet-300"
           };
         case "poor":
           return {
@@ -47,19 +48,19 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
       return {
         label: "Excellent",
         variant: "default" as const,
-        className: "bg-green-500 hover:bg-green-600 text-white border-green-500"
+        className: "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 hover:from-yellow-400 hover:via-amber-600 hover:to-yellow-600 text-white border-amber-400"
       };
     } else if (numeric >= 3.5) {
       return {
-        label: "Good",
+        label: "Very Good",
         variant: "secondary" as const,
-        className: "bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
+        className: "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 hover:from-emerald-400 hover:via-emerald-600 hover:to-emerald-700 text-white border-emerald-300"
       };
     } else if (numeric > 0) {
       return {
-        label: "Normal",
-        variant: "outline" as const,
-        className: "bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border-yellow-300"
+        label: "Good",
+        variant: "secondary" as const,
+        className: "bg-gradient-to-r from-purple-400 via-violet-500 to-fuchsia-600 hover:from-purple-500 hover:via-violet-600 hover:to-fuchsia-700 text-white border-violet-300"
       };
     } else {
       return {
@@ -70,7 +71,10 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
     }
   };
 
-  const badge = getRatingBadge(safeRating, ratingBadge);
+  const normalizedBadge = ratingBadge ? (String(ratingBadge).toLowerCase() as "excellent" | "good" | "normal" | "poor") : null;
+  const badge = getRatingBadge(safeRating, normalizedBadge);
+  const normalizedYour = yourBadge ? (String(yourBadge).toLowerCase() as "excellent" | "good" | "normal" | "poor") : null;
+  const your = normalizedYour ? getRatingBadge(safeRating, normalizedYour) : null;
   
   const sizeClasses = {
     sm: "text-xs px-2 py-1",
@@ -84,28 +88,52 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
     lg: "w-5 h-5"
   };
 
-  if (safeRating === 0) {
-    return (
-      <Badge 
-        variant={badge.variant}
-        className={`${badge.className} ${sizeClasses[size]} font-medium`}
-      >
-        {badge.label}
-      </Badge>
-    );
-  }
+  const starsFor = (kindLabel: string) => {
+    const k = kindLabel.toLowerCase();
+    if (k === 'excellent') return 5;
+    if (k === 'very good') return 4;
+    if (k === 'good') return 3; // UI 'Good' (was Normal)
+    if (k === 'poor') return 2;
+    return 0;
+  };
+
+  const starColorFor = (kindLabel: string) => {
+    const k = kindLabel.toLowerCase();
+    if (k === 'excellent') return 'text-amber-500';
+    if (k === 'very good') return 'text-emerald-500';
+    if (k === 'good') return 'text-violet-500';
+    if (k === 'poor') return 'text-red-500';
+    return 'text-gray-400';
+  };
 
   return (
     <div className="flex items-center gap-2">
       <Badge 
         variant={badge.variant}
-        className={`${badge.className} ${sizeClasses[size]} font-medium flex items-center gap-1`}
+        className={`${badge.className} ${sizeClasses[size]} font-semibold flex items-center gap-1 rounded-full shadow-sm`}
       >
         {showStars && <Star className={`${starSize[size]} fill-current`} />}
         {badge.label}
+        {safeRating > 0 && (
+          <span className="ml-1 opacity-90">{safeRating.toFixed(1)}</span>
+        )}
       </Badge>
+      {your && (
+        <Badge 
+          variant={your.variant}
+          className={`${your.className} ${sizeClasses.sm} font-semibold flex items-center gap-1 rounded-full ring-1 ring-offset-1 ring-white/60`}
+        >
+          {showStars && <Star className={`${starSize.sm} fill-current`} />}
+          Your: {your.label}
+        </Badge>
+      )}
+      {/* Mini star row */}
+      <div className={`flex items-center gap-0.5 ${starColorFor(badge.label)}`}>
+        {Array.from({ length: starsFor(badge.label) }).map((_, i) => (
+          <Star key={i} className={`${starSize.sm} fill-current`} />
+        ))}
+      </div>
       <div className="flex items-center gap-1 text-sm text-gray-600">
-        <span className="font-semibold">{safeRating.toFixed(1)}</span>
         {totalRatings > 0 && (
           <span className="text-gray-500">({totalRatings})</span>
         )}
@@ -115,3 +143,5 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
 };
 
 export default RatingBadge;
+
+

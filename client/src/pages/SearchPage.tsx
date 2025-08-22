@@ -31,6 +31,7 @@ interface SearchService extends Service {
   googleMapLink?: string;
   ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
   totalRatings?: number;
+  myBadge?: 'excellent' | 'good' | 'normal' | 'poor';
 }
 
 const SearchPage = () => {
@@ -91,6 +92,21 @@ const SearchPage = () => {
     };
   }, [socket]);
 
+  // Listen for per-user immediate badge updates (optimistic UI)
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      if (!detail) return;
+      setAllServices(prev => prev.map(s => {
+        const matches = s.id === detail.serviceId && (s as any)._providerType === detail.serviceType;
+        if (!matches) return s;
+        return { ...s, myBadge: detail.yourBadge } as SearchService;
+      }));
+    };
+    window.addEventListener('my_rating_updated', handler as EventListener);
+    return () => window.removeEventListener('my_rating_updated', handler as EventListener);
+  }, []);
+
   // Helper function to get coordinates based on location
   const getCoordinatesForLocation = (location: string) => {
     const locationCoordinates: Record<string, { lat: number; lng: number }> = {
@@ -150,35 +166,55 @@ const SearchPage = () => {
       const realServices = serverData.services;
     
     // Convert real services to search format with proper filtering
-    const formattedRealServices: SearchService[] = realServices.map((service: any) => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      rating: service.averageRating || service.rating || 0,
-      ratingBadge: (service as any).ratingBadge || null,
-      provider: service.providerName,
-      location: service.city || "Karachi",
-      type: mapServiceTypeToSearch(service),
-      homeService: service.providerType === 'doctor',
-      isReal: true,
-      image: service.image,
-      coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
-      address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
-      googleMapLink: service.googleMapLink,
-      detailAddress: service.detailAddress,
-      createdAt: (service as any).createdAt,
-      _providerId: (service as any).providerId,
-      _providerType: service.providerType,
-      providerPhone: service.providerPhone,
-      totalRatings: service.totalRatings || 0,
-    }));
+    const formattedRealServices: SearchService[] = realServices.map((service: any) => {
+      const s: SearchService = {
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        rating: service.averageRating || service.rating || 0,
+        ratingBadge: (service as any).ratingBadge || null,
+        provider: service.providerName,
+        location: service.city || "Karachi",
+        type: mapServiceTypeToSearch(service),
+        homeService: service.providerType === 'doctor',
+        isReal: true,
+        image: service.image,
+        coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
+        address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
+        googleMapLink: service.googleMapLink,
+        detailAddress: service.detailAddress,
+        createdAt: (service as any).createdAt,
+        _providerId: (service as any).providerId,
+        _providerType: service.providerType,
+        providerPhone: service.providerPhone,
+        totalRatings: service.totalRatings || 0,
+      } as any;
+      // Hydrate user's own badge from localStorage
+      try {
+        const uid = (user as any)?.id || (user as any)?._id || 'anon';
+        const key = `myRating:${uid}:${service.providerType}:${service.id}`;
+        const my = localStorage.getItem(key);
+        if (my) (s as any).myBadge = my as any;
+      } catch {}
+      return s as SearchService;
+    });
 
-    // Sort: own services first, then by rating (highest first), then by creation date
+    // Sort: own services first, then by rating badge priority, then by rating (highest first), then by creation date
     formattedRealServices.sort((a: any, b: any) => {
       const aOwn = a._providerId && user?.id && a._providerId === user.id;
       const bOwn = b._providerId && user?.id && b._providerId === user.id;
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
+      // Badge priority: excellent > good > normal > others
+      const rank = (s: any) => {
+        const badge = (s?.ratingBadge || '').toString().toLowerCase();
+        if (badge === 'excellent') return 3;
+        if (badge === 'good') return 2;
+        if (badge === 'normal') return 1;
+        return 0;
+      };
+      const rb = rank(b) - rank(a);
+      if (rb !== 0) return rb;
       // Sort by rating (highest first)
       if (a.rating !== b.rating) return b.rating - a.rating;
       const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
@@ -252,6 +288,16 @@ const SearchPage = () => {
       const bOwn = b._providerId && user?.id && b._providerId === user.id;
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
       if (a.isReal !== b.isReal) return a.isReal ? -1 : 1;
+      // Badge priority: excellent > good > normal > others
+      const rank = (s: any) => {
+        const badge = (s?.ratingBadge || '').toString().toLowerCase();
+        if (badge === 'excellent') return 3;
+        if (badge === 'good') return 2;
+        if (badge === 'normal') return 1;
+        return 0;
+      };
+      const rb = rank(b) - rank(a);
+      if (rb !== 0) return rb;
       // Sort by rating (highest first)
       if (a.rating !== b.rating) return b.rating - a.rating;
       const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
@@ -618,6 +664,7 @@ const SearchPage = () => {
       rating={service.rating} 
       ratingBadge={service.ratingBadge}
       totalRatings={(service as any).totalRatings}
+      yourBadge={(service as any).myBadge || null}
       size="sm"
     />
     <div className="flex items-center gap-1 text-gray-500">

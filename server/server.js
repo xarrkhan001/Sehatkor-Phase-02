@@ -243,7 +243,7 @@ io.on("connection", (socket) => {
 
   socket.on("submit_rating", async (payload, callback) => {
     try {
-      const { serviceId, serviceType, rating } = payload || {};
+      const { serviceId, serviceType, rating, stars } = payload || {};
       if (!serviceId || !serviceType || !rating) {
         return callback?.({ success: false, error: "Missing required fields" });
       }
@@ -263,8 +263,10 @@ io.on("connection", (socket) => {
         if (typeof val === "string") {
           const v = val.trim().toLowerCase();
           if (v === "excellent") return "Excellent";
-          if (v === "very good") return "Very Good";
-          if (v === "good") return "Good";
+          // Treat UI "Good" as Very Good to map to 'good' badge category
+          if (v === "good" || v === "very good") return "Very Good";
+          // Accept "normal" explicitly (maps to numeric below)
+          if (v === "normal") return "Good"; // persists within enum, but becomes 'normal' badge via numeric mapping
         }
         if (typeof val === "number") {
           if (val >= 4.5) return "Excellent";
@@ -277,13 +279,18 @@ io.on("connection", (socket) => {
       const titleToNumeric = (title) => {
         const t = (title || "").toString().trim().toLowerCase();
         if (t === "excellent") return 5;
-        if (t === "very good") return 4;
-        if (t === "good") return 3;
+        if (t === "very good") return 4; // UI 'Good' maps here
+        if (t === "good") return 3; // UI 'Normal' maps here
         return 0;
       };
 
-      const titleToBadge = (title) => {
-        const n = titleToNumeric(title);
+      const valueToBadge = (valueOrTitle, maybeStars) => {
+        // prefer explicit stars if provided; otherwise derive from title
+        const n = typeof valueOrTitle === 'number' && valueOrTitle > 0
+          ? valueOrTitle
+          : (typeof maybeStars === 'number' && maybeStars > 0
+            ? maybeStars
+            : titleToNumeric(valueOrTitle));
         if (n >= 4.5) return "excellent";
         if (n >= 3.5) return "good"; // map Very Good -> good badge
         if (n > 0) return "normal";  // map Good -> normal badge
@@ -292,8 +299,25 @@ io.on("connection", (socket) => {
 
       const titleInput = toTitle(rating);
 
-      // Add the new rating as title to satisfy enum schema
-      service.ratings.push({ rating: titleInput, user: socket.userId });
+      // Upsert the user's rating (update if exists, otherwise push)
+      if (!Array.isArray(service.ratings)) service.ratings = [];
+      const idx = (service.ratings || []).findIndex(
+        (r) => String(r.user) === String(socket.userId)
+      );
+      if (idx >= 0) {
+        service.ratings[idx].rating = titleInput;
+        try {
+          const s = Number(stars);
+          if (!isNaN(s) && s >= 1 && s <= 5) service.ratings[idx].stars = s;
+        } catch {}
+      } else {
+        const doc = { rating: titleInput, user: socket.userId };
+        try {
+          const s = Number(stars);
+          if (!isNaN(s) && s >= 1 && s <= 5) doc.stars = s;
+        } catch {}
+        service.ratings.push(doc);
+      }
 
       // Helper to map numeric rating to category
       const toCategory = (n) => {
@@ -304,7 +328,10 @@ io.on("connection", (socket) => {
       };
 
       // Compute averageRating and totalRatings
-      const numericRatings = (service.ratings || []).map((r) => titleToNumeric(r.rating));
+      const numericRatings = (service.ratings || []).map((r) => {
+        const s = Number(r?.stars);
+        return !isNaN(s) && s > 0 ? s : titleToNumeric(r?.rating);
+      });
       const totalRatings = numericRatings.length;
       const averageRating = totalRatings
         ? numericRatings.reduce((a, b) => a + b, 0) / totalRatings
@@ -312,7 +339,8 @@ io.on("connection", (socket) => {
 
       // Determine majority category among individual rating categories
       const categoryCounts = (service.ratings || []).reduce((acc, r) => {
-        const cat = titleToBadge(r.rating);
+        const s = Number(r?.stars);
+        const cat = valueToBadge(r?.rating, !isNaN(s) && s > 0 ? s : undefined);
         if (!cat) return acc;
         acc[cat] = (acc[cat] || 0) + 1;
         return acc;

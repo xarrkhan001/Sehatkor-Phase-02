@@ -29,9 +29,12 @@ const LaboratoryTestSchema = new mongoose.Schema(
     ratings: [
       {
         rating: { type: String, enum: ["Excellent", "Very Good", "Good"] },
+        stars: { type: Number, min: 1, max: 5 },
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       },
     ],
+    rating: { type: Number, default: 0 },
+    totalRatings: { type: Number, default: 0 },
     ratingBadge: {
       type: String,
       default: "No Rating",
