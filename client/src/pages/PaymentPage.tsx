@@ -14,7 +14,7 @@ interface ServiceData {
   serviceName: string;
   providerId: string;
   providerName: string;
-  providerType: 'doctor' | 'hospital' | 'lab' | 'pharmacy';
+  providerType: 'doctor' | 'hospital' | 'lab' | 'pharmacy' | 'clinic' | 'laboratory';
   price?: number;
   location?: string;
   phone?: string;
@@ -32,6 +32,10 @@ const PaymentPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const serviceData = location.state as ServiceData;
+  // Normalize price from state (number or string). Fallback to 0 to always render a value.
+  const _rawPrice: any = serviceData?.price as any;
+  const _numPrice = (typeof _rawPrice === 'number' && !isNaN(_rawPrice)) ? _rawPrice : Number(_rawPrice);
+  const displayPrice: number = Number.isFinite(_numPrice) ? (_numPrice as number) : 0;
 
   useEffect(() => {
     if (!serviceData) {
@@ -40,6 +44,7 @@ const PaymentPage = () => {
     }
     // Scroll to top when component mounts
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    try { console.debug('PaymentPage serviceData:', serviceData); } catch {}
   }, [serviceData, navigate]);
 
   if (!user) {
@@ -216,7 +221,13 @@ const PaymentPage = () => {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5" />
-                    <span>Confirm & Pay {serviceData.price ? `Rs. ${serviceData.price}` : 'Securely'}</span>
+                    <span>
+                      Confirm & Pay {
+                        displayPrice === 0
+                          ? 'Free'
+                          : `PKR ${displayPrice.toLocaleString()}`
+                      }
+                    </span>
                   </div>
                 )}
               </Button>
@@ -259,6 +270,11 @@ const PaymentPage = () => {
                               {serviceData.providerType}
                             </span>
                           </div>
+                          <div className="text-lg font-bold text-primary mt-2">
+                            {displayPrice === 0
+                              ? 'Free'
+                              : `PKR ${displayPrice.toLocaleString()}`}
+                          </div>
                         </div>
                       </div>
                       
@@ -282,12 +298,14 @@ const PaymentPage = () => {
                             <span className="text-gray-600">{serviceData.duration}</span>
                           </div>
                         )}
-                        {serviceData.price && (
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                            <span className="text-gray-600 font-medium">Total Amount:</span>
-                            <span className="text-2xl font-bold text-green-600">Rs. {serviceData.price}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                          <span className="text-gray-600 font-medium">Total Amount:</span>
+                          <span className="text-2xl font-bold text-green-600">
+                            {displayPrice === 0
+                              ? 'Free'
+                              : `PKR ${displayPrice.toLocaleString()}`}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

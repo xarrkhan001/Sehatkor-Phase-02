@@ -54,7 +54,7 @@ const SearchPage = () => {
   const [allServices, setAllServices] = useState<SearchService[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarReady, setSidebarReady] = useState(false);
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
 
@@ -325,7 +325,11 @@ const SearchPage = () => {
         serviceName: service.name,
         providerId: (service as any)._providerId || service.id,
         providerName: service.provider,
-        providerType: (service as any)._providerType
+        providerType: (service as any)._providerType,
+        price: Number((service as any).price ?? 0),
+        image: service.image,
+        location: service.location,
+        phone: (service as any).providerPhone
       }
     });
   };
