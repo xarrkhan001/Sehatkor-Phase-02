@@ -70,6 +70,16 @@ const DoctorsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            // Badge priority: excellent > good > normal > others
+            const rank = (s: any) => {
+              const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
+              if (badge === 'excellent') return 3;
+              if (badge === 'good') return 2;
+              if (badge === 'normal') return 1;
+              return 0;
+            };
+            const rb = rank(b) - rank(a);
+            if (rb !== 0) return rb;
             const ar = (a as any).rating ?? 0;
             const br = (b as any).rating ?? 0;
             if (br !== ar) return br - ar;
@@ -98,18 +108,34 @@ const DoctorsPage = () => {
     if (!socket) return;
 
     const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
-      setDoctorServices(prevServices =>
-        prevServices.map(service =>
+      setDoctorServices(prevServices => {
+        const updated = prevServices.map(service =>
           service.id === data.serviceId
-            ? {
-                ...service,
-                rating: data.averageRating,
-                totalRatings: data.totalRatings,
-                ratingBadge: data.ratingBadge,
-              }
+            ? { ...service, rating: data.averageRating, totalRatings: data.totalRatings, ratingBadge: data.ratingBadge }
             : service
-        )
-      );
+        );
+        updated.sort((a: any, b: any) => {
+          const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
+          const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
+          if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          const rank = (s: any) => {
+            const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
+            if (badge === 'excellent') return 3;
+            if (badge === 'good') return 2;
+            if (badge === 'normal') return 1;
+            return 0;
+          };
+          const rb = rank(b) - rank(a);
+          if (rb !== 0) return rb;
+          const ar = (a as any).rating ?? 0;
+          const br = (b as any).rating ?? 0;
+          if (br !== ar) return br - ar;
+          const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+          const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+          return bd - ad;
+        });
+        return updated;
+      });
     };
 
     socket.on('rating_updated', handleRatingUpdate);
@@ -118,6 +144,18 @@ const DoctorsPage = () => {
       socket.off('rating_updated', handleRatingUpdate);
     };
   }, [socket]);
+
+  // Listen for per-user immediate badge updates
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      if (!detail) return;
+      if (detail.serviceType !== 'doctor') return;
+      setDoctorServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));
+    };
+    window.addEventListener('my_rating_updated', handler as EventListener);
+    return () => window.removeEventListener('my_rating_updated', handler as EventListener);
+  }, []);
 
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
@@ -144,6 +182,7 @@ const DoctorsPage = () => {
         detailAddress: (service as any).detailAddress,
         providerPhone: (service as any).providerPhone,
         totalRatings: (service as any).totalRatings || 0,
+        ratingBadge: (service as any).ratingBadge || null,
       }) as Service);
       setDoctorServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -153,6 +192,15 @@ const DoctorsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          const rank = (s: any) => {
+            const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
+            if (badge === 'excellent') return 3;
+            if (badge === 'good') return 2;
+            if (badge === 'normal') return 1;
+            return 0;
+          };
+          const rb = rank(b) - rank(a);
+          if (rb !== 0) return rb;
           const ar = (a as any).rating ?? 0;
           const br = (b as any).rating ?? 0;
           if (br !== ar) return br - ar;
@@ -376,6 +424,7 @@ const DoctorsPage = () => {
                     rating={service.rating} 
                     totalRatings={(service as any).totalRatings || 0}
                     ratingBadge={(service as any).ratingBadge}
+                    yourBadge={(service as any).myBadge || null}
                   />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
