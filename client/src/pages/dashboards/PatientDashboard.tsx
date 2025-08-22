@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ServiceManager from "@/lib/serviceManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ const PatientDashboard = () => {
   const { user, logout } = useAuth();
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [bookingPrices, setBookingPrices] = useState<Record<string, number>>({});
   
   const [stats] = useState({
     totalBookings: 8,
@@ -92,6 +94,52 @@ const PatientDashboard = () => {
   useEffect(() => {
     fetchBookings();
   }, [user?.id]);
+
+  // Normalize booking price like service cards (fallbacks included)
+  const getBookingPrice = (booking: any): number => {
+    const raw = booking?.amount ?? booking?.price ?? booking?.servicePrice ?? booking?.service?.price ?? booking?.serviceData?.price ?? 0;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : 0;
+  };
+
+  // If a booking has 0 price locally, fetch the exact service price and cache it
+  useEffect(() => {
+    const loadMissingPrices = async () => {
+      const updates: Record<string, number> = {};
+      for (const b of bookings) {
+        const localPrice = getBookingPrice(b);
+        if (localPrice > 0) continue;
+        if (!b?.serviceId || !b?.providerType) continue;
+        const normalizeProviderType = (t: string): 'clinic' | 'doctor' | 'laboratory' | 'pharmacy' => {
+          const low = (t || '').toString().toLowerCase();
+          if (low === 'lab' || low === 'laboratory') return 'laboratory';
+          if (low === 'hospital' || low === 'hospitals' || low === 'clinic') return 'clinic';
+          if (low === 'doctor' || low === 'doctors') return 'doctor';
+          if (low === 'pharmacy' || low === 'pharmacies') return 'pharmacy';
+          return 'clinic';
+        };
+        try {
+          const svc = await ServiceManager.fetchServiceById(String(b.serviceId), normalizeProviderType(b.providerType));
+          if (svc?.price != null) {
+            updates[b._id] = Number(svc.price) || 0;
+          }
+        } catch (e) {
+          // ignore individual failures, keep showing Free
+        }
+      }
+      if (Object.keys(updates).length) {
+        setBookingPrices(prev => ({ ...prev, ...updates }));
+      }
+    };
+    if (bookings?.length) {
+      loadMissingPrices();
+    }
+  }, [bookings]);
+
+  const resolveBookingPrice = (booking: any): number => {
+    const p = getBookingPrice(booking);
+    return p > 0 ? p : (bookingPrices[booking._id] ?? 0);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -238,7 +286,9 @@ const PatientDashboard = () => {
                                 {booking.status}
                               </Badge>
                               <p className="text-sm font-medium mt-1">
-                                PKR {(booking.amount || 0).toLocaleString()}
+                                {resolveBookingPrice(booking) === 0
+                                  ? 'Free'
+                                  : `PKR ${resolveBookingPrice(booking).toLocaleString()}`}
                               </p>
                             </div>
                           </div>

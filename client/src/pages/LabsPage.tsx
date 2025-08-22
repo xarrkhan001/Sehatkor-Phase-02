@@ -29,6 +29,7 @@ const LabsPage = () => {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
+  const [priceCache, setPriceCache] = useState<Record<string, number>>({});
 
   const { user, mode } = useAuth();
   const { socket } = useSocket();
@@ -58,12 +59,13 @@ const LabsPage = () => {
             provider: (service as any).providerName || "Laboratory",
             createdAt: (service as any).createdAt,
             _providerId: (service as any).providerId,
+            _providerType: (service as any).providerType,
             googleMapLink: (service as any).googleMapLink,
             detailAddress: (service as any).detailAddress,
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
-          } as Service;
+          } as unknown as Service;
           // Hydrate user's own badge from localStorage
           try {
             const uid = (user as any)?.id || (user as any)?._id || 'anon';
@@ -168,6 +170,27 @@ const LabsPage = () => {
     return () => window.removeEventListener('my_rating_updated', handler as EventListener);
   }, []);
 
+  // Backfill exact prices for zero-priced cards
+  useEffect(() => {
+    const fillPrices = async () => {
+      const updates: Record<string, number> = {};
+      for (const s of labServices) {
+        if ((s.price ?? 0) > 0) continue;
+        const type = ((s as any)?._providerType ?? 'laboratory') as 'clinic' | 'doctor' | 'laboratory' | 'pharmacy';
+        try {
+          const svc = await ServiceManager.fetchServiceById(String(s.id), type);
+          const p = Number((svc as any)?.price ?? 0);
+          if (p > 0) updates[s.id] = p;
+        } catch {}
+      }
+      if (Object.keys(updates).length) {
+        setPriceCache(prev => ({ ...prev, ...updates }));
+        setLabServices(prev => prev.map(s => updates[s.id] ? ({ ...s, price: updates[s.id] }) as Service : s));
+      }
+    };
+    if (labServices.length) void fillPrices();
+  }, [labServices]);
+
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
     const next = page + 1;
@@ -189,12 +212,13 @@ const LabsPage = () => {
           provider: (service as any).providerName || "Laboratory",
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
+          _providerType: (service as any).providerType,
           googleMapLink: (service as any).googleMapLink,
           detailAddress: (service as any).detailAddress,
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings,
           ratingBadge: (service as any).ratingBadge || null,
-        } as Service;
+        } as unknown as Service;
         // Hydrate user's own badge from localStorage
         try {
           const uid = (user as any)?.id || (user as any)?._id || 'anon';
@@ -204,6 +228,7 @@ const LabsPage = () => {
         } catch {}
         return s;
       });
+
       setLabServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
         for (const s of mapped) byId.set(s.id, s);
