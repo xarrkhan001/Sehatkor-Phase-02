@@ -382,9 +382,9 @@ const PharmaciesPage = () => {
           {filteredServices.map((service) => (
             <Card
               key={service.id}
-              className="shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50"
+              className="shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 h-full flex flex-col"
             >
-              <CardContent className="p-5">
+              <CardContent className="p-5 h-full flex flex-col">
                 {/* Image */}
                 <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
                   {service.image ? (
@@ -456,9 +456,9 @@ const PharmaciesPage = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-auto">
                   <Button 
-                    className="flex-1 min-w-[100px]"
+                    className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
                     onClick={() => handleBookNow(service)}
                   >
                     <Clock className="w-4 h-4 mr-1" /> Book Now
@@ -466,7 +466,7 @@ const PharmaciesPage = () => {
                   <Button
                     variant="outline"
                     onClick={() => setShowLocationMap(service.id)}
-                    className="flex-1 min-w-[100px]"
+                    className="flex-1 min-w-[100px] bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
                   >
                     <MapPin className="w-4 h-4 mr-1" /> Location
                   </Button>
