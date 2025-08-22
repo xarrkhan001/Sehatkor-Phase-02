@@ -57,6 +57,7 @@ const SearchPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarReady, setSidebarReady] = useState(false);
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
+  const [priceCache, setPriceCache] = useState<Record<string, number>>({});
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -234,6 +235,30 @@ const SearchPage = () => {
   useEffect(() => {
     loadServices();
   }, [user?.id]);
+
+  // Backfill exact prices for cards that show 0
+  useEffect(() => {
+    const fillPrices = async () => {
+      const updates: Record<string, number> = {};
+      for (const s of allServices) {
+        if (!s?.isReal) continue;
+        if ((s.price ?? 0) > 0) continue;
+        const type = (s as any)._providerType as any;
+        if (!type) continue;
+        try {
+          const svc = await ServiceManager.fetchServiceById(String(s.id), type);
+          if (svc?.price != null && Number(svc.price) > 0) {
+            updates[s.id] = Number(svc.price);
+          }
+        } catch {}
+      }
+      if (Object.keys(updates).length) {
+        setPriceCache(prev => ({ ...prev, ...updates }));
+        setAllServices(prev => prev.map(s => updates[s.id] ? ({ ...s, price: updates[s.id] }) as any : s));
+      }
+    };
+    if (allServices.length) fillPrices();
+  }, [allServices]);
 
   // Trigger desktop sidebar slide-in
   useEffect(() => {

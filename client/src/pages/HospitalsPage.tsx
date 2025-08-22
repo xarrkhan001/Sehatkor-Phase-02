@@ -31,6 +31,7 @@ const HospitalsPage = () => {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
+  const [priceCache, setPriceCache] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -56,6 +57,7 @@ const HospitalsPage = () => {
           provider: (service as any).providerName || "Hospital",
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
+          _providerType: (service as any).providerType,
           googleMapLink: (service as any).googleMapLink,
           city: (service as any).city,
           detailAddress: (service as any).detailAddress,
@@ -70,7 +72,7 @@ const HospitalsPage = () => {
               return my ? { myBadge: my } : {};
             } catch { return {}; }
           })(),
-        }) as Service);
+        }) as unknown as Service);
         setHospitalServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
           for (const s of mapped) byId.set(s.id, s);
@@ -111,6 +113,28 @@ const HospitalsPage = () => {
     loadPage(1);
     return () => { isMounted = false; };
   }, [user?.id]);
+
+  // Backfill exact prices for zero-priced cards
+  useEffect(() => {
+    const fillPrices = async () => {
+      const updates: Record<string, number> = {};
+      for (const s of hospitalServices) {
+        if ((s.price ?? 0) > 0) continue;
+        const type = ((s as any)?._providerType ?? 'clinic') as 'clinic' | 'doctor' | 'laboratory' | 'pharmacy';
+        if (!type) continue;
+        try {
+          const svc = await ServiceManager.fetchServiceById(String(s.id), type);
+          const p = Number((svc as any)?.price ?? 0);
+          if (p > 0) updates[s.id] = p;
+        } catch {}
+      }
+      if (Object.keys(updates).length) {
+        setPriceCache(prev => ({ ...prev, ...updates }));
+        setHospitalServices(prev => prev.map(s => updates[s.id] ? ({ ...s, price: updates[s.id] }) as Service : s));
+      }
+    };
+    if (hospitalServices.length) void fillPrices();
+  }, [hospitalServices]);
 
   useEffect(() => {
     if (!socket) return;
@@ -185,13 +209,14 @@ const HospitalsPage = () => {
         provider: (service as any).providerName || "Hospital",
         createdAt: (service as any).createdAt,
         _providerId: (service as any).providerId,
+        _providerType: (service as any).providerType,
         googleMapLink: (service as any).googleMapLink,
         city: (service as any).city,
         detailAddress: (service as any).detailAddress,
         providerPhone: (service as any).providerPhone,
         totalRatings: (service as any).totalRatings,
         ratingBadge: (service as any).ratingBadge || null,
-      }) as Service);
+      }) as unknown as Service);
       setHospitalServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
         for (const s of mapped) byId.set(s.id, s);
