@@ -480,7 +480,7 @@ const HospitalsPage = () => {
                       Rate
                     </Button>
                   )}
-                  <Button variant="secondary" onClick={() => (window.location.href = `/service/${service.id}`)} className="flex-1 min-w-[100px]">
+                  <Button variant="secondary" onClick={() => navigate(`/service/${service.id}`, { state: { service } })} className="flex-1 min-w-[100px]">
                     View Details
                   </Button>
                 </div>

@@ -476,7 +476,7 @@ const DoctorsPage = () => {
                   )}
                   <Button
                     variant="secondary"
-                    onClick={() => (window.location.href = `/service/${service.id}`)}
+                    onClick={() => navigate(`/service/${service.id}`, { state: { service } })}
                     className="flex-1 min-w-[100px]"
                   >
                     View Details

@@ -36,7 +36,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   const [serviceImage, setServiceImage] = useState<string>('');
   const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  
+  const [isSaving, setIsSaving] = useState(false);
+
   const [serviceForm, setServiceForm] = useState({
     name: '',
     price: '',
@@ -80,6 +81,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   };
 
   const handleAddService = async () => {
+    if (isSaving) return;
     if (!serviceForm.name || !userId) {
       toast({
         title: "Error",
@@ -89,6 +91,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       return;
     }
 
+    setIsSaving(true);
     const parsedPrice = serviceForm.price ? parseFloat(serviceForm.price) : 0;
     const parsedStock = serviceForm.stock ? parseInt(serviceForm.stock) : undefined;
 
@@ -214,6 +217,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
         description: e?.message || 'Failed to save service. Please check your connection and try again.', 
         variant: 'destructive' 
       });
+    } finally {
+      setIsSaving(false);
     }
 
     resetForm();
@@ -393,8 +398,15 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                 </div>
 
-                <Button onClick={handleAddService} className="w-full">
-                  {editingService ? 'Update Service' : 'Add Service'}
+                <Button onClick={handleAddService} className="w-full" disabled={isSaving || isUploadingImage}>
+                  {isSaving ? (
+                    <span className="inline-flex items-center">
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                      {editingService ? 'Updating...' : 'Adding...'}
+                    </span>
+                  ) : (
+                    editingService ? 'Update Service' : 'Add Service'
+                  )}
                 </Button>
               </div>
             </DialogContent>
