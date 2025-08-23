@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock, Star } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -485,7 +485,7 @@ const LabsPage = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="flex flex-wrap gap-2 mt-auto">
+                <div className="mt-auto flex flex-wrap gap-2">
                   <Button 
                     className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
                     onClick={() => handleBookNow(service)}
@@ -499,18 +499,18 @@ const LabsPage = () => {
                   >
                     <MapPin className="w-4 h-4 mr-1" /> Location
                   </Button>
-                  {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                  {user && user.role === 'patient' && (
                     <Button
-                      variant="secondary"
+                      variant="outline"
                       onClick={() => handleRateService(service)}
                       className="flex-1 min-w-[100px]"
                     >
-                      Rate
+                      <Star className="w-4 h-4 mr-1" /> Rate
                     </Button>
                   )}
                   <Button
                     variant="secondary"
-                    onClick={() => (window.location.href = `/service/${service.id}`)}
+                    onClick={() => navigate(`/service/${service.id}`, { state: { service } })}
                     className="flex-1 min-w-[100px]"
                   >
                     View Details

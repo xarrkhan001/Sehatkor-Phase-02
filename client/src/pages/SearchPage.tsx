@@ -43,6 +43,7 @@ const SearchPage = () => {
   const [serviceType, setServiceType] = useState<string>("all");
   const [location, setLocation] = useState<string>("all");
   const [priceRange, setPriceRange] = useState([0, 50000]);
+  const [maxPrice, setMaxPrice] = useState(50000);
   const [minRating, setMinRating] = useState(0);
   const [homeServiceOnly, setHomeServiceOnly] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -226,6 +227,13 @@ const SearchPage = () => {
     });
     
       setAllServices(formattedRealServices);
+      // Dynamically set the price slider max to include all services
+      const computedMax = Math.max(
+        50000,
+        ...formattedRealServices.map((s: any) => Number(s?.price ?? 0)).filter((n) => Number.isFinite(n))
+      );
+      setMaxPrice(computedMax);
+      setPriceRange([0, computedMax]);
       setIsLoading(false);
     } catch (error) {
       console.log('Backend is offline, no services available');
@@ -389,7 +397,7 @@ const SearchPage = () => {
     setSearchTerm("");
     setServiceType("all");
     setLocation("all");
-    setPriceRange([0, 50000]);
+    setPriceRange([0, maxPrice]);
     setMinRating(0);
     setHomeServiceOnly(false);
   };
@@ -575,7 +583,7 @@ const SearchPage = () => {
                     <Slider
                       value={priceRange}
                       onValueChange={setPriceRange}
-                      max={50000}
+                      max={maxPrice}
                       min={0}
                       step={100}
                       className="w-full"
