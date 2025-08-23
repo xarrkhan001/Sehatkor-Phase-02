@@ -37,6 +37,22 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // Variants state (doctor only)
+  const [variants, setVariants] = useState<Array<{
+    id: string;
+    timeLabel?: string;
+    startTime?: string;
+    endTime?: string;
+    days?: string;
+    price?: string;
+    city?: string;
+    detailAddress?: string;
+    googleMapLink?: string;
+    isActive?: boolean;
+    imageUrl?: string;
+    imagePublicId?: string;
+    imageFile?: File | null;
+  }>>([]);
 
   const [serviceForm, setServiceForm] = useState({
     name: '',
@@ -78,6 +94,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     });
     setServiceImage('');
     setEditingService(null);
+    setVariants([]);
   };
 
   const handleAddService = async () => {
@@ -134,6 +151,40 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           providerName: userName,
         });
         
+        // Upload variant images if any and build payload variants
+        let payloadVariants: any[] | undefined = undefined;
+        if (variants.length > 0) {
+          setIsUploadingImage(true);
+          try {
+            const processed: any[] = [];
+            for (const v of variants) {
+              let vImageUrl = v.imageUrl;
+              let vImagePublicId = v.imagePublicId;
+              if (v.imageFile) {
+                const r = await uploadFile(v.imageFile);
+                vImageUrl = r?.url;
+                vImagePublicId = r?.public_id;
+              }
+              processed.push({
+                timeLabel: v.timeLabel,
+                startTime: v.startTime,
+                endTime: v.endTime,
+                days: v.days ? v.days.split(',').map(s => s.trim()) : undefined,
+                price: v.price ? parseFloat(v.price) : undefined,
+                city: v.city,
+                detailAddress: v.detailAddress,
+                googleMapLink: v.googleMapLink,
+                isActive: v.isActive ?? true,
+                imageUrl: vImageUrl,
+                imagePublicId: vImagePublicId,
+              });
+            }
+            payloadVariants = processed;
+          } finally {
+            setIsUploadingImage(false);
+          }
+        }
+
         if (editingService) {
           const updated = await doctorUpdate(editingService.id, {
             name: serviceForm.name,
@@ -146,6 +197,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             googleMapLink: serviceForm.googleMapLink,
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
+            ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           const updatedLocal = ServiceManager.updateService(editingService.id, {
             name: updated.name,
@@ -154,6 +206,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             category: updated.category,
             image: updated.imageUrl,
             duration: updated.duration,
+            // variants kept in sync on next fetch, optional local update skipped for brevity
           } as any);
           const list = services.map(s => s.id === editingService.id ? (updatedLocal as any) : s);
           onServicesUpdate(list);
@@ -171,6 +224,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
             providerName: userName,
+            ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           console.log('Doctor service created:', created);
           
@@ -239,6 +293,29 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       detailAddress: (service as any).detailAddress || ''
     });
     setServiceImage(service.image || '');
+    // Load variants if any
+    const svc: any = service as any;
+    if (Array.isArray(svc.variants)) {
+      setVariants(
+        svc.variants.map((v: any) => ({
+          id: v.id || v._id || Math.random().toString(36).slice(2),
+          timeLabel: v.timeLabel,
+          startTime: v.startTime,
+          endTime: v.endTime,
+          days: Array.isArray(v.days) ? v.days.join(', ') : v.days,
+          price: v.price != null ? String(v.price) : '',
+          city: v.city,
+          detailAddress: v.detailAddress,
+          googleMapLink: v.googleMapLink,
+          isActive: v.isActive,
+          imageUrl: v.imageUrl,
+          imagePublicId: v.imagePublicId,
+          imageFile: null,
+        }))
+      );
+    } else {
+      setVariants([]);
+    }
     setIsAddServiceOpen(true);
   };
 
@@ -398,6 +475,98 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                 </div>
 
+                {/* Variants Editor - Doctors only */}
+                {userRole === 'doctor' && (
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Time/Location Variants</h4>
+                    <p className="text-xs text-muted-foreground">Add multiple time/location entries. Leave empty if this service has a single default time/location.</p>
+
+                    <div className="space-y-3">
+                      {variants.map((v, idx) => (
+                        <div key={v.id} className="border rounded-md p-3 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Variant #{idx + 1}</span>
+                            <Button type="button" size="sm" variant="destructive" onClick={() => setVariants(variants.filter(x => x.id !== v.id))}>Remove</Button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <Label>Time Label</Label>
+                              <Input value={v.timeLabel || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, timeLabel: e.target.value }; setVariants(nv);
+                              }} placeholder="Morning / Evening" />
+                            </div>
+                            <div>
+                              <Label>Days</Label>
+                              <Input value={v.days || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, days: e.target.value }; setVariants(nv);
+                              }} placeholder="Mon, Wed, Fri" />
+                            </div>
+                            <div>
+                              <Label>Start Time</Label>
+                              <Input value={v.startTime || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, startTime: e.target.value }; setVariants(nv);
+                              }} placeholder="09:00" />
+                            </div>
+                            <div>
+                              <Label>End Time</Label>
+                              <Input value={v.endTime || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, endTime: e.target.value }; setVariants(nv);
+                              }} placeholder="12:00" />
+                            </div>
+                            <div>
+                              <Label>Price (optional override)</Label>
+                              <Input value={v.price || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, price: e.target.value }; setVariants(nv);
+                              }} placeholder="e.g., 2500" />
+                            </div>
+                            <div>
+                              <Label>City</Label>
+                              <Input value={v.city || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, city: e.target.value }; setVariants(nv);
+                              }} placeholder="e.g., Karachi" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <Label>Detailed Address</Label>
+                              <Textarea value={v.detailAddress || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, detailAddress: e.target.value }; setVariants(nv);
+                              }} rows={2} placeholder="Complete address" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <Label>Google Maps Link</Label>
+                              <Input value={v.googleMapLink || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, googleMapLink: e.target.value }; setVariants(nv);
+                              }} placeholder="https://maps.google.com/..." />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <Label>Variant Image</Label>
+                              <ImageUpload
+                                onImageSelect={(file, preview) => {
+                                  const nv = [...variants]; nv[idx] = { ...v, imageFile: file, imageUrl: preview };
+                                  setVariants(nv);
+                                }}
+                                onImageRemove={() => {
+                                  const nv = [...variants]; nv[idx] = { ...v, imageFile: null, imageUrl: '', imagePublicId: undefined };
+                                  setVariants(nv);
+                                }}
+                                currentImage={v.imageUrl || ''}
+                                placeholder="Upload variant image"
+                                className="w-full sm:max-w-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button type="button" variant="outline" onClick={() => setVariants([
+                      ...variants,
+                      { id: Math.random().toString(36).slice(2), isActive: true, imageFile: null }
+                    ])}>
+                      <Plus className="w-4 h-4 mr-2" /> Add Variant
+                    </Button>
+                  </div>
+                )}
+
                 <Button onClick={handleAddService} className="w-full" disabled={isSaving || isUploadingImage}>
                   {isSaving ? (
                     <span className="inline-flex items-center">
@@ -469,6 +638,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       <TableHead>Service</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
+                      {userRole === 'doctor' && (<TableHead>Variants</TableHead>)}
                       {userRole === 'pharmacy' ? (
                         <TableHead>Stock</TableHead>
                       ) : (
@@ -503,6 +673,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           <Badge variant="outline">{service.category}</Badge>
                         </TableCell>
                         <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
+                        {userRole === 'doctor' && (
+                          <TableCell>
+                            {(service as any).variants?.length ? (service as any).variants.length : (editingService && editingService.id === service.id ? variants.length : 0)}
+                          </TableCell>
+                        )}
                         <TableCell>
                           {userRole === 'pharmacy' && 'stock' in service ? 
                             (service as any).stock || 'N/A' : 

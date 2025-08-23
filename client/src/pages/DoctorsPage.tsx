@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
@@ -35,6 +35,7 @@ const DoctorsPage = () => {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
+  const [activeVariantIndex, setActiveVariantIndex] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -66,6 +67,10 @@ const DoctorsPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings || 0,
           ratingBadge: (service as any).ratingBadge || null,
+          // Preserve variants from backend if available
+          ...(Array.isArray((service as any).variants) && (service as any).variants.length > 0
+            ? { variants: (service as any).variants }
+            : {}),
         }) as Service);
         setDoctorServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -149,6 +154,26 @@ const DoctorsPage = () => {
       socket.off('rating_updated', handleRatingUpdate);
     };
   }, [socket]);
+
+  // Auto-advance variant/base slides every 10 seconds for services with multiple slides
+  useEffect(() => {
+    if (!doctorServices.length) return;
+    const timer = setInterval(() => {
+      setActiveVariantIndex(prev => {
+        const next: Record<string, number> = { ...prev };
+        for (const svc of doctorServices) {
+          const variants = (svc as any).variants as any[] | undefined;
+          const total = 1 + (Array.isArray(variants) ? variants.length : 0);
+          if (total > 1) {
+            const curr = prev[svc.id] ?? 0;
+            next[svc.id] = (curr + 1) % total;
+          }
+        }
+        return next;
+      });
+    }, 10000);
+    return () => clearInterval(timer);
+  }, [doctorServices]);
 
   // Listen for per-user immediate badge updates
   useEffect(() => {
@@ -290,12 +315,84 @@ const DoctorsPage = () => {
   };
 
   const getServiceAddress = (service: any): string => {
-    // Always use real address data from dashboard
-    if (service.detailAddress) {
-      return service.detailAddress;
+    // Determine address using active variant if available
+    const variants = (service as any).variants as any[] | undefined;
+    const idx = activeVariantIndex[service.id] ?? 0;
+    const v = variants && variants.length > 0 ? variants[Math.max(0, Math.min(idx, variants.length - 1))] : undefined;
+    const detail = v?.detailAddress || service.detailAddress;
+    if (detail) return detail;
+    return v?.city || service.location || service.city || "Location not specified";
+  };
+
+  const getDisplayForService = (service: any) => {
+    const variants = (service as any).variants as any[] | undefined;
+    const vlen = Array.isArray(variants) ? variants.length : 0;
+    const totalSlides = 1 + vlen; // 0 => base, 1.. => variants
+    const rawIdx = activeVariantIndex[service.id] ?? 0;
+    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
+    if (idx === 0 || vlen === 0) {
+      return {
+        image: service.image,
+        price: service.price,
+        location: service.location,
+        city: service.location || service.city,
+        detailAddress: service.detailAddress,
+        googleMapLink: service.googleMapLink,
+      };
     }
-    // Fallback to city only if no detailed address
-    return service.location || service.city || "Location not specified";
+    const v = variants![idx - 1];
+    return {
+      image: v?.imageUrl || service.image,
+      price: typeof v?.price === 'number' ? v!.price : service.price,
+      location: v?.city || service.location || service.city,
+      city: v?.city || service.location || service.city,
+      detailAddress: v?.detailAddress || service.detailAddress,
+      googleMapLink: v?.googleMapLink || service.googleMapLink,
+    };
+  };
+
+  // Build display time label for the active variant (timeLabel or start-end + days)
+  const getTimeInfoForService = (service: any): string | null => {
+    const variants = (service as any).variants as any[] | undefined;
+    const vlen = Array.isArray(variants) ? variants.length : 0;
+    const totalSlides = 1 + vlen;
+    const rawIdx = activeVariantIndex[service.id] ?? 0;
+    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
+    // For base (idx===0), only show if top-level time fields exist (rare)
+    if (idx === 0) {
+      const formatTime = (t?: string) => (t ? String(t) : "");
+      const label = (service as any).timeLabel || ((service as any).startTime && (service as any).endTime ? `${formatTime((service as any).startTime)} - ${formatTime((service as any).endTime)}` : "");
+      const days = (service as any).days ? String((service as any).days) : "";
+      const parts = [label, days].filter(Boolean);
+      return parts.length ? parts.join(" · ") : null;
+    }
+    const v = variants && variants[idx - 1];
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const days = v.days ? String(v.days) : "";
+    const parts = [label, days].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
+  };
+
+  // Build numeric time range for the active variant (e.g., 7:00 PM - 10:00 PM)
+  const getTimeRangeForService = (service: any): string | null => {
+    const variants = (service as any).variants as any[] | undefined;
+    const vlen = Array.isArray(variants) ? variants.length : 0;
+    const totalSlides = 1 + vlen;
+    const rawIdx = activeVariantIndex[service.id] ?? 0;
+    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    if (idx === 0) {
+      const hasBase = (service as any).startTime && (service as any).endTime;
+      if (hasBase) return `${formatTime((service as any).startTime)} - ${formatTime((service as any).endTime)}`;
+      // fallback to label only if numeric range missing
+      return (service as any).timeLabel ? String((service as any).timeLabel) : null;
+    }
+    const v = variants && variants[idx - 1];
+    if (!v) return null;
+    if (v.startTime && v.endTime) return `${formatTime(v.startTime)} - ${formatTime(v.endTime)}`;
+    return v.timeLabel ? String(v.timeLabel) : null;
   };
 
   const currentMapService = showLocationMap
@@ -390,10 +487,10 @@ const DoctorsPage = () => {
             >
               <CardContent className="p-5 flex flex-col h-full">
                 {/* Image */}
-                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
-                  {service.image ? (
+                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4 relative">
+                  {getDisplayForService(service).image ? (
                     <img
-                      src={service.image}
+                      src={getDisplayForService(service).image}
                       alt={service.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -408,6 +505,52 @@ const DoctorsPage = () => {
                     />
                   ) : (
                     <span className="text-gray-400 text-4xl">🩺</span>
+                  )}
+                  {/* Variant slider controls */}
+                  {(() => { const v = (service as any).variants as any[] | undefined; const total = 1 + (Array.isArray(v) ? v.length : 0); return total > 1; })() && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const v = (service as any).variants as any[] | undefined;
+                          const total = 1 + (Array.isArray(v) ? v.length : 0);
+                          const curr = activeVariantIndex[service.id] ?? 0;
+                          setActiveVariantIndex(prev => ({ ...prev, [service.id]: (curr - 1 + total) % total }));
+                        }}
+                        className="h-8 w-8 rounded-full bg-white/90 border border-gray-200 shadow hover:bg-white"
+                        aria-label="Previous variant"
+                      >
+                        <ChevronLeft className="w-4 h-4 m-auto" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const v = (service as any).variants as any[] | undefined;
+                          const total = 1 + (Array.isArray(v) ? v.length : 0);
+                          const curr = activeVariantIndex[service.id] ?? 0;
+                          setActiveVariantIndex(prev => ({ ...prev, [service.id]: (curr + 1) % total }));
+                        }}
+                        className="h-8 w-8 rounded-full bg-white/90 border border-gray-200 shadow hover:bg-white"
+                        aria-label="Next variant"
+                      >
+                        <ChevronRight className="w-4 h-4 m-auto" />
+                      </button>
+                    </div>
+                  )}
+                  {/* Time info badge */}
+                  {getTimeInfoForService(service) && (
+                    <div className="absolute left-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{getTimeInfoForService(service)}</span>
+                    </div>
+                  )}
+                  {getTimeRangeForService(service) && (
+                    <div className="absolute right-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{getTimeRangeForService(service)}</span>
+                    </div>
                   )}
                 </div>
 
@@ -424,9 +567,9 @@ const DoctorsPage = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-primary">
-                      {service.price === 0
+                      {getDisplayForService(service).price === 0
                         ? "Free"
-                        : `PKR ${service.price.toLocaleString()}`}
+                        : `PKR ${Number(getDisplayForService(service).price).toLocaleString()}`}
                     </div>
                     <Badge 
                       variant="outline" 
@@ -452,7 +595,7 @@ const DoctorsPage = () => {
                   />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
-                    <span>{service.location}</span>
+                    <span>{getDisplayForService(service).location}</span>
                   </div>
                   {service.homeService && (
                     <div className="flex items-center gap-1 text-green-600">
@@ -474,7 +617,44 @@ const DoctorsPage = () => {
                 <div className="mt-auto flex flex-wrap gap-2">
                   <Button 
                     className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-                    onClick={() => handleBookNow(service)}
+                    onClick={() => {
+                      const disp = getDisplayForService(service);
+                      // Navigate with active variant values
+                      if (user && user.role !== 'patient' && mode !== 'patient') {
+                        toast.error('Providers must switch to Patient Mode to book services.', {
+                          description: 'Click your profile icon and use the toggle to switch modes.',
+                        });
+                        return;
+                      }
+                      if (user && (service as any)._providerId === user.id) {
+                        toast.error("You cannot book your own service.");
+                        return;
+                      }
+                      const variants = (service as any).variants as any[] | undefined;
+                      const total = 1 + (Array.isArray(variants) ? variants.length : 0);
+                      const rawIdx = activeVariantIndex[service.id] ?? 0;
+                      const activeIdx = ((rawIdx % total) + total) % total; // 0 = base, 1.. = variant
+                      const timeLabel = getTimeInfoForService(service);
+                      const timeRange = getTimeRangeForService(service);
+                      navigate('/payment', {
+                        state: {
+                          serviceId: service.id,
+                          serviceName: service.name,
+                          providerId: (service as any)._providerId || service.id,
+                          providerName: service.provider,
+                          providerType: 'doctor',
+                          price: Number(disp.price ?? 0),
+                          currency: 'PKR',
+                          image: disp.image,
+                          location: disp.location,
+                          phone: (service as any).providerPhone,
+                          // variant context
+                          variantIndex: activeIdx,
+                          variantLabel: timeLabel,
+                          variantTimeRange: timeRange,
+                        }
+                      });
+                    }}
                   >
                     <Clock className="w-4 h-4 mr-1" /> Book Now
                   </Button>
@@ -496,7 +676,24 @@ const DoctorsPage = () => {
                   )}
                   <Button
                     variant="secondary"
-                    onClick={() => navigate(`/service/${service.id}`, { state: { service } })}
+                    onClick={() => {
+                      const disp = getDisplayForService(service);
+                      const timeInfo = getTimeInfoForService(service);
+                      navigate(`/service/${service.id}`, {
+                        state: {
+                          service: {
+                            ...service,
+                            image: disp.image,
+                            price: disp.price,
+                            location: disp.location,
+                            detailAddress: disp.detailAddress,
+                            googleMapLink: disp.googleMapLink,
+                            _providerType: 'doctor',
+                            timeInfo,
+                          }
+                        }
+                      });
+                    }}
                     className="flex-1 min-w-[100px]"
                   >
                     View Details
@@ -546,20 +743,20 @@ const DoctorsPage = () => {
             <div className="space-y-3">
               <div>
                 <p className="text-sm font-medium text-gray-600">Location</p>
-                <p className="text-base">{currentMapService.location}</p>
+                <p className="text-base">{getDisplayForService(currentMapService).location}</p>
               </div>
               
-              {currentMapService.address && (
+              {getServiceAddress(currentMapService) && (
                 <div>
                   <p className="text-sm font-medium text-gray-600">Address</p>
-                  <p className="text-base">{currentMapService.address}</p>
+                  <p className="text-base">{getServiceAddress(currentMapService)}</p>
                 </div>
               )}
               
-              {(currentMapService as any).googleMapLink && (
+              {(getDisplayForService(currentMapService).googleMapLink) && (
                 <Button 
                   className="w-full mt-4"
-                  onClick={() => window.open((currentMapService as any).googleMapLink, '_blank')}
+                  onClick={() => window.open(getDisplayForService(currentMapService).googleMapLink as string, '_blank')}
                 >
                   <MapPin className="w-4 h-4 mr-2" />
                   Open in Google Maps

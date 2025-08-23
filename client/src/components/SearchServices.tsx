@@ -13,6 +13,17 @@ interface SearchService {
   description: string;
   icon: string; // emoji fallback
   image?: string;
+  variants?: Array<{
+    imageUrl?: string;
+    price?: number;
+    city?: string;
+    detailAddress?: string;
+    googleMapLink?: string;
+    timeLabel?: string;
+    startTime?: string;
+    endTime?: string;
+    days?: string;
+  }>;
   providerName: string;
   city?: string;
   providerType: Service['providerType'];
@@ -40,6 +51,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [realServices, setRealServices] = useState<SearchService[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
+  const [activeIdxById, setActiveIdxById] = useState<Record<string, number>>({});
 
   const categories = ["All Categories", "Doctor", "Lab Test", "Medicine", "Surgery"];
 
@@ -55,6 +67,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           category: mapServiceToSearchCategory(s),
           icon: getServiceIcon(s),
           image: (s as any).image,
+          variants: Array.isArray((s as any).variants) ? (s as any).variants : [],
           providerName: s.providerName,
           city: (s as any).city,
           providerType: s.providerType,
@@ -115,6 +128,54 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
 
   const shownServices = filteredServices.slice(0, 8);
 
+  // Variant helpers (match Compare/Search pages minimal subset)
+  const getSlides = (svc: SearchService) => {
+    const base = {
+      imageUrl: svc.image,
+      price: svc.price,
+      city: svc.city,
+      detailAddress: svc.detailAddress,
+      googleMapLink: svc.googleMapLink,
+      timeLabel: undefined as string | undefined,
+      startTime: undefined as string | undefined,
+      endTime: undefined as string | undefined,
+      days: undefined as string | undefined,
+    };
+    const variants = Array.isArray(svc.variants) ? svc.variants : [];
+    return [base, ...variants];
+  };
+  const getActiveSlide = (svc: SearchService) => {
+    const slides = getSlides(svc);
+    const raw = activeIdxById[svc.id] ?? 0;
+    if (!slides.length) return undefined;
+    const safe = ((raw % slides.length) + slides.length) % slides.length;
+    return slides[safe];
+  };
+  const getDisplayImage = (svc: SearchService) => getActiveSlide(svc)?.imageUrl || svc.image;
+  const getDisplayPrice = (svc: SearchService) => {
+    const p = getActiveSlide(svc)?.price;
+    return p != null && !Number.isNaN(Number(p)) ? Number(p) : svc.price;
+  };
+  const getDisplayCity = (svc: SearchService) => getActiveSlide(svc)?.city || svc.city;
+  const getDisplayTimeInfo = (svc: SearchService): string | null => {
+    const v: any = getActiveSlide(svc);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const days = v.days ? String(v.days) : "";
+    const parts = [label, days].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
+  };
+  const getDisplayTimeRange = (svc: SearchService): string | null => {
+    const v: any = getActiveSlide(svc);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    if (v.startTime && v.endTime) return `${formatTime(v.startTime)} - ${formatTime(v.endTime)}`;
+    return v.timeLabel ? String(v.timeLabel) : null;
+  };
+  const nextVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+  const prevVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) - 1 }));
+
   const getBadgeStyles = (badge?: SearchService['ratingBadge']) => {
     switch (badge) {
       case 'excellent':
@@ -153,6 +214,11 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     setSearchTerm(service.name);
     setIsOpen(false);
     // Navigate directly to detail page with state for fidelity
+    const slides = getSlides(service);
+    const rawIdx = activeIdxById[service.id] ?? 0;
+    const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
+    const timeLabel = getDisplayTimeInfo(service);
+    const timeRange = getDisplayTimeRange(service);
     navigate(`/service/${service.id}` , {
       state: {
         from: locationHook.pathname + locationHook.search,
@@ -161,18 +227,21 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           id: service.id,
           name: service.name,
           description: service.description,
-          price: service.price ?? 0,
+          price: getDisplayPrice(service) ?? service.price ?? 0,
           rating: service.rating ?? 0,
           provider: service.providerName,
-          image: service.image,
+          image: getDisplayImage(service) ?? service.image,
           type: service.category === 'Lab Test' ? 'Test' : service.category === 'Medicine' ? 'Medicine' : service.category === 'Surgery' ? 'Surgery' : 'Treatment',
           providerType: service.providerType,
           isReal: true,
           ratingBadge: service.ratingBadge ?? null,
-          location: service.city ?? undefined,
+          location: getDisplayCity(service) ?? service.city ?? undefined,
           address: service.detailAddress ?? undefined,
           providerPhone: service.providerPhone ?? undefined,
           googleMapLink: service.googleMapLink ?? undefined,
+          variantIndex: activeIdx,
+          variantLabel: timeLabel ?? undefined,
+          variantTimeRange: timeRange ?? undefined,
         }
       }
     });
@@ -249,17 +318,37 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
               className="px-3 py-2.5 hover:bg-gray-50/80 cursor-pointer text-sm transition-colors group active:bg-gray-100"
             >
               <div className="flex items-center gap-3">
-                {service.image ? (
-                  <img
-                    src={service.image}
-                    alt={service.name}
-                    className="w-10 h-10 rounded-md object-cover shadow-sm ring-1 ring-gray-100"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded-md flex items-center justify-center text-base ring-1 ring-gray-100">
-                    {service.icon}
-                  </div>
-                )}
+                <div className="relative">
+                  {getDisplayImage(service) ? (
+                    <img
+                      src={getDisplayImage(service)!}
+                      alt={service.name}
+                      className="w-12 h-12 rounded-md object-cover shadow-sm ring-1 ring-gray-100"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-md flex items-center justify-center text-base ring-1 ring-gray-100">
+                      {service.icon}
+                    </div>
+                  )}
+                  {getSlides(service).length > 1 && (
+                    <div className="absolute -bottom-1 right-0 flex items-center gap-0.5">
+                      <button
+                        className="px-1 py-0.5 text-[10px] rounded bg-white/90 border border-gray-200 shadow"
+                        onClick={(e) => { e.stopPropagation(); prevVariant(service.id); }}
+                        aria-label="Prev"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        className="px-1 py-0.5 text-[10px] rounded bg-white/90 border border-gray-200 shadow"
+                        onClick={(e) => { e.stopPropagation(); nextVariant(service.id); }}
+                        aria-label="Next"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
                     <h4 className="font-medium text-gray-900 text-sm truncate" title={service.name}>{service.name}</h4>
@@ -274,15 +363,21 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                   </div>
                   <div className="mt-0.5 text-[11px] text-gray-600 truncate">
                     {service.providerName}
-                    {service.city ? <span className="text-gray-400"> • {service.city}</span> : null}
+                    {getDisplayCity(service) ? <span className="text-gray-400"> • {getDisplayCity(service)}</span> : null}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {service.price != null && (
+                  {getDisplayPrice(service) != null && (
                     <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200 whitespace-nowrap">
-                      {formatPrice(service.price)}
+                      {formatPrice(getDisplayPrice(service)!)}
                     </span>
                   )}
+                  <button
+                    className="text-[11px] px-2 py-0.5 rounded-md bg-white border border-gray-200 hover:bg-gray-50 text-gray-700"
+                    onClick={(e) => { e.stopPropagation(); handleServiceClick(service); }}
+                  >
+                    View Details
+                  </button>
                   {!hideLocationIcon && (
                     <MapPin className="w-4 h-4 text-gray-400 opacity-80 group-hover:text-gray-500" />
                   )}

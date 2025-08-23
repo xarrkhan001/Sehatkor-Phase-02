@@ -16,10 +16,15 @@ interface ServiceData {
   providerName: string;
   providerType: 'doctor' | 'hospital' | 'lab' | 'pharmacy' | 'clinic' | 'laboratory';
   price?: number;
+  currency?: string;
   location?: string;
   phone?: string;
   duration?: string;
   image?: string;
+  // Variant context
+  variantIndex?: number;
+  variantLabel?: string | null;
+  variantTimeRange?: string | null;
 }
 
 const PaymentPage = () => {
@@ -36,6 +41,7 @@ const PaymentPage = () => {
   const _rawPrice: any = serviceData?.price as any;
   const _numPrice = (typeof _rawPrice === 'number' && !isNaN(_rawPrice)) ? _rawPrice : Number(_rawPrice);
   const displayPrice: number = Number.isFinite(_numPrice) ? (_numPrice as number) : 0;
+  const currency = serviceData?.currency || 'PKR';
 
   useEffect(() => {
     if (!serviceData) {
@@ -79,8 +85,18 @@ const PaymentPage = () => {
           providerType: serviceData.providerType,
           serviceId: serviceData.serviceId,
           serviceName: serviceData.serviceName,
+          price: displayPrice,
+          currency,
           paymentMethod,
           paymentNumber,
+          // Variant context
+          variantIndex: serviceData.variantIndex,
+          variantLabel: serviceData.variantLabel,
+          variantTimeRange: serviceData.variantTimeRange,
+          // Snapshot
+          image: serviceData.image,
+          location: serviceData.location,
+          phone: serviceData.phone,
         }),
       });
 

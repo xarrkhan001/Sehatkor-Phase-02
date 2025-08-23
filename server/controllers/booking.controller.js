@@ -14,6 +14,15 @@ export const createBooking = async (req, res) => {
       serviceName,
       paymentMethod,
       paymentNumber,
+      // optional pricing and variant context
+      price,
+      currency,
+      variantIndex,
+      variantLabel,
+      variantTimeRange,
+      image,
+      location,
+      phone,
     } = req.body || {};
 
     // Basic validation
@@ -69,6 +78,15 @@ export const createBooking = async (req, res) => {
       serviceName,
       paymentMethod,
       paymentNumber,
+      // optional/snapshot fields
+      price: Number(price) || 0,
+      currency: currency || 'PKR',
+      variantIndex: typeof variantIndex === 'number' ? variantIndex : undefined,
+      variantLabel: variantLabel || undefined,
+      variantTimeRange: variantTimeRange || undefined,
+      image: image || undefined,
+      location: location || undefined,
+      phone: phone || undefined,
     });
 
     return res.status(201).json(booking);

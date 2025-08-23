@@ -382,14 +382,19 @@ const PatientDashboard = () => {
                               >
                                 {booking.status}
                               </Badge>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => deleteBooking(booking._id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  Delete
-                                </Button>
+                              <p className="text-sm font-medium mt-1">
+                                {resolveBookingPrice(booking) === 0
+                                  ? 'Free'
+                                  : `PKR ${resolveBookingPrice(booking).toLocaleString()}`}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteBooking(booking._id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Delete
+                              </Button>
                             </div>
                           </div>
                         ))}

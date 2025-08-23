@@ -1,5 +1,24 @@
 import mongoose from "mongoose";
 
+// Each service can have multiple time/location variants
+const ServiceVariantSchema = new mongoose.Schema(
+  {
+    timeLabel: { type: String, trim: true }, // e.g., Morning, Evening
+    startTime: { type: String }, // e.g., 09:00
+    endTime: { type: String },   // e.g., 12:00
+    days: [{ type: String }],    // e.g., ["Mon", "Wed", "Fri"]
+    price: { type: Number },
+    imageUrl: { type: String },
+    imagePublicId: { type: String },
+    googleMapLink: { type: String },
+    city: { type: String },
+    detailAddress: { type: String },
+    notes: { type: String },
+    isActive: { type: Boolean, default: true },
+  },
+  { _id: true, timestamps: true }
+);
+
 const DoctorServiceSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -12,6 +31,8 @@ const DoctorServiceSchema = new mongoose.Schema(
     googleMapLink: { type: String },
     city: { type: String },
     detailAddress: { type: String },
+    // New: array of variants for time/location/image specific offerings
+    variants: { type: [ServiceVariantSchema], default: [] },
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,

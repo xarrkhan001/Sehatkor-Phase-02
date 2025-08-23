@@ -35,6 +35,23 @@ type Unified = {
   _providerId?: string;
   _providerType?: 'doctor' | 'clinic' | 'laboratory' | 'pharmacy';
   totalRatings?: number;
+  // base time fields (optional) in case backend sends them for base service
+  timeLabel?: string;
+  startTime?: string;
+  endTime?: string;
+  days?: string;
+  // variants array (doctor services primarily)
+  variants?: Array<{
+    imageUrl?: string;
+    price?: number;
+    city?: string;
+    detailAddress?: string;
+    googleMapLink?: string;
+    timeLabel?: string;
+    startTime?: string;
+    endTime?: string;
+    days?: string;
+  }>;
 };
 
 const CompareExplorer = () => {
@@ -50,6 +67,23 @@ const CompareExplorer = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Unified | null>(null);
+
+  // Listen for rating updates from RatingModal and refresh the targeted service
+  useEffect(() => {
+    const onMyRatingUpdated = async (evt: Event) => {
+      try {
+        const anyEvt = evt as CustomEvent<{ serviceId: string; serviceType?: Unified['_providerType'] }>;
+        const { serviceId, serviceType } = anyEvt.detail || ({} as any);
+        if (!serviceId) return;
+        const updated = await ServiceManager.fetchServiceById(serviceId, serviceType || 'doctor');
+        setServices(prev => prev.map(s => s.id === serviceId ? { ...s, ...updated, rating: (updated as any)?.averageRating ?? (s as any)?.rating } as Unified : s));
+      } catch (e) {
+        console.error('Failed to refresh service after rating update', e);
+      }
+    };
+    window.addEventListener('my_rating_updated', onMyRatingUpdated as EventListener);
+    return () => window.removeEventListener('my_rating_updated', onMyRatingUpdated as EventListener);
+  }, []);
 
   // Fetch live services from backend only (no localStorage/mocks)
   useEffect(() => {
@@ -78,6 +112,11 @@ const CompareExplorer = () => {
           _providerId: (s as any)?.providerId,
           _providerType: (s as any)?.providerType,
           totalRatings: (s as any)?.totalRatings || 0,
+          timeLabel: (s as any)?.timeLabel,
+          startTime: (s as any)?.startTime,
+          endTime: (s as any)?.endTime,
+          days: (s as any)?.days,
+          variants: (s as any)?.variants || [],
         }));
         if (isMounted) setServices(unified);
       } catch (e) {
@@ -114,7 +153,75 @@ const CompareExplorer = () => {
   const limitedOfferings = useMemo(() => offerings.slice(0, 6), [offerings]);
   const selected = useMemo(() => offerings.filter(i => selectedIds.includes(i.id)), [offerings, selectedIds]);
 
-  
+  // Variant slider state and helpers
+  const [activeIdxById, setActiveIdxById] = useState<Record<string, number>>({});
+
+  const getVariants = (svc: Unified) => Array.isArray(svc.variants) ? svc.variants : [];
+  const getSlides = (svc: Unified) => {
+    const base = {
+      imageUrl: svc.image,
+      price: svc.price,
+      city: svc.city,
+      detailAddress: svc.detailAddress,
+      googleMapLink: svc.googleMapLink,
+      timeLabel: svc.timeLabel,
+      startTime: svc.startTime,
+      endTime: svc.endTime,
+      days: svc.days,
+    };
+    return [base, ...getVariants(svc)];
+  };
+  const getActiveSlide = (svc: Unified) => {
+    const slides = getSlides(svc);
+    const idx = activeIdxById[svc.id] ?? 0;
+    if (!slides.length) return undefined;
+    const safe = ((idx % slides.length) + slides.length) % slides.length;
+    return slides[safe];
+  };
+  const getDisplayImage = (svc: Unified) => getActiveSlide(svc)?.imageUrl || svc.image;
+  const getDisplayPrice = (svc: Unified) => {
+    const p = getActiveSlide(svc)?.price;
+    return (p != null && !Number.isNaN(Number(p))) ? Number(p) : svc.price;
+  };
+  const getDisplayLocation = (svc: Unified) => getActiveSlide(svc)?.city || svc.city || svc.location;
+  const getDisplayAddress = (svc: Unified) => getActiveSlide(svc)?.detailAddress || svc.detailAddress;
+  const getDisplayMapLink = (svc: Unified) => getActiveSlide(svc)?.googleMapLink || svc.googleMapLink;
+  const getDisplayTimeInfo = (svc: Unified): string | null => {
+    const v: any = getActiveSlide(svc);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const days = v.days ? String(v.days) : "";
+    const parts = [label, days].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
+  };
+  const getDisplayTimeRange = (svc: Unified): string | null => {
+    const v: any = getActiveSlide(svc);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    if (v.startTime && v.endTime) return `${formatTime(v.startTime)} - ${formatTime(v.endTime)}`;
+    return v.timeLabel ? String(v.timeLabel) : null;
+  };
+  const nextVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+  const prevVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) - 1 }));
+
+  // Auto-advance variants every 10 seconds for visible offerings that have multiple slides
+  useEffect(() => {
+    const ids = limitedOfferings
+      .filter(s => getSlides(s).length > 1)
+      .map(s => s.id);
+    if (ids.length === 0) return;
+    const t = setInterval(() => {
+      setActiveIdxById(prev => {
+        const next = { ...prev } as Record<string, number>;
+        ids.forEach(id => {
+          next[id] = (next[id] ?? 0) + 1;
+        });
+        return next;
+      });
+    }, 10000);
+    return () => clearInterval(t);
+  }, [limitedOfferings]);
 
   // Auto-select when only one match, and support Enter-to-select
   useEffect(() => {
@@ -145,6 +252,11 @@ const CompareExplorer = () => {
       toast.error('You cannot book your own service.');
       return;
     }
+    const slides = getSlides(service);
+    const rawIdx = activeIdxById[service.id] ?? 0;
+    const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
+    const timeLabel = getDisplayTimeInfo(service);
+    const timeRange = getDisplayTimeRange(service);
     navigate('/payment', {
       state: {
         serviceId: service.id,
@@ -152,6 +264,14 @@ const CompareExplorer = () => {
         providerId: service._providerId || service.id,
         providerName: service.provider,
         providerType: service._providerType,
+        price: Number(getDisplayPrice(service) ?? service.price ?? 0),
+        currency: 'PKR',
+        image: getDisplayImage(service) || service.image,
+        location: getDisplayLocation(service) || service.city || service.location,
+        phone: service.providerPhone,
+        variantIndex: activeIdx,
+        variantLabel: timeLabel,
+        variantTimeRange: timeRange,
       },
     });
   };
@@ -169,16 +289,7 @@ const CompareExplorer = () => {
     setRatingModalOpen(true);
   };
 
-  const handleRatingSubmitted = async (serviceId: string, newRatingData: { averageRating: number; totalRatings: number }, serviceType: Unified['_providerType']) => {
-    // Optimistic update
-    setServices(prev => prev.map(s => s.id === serviceId ? { ...s, rating: newRatingData.averageRating, totalRatings: newRatingData.totalRatings } : s));
-    try {
-      const updated = await ServiceManager.fetchServiceById(serviceId, serviceType || 'doctor');
-      setServices(prev => prev.map(s => s.id === serviceId ? { ...s, ...updated, rating: (updated as any).averageRating } as Unified : s));
-    } catch (err) {
-      console.error('Failed to fetch updated service', err);
-    }
-  };
+  
 
   const cheapest = useMemo(() => (selected.length ? [...selected].sort((a, b) => a.price - b.price)[0] : undefined), [selected]);
   const bestRated = useMemo(() => (selected.length ? [...selected].sort((a, b) => b.rating - a.rating)[0] : undefined), [selected]);
@@ -255,12 +366,35 @@ const CompareExplorer = () => {
                     className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-300 ${isSelected ? 'ring-2 ring-primary' : ''}`}
                   >
                     <CardContent className="p-5 cursor-pointer" onClick={() => toggleSelect(item.id)}>
-                      {/* Image */}
-                      <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      {/* Image with variant slider */}
+                      <div className="relative w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
+                        {getDisplayImage(item) ? (
+                          <img src={getDisplayImage(item)!} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-gray-400 text-sm">No Image</span>
+                        )}
+                        {getSlides(item).length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-7 h-7 flex items-center justify-center"
+                              onClick={(e) => { e.stopPropagation(); prevVariant(item.id); }}
+                              aria-label="Previous variant"
+                            >
+                              ‹
+                            </button>
+                            <button
+                              type="button"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-7 h-7 flex items-center justify-center"
+                              onClick={(e) => { e.stopPropagation(); nextVariant(item.id); }}
+                              aria-label="Next variant"
+                            >
+                              ›
+                            </button>
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur px-2 py-0.5 rounded text-[11px] text-gray-700">
+                              {getDisplayTimeInfo(item) || 'Variant'}
+                            </div>
+                          </>
                         )}
                       </div>
 
@@ -280,7 +414,7 @@ const CompareExplorer = () => {
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold text-primary">
-                            {item.price === 0 ? 'Free' : `PKR ${item.price.toLocaleString()}`}
+                            {getDisplayPrice(item) === 0 ? 'Free' : `PKR ${getDisplayPrice(item).toLocaleString()}`}
                           </div>
                           <Badge variant="outline" className="text-xs px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100">
                             {item.type}
@@ -296,7 +430,7 @@ const CompareExplorer = () => {
                         <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
                         <div className="flex items-center gap-1 text-gray-500">
                           <MapPin className="w-4 h-4" />
-                          <span>{item.city || item.location}</span>
+                          <span>{getDisplayLocation(item)}</span>
                         </div>
                         {item.providerPhone && (
                           <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} providerId={item._providerId} />
@@ -566,17 +700,13 @@ const CompareExplorer = () => {
       {selectedRatingService && (
         <RatingModal
           isOpen={ratingModalOpen}
-          onClose={() => setRatingModalOpen(false)}
+          onClose={() => {
+            setRatingModalOpen(false);
+            setSelectedRatingService(null);
+          }}
           serviceId={selectedRatingService.id}
           serviceType={(selectedRatingService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
           serviceName={selectedRatingService.name}
-          onRatingSubmitted={(newRatingData) => {
-            setRatingModalOpen(false);
-            if (selectedRatingService) {
-              handleRatingSubmitted(selectedRatingService.id, newRatingData, selectedRatingService._providerType);
-            }
-            setSelectedRatingService(null);
-          }}
         />
       )}
     </section>

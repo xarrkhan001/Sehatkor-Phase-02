@@ -16,8 +16,22 @@ const BookingSchema = new mongoose.Schema(
     serviceId: { type: mongoose.Schema.Types.ObjectId, required: true },
     serviceName: { type: String, required: true },
 
+    // Pricing
+    price: { type: Number, default: 0 },
+    currency: { type: String, default: 'PKR' },
+
     paymentMethod: { type: String, enum: ["easypaisa", "jazzcash"], required: true },
     paymentNumber: { type: String, required: true },
+
+    // Variant context (for multi-variant services)
+    variantIndex: { type: Number },
+    variantLabel: { type: String },
+    variantTimeRange: { type: String },
+
+    // Snapshot info for convenience
+    image: { type: String },
+    location: { type: String },
+    phone: { type: String },
 
     status: {
       type: String,
