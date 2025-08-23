@@ -98,7 +98,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "normal" }:
         </div>
       </div>
 
-      <style jsx global>{`
+      <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
