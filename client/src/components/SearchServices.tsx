@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { SearchIcon, MapPin, Star, ChevronDown } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { SearchIcon, MapPin, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,26 +9,22 @@ import ServiceManager, { Service } from "@/lib/serviceManager";
 interface SearchService {
   id: string;
   name: string;
-  category: string;
+  category: string; // Doctor | Lab Test | Medicine | Surgery
   description: string;
-  icon: string;
-  providers: number;
-  avgRating: number;
+  icon: string; // emoji fallback
   image?: string;
+  providerName: string;
+  city?: string;
+  providerType: Service['providerType'];
+  price?: number;
+  rating?: number;
+  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  providerPhone?: string;
+  googleMapLink?: string;
+  detailAddress?: string;
 }
 
-const fallbackServices: SearchService[] = [
-  { id: "1", name: "General Physician", category: "Doctor", description: "Primary healthcare consultation", icon: "🩺", providers: 450, avgRating: 4.5 },
-  { id: "2", name: "Cardiologist", category: "Doctor", description: "Heart specialist", icon: "❤️", providers: 89, avgRating: 4.7 },
-  { id: "3", name: "Dermatologist", category: "Doctor", description: "Skin specialist", icon: "🧴", providers: 67, avgRating: 4.6 },
-  { id: "4", name: "Pediatrician", category: "Doctor", description: "Child specialist", icon: "👶", providers: 123, avgRating: 4.8 },
-  { id: "16", name: "Blood Test Complete", category: "Lab Test", description: "Complete blood count and analysis", icon: "🩸", providers: 234, avgRating: 4.3 },
-  { id: "17", name: "X-Ray", category: "Lab Test", description: "Digital X-ray imaging", icon: "📷", providers: 189, avgRating: 4.4 },
-  { id: "18", name: "MRI Scan", category: "Lab Test", description: "Magnetic resonance imaging", icon: "🔍", providers: 45, avgRating: 4.6 },
-  { id: "30", name: "Panadol", category: "Medicine", description: "Pain relief and fever reducer", icon: "💊", providers: 567, avgRating: 4.2 },
-  { id: "31", name: "Antibiotics", category: "Medicine", description: "Infection treatment medicines", icon: "🧬", providers: 445, avgRating: 4.4 },
-  { id: "42", name: "Appendix Surgery", category: "Surgery", description: "Appendectomy procedure", icon: "🏥", providers: 23, avgRating: 4.8 },
-];
+// No fallback or mock data. We will only show real services from backend.
 
 type SearchServicesProps = {
   hideCategory?: boolean;
@@ -36,6 +33,8 @@ type SearchServicesProps = {
 };
 
 const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light = false }: SearchServicesProps) => {
+  const navigate = useNavigate();
+  const locationHook = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -45,26 +44,34 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   const categories = ["All Categories", "Doctor", "Lab Test", "Medicine", "Surgery"];
 
   useEffect(() => {
-    const loadServices = () => {
-      const allServices = (ServiceManager as any).getAllServicesWithVariants
-        ? (ServiceManager as any).getAllServicesWithVariants()
-        : ServiceManager.getAllServices();
-      const searchServices: SearchService[] = allServices.map(service => ({
-        id: service.id,
-        name: service.name,
-        category: mapServiceToSearchCategory(service),
-        description: service.description,
-        icon: getServiceIcon(service),
-        providers: 1,
-        avgRating: 4.5,
-        image: service.image
-      }));
-      setRealServices(searchServices);
+    const load = async () => {
+      try {
+        const data = await ServiceManager.fetchPublicServices();
+        // Map to SearchService and de-duplicate by id
+        const mapped: SearchService[] = (data.services || []).map((s: Service) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          category: mapServiceToSearchCategory(s),
+          icon: getServiceIcon(s),
+          image: (s as any).image,
+          providerName: s.providerName,
+          city: (s as any).city,
+          providerType: s.providerType,
+          price: s.price,
+          rating: (s as any).averageRating ?? (s as any).rating ?? 0,
+          ratingBadge: (s as any).ratingBadge ?? null,
+          providerPhone: (s as any).providerPhone,
+          googleMapLink: (s as any).googleMapLink,
+          detailAddress: (s as any).detailAddress,
+        }));
+        const uniqueById = Array.from(new Map(mapped.map(m => [m.id, m])).values());
+        setRealServices(uniqueById);
+      } catch (e) {
+        setRealServices([]);
+      }
     };
-
-    loadServices();
-    window.addEventListener('storage', loadServices);
-    return () => window.removeEventListener('storage', loadServices);
+    load();
   }, []);
 
   const mapServiceToSearchCategory = (service: Service): string => {
@@ -97,15 +104,40 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     }
   };
 
-  const allServices = [...realServices, ...fallbackServices];
-
-  const filteredServices = allServices.filter(service => {
+  const filteredServices = realServices.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          service.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         service.providerName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All Categories" || service.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const shownServices = filteredServices.slice(0, 8);
+
+  const getBadgeStyles = (badge?: SearchService['ratingBadge']) => {
+    switch (badge) {
+      case 'excellent':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+      case 'good':
+        return 'bg-sky-50 text-sky-700 border-sky-100';
+      case 'normal':
+        return 'bg-amber-50 text-amber-700 border-amber-100';
+      case 'poor':
+        return 'bg-rose-50 text-rose-700 border-rose-100';
+      default:
+        return 'bg-gray-50 text-gray-600 border-gray-100';
+    }
+  };
+
+  const formatPrice = (price?: number) => {
+    if (price == null) return '';
+    try {
+      return `Rs ${price.toLocaleString()}`;
+    } catch {
+      return `Rs ${price}`;
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -120,7 +152,30 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   const handleServiceClick = (service: SearchService) => {
     setSearchTerm(service.name);
     setIsOpen(false);
-    window.location.href = `/search?service=${encodeURIComponent(service.name)}`;
+    // Navigate directly to detail page with state for fidelity
+    navigate(`/service/${service.id}` , {
+      state: {
+        from: locationHook.pathname + locationHook.search,
+        fromSearch: true,
+        service: {
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price ?? 0,
+          rating: service.rating ?? 0,
+          provider: service.providerName,
+          image: service.image,
+          type: service.category === 'Lab Test' ? 'Test' : service.category === 'Medicine' ? 'Medicine' : service.category === 'Surgery' ? 'Surgery' : 'Treatment',
+          providerType: service.providerType,
+          isReal: true,
+          ratingBadge: service.ratingBadge ?? null,
+          location: service.city ?? undefined,
+          address: service.detailAddress ?? undefined,
+          providerPhone: service.providerPhone ?? undefined,
+          googleMapLink: service.googleMapLink ?? undefined,
+        }
+      }
+    });
   };
 
   const handleSearch = () => {
@@ -179,48 +234,81 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
 
   {/* Dropdown Results */}
   {isOpen && (searchTerm || selectedCategory !== "All Categories") && (
-    <Card className="absolute top-full left-0 right-0 mt-1.5 bg-white shadow-xl border border-gray-200 rounded-lg max-h-80 overflow-y-auto z-[100000]">
-      <div className="max-h-72 overflow-y-auto">
-        {filteredServices.length > 0 ? (
-          filteredServices.map((service) => (
+    <Card className="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-md shadow-2xl border border-gray-200 rounded-xl max-h-[28rem] overflow-hidden z-[100000]">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-100 px-3 py-2 flex items-center justify-between">
+        <span className="text-[12px] text-gray-500">Top results</span>
+        <span className="text-[11px] text-gray-400">{filteredServices.length} found</span>
+      </div>
+      <div className="max-h-[24rem] overflow-y-auto">
+        {shownServices.length > 0 ? (
+          shownServices.map((service) => (
             <div
               key={service.id}
               onClick={() => handleServiceClick(service)}
-              className="p-2.5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-b-0 text-sm"
+              className="px-3 py-2.5 hover:bg-gray-50/80 cursor-pointer text-sm transition-colors group active:bg-gray-100"
             >
-              <div className="flex items-center space-x-2.5">
+              <div className="flex items-center gap-3">
                 {service.image ? (
-                  <img 
-                    src={service.image} 
+                  <img
+                    src={service.image}
                     alt={service.name}
-                    className="w-9 h-9 rounded-md object-cover"
+                    className="w-10 h-10 rounded-md object-cover shadow-sm ring-1 ring-gray-100"
                   />
                 ) : (
-                  <div className="w-9 h-9 bg-gray-100 rounded-md flex items-center justify-center text-base">
+                  <div className="w-10 h-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded-md flex items-center justify-center text-base ring-1 ring-gray-100">
                     {service.icon}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 text-xs truncate">{service.name}</h4>
-                  <p className="text-xs text-gray-600 truncate">{service.description}</p>
-                  <div className="flex items-center space-x-2 mt-0.5 text-[10px] text-gray-500">
-                    <span className="flex items-center">
-                      <Star className="w-3 h-3 text-yellow-400 mr-0.5" />
-                      {service.avgRating}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h4 className="font-medium text-gray-900 text-sm truncate" title={service.name}>{service.name}</h4>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
+                      {service.category}
                     </span>
-                    <span>{service.providers} providers</span>
+                    {service.ratingBadge && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full border whitespace-nowrap ${getBadgeStyles(service.ratingBadge)}`}>
+                        {service.ratingBadge}
+                      </span>
+                    )}
                   </div>
+                  <div className="mt-0.5 text-[11px] text-gray-600 truncate">
+                    {service.providerName}
+                    {service.city ? <span className="text-gray-400"> • {service.city}</span> : null}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {service.price != null && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200 whitespace-nowrap">
+                      {formatPrice(service.price)}
+                    </span>
+                  )}
+                  {!hideLocationIcon && (
+                    <MapPin className="w-4 h-4 text-gray-400 opacity-80 group-hover:text-gray-500" />
+                  )}
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="p-6 text-center text-gray-500 text-sm">
+          <div className="p-8 text-center text-gray-500 text-sm">
             <SearchIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
             <p>No services found for "{searchTerm}"</p>
+            <p className="text-[11px] text-gray-400 mt-1">Try different keywords or categories</p>
           </div>
         )}
       </div>
+      {/* Footer CTA */}
+      {filteredServices.length > shownServices.length && (
+        <div className="border-t border-gray-100 bg-white/80 backdrop-blur px-3 py-2 text-right">
+          <button
+            className="text-[12px] text-rose-600 hover:text-rose-700 font-medium"
+            onClick={() => window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`}
+          >
+            View all results →
+          </button>
+        </div>
+      )}
     </Card>
   )}
 </div>
