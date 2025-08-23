@@ -22,6 +22,8 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const DashboardRedirectPage = lazy(() => import("./pages/DashboardRedirectPage"));
 const PatientDashboard = lazy(() => import("./pages/dashboards/PatientDashboard"));
 const DoctorDashboard = lazy(() => import("./pages/dashboards/DoctorDashboard"));
@@ -68,6 +70,8 @@ const AppShell = () => {
             <Route path="/service/:id" element={<Suspense fallback={<ServiceSkeleton />}><ServiceDetailPage /></Suspense>} />
             <Route path="/register" element={<Suspense fallback={<AuthSkeleton />}><RegisterPage /></Suspense>} />
             <Route path="/login" element={<Suspense fallback={<AuthSkeleton />}><LoginPage /></Suspense>} />
+            <Route path="/forgot-password" element={<Suspense fallback={<AuthSkeleton />}><ForgotPasswordPage /></Suspense>} />
+            <Route path="/reset-password/:token" element={<Suspense fallback={<AuthSkeleton />}><ResetPasswordPage /></Suspense>} />
             <Route path="/auth/callback" element={<Suspense fallback={<AuthSkeleton />}><OAuthCallbackPage /></Suspense>} />
             <Route path="/dashboard" element={<Suspense fallback={<DashboardSkeleton />}><DashboardRedirectPage /></Suspense>} />
             <Route path="/dashboard/patient" element={<Suspense fallback={<DashboardSkeleton />}><PatientDashboard /></Suspense>} />
