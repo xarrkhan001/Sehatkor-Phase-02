@@ -29,7 +29,13 @@ const fallbackServices: SearchService[] = [
   { id: "42", name: "Appendix Surgery", category: "Surgery", description: "Appendectomy procedure", icon: "🏥", providers: 23, avgRating: 4.8 },
 ];
 
-const SearchServices = () => {
+type SearchServicesProps = {
+  hideCategory?: boolean;
+  hideLocationIcon?: boolean;
+  light?: boolean; // lighten whites/opacity for hero usage
+};
+
+const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light = false }: SearchServicesProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -126,34 +132,38 @@ const SearchServices = () => {
   return (
     <div className="relative w-full max-w-[1100px] mx-auto z-[100000]" ref={searchRef}>
   {/* Search Bar */}
-  <Card className="p-1.5 sm:p-2 bg-white/90 backdrop-blur-md shadow-lg border border-white/20 relative z-[100000]">
+  <Card className={`p-1.5 sm:p-2 ${light ? 'bg-white/80' : 'bg-white/90'} backdrop-blur-md shadow-lg border ${light ? 'border-white/15' : 'border-white/20'} relative z-[100000]`}>
     <div className="flex flex-row lg:flex-row gap-1.5 sm:gap-0 sm:items-center sm:space-x-1.5">
       {/* Category Dropdown */}
-      <div className="relative hidden sm:block">
-        <Button
-          variant="ghost"
-          className="h-9 px-3 text-gray-600 hover:text-gray-900 border-r border-gray-200 text-sm"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {selectedCategory}
-          <ChevronDown className="w-4 h-4 ml-1.5" />
-        </Button>
-      </div>
+      {!hideCategory && (
+        <div className="relative hidden sm:block">
+          <Button
+            variant="ghost"
+            className="h-9 px-3 text-gray-600 hover:text-gray-900 border-r border-gray-200 text-sm"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {selectedCategory}
+            <ChevronDown className="w-4 h-4 ml-1.5" />
+          </Button>
+        </div>
+      )}
 
       {/* Search Input */}
       <div className="flex-1 relative">
         <Input
           type="text"
-          placeholder="Search doctors, medicines, lab tests..."
+          placeholder="Search doctors, hospital/clinic, medicines, lab tests..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          className="h-9 sm:h-10 pl-3 pr-9 border border-gray-200 sm:border-0 focus:ring-0 text-sm sm:text-base bg-transparent rounded-md sm:rounded-none"
+          className={`h-9 sm:h-10 pl-3 pr-9 border ${light ? 'border-white/30' : 'border-gray-200'} sm:border-0 focus:ring-0 text-sm sm:text-base bg-transparent rounded-md sm:rounded-none placeholder:text-gray-400 ${light ? 'text-gray-800' : ''}`}
         />
-        <MapPin className="absolute right-2 sm:right-14 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        {!hideLocationIcon && (
+          <MapPin className="absolute right-2 sm:right-14 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        )}
       </div>
 
       {/* Search Button */}

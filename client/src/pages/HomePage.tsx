@@ -9,6 +9,10 @@ import PartnersMarquee from "@/components/PartnersMarquee";
 import CompareExplorer from "@/components/CompareExplorer";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
 import heroImage from "@/assets/healthcare-hero-bg.jpg";
+import heroImage2 from "@/assets/hero1.jpg";
+import heroImage3 from "@/assets/hero2.png";
+import heroImage4 from "@/assets/hero3.png";
+import heroImage5 from "@/assets/hero4.png";
 import { 
   Search, 
   UserPlus, 
@@ -29,6 +33,27 @@ import { popularDiseases } from "@/data/diseases";
 
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [currentHero, setCurrentHero] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Rotate hero background images every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHero((prev) => (prev + 1) % 5);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Track mobile viewport to adjust hero4 positioning
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener ? mq.addEventListener('change', update) : mq.addListener(update);
+    return () => {
+      mq.removeEventListener ? mq.removeEventListener('change', update) : mq.removeListener(update);
+    };
+  }, []);
 
   useEffect(() => {
     // Simulate loading time for initial page load
@@ -108,29 +133,75 @@ const HomePage = () => {
       <section 
   className="relative overflow-visible py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 px-4 text-white min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] lg:min-h-[85vh] hero-section hero-background"
   style={{
-    backgroundImage: `url(${heroImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center center',
-    backgroundRepeat: 'no-repeat',
     width: '100vw',
     marginLeft: 'calc(-50vw + 50%)',
     marginRight: 'calc(-50vw + 50%)'
   }}
 >
-        <div className="absolute inset-0 bg-black/50 sm:bg-black/45"></div>
-        <div className="container mx-auto relative  z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        {/* Background slider layers */}
+        <div className="absolute inset-0 z-0">
+          <div
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 0 ? 'opacity-100' : 'opacity-0'}`}
+            style={{
+              backgroundImage: `url(${heroImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+          <div
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 1 ? 'opacity-100' : 'opacity-0'}`}
+            style={{
+              backgroundImage: `url(${heroImage2})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+          <div
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 2 ? 'opacity-100' : 'opacity-0'}`}
+            style={{
+              backgroundImage: `url(${heroImage3})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+          <div
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 3 ? 'opacity-100' : 'opacity-0'}`}
+            style={{
+              backgroundImage: `url(${heroImage4})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+          <div
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 4 ? 'opacity-100' : 'opacity-0'}`}
+            style={{
+              backgroundImage: `url(${heroImage5})`,
+              backgroundSize: 'cover',
+              backgroundPosition: isMobile ? 'center center' : 'center -160px',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+        </div>
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/60 sm:bg-black/50 z-10"></div>
+        <div className="container mx-auto relative  z-20 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center lg:mt-16 w-full">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold mb-4 lg:mt- sm:mb-6 leading-tight text-white/90">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold mb-4 lg:mt- sm:mb-6 leading-tight text-white/80">
               Your Health, Our Priority
             </h1>
-            <p className="text-base font-thin sm:text-lg md:text-xl lg:text-xl mb-6 sm:mb-8 text-white/80 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-base font-thin sm:text-lg md:text-xl lg:text-xl mb-6 sm:mb-8 text-white/70 leading-relaxed max-w-3xl mx-auto">
               Find, compare, and book healthcare services across Pakistan with SehatKor
             </p>
            
             
             {/* Search Component */}
             <div className="mt-4 sm:mt-6 relative z-10 w-full max-w-2xl mx-auto">
-              <SearchServices />
+              <SearchServices hideCategory hideLocationIcon light />
             </div>
 
             <div className="flex flex-row sm:flex-row gap-2 lg:gap-4 justify-center mt-4 sm:mt-8 w-full max-w-2xl mx-auto">
