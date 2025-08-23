@@ -8,9 +8,10 @@ interface RatingBadgeProps {
   showStars?: boolean;
   size?: "sm" | "md" | "lg";
   yourBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  layout?: 'row' | 'column-compact';
 }
 
-const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = true, size = "md", yourBadge = null }: RatingBadgeProps) => {
+const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = true, size = "md", yourBadge = null, layout = 'row' }: RatingBadgeProps) => {
   const safeRating = Number.isFinite(rating) ? rating : 0;
   const getRatingBadge = (numeric: number, ratingBadge?: "excellent" | "good" | "normal" | "poor" | null) => {
     // Use backend ratingBadge if available, otherwise derive from numeric rating
@@ -106,6 +107,50 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
     return 'text-gray-400';
   };
 
+  if (layout === 'column-compact') {
+    return (
+      <div className={`grid ${your ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase tracking-wide text-gray-500">Overall</span>
+          <div className="flex items-center gap-2">
+            <Badge 
+              variant={badge.variant}
+              className={`${badge.className} ${sizeClasses[size]} font-semibold flex items-center gap-1 rounded-full shadow-sm`}
+            >
+              {showStars && <Star className={`${starSize[size]} fill-current`} />}
+              {badge.label}
+              {safeRating > 0 && (
+                <span className="ml-1 opacity-90">{safeRating.toFixed(1)}</span>
+              )}
+            </Badge>
+          </div>
+          <div className={`mt-1 flex items-center gap-0.5 ${starColorFor(badge.label)}`}>
+            {Array.from({ length: starsFor(badge.label) }).map((_, i) => (
+              <Star key={i} className={`${starSize.sm} fill-current`} />
+            ))}
+          </div>
+          {totalRatings > 0 && (
+            <div className="text-[11px] text-gray-500">({totalRatings})</div>
+          )}
+        </div>
+        {your && (
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-wide text-gray-500">Your</span>
+            <div className="flex items-center gap-2">
+              <Badge 
+                variant={your.variant}
+                className={`${your.className} ${sizeClasses.sm} font-semibold flex items-center gap-1 rounded-full ring-1 ring-offset-1 ring-white/60`}
+              >
+                {showStars && <Star className={`${starSize.sm} fill-current`} />}
+                {your.label}
+              </Badge>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2">
       <Badge 
@@ -140,7 +185,7 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
       </div>
     </div>
   );
-};
+}
 
 export default RatingBadge;
 
