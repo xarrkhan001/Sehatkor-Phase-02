@@ -320,7 +320,10 @@ const HomePage = () => {
       </section>
 
       {/* Comparison Explorer (styled section) */}
-      <section className="py-16 bg-gray-200 mx-[calc(50%-50vw)]">
+      <section className="py-16 bg-gradient-to-br from-rose-50 via-sky-50 to-emerald-50 bg-fixed mx-[calc(50%-50vw)]">
+        {/* Fixed top/bottom gradient bands to blend into viewport edges */}
+        <div className="pointer-events-none fixed inset-x-0 top-0 h-40 bg-gradient-to-b from-rose-50 via-sky-50 to-transparent -z-10" />
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-50 via-sky-50 to-transparent -z-10" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 text-center">
             <Badge variant="secondary" className="mb-2">Smart Compare</Badge>

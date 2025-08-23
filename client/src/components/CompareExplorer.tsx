@@ -295,7 +295,10 @@ const CompareExplorer = () => {
   const bestRated = useMemo(() => (selected.length ? [...selected].sort((a, b) => b.rating - a.rating)[0] : undefined), [selected]);
 
   return (
-    <section className="mt-12 bg-gray-200 py-8 mx-[calc(50%-50vw)]">
+    <section className="mt-12 bg-gradient-to-br from-rose-50 via-sky-50 to-emerald-50 bg-fixed py-8 mx-[calc(50%-50vw)]">
+      {/* Fixed top and bottom gradient bands */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-40 bg-gradient-to-b from-rose-50 via-sky-50 to-transparent -z-10" />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-50 via-sky-50 to-transparent -z-10" />
       <Card className="border-0 shadow-none bg-transparent">
         <CardContent>
           {/* Centered Search Section */}
@@ -319,7 +322,7 @@ const CompareExplorer = () => {
                         setIsSuggestionsOpen(false);
                       }
                     }}
-                    className="pl-10 h-12 rounded-2xl bg-gray-50 border border-gray-200 hover:bg-white focus:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/30 shadow-sm focus:shadow-md transition-all placeholder:text-gray-400"
+                    className="pl-10 h-12 rounded-2xl bg-white/70 border border-white/60 hover:bg-white focus:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/30 shadow-sm focus:shadow-md transition-all placeholder:text-gray-400"
                   />
                   {isSuggestionsOpen && nameQuery && filteredNames.length > 0 && (
                     <div className="absolute z-10 mt-2 w-full rounded-xl border border-gray-200/70 bg-white/90 backdrop-blur shadow-xl max-h-60 overflow-auto divide-y">
@@ -342,7 +345,7 @@ const CompareExplorer = () => {
                   )}
                 </div>
                 <Select value={effectiveSelectedName} onValueChange={(v) => { setSelectedName(v); setNameQuery(v); }}>
-                  <SelectTrigger className="h-12 rounded-2xl bg-gray-50 border border-gray-200 hover:bg-white focus:ring-2 focus:ring-primary/30 shadow-sm transition-colors">
+                  <SelectTrigger className="h-12 rounded-2xl bg-white/70 border border-white/60 hover:bg-white focus:ring-2 focus:ring-primary/30 shadow-sm transition-colors">
                     <SelectValue placeholder="Select service name" />
                   </SelectTrigger>
                   <SelectContent>
@@ -363,11 +366,11 @@ const CompareExplorer = () => {
                 return (
                   <Card
                     key={item.id}
-                    className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-300 ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                    className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-white/40 bg-blue-100 ${isSelected ? 'ring-2 ring-primary' : ''}`}
                   >
                     <CardContent className="p-5 cursor-pointer" onClick={() => toggleSelect(item.id)}>
                       {/* Image with variant slider */}
-                      <div className="relative w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
+                      <div className="relative w-full h-40 bg-white/60 rounded-lg flex items-center justify-center overflow-hidden mb-4">
                         {getDisplayImage(item) ? (
                           <img src={getDisplayImage(item)!} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
@@ -497,7 +500,7 @@ const CompareExplorer = () => {
           {loading && (effectiveSelectedName || nameQuery) && (
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="bg-white/60">
+                <Card key={i} className="bg-blue-100">
                   <CardContent className="p-4">
                     <Skeleton className="h-28 w-full rounded mb-3" />
                     <Skeleton className="h-4 w-2/3 mb-2" />
@@ -518,7 +521,7 @@ const CompareExplorer = () => {
 
           {selected.length >= 2 && (
             <div className="mt-8">
-              <Card className="bg-white/80 backdrop-blur">
+              <Card className="bg-blue-100">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     Comparison

@@ -225,7 +225,7 @@ const ComparePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-sky-50 to-emerald-50 bg-fixed">
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
