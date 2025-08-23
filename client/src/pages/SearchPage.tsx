@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +37,8 @@ interface SearchService extends Service {
 const SearchPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const routerLocation = useLocation();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [serviceType, setServiceType] = useState<string>("all");
   const [location, setLocation] = useState<string>("all");
@@ -735,9 +737,26 @@ const SearchPage = () => {
     </Button>
     <Button
       variant="secondary"
-      onClick={() =>
-        (window.location.href = `/service/${service.id}`)
-      }
+      onClick={() => {
+        navigate(`/service/${service.id}`, {
+          state: {
+            from: `${routerLocation.pathname}${routerLocation.search}`,
+            fromSearch: true,
+            service: {
+              ...service,
+              providerType: (service as any)._providerType,
+              providerId: (service as any)._providerId,
+              totalRatings: (service as any).totalRatings,
+              providerPhone: (service as any).providerPhone,
+              googleMapLink: (service as any).googleMapLink,
+              coordinates: (service as any).coordinates,
+              address: (service as any).address,
+              ratingBadge: (service as any).ratingBadge,
+              myBadge: (service as any).myBadge,
+            }
+          }
+        });
+      }}
       className="flex-1 min-w-[100px]"
     >
       View Details
