@@ -37,6 +37,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const OAuthCallbackPage = lazy(() => import("./pages/auth/OAuthCallbackPage"));
 const DiseaseListPage = lazy(() => import("./pages/DiseaseListPage"));
 const DiseaseDetailPage = lazy(() => import("./pages/DiseaseDetailPage"));
+const AllDiseasesPage = lazy(() => import("./pages/AllDiseasesPage"));
 const DoctorsPage = lazy(() => import("./pages/DoctorsPage"));
 const HospitalsPage = lazy(() => import("./pages/HospitalsPage"));
 const LabsPage = lazy(() => import("./pages/LabsPage"));
@@ -61,6 +62,7 @@ const AppShell = () => {
             <Route path="/diseases" element={<DiseaseListPage />} />
             <Route path="/diseases/:slug" element={<Suspense fallback={<ServiceSkeleton />}><DiseaseDetailPage /></Suspense>} />
             <Route path="/search" element={<Suspense fallback={<PageSkeleton />}><SearchPage /></Suspense>} />
+            <Route path="/all-diseases" element={<Suspense fallback={<PageSkeleton />}><AllDiseasesPage /></Suspense>} />
             <Route path="/doctors" element={<Suspense fallback={<PageSkeleton />}><DoctorsPage /></Suspense>} />
             <Route path="/hospitals" element={<Suspense fallback={<PageSkeleton />}><HospitalsPage /></Suspense>} />
             <Route path="/labs" element={<Suspense fallback={<PageSkeleton />}><LabsPage /></Suspense>} />

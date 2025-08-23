@@ -17,7 +17,7 @@ const DiseaseDetailPage = () => {
       <div className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-2xl font-semibold mb-4">Disease not found</h1>
         <Button asChild>
-          <Link to="/diseases">Back to Diseases</Link>
+          <Link to="/all-diseases">Back to Diseases</Link>
         </Button>
       </div>
     );
@@ -105,7 +105,7 @@ const DiseaseDetailPage = () => {
 
       <div className="mt-8">
         <Button asChild variant="outline">
-          <Link to="/diseases">Back to Diseases</Link>
+          <Link to="/all-diseases">Back to Diseases</Link>
         </Button>
       </div>
     </div>
