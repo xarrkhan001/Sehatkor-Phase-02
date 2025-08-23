@@ -316,7 +316,32 @@ const CompareExplorer = () => {
                         </Button>
                         <Button
                           variant="secondary"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/service/${item.id}`); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/service/${item.id}` , {
+                              state: {
+                                from: window.location.pathname + window.location.search,
+                                fromCompare: true,
+                                service: {
+                                  id: item.id,
+                                  name: item.name,
+                                  description: item.description,
+                                  price: item.price,
+                                  rating: item.rating,
+                                  provider: item.provider,
+                                  image: item.image,
+                                  type: item.type,
+                                  providerType: item._providerType,
+                                  isReal: true,
+                                  ratingBadge: item.ratingBadge ?? null,
+                                  location: item.city ?? item.location,
+                                  address: item.detailAddress ?? undefined,
+                                  providerPhone: item.providerPhone ?? undefined,
+                                  googleMapLink: item.googleMapLink ?? undefined,
+                                }
+                              }
+                            });
+                          }}
                           className="flex-1 min-w-[100px]"
                         >
                           View Details
@@ -439,7 +464,29 @@ const CompareExplorer = () => {
                           <td className="p-4 font-medium">Action</td>
                           {selected.map(s => (
                             <td key={s.id} className="p-4">
-                              <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => navigate(`/service/${s.id}`)}>
+                              <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => navigate(`/service/${s.id}` , {
+                                state: {
+                                  from: window.location.pathname + window.location.search,
+                                  fromCompare: true,
+                                  service: {
+                                    id: s.id,
+                                    name: s.name,
+                                    description: s.description,
+                                    price: s.price,
+                                    rating: s.rating,
+                                    provider: s.provider,
+                                    image: s.image,
+                                    type: s.type,
+                                    providerType: s._providerType,
+                                    isReal: true,
+                                    ratingBadge: s.ratingBadge ?? null,
+                                    location: s.city ?? s.location,
+                                    address: s.detailAddress ?? undefined,
+                                    providerPhone: s.providerPhone ?? undefined,
+                                    googleMapLink: s.googleMapLink ?? undefined,
+                                  }
+                                }
+                              })}>
                                 View Details
                                 <ArrowRight className="w-4 h-4 ml-1" />
                               </Button>
