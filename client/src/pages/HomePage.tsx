@@ -197,7 +197,7 @@ const HomePage = () => {
             {diseaseIntro.map((d) => {
               const Icon = d.icon as any;
               return (
-                <Link key={d.slug} to={`/diseases/${d.slug}`} className="group">
+                <Link key={d.slug} to={`/all-diseases`} className="group">
                   <div className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center mx-auto shadow-sm group-hover:shadow-md transition-all ring-1 ${d.bgClass} ${d.ringClass}`}>
                     <Icon className={`w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 ${d.colorClass}`} />
                   </div>
@@ -209,7 +209,7 @@ const HomePage = () => {
 
           <div className="text-center mt-6 sm:mt-8">
             <Button asChild variant="outline" size="sm" className="text-sm">
-              <Link to="/diseases">View all diseases</Link>
+              <Link to="/all-diseases">View all diseases</Link>
             </Button>
           </div>
         </div>

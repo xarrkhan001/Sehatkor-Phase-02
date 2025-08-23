@@ -20,7 +20,7 @@ const DiseaseListPage = () => {
         {diseases.map((disease) => {
           const Icon = disease.icon;
           return (
-            <Link key={disease.slug} to={`/diseases/${disease.slug}`}>
+            <Link key={disease.slug} to={`/all-diseases`}>
               <Card className="group border-0 shadow-sm hover:shadow-md transition-all">
                 <CardContent className="p-6 flex flex-col items-center text-center">
                   <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">

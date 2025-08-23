@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,10 @@ import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 const DoctorsPage = () => {
   const navigate = useNavigate();
   const [doctorServices, setDoctorServices] = useState<Service[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialDisease = searchParams.get('disease') || "";
+  const [searchTerm, setSearchTerm] = useState(initialDisease);
+
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState<boolean | undefined>(true);
@@ -41,6 +45,7 @@ const DoctorsPage = () => {
           type: 'doctor',
           page: nextPage,
           limit: 12,
+          disease: initialDisease || undefined,
         });
         if (!isMounted) return;
         const mapped = services.map((service: any) => ({
@@ -102,7 +107,7 @@ const DoctorsPage = () => {
     setPage(1);
     loadPage(1);
     return () => { isMounted = false; };
-  }, [user?.id]);
+  }, [user?.id, initialDisease]);
 
   useEffect(() => {
     if (!socket) return;
@@ -164,7 +169,7 @@ const DoctorsPage = () => {
     // reuse effect's loader logic inline
     setIsLoading(true);
     try {
-      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 12 });
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 12, disease: initialDisease || undefined });
       const mapped = services.map((service: any) => ({
         id: service.id,
         name: service.name,
@@ -333,6 +338,21 @@ const DoctorsPage = () => {
               <p className="text-base md:text-lg text-gray-500">
                 Search from our network of qualified healthcare professionals
               </p>
+              {initialDisease && (
+                <div className="mt-2 text-sm text-gray-600">
+                  Filtering for disease: <span className="font-semibold">{initialDisease}</span>
+                  <button
+                    className="ml-2 text-primary underline"
+                    onClick={() => {
+                      setSearchTerm("");
+                      searchParams.delete('disease');
+                      setSearchParams(searchParams, { replace: true });
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Right: Search */}
