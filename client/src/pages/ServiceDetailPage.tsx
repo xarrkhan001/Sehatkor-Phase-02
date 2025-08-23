@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
 import { mockServices, Service as MockService } from "@/data/mockData";
@@ -28,10 +28,8 @@ const ServiceDetailPage = () => {
   const id = params.id as string;
   const { user, mode } = useAuth();
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
-  const [loadedItem, setLoadedItem] = useState<Unified | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const itemFromLocal: Unified | undefined = useMemo(() => {
+  const item: Unified | undefined = useMemo(() => {
     const source = (ServiceManager as any).getAllServicesWithVariants
       ? (ServiceManager as any).getAllServicesWithVariants()
       : ServiceManager.getAllServices();
@@ -63,59 +61,6 @@ const ServiceDetailPage = () => {
     const combined = [...realMapped, ...mockMapped];
     return combined.find(x => x.id === id);
   }, [id]);
-
-  // Fallback: if not found locally, try server by probing types
-  useEffect(() => {
-    let canceled = false;
-    const fetchIfNeeded = async () => {
-      if (itemFromLocal) {
-        setLoadedItem(itemFromLocal);
-        return;
-      }
-      setLoading(true);
-      const types: Unified['providerType'][] = ['doctor', 'clinic', 'laboratory', 'pharmacy'];
-      for (const t of types) {
-        try {
-          const svc = await ServiceManager.fetchServiceById(String(id), t as any);
-          if (canceled) return;
-          // Map to Unified
-          const mapped: Unified = {
-            id: svc.id,
-            name: svc.name,
-            description: svc.description,
-            price: (svc as any).price ?? 0,
-            rating: (svc as any).averageRating ?? (svc as any).rating ?? 0,
-            location: (svc as any).city || (svc as any).location || 'Karachi',
-            provider: (svc as any).providerName || 'Provider',
-            image: (svc as any).image,
-            type: (svc as any).providerType === 'doctor' ? 'Treatment' : (svc as any).providerType === 'pharmacy' ? 'Medicine' : (svc as any).providerType === 'laboratory' ? 'Test' : ((svc as any).category === 'Surgery' ? 'Surgery' : 'Treatment'),
-            providerType: (svc as any).providerType,
-            isReal: true,
-          };
-          setLoadedItem(mapped);
-          setLoading(false);
-          return;
-        } catch (e) {
-          // try next type
-        }
-      }
-      if (!canceled) setLoading(false);
-    };
-    fetchIfNeeded();
-    return () => { canceled = true; };
-  }, [id, itemFromLocal]);
-
-  const item = loadedItem || itemFromLocal;
-
-  if (loading && !item) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center text-muted-foreground">Loading service...</div>
-        </div>
-      </div>
-    );
-  }
 
   if (!item) {
     return (
