@@ -48,6 +48,9 @@ const UserSchema = new mongoose.Schema({
   operatingHours: OperatingHoursSchema,
   staffDetails: { type: StaffDetailsSchema, required: false },
   bankDetails: { type: BankDetailsSchema, required: false },
+  // Password reset fields
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 }, { timestamps: true });
 
 const User = mongoose.model('User', UserSchema);
