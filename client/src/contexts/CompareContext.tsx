@@ -8,12 +8,36 @@ export type UnifiedService = {
   description: string;
   price: number;
   rating: number;
+  // display-friendly combined location, but keep granular fields too
   location: string;
+  city?: string;
+  detailAddress?: string;
+  googleMapLink?: string;
   type: "Treatment" | "Medicine" | "Test" | "Surgery";
   homeService: boolean;
   image?: string;
   provider: string;
   isReal?: boolean;
+  // provider + ratings
+  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  totalRatings?: number;
+  providerPhone?: string;
+  _providerId?: string;
+  _providerType?: 'doctor' | 'clinic' | 'laboratory' | 'pharmacy';
+  createdAt?: string;
+  updatedAt?: string;
+  // variants (doctor services primarily)
+  variants?: Array<{
+    imageUrl?: string;
+    price?: number;
+    city?: string;
+    detailAddress?: string;
+    googleMapLink?: string;
+    timeLabel?: string;
+    startTime?: string;
+    endTime?: string;
+    days?: string;
+  }>;
 };
 
 type CompareContextValue = {
@@ -46,14 +70,27 @@ function mapRealToUnified(service: RealService): UnifiedService {
     id: service.id,
     name: service.name,
     description: service.description,
-    price: service.price,
-    rating: 4.5,
-    location: (service as any).location || "Karachi",
+    price: (service as any)?.price ?? 0,
+    rating: (service as any)?.averageRating || (service as any)?.rating || 0,
+    location: ((service as any)?.detailAddress && (service as any)?.city)
+      ? `${(service as any).detailAddress}, ${(service as any).city}`
+      : ((service as any)?.city || (service as any)?.location || "Karachi"),
+    city: (service as any)?.city,
+    detailAddress: (service as any)?.detailAddress,
+    googleMapLink: (service as any)?.googleMapLink,
     type,
     homeService: service.providerType === "doctor",
     image: service.image,
     provider: service.providerName,
     isReal: true,
+    ratingBadge: (service as any)?.ratingBadge ?? null,
+    totalRatings: (service as any)?.totalRatings ?? 0,
+    providerPhone: (service as any)?.providerPhone,
+    _providerId: (service as any)?.providerId,
+    _providerType: (service as any)?.providerType,
+    createdAt: (service as any)?.createdAt,
+    updatedAt: (service as any)?.updatedAt,
+    variants: (service as any)?.variants || [],
   };
 }
 

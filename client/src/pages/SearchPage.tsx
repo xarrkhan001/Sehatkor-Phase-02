@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2 } from "lucide-react";
+import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
 import { Service } from "@/data/mockData";
@@ -62,6 +62,66 @@ const SearchPage = () => {
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
   const [priceCache, setPriceCache] = useState<Record<string, number>>({});
 
+  // Track active variant index per service id
+  const [activeVariantIndexByService, setActiveVariantIndexByService] = useState<Record<string, number>>({});
+
+  // Variant helpers (variants exist primarily for doctor services)
+  const getVariants = (service: any) => Array.isArray((service as any)?.variants) ? (service as any).variants : [];
+  // Build slides array: base service first, then variants
+  const getSlides = (service: any) => {
+    const variants = getVariants(service);
+    const base = {
+      imageUrl: service.image,
+      price: service.price,
+      city: service.location,
+      detailAddress: (service as any).address,
+      googleMapLink: (service as any).googleMapLink,
+      timeLabel: (service as any).timeLabel,
+      startTime: (service as any).startTime,
+      endTime: (service as any).endTime,
+      days: (service as any).days,
+    };
+    return [base, ...variants];
+  };
+  const getActiveSlide = (service: any) => {
+    const slides = getSlides(service);
+    const idx = activeVariantIndexByService[service.id] ?? 0;
+    const safe = slides.length ? (((idx % slides.length) + slides.length) % slides.length) : 0;
+    return slides[safe];
+  };
+  const getDisplayImage = (service: any) => (getActiveSlide(service)?.imageUrl) || service.image;
+  const getDisplayPrice = (service: any) => {
+    const vp = getActiveSlide(service)?.price;
+    return (vp != null && !Number.isNaN(Number(vp))) ? Number(vp) : service.price;
+  };
+  const getDisplayLocation = (service: any) => (getActiveSlide(service)?.city) || service.location;
+  const getDisplayAddress = (service: any) => (getActiveSlide(service)?.detailAddress) || (service as any).address;
+  const getDisplayMapLink = (service: any) => (getActiveSlide(service)?.googleMapLink) || (service as any).googleMapLink;
+  // Build display time label for the active slide (timeLabel or start-end + days)
+  const getDisplayTimeInfo = (service: any): string | null => {
+    const v = getActiveSlide(service);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    const label = (v as any).timeLabel || ((v as any).startTime && (v as any).endTime ? `${formatTime((v as any).startTime)} - ${formatTime((v as any).endTime)}` : "");
+    const days = (v as any).days ? String((v as any).days) : "";
+    const parts = [label, days].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
+  };
+  // Numeric time range badge for right side (prefer start-end, fallback to timeLabel)
+  const getDisplayTimeRange = (service: any): string | null => {
+    const v = getActiveSlide(service);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    if ((v as any).startTime && (v as any).endTime) return `${formatTime((v as any).startTime)} - ${formatTime((v as any).endTime)}`;
+    return (v as any).timeLabel ? String((v as any).timeLabel) : null;
+  };
+  const nextVariant = (serviceId: string) => {
+    setActiveVariantIndexByService(prev => ({ ...prev, [serviceId]: ((prev[serviceId] ?? 0) + 1) }));
+  };
+  const prevVariant = (serviceId: string) => {
+    setActiveVariantIndexByService(prev => ({ ...prev, [serviceId]: ((prev[serviceId] ?? 0) - 1) }));
+  };
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   useEffect(() => {
@@ -95,6 +155,25 @@ const SearchPage = () => {
       socket.off("rating_updated", handleRatingUpdate);
     };
   }, [socket]);
+
+  // Auto-advance variant/base slides every 10 seconds for services with multiple slides
+  useEffect(() => {
+    if (!allServices.length) return;
+    const timer = setInterval(() => {
+      setActiveVariantIndexByService(prev => {
+        const next: Record<string, number> = { ...prev };
+        for (const svc of allServices) {
+          const slides = getSlides(svc);
+          if (slides.length > 1) {
+            const curr = prev[svc.id] ?? 0;
+            next[svc.id] = (curr + 1) % slides.length;
+          }
+        }
+        return next;
+      });
+    }, 10000);
+    return () => clearInterval(timer);
+  }, [allServices]);
 
   // Listen for per-user immediate badge updates (optimistic UI)
   useEffect(() => {
@@ -194,6 +273,8 @@ const SearchPage = () => {
         providerPhone: service.providerPhone,
         totalRatings: service.totalRatings || 0,
       } as any;
+      // Preserve variants if provided by backend (doctor services)
+      (s as any).variants = (service as any)?.variants || [];
       // Hydrate user's own badge from localStorage
       try {
         const uid = (user as any)?.id || (user as any)?._id || 'anon';
@@ -354,6 +435,13 @@ const SearchPage = () => {
       return;
     }
 
+    // Determine active slide index and time context
+    const slides = getSlides(service);
+    const rawIdx = activeVariantIndexByService[service.id] ?? 0;
+    const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
+    const timeLabel = getDisplayTimeInfo(service);
+    const timeRange = getDisplayTimeRange(service);
+
     navigate('/payment', {
       state: {
         serviceId: service.id,
@@ -361,10 +449,15 @@ const SearchPage = () => {
         providerId: (service as any)._providerId || service.id,
         providerName: service.provider,
         providerType: (service as any)._providerType,
-        price: Number((service as any).price ?? 0),
-        image: service.image,
-        location: service.location,
-        phone: (service as any).providerPhone
+        price: Number(getDisplayPrice(service) ?? (service as any).price ?? 0),
+        currency: 'PKR',
+        image: getDisplayImage(service) || service.image,
+        location: getDisplayLocation(service) || service.location,
+        phone: (service as any).providerPhone,
+        // variant context
+        variantIndex: activeIdx,
+        variantLabel: timeLabel,
+        variantTimeRange: timeRange,
       }
     });
   };
@@ -429,15 +522,25 @@ const SearchPage = () => {
     }
   };
 
-  // Update current service being shown on map when showLocationMap changes
+  // Update current service being shown on map when showLocationMap changes (variant-aware)
   useEffect(() => {
     if (showLocationMap) {
       const service = allServices.find(s => s.id === showLocationMap);
-      setCurrentMapService(service || null);
+      if (service) {
+        const augmented: any = {
+          ...service,
+          location: getDisplayLocation(service),
+          address: getDisplayAddress(service),
+          googleMapLink: getDisplayMapLink(service),
+        };
+        setCurrentMapService(augmented);
+      } else {
+        setCurrentMapService(null);
+      }
     } else {
       setCurrentMapService(null);
     }
-  }, [showLocationMap, allServices]);
+  }, [showLocationMap, allServices, activeVariantIndexByService]);
 
   if (isLoading) {
     return <SearchPageSkeleton />;
@@ -637,11 +740,11 @@ const SearchPage = () => {
         }`}
       >
        <CardContent className="p-5 flex flex-col h-full">
-  {/* Image */}
-  <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
-    {service.image ? (
+  {/* Image with Variant Slider (if any) */}
+  <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
+    {getDisplayImage(service) ? (
       <img
-        src={service.image}
+        src={getDisplayImage(service)}
         alt={service.name}
         className="w-full h-full object-cover"
         onError={(e) => {
@@ -656,6 +759,47 @@ const SearchPage = () => {
       />
     ) : (
       <span className="text-gray-400 text-4xl">{getServiceEmoji(service.type)}</span>
+    )}
+
+    {getSlides(service).length > 1 && (
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+        <button
+          onClick={(e) => { e.stopPropagation(); prevVariant(service.id); }}
+          className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+          aria-label="Previous variant"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); nextVariant(service.id); }}
+          className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+          aria-label="Next variant"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    )}
+
+    {(getSlides(service).length > 1 || getDisplayTimeInfo(service)) && (
+      <div className="absolute left-2 bottom-2 flex items-center gap-2">
+        {getSlides(service).length > 1 && (
+          <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
+            {((((activeVariantIndexByService[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+          </div>
+        )}
+        {getDisplayTimeInfo(service) && (
+          <div className="bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            <span>{getDisplayTimeInfo(service)}</span>
+          </div>
+        )}
+      </div>
+    )}
+    {getDisplayTimeRange(service) && (
+      <div className="absolute right-2 bottom-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+        <Clock className="w-3 h-3" />
+        <span>{getDisplayTimeRange(service)}</span>
+      </div>
     )}
   </div>
 
@@ -679,9 +823,9 @@ const SearchPage = () => {
     </div>
     <div className="text-right">
       <div className="text-lg font-bold text-primary">
-        {service.price === 0
+        {getDisplayPrice(service) === 0
           ? "Free"
-          : `PKR ${service.price.toLocaleString()}`}
+          : `PKR ${getDisplayPrice(service).toLocaleString()}`}
       </div>
       <Badge 
         variant="outline" 
@@ -708,7 +852,7 @@ const SearchPage = () => {
     />
     <div className="flex items-center gap-1 text-gray-500">
       <MapPin className="w-4 h-4" />
-      <span>{service.location}</span>
+      <span>{getDisplayLocation(service)}</span>
     </div>
     {service.homeService && (
       <div className="flex items-center gap-1 text-green-600">
@@ -729,14 +873,15 @@ const SearchPage = () => {
   <div className="mt-auto flex flex-wrap gap-2">
     <Button 
       className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-      onClick={() => handleBookNow(service)}
+      onClick={() => handleBookNow({ ...(service as any), price: getDisplayPrice(service), image: getDisplayImage(service), location: getDisplayLocation(service) } as any)}
     >
       <Clock className="w-4 h-4 mr-1" /> Book Now
     </Button>
     <Button
       variant="outline"
       onClick={() => {
-        setCurrentMapService(service);
+        const augmented: any = { ...service, location: getDisplayLocation(service), address: getDisplayAddress(service), googleMapLink: getDisplayMapLink(service) };
+        setCurrentMapService(augmented);
         setShowLocationMap(service.id);
       }}
       className="flex-1 min-w-[100px] bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
@@ -746,21 +891,28 @@ const SearchPage = () => {
     <Button
       variant="secondary"
       onClick={() => {
+        const timeInfo = getDisplayTimeInfo(service);
         navigate(`/service/${service.id}`, {
           state: {
             from: `${routerLocation.pathname}${routerLocation.search}`,
             fromSearch: true,
             service: {
               ...service,
+              // active slide overrides
+              image: getDisplayImage(service) || service.image,
+              price: getDisplayPrice(service) ?? service.price,
+              location: getDisplayLocation(service) || service.location,
+              address: getDisplayAddress(service) || (service as any).address,
+              googleMapLink: getDisplayMapLink(service) || (service as any).googleMapLink,
+              // provider/meta
               providerType: (service as any)._providerType,
               providerId: (service as any)._providerId,
               totalRatings: (service as any).totalRatings,
               providerPhone: (service as any).providerPhone,
-              googleMapLink: (service as any).googleMapLink,
               coordinates: (service as any).coordinates,
-              address: (service as any).address,
               ratingBadge: (service as any).ratingBadge,
               myBadge: (service as any).myBadge,
+              timeInfo,
             }
           }
         });

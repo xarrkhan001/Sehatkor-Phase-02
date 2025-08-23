@@ -5,6 +5,24 @@ export interface ServiceImage {
   preview: string;
 }
 
+export interface ServiceVariant {
+  id: string;
+  timeLabel?: string;
+  startTime?: string;
+  endTime?: string;
+  days?: string[];
+  price?: number;
+  imageUrl?: string;
+  imagePublicId?: string;
+  googleMapLink?: string;
+  city?: string;
+  detailAddress?: string;
+  notes?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface BaseService {
   id: string;
   name: string;
@@ -32,6 +50,7 @@ export interface DoctorService extends BaseService {
   providerType: 'doctor';
   specialization?: string;
   duration?: string;
+  variants?: ServiceVariant[];
 }
 
 export interface ClinicService extends BaseService {
@@ -207,6 +226,27 @@ class ServiceManager {
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
       ...(service.stock != null && { stock: service.stock }),
+      ...(Array.isArray(service.variants) && service.variants.length > 0
+        ? {
+            variants: service.variants.map((v: any) => ({
+              id: String(v._id),
+              timeLabel: v.timeLabel,
+              startTime: v.startTime,
+              endTime: v.endTime,
+              days: v.days,
+              price: v.price,
+              imageUrl: v.imageUrl,
+              imagePublicId: v.imagePublicId,
+              googleMapLink: v.googleMapLink,
+              city: v.city,
+              detailAddress: v.detailAddress,
+              notes: v.notes,
+              isActive: v.isActive,
+              createdAt: v.createdAt,
+              updatedAt: v.updatedAt,
+            })) as ServiceVariant[]
+          }
+        : {}),
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     }));
@@ -250,6 +290,27 @@ class ServiceManager {
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
       ...(service.stock != null && { stock: service.stock }),
+      ...(Array.isArray(service.variants) && service.variants.length > 0
+        ? {
+            variants: service.variants.map((v: any) => ({
+              id: String(v._id),
+              timeLabel: v.timeLabel,
+              startTime: v.startTime,
+              endTime: v.endTime,
+              days: v.days,
+              price: v.price,
+              imageUrl: v.imageUrl,
+              imagePublicId: v.imagePublicId,
+              googleMapLink: v.googleMapLink,
+              city: v.city,
+              detailAddress: v.detailAddress,
+              notes: v.notes,
+              isActive: v.isActive,
+              createdAt: v.createdAt,
+              updatedAt: v.updatedAt,
+            })) as ServiceVariant[]
+          }
+        : {}),
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     };
@@ -290,6 +351,27 @@ class ServiceManager {
         rating: service.averageRating ?? service.rating ?? 0,
         averageRating: service.averageRating ?? service.rating ?? 0,
         ...(service.stock != null && { stock: service.stock }),
+        ...(Array.isArray(service.variants) && service.variants.length > 0
+          ? {
+              variants: service.variants.map((v: any) => ({
+                id: String(v._id),
+                timeLabel: v.timeLabel,
+                startTime: v.startTime,
+                endTime: v.endTime,
+                days: v.days,
+                price: v.price,
+                imageUrl: v.imageUrl,
+                imagePublicId: v.imagePublicId,
+                googleMapLink: v.googleMapLink,
+                city: v.city,
+                detailAddress: v.detailAddress,
+                notes: v.notes,
+                isActive: v.isActive,
+                createdAt: v.createdAt,
+                updatedAt: v.updatedAt,
+              })) as ServiceVariant[]
+            }
+          : {}),
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,
       }));

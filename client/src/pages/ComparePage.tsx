@@ -1,31 +1,153 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, ArrowUpDown, Trash2, Minimize2, Maximize2, X } from "lucide-react";
 import { useCompare } from "@/contexts/CompareContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 type SortKey = "price" | "rating" | "location";
 
 const ComparePage = () => {
   const { items, remove, clear } = useCompare();
+  const navigate = useNavigate();
+  const { user, mode } = useAuth();
   const [sortKey, setSortKey] = useState<SortKey>("price");
   const [sortAsc, setSortAsc] = useState<boolean>(true);
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
+
+  // Variant slider state per item
+  const [activeIdxById, setActiveIdxById] = useState<Record<string, number>>({});
+
+  // Slides helpers (match Search/Explorer)
+  const getSlides = (svc: any) => {
+    const base = {
+      imageUrl: (svc as any).image,
+      price: (svc as any).price,
+      city: (svc as any).city,
+      detailAddress: (svc as any).detailAddress,
+      googleMapLink: (svc as any).googleMapLink,
+      timeLabel: (svc as any).timeLabel,
+      startTime: (svc as any).startTime,
+      endTime: (svc as any).endTime,
+      days: (svc as any).days,
+    };
+    const variants = Array.isArray((svc as any).variants) ? (svc as any).variants : [];
+    return [base, ...variants];
+  };
+
+  const handleViewDetails = (item: any) => {
+    const slides = getSlides(item);
+    const rawIdx = activeIdxById[item.id] ?? 0;
+    const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
+    const timeLabel = getDisplayTimeInfo(item);
+    const timeRange = getDisplayTimeRange(item);
+    navigate(`/service/${item.id}`, {
+      state: {
+        from: window.location.pathname + window.location.search,
+        fromCompare: true,
+        service: {
+          id: item.id,
+          name: item.name,
+          description: (item as any).description,
+          price: Number(getDisplayPrice(item) ?? (item as any).price ?? 0),
+          rating: (item as any).rating ?? 0,
+          provider: (item as any).provider,
+          image: getDisplayImage(item) || (item as any).image,
+          type: (item as any).type,
+          providerType: (item as any)._providerType,
+          isReal: true,
+          ratingBadge: (item as any).ratingBadge ?? null,
+          location: getDisplayLocation(item) || (item as any).location,
+          address: (item as any).detailAddress ?? undefined,
+          providerPhone: (item as any).providerPhone ?? undefined,
+          googleMapLink: getDisplayMapLink(item) ?? (item as any).googleMapLink ?? undefined,
+          variantIndex: activeIdx,
+          variantLabel: timeLabel ?? undefined,
+          variantTimeRange: timeRange ?? undefined,
+        },
+      },
+    });
+  };
+  const getActiveSlide = (svc: any) => {
+    const slides = getSlides(svc);
+    const raw = activeIdxById[svc.id] ?? 0;
+    if (!slides.length) return undefined;
+    const safe = ((raw % slides.length) + slides.length) % slides.length;
+    return slides[safe];
+  };
+  const getDisplayImage = (svc: any) => getActiveSlide(svc)?.imageUrl || (svc as any).image;
+  const getDisplayPrice = (svc: any) => {
+    const p = getActiveSlide(svc)?.price;
+    return p != null && !Number.isNaN(Number(p)) ? Number(p) : (svc as any).price;
+  };
+  const getDisplayLocation = (svc: any) => getActiveSlide(svc)?.city || (svc as any).city || (svc as any).location;
+  const getDisplayAddress = (svc: any) => getActiveSlide(svc)?.detailAddress || (svc as any).detailAddress;
+  const getDisplayMapLink = (svc: any) => getActiveSlide(svc)?.googleMapLink || (svc as any).googleMapLink;
+  const getDisplayTimeInfo = (svc: any): string | null => {
+    const v: any = getActiveSlide(svc);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const days = v.days ? String(v.days) : "";
+    const parts = [label, days].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
+  };
+  const getDisplayTimeRange = (svc: any): string | null => {
+    const v: any = getActiveSlide(svc);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    if (v.startTime && v.endTime) return `${formatTime(v.startTime)} - ${formatTime(v.endTime)}`;
+    return v.timeLabel ? String(v.timeLabel) : null;
+  };
+  const nextVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+  const prevVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) - 1 }));
+
+  // Auto-advance variants every 10 seconds for items with multiple slides
+  useEffect(() => {
+    const ids = items
+      .filter(s => getSlides(s).length > 1)
+      .map(s => s.id);
+    if (ids.length === 0) return;
+    const t = setInterval(() => {
+      setActiveIdxById(prev => {
+        const next = { ...prev } as Record<string, number>;
+        ids.forEach(id => { next[id] = (next[id] ?? 0) + 1; });
+        return next;
+      });
+    }, 10000);
+    return () => clearInterval(t);
+  }, [items]);
 
   const sorted = useMemo(() => {
     const copy = [...items];
     copy.sort((a, b) => {
       if (sortKey === "location") {
-        return (a.location || "").localeCompare(b.location || "");
+        return (getDisplayLocation(a) || "").localeCompare(getDisplayLocation(b) || "");
       }
-      const av = a[sortKey] as number;
-      const bv = b[sortKey] as number;
+      const av = sortKey === 'price' ? getDisplayPrice(a) : (a as any)[sortKey] as number;
+      const bv = sortKey === 'price' ? getDisplayPrice(b) : (b as any)[sortKey] as number;
       return av - bv;
     });
     return sortAsc ? copy : copy.reverse();
-  }, [items, sortKey, sortAsc]);
+  }, [items, sortKey, sortAsc, activeIdxById]);
+
+  // Default select first service for details if none selected
+  useEffect(() => {
+    if (!detailId && sorted.length > 0) {
+      setDetailId(sorted[0].id);
+    }
+  }, [sorted, detailId]);
+
+  const currentDetail = useMemo(() => {
+    if (!detailId) return null;
+    const svc = items.find(s => s.id === detailId);
+    return svc || null;
+  }, [detailId, items]);
 
   const toggleSort = (key: SortKey) => {
     if (key === sortKey) setSortAsc(prev => !prev);
@@ -59,12 +181,48 @@ const ComparePage = () => {
     if (!showLocationMap) return null;
     const svc = items.find(s => s.id === showLocationMap);
     if (!svc) return null;
-    const loc = (svc as any).location || "Karachi";
+    const loc = getDisplayLocation(svc) || (svc as any).location || "Karachi";
     const provider = (svc as any).provider || "Provider";
     const coordinates = getCoordinatesForLocation(loc);
-    const address = getMockAddress(provider, (svc as any).name || "Service", loc);
-    return { ...svc, location: loc, provider, coordinates, address } as any;
-  }, [showLocationMap, items]);
+    const address = getDisplayAddress(svc) || getMockAddress(provider, (svc as any).name || "Service", loc);
+    const googleMapLink = getDisplayMapLink(svc);
+    return { ...svc, location: loc, provider, coordinates, address, googleMapLink } as any;
+  }, [showLocationMap, items, activeIdxById]);
+
+  const handleBookNow = (item: any) => {
+    if (user && user.role !== 'patient' && mode !== 'patient') {
+      toast.error('Providers must switch to Patient Mode to book services.', {
+        description: 'Click your profile icon and use the toggle to switch modes.',
+      });
+      return;
+    }
+    if (user && (item as any)._providerId && user.id === (item as any)._providerId) {
+      toast.error('You cannot book your own service.');
+      return;
+    }
+    const slides = getSlides(item);
+    const rawIdx = activeIdxById[item.id] ?? 0;
+    const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
+    const timeLabel = getDisplayTimeInfo(item);
+    const timeRange = getDisplayTimeRange(item);
+    navigate('/payment', {
+      state: {
+        serviceId: item.id,
+        serviceName: item.name,
+        providerId: (item as any)._providerId || item.id,
+        providerName: item.provider,
+        providerType: (item as any)._providerType,
+        price: Number(getDisplayPrice(item) ?? (item as any).price ?? 0),
+        currency: 'PKR',
+        image: getDisplayImage(item) || (item as any).image,
+        location: getDisplayLocation(item) || (item as any).location,
+        phone: (item as any).providerPhone,
+        variantIndex: activeIdx,
+        variantLabel: timeLabel,
+        variantTimeRange: timeRange,
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,8 +265,19 @@ const ComparePage = () => {
                         <th key={item.id} className="p-4 text-left min-w-56">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <div className="font-semibold leading-tight">{item.name}</div>
+                              <div className="font-semibold leading-tight flex items-center gap-2">
+                                <span>{item.name}</span>
+                                {getSlides(item).length > 1 && (
+                                  <div className="inline-flex items-center gap-1">
+                                    <button className="px-1 py-0.5 rounded bg-gray-100" onClick={() => prevVariant(item.id)} aria-label="Prev">‹</button>
+                                    <button className="px-1 py-0.5 rounded bg-gray-100" onClick={() => nextVariant(item.id)} aria-label="Next">›</button>
+                                  </div>
+                                )}
+                              </div>
                               <div className="text-xs text-muted-foreground">{item.provider}</div>
+                              {getDisplayTimeInfo(item) && (
+                                <div className="text-[11px] text-muted-foreground mt-1">{getDisplayTimeInfo(item)}</div>
+                              )}
                             </div>
                             <Button size="sm" variant="ghost" onClick={() => remove(item.id)}>Remove</Button>
                           </div>
@@ -121,7 +290,7 @@ const ComparePage = () => {
                       <td className="p-4 font-medium">Price</td>
                       {sorted.map(item => (
                         <td key={item.id} className="p-4 font-semibold text-primary">
-                          {item.price === 0 ? "Free" : `PKR ${item.price.toLocaleString()}`}
+                          {getDisplayPrice(item) === 0 ? "Free" : `PKR ${getDisplayPrice(item).toLocaleString()}`}
                         </td>
                       ))}
                     </tr>
@@ -142,7 +311,7 @@ const ComparePage = () => {
                         <td key={item.id} className="p-4">
                           <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4" />
-                            {item.location}
+                            {getDisplayLocation(item)}
                             <Button size="sm" variant="ghost" className="h-7 px-2 ml-1" onClick={() => setShowLocationMap(item.id)}>View Location</Button>
                           </div>
                         </td>
@@ -156,23 +325,21 @@ const ComparePage = () => {
                         </td>
                       ))}
                     </tr>
-                    <tr className="border-b">
-                      <td className="p-4 font-medium">Home Service</td>
-                      {sorted.map(item => (
-                        <td key={item.id} className="p-4">
-                          {item.homeService ? (
-                            <Badge variant="outline" className="text-green-600 border-green-600">Available</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-red-600 border-red-600">Not Available</Badge>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
                     <tr>
                       <td className="p-4 font-medium">Action</td>
                       {sorted.map(item => (
                         <td key={item.id} className="p-4">
-                          <Button size="sm" className="w-full">Book Now</Button>
+                          <div className="flex flex-col gap-2">
+                            <Button size="sm" className="w-full" onClick={() => handleBookNow(item)}>Book Now</Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="w-full"
+                              onClick={() => handleViewDetails(item)}
+                            >
+                              View Details
+                            </Button>
+                          </div>
                         </td>
                       ))}
                     </tr>
@@ -182,6 +349,70 @@ const ComparePage = () => {
             )}
           </CardContent>
         </Card>
+
+        {currentDetail && (
+          <Card className="mt-6">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <span>Service Details</span>
+                  <Badge variant="outline">{(currentDetail as any).type}</Badge>
+                </CardTitle>
+                <CardDescription>Viewing details for {(currentDetail as any).name} — {(currentDetail as any).provider}</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {getSlides(currentDetail).length > 1 && (
+                  <div className="inline-flex items-center gap-1">
+                    <Button variant="outline" size="sm" onClick={() => prevVariant((currentDetail as any).id)}>‹</Button>
+                    <Button variant="outline" size="sm" onClick={() => nextVariant((currentDetail as any).id)}>›</Button>
+                  </div>
+                )}
+                <Button variant="ghost" size="sm" onClick={() => setDetailId(null)}>Close</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="w-full h-44 bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                  {getDisplayImage(currentDetail) ? (
+                    <img src={getDisplayImage(currentDetail)!} alt={(currentDetail as any).name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-muted-foreground text-sm">No Image</span>
+                  )}
+                </div>
+                <div className="md:col-span-2 grid gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div className="text-lg font-semibold">{(currentDetail as any).name}</div>
+                      <div className="text-sm text-muted-foreground">{(currentDetail as any).provider}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-primary">
+                        {getDisplayPrice(currentDetail) === 0 ? 'Free' : `PKR ${getDisplayPrice(currentDetail).toLocaleString()}`}
+                      </div>
+                      {getDisplayTimeInfo(currentDetail) && (
+                        <div className="text-xs text-muted-foreground">{getDisplayTimeInfo(currentDetail)}</div>
+                      )}
+                    </div>
+                  </div>
+                  {(currentDetail as any).description && (
+                    <p className="text-sm text-muted-foreground">{(currentDetail as any).description}</p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <div className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />{(currentDetail as any).rating}</div>
+                    <div className="flex items-center gap-1"><MapPin className="w-4 h-4" />{getDisplayLocation(currentDetail)}</div>
+                    {getDisplayMapLink(currentDetail) && (
+                      <Button size="sm" variant="outline" onClick={() => window.open(getDisplayMapLink(currentDetail)!, '_blank', 'noopener,noreferrer')}>Open Map</Button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button size="sm" onClick={() => handleBookNow(currentDetail)}>Book Now</Button>
+                    <Button size="sm" variant="secondary" onClick={() => setDetailId(sorted.find(s => s.id !== (currentDetail as any).id)?.id || (sorted[0]?.id ?? null)!)}>Next Item</Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
       {showLocationMap && currentMapService && (
         <div

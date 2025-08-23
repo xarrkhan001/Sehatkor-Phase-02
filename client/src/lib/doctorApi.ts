@@ -1,3 +1,19 @@
+export interface VariantDoc {
+  _id: string;
+  timeLabel?: string;
+  startTime?: string;
+  endTime?: string;
+  days?: string[];
+  price?: number;
+  imageUrl?: string;
+  imagePublicId?: string;
+  googleMapLink?: string;
+  city?: string;
+  detailAddress?: string;
+  notes?: string;
+  isActive?: boolean;
+}
+
 export type DoctorServiceDoc = {
   _id: string;
   name: string;
@@ -10,6 +26,7 @@ export type DoctorServiceDoc = {
   providerId: string;
   providerName: string;
   providerType: 'doctor';
+  variants?: VariantDoc[];
   createdAt: string;
   updatedAt: string;
 };

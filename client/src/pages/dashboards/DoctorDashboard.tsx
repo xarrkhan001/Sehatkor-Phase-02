@@ -46,6 +46,13 @@ const DoctorDashboard = () => {
     communicationChannel: 'SehatKor Chat',
   });
 
+  // Normalize booking price with sensible fallbacks
+  const getBookingPrice = (booking: any): number => {
+    const raw = booking?.price ?? booking?.amount ?? booking?.servicePrice ?? 0;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : 0;
+  };
+
   const specialties = [
     'Cardiologist', 'Neurologist', 'Dermatologist', 'Pediatrician', 
     'Orthopedic', 'Gynecologist', 'Psychiatrist', 'General Physician'
@@ -415,6 +422,9 @@ const DoctorDashboard = () => {
                               >
                                 {booking.status}
                               </Badge>
+                              <span className="text-sm font-medium ml-1">
+                                {getBookingPrice(booking) === 0 ? 'Free' : `PKR ${getBookingPrice(booking).toLocaleString()}`}
+                              </span>
                               {booking.status === 'Confirmed' && (
                                 <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
                               )}
