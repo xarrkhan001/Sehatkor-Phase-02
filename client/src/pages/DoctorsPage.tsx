@@ -45,7 +45,7 @@ const DoctorsPage = () => {
         const { services, hasMore: more } = await ServiceManager.fetchPublicServices({
           type: 'doctor',
           page: nextPage,
-          limit: 12,
+          limit: 6,
           disease: initialDisease || undefined,
         });
         if (!isMounted) return;
@@ -194,7 +194,7 @@ const DoctorsPage = () => {
     // reuse effect's loader logic inline
     setIsLoading(true);
     try {
-      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 12, disease: initialDisease || undefined });
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 9, disease: initialDisease || undefined });
       const mapped = services.map((service: any) => ({
         id: service.id,
         name: service.name,
@@ -417,7 +417,7 @@ const DoctorsPage = () => {
               </p>
             </div>
           </div>
-          <ServiceCardSkeleton count={8} />
+          <ServiceCardSkeleton count={6} />
         </div>
       </div>
     );
@@ -521,7 +521,7 @@ const DoctorsPage = () => {
                         className="h-8 w-8 rounded-full bg-white/90 border border-gray-200 shadow hover:bg-white"
                         aria-label="Previous variant"
                       >
-                        <ChevronLeft className="w-4 h-4 m-auto" />
+                        <ChevronLeft className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
@@ -535,7 +535,7 @@ const DoctorsPage = () => {
                         className="h-8 w-8 rounded-full bg-white/90 border border-gray-200 shadow hover:bg-white"
                         aria-label="Next variant"
                       >
-                        <ChevronRight className="w-4 h-4 m-auto" />
+                        <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
                   )}
@@ -704,6 +704,14 @@ const DoctorsPage = () => {
           ))}
         </div>
 
+        {hasMore && (
+          <div className="col-span-full flex justify-center mt-8">
+            <Button onClick={loadMore} disabled={isLoading} variant="outline">
+              {isLoading ? 'Loading...' : 'Load More'}
+            </Button>
+          </div>
+        )}
+
         {filteredServices.length === 0 && (
           <Card className="text-center py-12">
             <CardContent>
@@ -714,13 +722,6 @@ const DoctorsPage = () => {
               </div>
             </CardContent>
           </Card>
-        )}
-        {filteredServices.length > 0 && hasMore && (
-          <div className="flex justify-center mt-8">
-            <Button onClick={loadMore} disabled={isLoading}>
-              {isLoading ? 'Loading...' : 'Load more'}
-            </Button>
-          </div>
         )}
       </div>
 

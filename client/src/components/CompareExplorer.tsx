@@ -354,7 +354,7 @@ const CompareExplorer = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <div className="text-xs text-gray-600 text-center">{effectiveSelectedName ? `Showing ${offerings.length} providers` : "Start typing to search a service name, or pick from the list"}</div>
+                                <div className="text-xs text-gray-600 text-center h-4">{effectiveSelectedName ? `Showing ${offerings.length} providers` : ""}</div>
               </div>
             </div>
           </div>
@@ -366,7 +366,7 @@ const CompareExplorer = () => {
                 return (
                   <Card
                     key={item.id}
-                    className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-white/40 bg-blue-100 ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                    className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-white/40 bg-gray-100 ${isSelected ? 'ring-2 ring-primary' : ''}`}
                   >
                     <CardContent className="p-5 cursor-pointer" onClick={() => toggleSelect(item.id)}>
                       {/* Image with variant slider */}
@@ -500,7 +500,7 @@ const CompareExplorer = () => {
           {loading && (effectiveSelectedName || nameQuery) && (
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="bg-blue-100">
+                <Card key={i} className="bg-gray-100">
                   <CardContent className="p-4">
                     <Skeleton className="h-28 w-full rounded mb-3" />
                     <Skeleton className="h-4 w-2/3 mb-2" />
@@ -521,7 +521,7 @@ const CompareExplorer = () => {
 
           {selected.length >= 2 && (
             <div className="mt-8">
-              <Card className="bg-blue-100">
+              <Card className="bg-gray-100">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     Comparison

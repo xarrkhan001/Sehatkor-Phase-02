@@ -186,7 +186,7 @@ class ServiceManager {
   }
 
   // Fetch public services with optional type/page/limit (no localStorage write)
-  static async fetchPublicServices(params?: { type?: Service['providerType']; page?: number; limit?: number; disease?: string }): Promise<{
+  static async fetchPublicServices(params?: { type?: Service['providerType']; page?: number; limit?: number; disease?: string; query?: string; category?: string; }): Promise<{
     services: Service[];
     total: number;
     byType?: { doctor: number; clinic: number; pharmacy: number; laboratory: number };
@@ -199,6 +199,8 @@ class ServiceManager {
     if (params?.page) query.set('page', String(params.page));
     if (params?.limit) query.set('limit', String(params.limit));
     if (params?.disease) query.set('disease', params.disease);
+    if (params?.query) query.set('q', params.query);
+    if (params?.category) query.set('category', params.category);
 
     const url = `http://localhost:4000/api/user/services/public${query.toString() ? `?${query.toString()}` : ''}`;
     const res = await fetch(url);

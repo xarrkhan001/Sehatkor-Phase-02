@@ -42,7 +42,7 @@ const LabsPage = () => {
         const { services, hasMore: more } = await ServiceManager.fetchPublicServices({
           type: 'laboratory',
           page: nextPage,
-          limit: 12,
+          limit: 6,
         });
         if (!isMounted) return;
         const mapped = services.map((service: any) => {
@@ -197,7 +197,7 @@ const LabsPage = () => {
     setPage(next);
     setIsLoading(true);
     try {
-      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'laboratory', page: next, limit: 12 });
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'laboratory', page: next, limit: 9 });
       const mapped = services.map((service: any) => {
         const s = {
           id: service.id,
@@ -361,7 +361,7 @@ const LabsPage = () => {
               </p>
             </div>
           </div>
-          <ServiceCardSkeleton count={8} />
+          <ServiceCardSkeleton count={6} />
         </div>
       </div>
     );
@@ -533,8 +533,8 @@ const LabsPage = () => {
           </Card>
         )}
         {filteredServices.length > 0 && hasMore && (
-          <div className="flex justify-center mt-8">
-            <Button onClick={loadMore} disabled={isLoading}>
+          <div className="col-span-full flex justify-center mt-8">
+            <Button onClick={loadMore} disabled={isLoading} variant="outline">
               {isLoading ? 'Loading...' : 'Load more'}
             </Button>
           </div>
