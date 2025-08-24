@@ -67,6 +67,9 @@ const DoctorsPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings || 0,
           ratingBadge: (service as any).ratingBadge || null,
+          ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
+            ? { diseases: (service as any).diseases }
+            : {}),
           // Preserve variants from backend if available
           ...(Array.isArray((service as any).variants) && (service as any).variants.length > 0
             ? { variants: (service as any).variants }
@@ -213,7 +216,11 @@ const DoctorsPage = () => {
         providerPhone: (service as any).providerPhone,
         totalRatings: (service as any).totalRatings || 0,
         ratingBadge: (service as any).ratingBadge || null,
+        ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
+          ? { diseases: (service as any).diseases }
+          : {}),
       }) as Service);
+
       setDoctorServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
         for (const s of mapped) byId.set(s.id, s);
@@ -584,6 +591,18 @@ const DoctorsPage = () => {
                 <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                   {service.description}
                 </p>
+
+                {/* Address + Disease (badge on right) */}
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <span className="text-xs text-gray-600 truncate">
+                    {getDisplayForService(service).detailAddress || getDisplayForService(service).location || 'Address not specified'}
+                  </span>
+                  {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap">
+                      {((service as any).diseases as string[])[0]}
+                    </Badge>
+                  )}
+                </div>
 
                 {/* Rating, Location, Home Service, WhatsApp */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">

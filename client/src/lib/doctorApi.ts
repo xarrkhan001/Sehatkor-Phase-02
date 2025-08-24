@@ -27,6 +27,7 @@ export type DoctorServiceDoc = {
   providerName: string;
   providerType: 'doctor';
   variants?: VariantDoc[];
+  diseases?: string[];
   createdAt: string;
   updatedAt: string;
 };

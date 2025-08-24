@@ -73,9 +73,14 @@ const DoctorDashboard = () => {
       providerName: d.providerName || (user?.name || 'Doctor'),
       image: d.imageUrl,
       ...(d.duration ? { duration: d.duration } : {}),
+      ...(Array.isArray(d.diseases) ? { diseases: d.diseases } : {}),
+      ...(d.city ? { city: d.city } : {}),
+      ...(d.detailAddress ? { detailAddress: d.detailAddress } : {}),
+      ...(d.googleMapLink ? { googleMapLink: d.googleMapLink } : {}),
       createdAt: d.createdAt || new Date().toISOString(),
       updatedAt: d.updatedAt || d.createdAt || new Date().toISOString(),
     }));
+
     const next = [...filtered, ...mapped];
     localStorage.setItem('sehatkor_services', JSON.stringify(next));
     window.dispatchEvent(new StorageEvent('storage', { key: 'sehatkor_services' }));
@@ -100,9 +105,14 @@ const DoctorDashboard = () => {
         providerName: d.providerName || (user?.name || 'Doctor'),
         image: d.imageUrl,
         duration: d.duration,
+        ...(Array.isArray(d.diseases) ? { diseases: d.diseases } : {}),
+        ...(d.city ? { city: d.city } : {}),
+        ...(d.detailAddress ? { detailAddress: d.detailAddress } : {}),
+        ...(d.googleMapLink ? { googleMapLink: d.googleMapLink } : {}),
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }) as any);
+
       setServices(mapped);
       syncLocalFromDocs(docs);
     } catch (error) {
@@ -510,9 +520,14 @@ const DoctorDashboard = () => {
                       duration: (s as any).duration,
                       imageUrl: s.image,
                       providerName: s.providerName,
+                      diseases: (s as any).diseases,
+                      city: (s as any).city,
+                      detailAddress: (s as any).detailAddress,
+                      googleMapLink: (s as any).googleMapLink,
                       createdAt: (s as any).createdAt,
                       updatedAt: (s as any).updatedAt,
                     }));
+
                     syncLocalFromDocs(docs);
                   }}
                 />

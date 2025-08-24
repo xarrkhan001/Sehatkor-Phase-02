@@ -31,6 +31,8 @@ const DoctorServiceSchema = new mongoose.Schema(
     googleMapLink: { type: String },
     city: { type: String },
     detailAddress: { type: String },
+    // Associated diseases for this service (service-level)
+    diseases: { type: [String], default: [] },
     // New: array of variants for time/location/image specific offerings
     variants: { type: [ServiceVariantSchema], default: [] },
     reviews: [

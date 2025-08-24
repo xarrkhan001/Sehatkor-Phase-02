@@ -51,6 +51,7 @@ export interface DoctorService extends BaseService {
   specialization?: string;
   duration?: string;
   variants?: ServiceVariant[];
+  diseases?: string[];
 }
 
 export interface ClinicService extends BaseService {
@@ -228,6 +229,7 @@ class ServiceManager {
       ratingBadge: service.ratingBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
+      ...(Array.isArray(service.diseases) ? { diseases: service.diseases } : {}),
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
         ? {
