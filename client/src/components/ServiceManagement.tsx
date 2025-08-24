@@ -14,6 +14,7 @@ import ServiceManager, { Service } from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { createService as doctorCreate, updateService as doctorUpdate, deleteService as doctorDelete } from "@/lib/doctorApi";
 import { Plus, Edit, Trash2, Stethoscope } from "lucide-react";
+import { DISEASE_OPTIONS } from "@/config/diseasesData";
 
 interface ServiceManagementProps {
   userId: string;
@@ -37,6 +38,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // Disease state (single-select at service level)
+  const [disease, setDisease] = useState<string>('');
+
   // Variants state (doctor only)
   const [variants, setVariants] = useState<Array<{
     id: string;
@@ -95,6 +99,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     setServiceImage('');
     setEditingService(null);
     setVariants([]);
+    setDisease('');
   };
 
   const handleAddService = async () => {
@@ -197,6 +202,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             googleMapLink: serviceForm.googleMapLink,
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
+            diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           const updatedLocal = ServiceManager.updateService(editingService.id, {
@@ -206,6 +212,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             category: updated.category,
             image: updated.imageUrl,
             duration: updated.duration,
+            diseases: Array.isArray(updated.diseases) ? updated.diseases : (disease ? [disease] : []),
             // variants kept in sync on next fetch, optional local update skipped for brevity
           } as any);
           const list = services.map(s => s.id === editingService.id ? (updatedLocal as any) : s);
@@ -224,6 +231,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
             providerName: userName,
+            diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           console.log('Doctor service created:', created);
@@ -239,6 +247,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             providerName: created.providerName,
             image: created.imageUrl,
             duration: created.duration,
+            diseases: created.diseases || (disease ? [disease] : []),
           } as any);
           onServicesUpdate([...services, added]);
           toast({ title: 'Success', description: 'Service added successfully' });
@@ -293,6 +302,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       detailAddress: (service as any).detailAddress || ''
     });
     setServiceImage(service.image || '');
+    setDisease((((service as any).diseases as string[]) || [])[0] || '');
     // Load variants if any
     const svc: any = service as any;
     if (Array.isArray(svc.variants)) {
@@ -331,6 +341,27 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     } catch (e: any) {
       toast({ title: 'Error', description: e?.message || 'Failed to delete', variant: 'destructive' });
     }
+  };
+
+  // Render up to 6 disease badges and a "+N more" indicator
+  const renderDiseaseBadges = (arr?: string[]) => {
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    const shown = arr.slice(0, 6);
+    const extra = arr.length - shown.length;
+    return (
+      <div className="mt-1 flex flex-wrap gap-1">
+        {shown.map((d) => (
+          <Badge key={d} variant="secondary" className="text-[10px] px-1.5 py-0.5">
+            {d}
+          </Badge>
+        ))}
+        {extra > 0 && (
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 bg-emerald-100 text-emerald-800">
+            +{extra} more
+          </Badge>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -475,6 +506,27 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                 </div>
 
+                {/* Disease Single-Select - Doctors only */}
+                {userRole === 'doctor' && (
+                  <div className="space-y-2 border-t pt-3">
+                    <h4 className="font-medium text-sm">Disease</h4>
+                    <div className="max-w-xs">
+                      <Label className="sr-only">Disease</Label>
+                      <Select value={disease} onValueChange={(v) => setDisease(v)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a disease" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DISEASE_OPTIONS.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Select a single disease associated with this service.</p>
+                  </div>
+                )}
+
                 {/* Variants Editor - Doctors only */}
                 {userRole === 'doctor' && (
                   <div className="space-y-3 border-t pt-3">
@@ -604,6 +656,18 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     <div className="min-w-0">
                       <p className="font-semibold truncate">{service.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{service.description}</p>
+                      {userRole === 'doctor' && (
+                        <div className="flex items-center justify-between gap-2 mt-1">
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {(service as any).detailAddress || (service as any).city || 'Address not specified'}
+                          </span>
+                          {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
+                              {((service as any).diseases as string[])[0]}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -666,6 +730,18 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                             <div className="min-w-0">
                               <p className="font-medium truncate max-w-[240px]">{service.name}</p>
                               <p className="text-sm text-muted-foreground truncate max-w-[260px]">{service.description}</p>
+                              {userRole === 'doctor' && (
+                                <div className="flex items-center justify-between gap-2 mt-1 max-w-[420px]">
+                                  <span className="text-xs text-muted-foreground truncate">
+                                    {(service as any).detailAddress || (service as any).city || 'Address not specified'}
+                                  </span>
+                                  {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
+                                      {((service as any).diseases as string[])[0]}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </TableCell>

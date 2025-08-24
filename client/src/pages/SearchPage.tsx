@@ -32,6 +32,7 @@ interface SearchService extends Service {
   ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
   totalRatings?: number;
   myBadge?: 'excellent' | 'good' | 'normal' | 'poor';
+  diseases?: string[];
 }
 
 const SearchPage = () => {
@@ -272,6 +273,7 @@ const SearchPage = () => {
         _providerType: service.providerType,
         providerPhone: service.providerPhone,
         totalRatings: service.totalRatings || 0,
+        ...(Array.isArray(service.diseases) && service.diseases.length > 0 ? { diseases: service.diseases } : {}),
       } as any;
       // Preserve variants if provided by backend (doctor services)
       (s as any).variants = (service as any)?.variants || [];
@@ -869,7 +871,25 @@ const SearchPage = () => {
       />
     )}
   </div>
-    {/* Buttons */}
+  {/* Address + Single Disease Badge */}
+  <div className="flex items-center justify-between mb-4 text-sm">
+    <div className="flex items-center gap-1 text-gray-600 min-w-0">
+      <MapPin className="w-4 h-4" />
+      <span className="truncate" title={getDisplayAddress(service) || getDisplayLocation(service)}>
+        {getDisplayAddress(service) || getDisplayLocation(service)}
+      </span>
+    </div>
+    {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+      <Badge
+        variant="outline"
+        className="ml-2 text-[11px] px-2 py-0.5 bg-sky-50 text-sky-700 border-sky-100 whitespace-nowrap"
+        title={(service as any).diseases[0]}
+      >
+        {(service as any).diseases[0]}
+      </Badge>
+    )}
+  </div>
+  {/* Buttons */}
   <div className="mt-auto flex flex-wrap gap-2">
     <Button 
       className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"

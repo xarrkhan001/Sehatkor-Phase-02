@@ -133,6 +133,7 @@ export const createDoctorService = async (req, res) => {
       city,
       detailAddress,
       variants,
+      diseases,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
     const doc = await DoctorService.create({
@@ -148,6 +149,7 @@ export const createDoctorService = async (req, res) => {
       detailAddress,
       // If variants provided, store them; else default to [] to keep compatibility
       variants: Array.isArray(variants) ? variants : [],
+      diseases: Array.isArray(diseases) ? diseases : [],
       providerId: req.userId,
       providerName: providerName || "Doctor",
       providerType: "doctor",
@@ -193,6 +195,8 @@ export const updateDoctorService = async (req, res) => {
           }),
           // Allow full variants replacement when provided
           ...(Array.isArray(updates.variants) && { variants: updates.variants }),
+          // Allow diseases replacement when provided
+          ...(Array.isArray(updates.diseases) && { diseases: updates.diseases }),
         },
       },
       { new: true }
