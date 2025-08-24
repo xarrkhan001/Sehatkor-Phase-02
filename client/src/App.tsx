@@ -10,6 +10,7 @@ import FloatingChat from "./components/FloatingChat";
 import WhatsAppButton from "./components/WhatsAppButton";
 import { useAuth } from "./contexts/AuthContext";
 import { lazy, Suspense } from "react";
+import ScrollToTop from "./components/ScrollToTop";
 import HomeSkeleton from "./components/skeletons/HomeSkeleton";
 import PageSkeleton from "./components/skeletons/PageSkeleton";
 import DashboardSkeleton from "./components/skeletons/DashboardSkeleton";
@@ -55,6 +56,7 @@ const AppShell = () => {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background">
+        <ScrollToTop behavior="smooth" />
         <Navbar />
         <Suspense fallback={<HomeSkeleton />}>
           <Routes>
