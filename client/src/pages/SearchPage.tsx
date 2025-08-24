@@ -1146,7 +1146,9 @@ const SearchPage = () => {
         <RatingModal
           isOpen={isRatingModalOpen}
           onClose={() => setIsRatingModalOpen(false)}
-          service={selectedService}
+          serviceId={selectedService.id}
+          serviceType={(selectedService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
+          serviceName={selectedService.name}
         />
       )}
       <CompareTray />
