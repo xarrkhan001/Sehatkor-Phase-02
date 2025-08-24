@@ -61,6 +61,7 @@ const SearchPage = () => {
   const [sidebarReady, setSidebarReady] = useState(false);
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
   const [priceCache, setPriceCache] = useState<Record<string, number>>({});
+  const [visibleCount, setVisibleCount] = useState(6);
 
   // Track active variant index per service id
   const [activeVariantIndexByService, setActiveVariantIndexByService] = useState<Record<string, number>>({});
@@ -422,6 +423,10 @@ const SearchPage = () => {
     });
   }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, highlightedService, allServices]);
 
+  const servicesToDisplay = useMemo(() => {
+    return filteredServices.slice(0, visibleCount);
+  }, [filteredServices, visibleCount]);
+
   const handleBookNow = (service: SearchService) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
@@ -727,7 +732,7 @@ const SearchPage = () => {
             </div>
 
             <div className={`grid gap-6 sm:grid-cols-2 ${isSidebarOpen ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
-  {filteredServices.map((service) => {
+  {servicesToDisplay.map((service) => {
     const isHighlighted =
       highlightedService &&
       service.name.toLowerCase() === highlightedService.toLowerCase();
@@ -937,6 +942,13 @@ const SearchPage = () => {
   })}
 </div>
 
+            {filteredServices.length > visibleCount && (
+              <div className="col-span-full flex justify-center mt-8">
+                <Button onClick={() => setVisibleCount(prev => prev + 9)} variant="outline">
+                  Load More
+                </Button>
+              </div>
+            )}
 
             {filteredServices.length === 0 && (
               <Card className="text-center py-12">
@@ -1114,9 +1126,7 @@ const SearchPage = () => {
         <RatingModal
           isOpen={isRatingModalOpen}
           onClose={() => setIsRatingModalOpen(false)}
-          serviceId={selectedService.id}
-          serviceType={(selectedService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
-          serviceName={selectedService.name}
+          service={selectedService}
         />
       )}
       <CompareTray />
