@@ -1,5 +1,28 @@
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { icons, Search, X } from 'lucide-react';
+
+type Icon = React.FC<React.SVGProps<SVGSVGElement>>;
+
+const categoryIconMap: { [key: string]: string } = {
+    "Cardiology": "HeartPulse",
+    "Neurology": "BrainCircuit",
+    "Orthopedics": "Bone",
+    "Dermatology / Cosmetology": "Sparkles",
+    "Gastroenterology": "Stomach",
+    "Pulmonology": "Lungs",
+    "Nephrology": "Filter",
+    "Oncology": "Radiation",
+    "Pediatrics": "Baby",
+    "Gynecology": "Pregnant",
+    "Urology": "Droplets",
+    "ENT (Ear, Nose, and Throat)": "Ear",
+    "Eye Care": "Eye",
+    "Dentistry": "Tooth",
+    "Psychiatry": "BrainCog",
+    "Endocrinology": "Biohazard",
+    "Hematology": "Droplet",
+};
 
 // Define the disease categories and their items
 const diseaseCategories = [
@@ -1062,38 +1085,383 @@ const diseaseCategories = [
   }
 ];
 
+const diseaseIconMap: { [key: string]: string } = {
+    // Acupuncture
+    "Different Forms Of Chronic Pain": "Activity",
+    "Head Aches Like Migrane": "BrainCircuit",
+    "Nausea": "Frown",
+    "Vomiting": "Frown",
+    "Dental Pain": "Tooth",
+    "Painful Periods": "CalendarHeart",
+    "Allergic Rhinitis": "Wind",
+    "Morning Sickness": "Sunrise",
+    "Sprains": "Bone",
+    "Strokes": "Brain",
+
+    // Anesthesiology
+    "Acute Pain": "AlertTriangle",
+    "Chronic Pain": "Activity",
+    "Labor Pain": "Baby",
+    "Post-operative Pain": "Bandage",
+    "Pain Management During Surgery": "Syringe",
+
+    // Audiology
+    "Hearing Loss": "EarOff",
+    "Tinnitus": "Ear",
+    "Balance Disorders": "PersonStanding",
+    "Auditory Processing Disorders": "BrainCog",
+
+    // Cardiology
+    "Hypertension": "HeartPulse",
+    "Heart Failure": "HeartCrack",
+    "Arrhythmia": "HeartPulse",
+    "Coronary Artery Disease": "Heart",
+    "Angina": "HeartOff",
+
+    // Dentistry
+    "Tooth Decay": "Tooth",
+    "Gum Disease": "Virus",
+    "Root Canal Treatment": "Wrench",
+    "Dental Implants": "Anchor",
+    "Teeth Whitening": "Sparkles",
+
+    // Dermatology / Cosmetology
+    "Acne": "Dot",
+    "Eczema": "ShieldAlert",
+    "Psoriasis": "Layers",
+    "Skin Cancer": "ShieldOff",
+    "Hair Loss": "Scissors",
+    "Laser Hair Removal": "Zap",
+    "Botox": "Syringe",
+
+    // Dietetics
+    "Obesity": "Weight",
+    "Diabetes": "TestTube2",
+    "Nutritional Deficiencies": "Apple",
+    "Eating Disorders": "UtensilsCrossed",
+    "Weight Management": "Scale",
+
+    // Endocrinology
+    "Thyroid Disorders": "Biohazard",
+    "PCOS": "Pregnant",
+    "Growth Disorders": "StretchHorizontal",
+    "Adrenal Disorders": "Shield",
+
+    // ENT (Ear, Nose, and Throat)
+    "Sinusitis": "Wind",
+    "Tonsillitis": "Mic",
+    "Nosebleeds": "Droplet",
+    "Voice Disorders": "Voicemail",
+
+    // Eye Care
+    "Cataracts": "EyeOff",
+    "Glaucoma": "Eye",
+    "Refractive Errors": "ScanEye",
+    "Diabetic Retinopathy": "Eye",
+
+    // Gastroenterology
+    "Acid Reflux": "Flame",
+    "Irritable Bowel Syndrome": "Stomach",
+    "Hepatitis": "Virus",
+    "Ulcers": "CircleDot",
+
+    // General Medicine
+    "Common Cold": "Thermometer",
+    "Flu": "ThermometerSnow",
+    "Fever": "Thermometer",
+    "Infections": "Virus",
+
+    // General Surgery
+    "Appendicitis": "Stomach",
+    "Hernia": "MoveRight",
+    "Gallstones": "Gem",
+    "Thyroid Surgery": "Scissors",
+
+    // Internal Medicine
+    "Asthma": "Wind",
+    "Pneumonia": "Lungs",
+    "COPD": "Wind",
+
+    // Vascular Surgery
+    "Varicose Veins": "Spline",
+    "Aneurysms": "Bomb",
+    "Peripheral Artery Disease": "Foot",
+
+    // Laparoscopic Surgery
+    "Gallbladder Removal": "Gem",
+    "Hernia Repair": "Wrench",
+    "Appendectomy": "Stomach",
+
+    // Infectious Diseases
+    "HIV/AIDS": "Ribbon",
+    "Tuberculosis": "Lungs",
+    "Malaria": "BugOff",
+    "Dengue Fever": "Bug",
+
+    // Rehabilitation Medicine
+    "Spinal Cord Injury": "Accessibility",
+    "Brain Injury": "Brain",
+    "Stroke Rehabilitation": "PersonStanding",
+
+    // Diabetology
+    "Type 1 Diabetes": "TestTube",
+    "Type 2 Diabetes": "TestTube2",
+    "Gestational Diabetes": "Baby",
+
+    // Kidney Transplant
+    "Kidney Failure": "FilterOff",
+    "Post-transplant Care": "ShieldCheck",
+
+    // Liver Transplant
+    "Cirrhosis": "Bot",
+    "Liver Cancer": "ShieldOff",
+
+    // Bariatric / Weight Loss Surgery
+    "Gastric Bypass": "Scissors",
+    "Sleeve Gastrectomy": "Minus",
+
+    // Vaccine Specialization
+    "Childhood Immunizations": "Baby",
+    "Travel Vaccines": "Plane",
+    "Flu Shots": "Syringe",
+
+    // Genetics
+    "Genetic Counseling": "Users",
+    "Inherited Disorders": "GitBranch",
+    "Prenatal Testing": "Dna",
+
+    // Gynecology
+    "Menstrual Disorders": "CalendarDays",
+    "Infertility": "Baby",
+    "Cervical Cancer": "Ribbon",
+
+    // Hematology
+    "Anemia": "Droplets",
+    "Leukemia": "Droplet",
+    "Hemophilia": "Droplet",
+
+    // Hepatology
+    "Fatty Liver Disease": "Stomach",
+    "Viral Hepatitis": "Virus",
+
+    // Hijama Therapy
+    "Cupping Therapy": "Circle",
+
+    // Homeopathy
+    "Homeopathic Remedies": "Leaf",
+
+    // Immunology
+    "Allergies": "Wind",
+    "Autoimmune Diseases": "ShieldAlert",
+    "Immunodeficiency": "ShieldOff",
+
+    // Nephrology
+    "Chronic Kidney Disease": "Filter",
+    "Kidney Stones": "Gem",
+    "Dialysis": "Recycle",
+
+    // Neurology
+    "Epilepsy": "BrainCog",
+    "Alzheimer's Disease": "Brain",
+    "Parkinson's Disease": "PersonStanding",
+    "Multiple Sclerosis": "BrainCircuit",
+
+    // Oncology
+    "Breast Cancer": "Ribbon",
+    "Lung Cancer": "Lungs",
+    "Chemotherapy": "FlaskConical",
+    "Radiation Therapy": "Radiation",
+
+    // Orthopedics
+    "Fractures": "Bone",
+    "Arthritis": "Bone",
+    "Joint Replacement": "Wrench",
+    "Sports Injuries": "Foot",
+
+    // Pediatrics
+    "Newborn Care": "Baby",
+    "Childhood Illnesses": "Virus",
+    "Developmental Delays": "Puzzle",
+
+    // Physiotherapy
+    "Back Pain": "PersonStanding",
+    "Neck Pain": "PersonStanding",
+    "Post-surgery Rehabilitation": "Bed",
+
+    // Occupational Therapy
+    "Fine Motor Skills": "Pen",
+    "Cognitive Rehabilitation": "BrainCog",
+    "Activities of Daily Living": "Home",
+
+    // Psychiatry
+    "Depression": "Frown",
+    "Anxiety": "AlertCircle",
+    "Bipolar Disorder": "GitCompare",
+    "Schizophrenia": "Users",
+
+    // Psychology
+    "Stress Management": "ZapOff",
+    "Relationship Counseling": "HeartHandshake",
+    "Grief Counseling": "UserMinus",
+
+    // Counseling
+    "Family Counseling": "Users",
+    "Individual Counseling": "User",
+    "Substance Abuse Counseling": "WineOff",
+
+    // Pulmonology
+    "Sleep Apnea": "BedDouble",
+    "Pulmonary Fibrosis": "Lungs",
+
+    // Radiology
+    "X-ray": "RectangleHorizontal",
+    "CT Scan": "Scan",
+    "MRI": "Scan",
+    "Ultrasound": "Waves",
+
+    // Rheumatology
+    "Rheumatoid Arthritis": "Bone",
+    "Lupus": "ShieldAlert",
+    "Gout": "Foot",
+
+    // Speech Therapy
+    "Stuttering": "Voicemail",
+    "Speech Sound Disorders": "Mic",
+    "Language Delays": "MessageSquare",
+
+    // Urology
+    "Urinary Tract Infections": "ShowerHead",
+    "Prostate Issues": "User",
+    "Erectile Dysfunction": "Bed",
+    "Infertility In Men": "UserX",
+    "Andropause": "UserMinus",
+    "Benign Prostatic Hyperplasia": "User",
+    "Bladder Cancer": "ShieldOff",
+    "Bladder Stones": "Gem",
+    "Circumcision": "Scissors",
+    "Dyspareunia": "HeartCrack",
+    "Fertility Issues In Men": "Users",
+    "Gynaecomastia": "User",
+    "Hypogonadism": "UserMinus",
+    "Impotence": "Bed",
+    "Klinefelter's Syndrome": "Users"
+};
+
+
+const colorPalette = [
+    { bg: "bg-blue-100", text: "text-blue-600" },
+    { bg: "bg-red-100", text: "text-red-600" },
+    { bg: "bg-green-100", text: "text-green-600" },
+    { bg: "bg-purple-100", text: "text-purple-600" },
+    { bg: "bg-yellow-100", text: "text-yellow-600" },
+    { bg: "bg-indigo-100", text: "text-indigo-600" },
+    { bg: "bg-pink-100", text: "text-pink-600" },
+    { bg: "bg-teal-100", text: "text-teal-600" },
+];
+
+const getRandomColorPair = () => colorPalette[Math.floor(Math.random() * colorPalette.length)];
+
 const AllDiseasesPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const filtered = useMemo(() => {
+    if (!normalizedQuery) return diseaseCategories;
+    return diseaseCategories
+      .map(({ name, items }) => ({
+        name,
+        items: Array.from(new Set(items)).filter((item) =>
+          item.toLowerCase().includes(normalizedQuery)
+        ),
+      }))
+      .filter((c) => c.items.length > 0);
+  }, [normalizedQuery]);
+
+  const totalMatches = useMemo(
+    () => filtered.reduce((sum, c) => sum + c.items.length, 0),
+    [filtered]
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="space-y-12">
-        {diseaseCategories.map(({ name: category, items }) => (
-          <section key={category} aria-labelledby={`heading-${category}`} className="space-y-4">
-            <h2 id={`heading-${category}`} className="text-xl md:text-2xl font-semibold text-center">
-              {category}
-            </h2>
-            <ul className="grid-list grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-              {Array.from(new Set(items)) // Remove duplicates
-                .sort((a, b) => a.localeCompare(b)) // Sort alphabetically
-                .map((disease) => {
-                  const target = `/doctors?disease=${encodeURIComponent(disease)}`;
-                  return (
-                    <li key={disease} className="list-none">
-                      <Link
-                        to={target}
-                        className="block rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm hover:shadow-md transition-shadow"
-                      >
-                        <span className="text-sm font-medium text-gray-900">{disease}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-            </ul>
-          </section>
-        ))}
+      <h1 className="text-4xl font-bold text-center mb-6 text-gray-800">All Diseases</h1>
+
+      <div className="mx-auto max-w-3xl mb-10">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search diseases (e.g., Dengue, Diabetes, Migraine)"
+            className="w-full rounded-full border border-gray-200 bg-white px-12 py-3 shadow-sm outline-none transition-all placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <div className="mt-2 text-sm text-gray-500">
+          {normalizedQuery
+            ? `${totalMatches} result${totalMatches === 1 ? "" : "s"} for "${query}"`
+            : "Browse by category or search a disease"}
+        </div>
+      </div>
+
+      {normalizedQuery && filtered.length === 0 && (
+        <div className="mx-auto max-w-2xl mb-12 rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
+          <p className="text-gray-700 font-medium">No diseases found</p>
+          <p className="text-sm text-gray-500 mt-1">Try a different keyword or check spelling.</p>
+        </div>
+      )}
+
+      <div className="space-y-16">
+        {filtered.map(({ name: category, items }) => {
+          const CategoryIconName = categoryIconMap[category] || "Stethoscope";
+          const CategoryIcon = icons[CategoryIconName] as Icon;
+
+          return (
+            <section key={category} aria-labelledby={`heading-${category}`}>
+              <h2 id={`heading-${category}`} className="text-2xl md:text-3xl font-semibold text-gray-700 mb-6 flex items-center justify-center">
+                {CategoryIcon && <CategoryIcon className="mr-3 h-8 w-8 text-blue-500" />}
+                {category}
+              </h2>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {Array.from(new Set(items))
+                  .sort((a, b) => a.localeCompare(b))
+                  .map((disease) => {
+                    const target = `/doctors?disease=${encodeURIComponent(disease)}`;
+                    const diseaseIconName = diseaseIconMap[disease] || "Stethoscope";
+                    const DiseaseIcon = icons[diseaseIconName] as Icon;
+                    const { bg, text } = getRandomColorPair();
+
+                    return (
+                      <li key={disease}>
+                        <Link
+                          to={target}
+                          className="group flex flex-col items-center justify-center rounded-xl border bg-white p-4 text-center shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:border-transparent hover:-translate-y-1"
+                        >
+                          <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full ${bg} transition-all duration-300 group-hover:scale-110`}>
+                            {DiseaseIcon && <DiseaseIcon className={`h-8 w-8 ${text}`} />}
+                          </div>
+                          <span className="text-sm font-medium text-gray-800 group-hover:text-black transition-colors">{disease}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </section>
+          );
+        })}
       </div>
     </div>
   );
