@@ -15,6 +15,7 @@ import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "@/context/SocketContext";
+import { apiUrl } from "@/config/api";
 
 interface ProviderUser {
   _id: string;
@@ -53,6 +54,14 @@ const ProviderProfilePage = () => {
 
   const providerName = useMemo(() => services[0]?.providerName || "Provider", [services]);
   const providerType = useMemo(() => services[0]?.providerType || undefined, [services]);
+
+  // Normalize avatar URL: if it's relative (e.g., "/uploads/..."), prefix with API base
+  const avatarSrc = useMemo(() => {
+    const src = providerUser?.avatar || "";
+    if (!src) return undefined;
+    if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) return src;
+    try { return apiUrl(src); } catch { return src; }
+  }, [providerUser?.avatar]);
 
   // Filter services based on search and price filters
   const filteredServices = useMemo(() => {
@@ -110,7 +119,7 @@ const ProviderProfilePage = () => {
       console.log('Fetching provider data for ID:', providerId);
       setUserLoading(true);
       try {
-        const response = await fetch(`/api/users/public/${providerId}`);
+        const response = await fetch(`/api/user/public/${providerId}`);
         console.log('API Response status:', response.status);
         
         if (response.ok) {
@@ -321,23 +330,15 @@ const ProviderProfilePage = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-                    {(providerUser?.name || providerName).charAt(0).toUpperCase()}
-                  </div>
-                  {providerUser?.avatar && (
-                    <img 
-                      src={providerUser.avatar} 
+                  <Avatar className="w-20 h-20 ring-2 ring-white shadow-lg">
+                    <AvatarImage
+                      src={avatarSrc}
                       alt={providerUser?.name || providerName}
-                      className="absolute inset-0 w-20 h-20 rounded-full object-cover shadow-lg"
-                      onError={(e) => {
-                        console.log('Avatar image failed to load:', providerUser?.avatar);
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      onLoad={() => {
-                        console.log('Avatar image loaded successfully:', providerUser?.avatar);
-                      }}
                     />
-                  )}
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl font-bold">
+                      {(providerUser?.name || providerName).charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold text-gray-800 mb-2">{providerUser?.name || providerName}</h1>
