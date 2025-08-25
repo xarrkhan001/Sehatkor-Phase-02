@@ -25,6 +25,7 @@ interface SearchService {
     days?: string;
   }>;
   providerName: string;
+  providerId: string;
   city?: string;
   providerType: Service['providerType'];
   price?: number;
@@ -94,6 +95,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       image: (s as any).image,
       variants: Array.isArray((s as any).variants) ? (s as any).variants : [],
       providerName: s.providerName,
+      providerId: s.providerId,
       city: (s as any).city,
       providerType: s.providerType,
       price: s.price,
@@ -269,6 +271,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           price: getDisplayPrice(service) ?? service.price ?? 0,
           rating: service.rating ?? 0,
           provider: service.providerName,
+          providerId: service.providerId,
           image: getDisplayImage(service) ?? service.image,
           type: service.category === 'Lab Test' ? 'Test' : service.category === 'Medicine' ? 'Medicine' : service.category === 'Surgery' ? 'Surgery' : 'Treatment',
           providerType: service.providerType,
@@ -401,7 +404,18 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         )}
                       </div>
                       <div className="mt-0.5 text-[11px] text-gray-600 truncate">
-                        {service.providerName}
+                        <button
+                          className="text-gray-600 hover:text-primary hover:underline text-left"
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            console.log('Provider clicked:', service.providerId, service.providerName);
+                            if (service.providerId) {
+                              navigate(`/provider/${service.providerId}`); 
+                            }
+                          }}
+                        >
+                          {service.providerName}
+                        </button>
                         {getDisplayCity(service) ? <span className="text-gray-400"> • {getDisplayCity(service)}</span> : null}
                       </div>
                     </div>

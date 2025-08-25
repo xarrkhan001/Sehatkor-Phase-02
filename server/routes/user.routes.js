@@ -7,6 +7,7 @@ import {
   deleteUserAccount,
   getAllPublicServices,
   getPublicServiceById,
+  getUserById,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -14,6 +15,9 @@ const router = express.Router();
 // Public endpoint to get all services from all providers
 router.get("/services/public", getAllPublicServices);
 router.get("/services/public/:serviceId", getPublicServiceById);
+
+// Public route to get user by ID
+router.get("/public/:userId", getUserById);
 
 // Protected routes
 router.get("/profile", authMiddleware, getUserProfile);

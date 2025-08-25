@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,11 +34,13 @@ import {
   Trash2,
   DollarSign,
   Heart,
-  Shield
+  Shield,
+  User
 } from "lucide-react";
 
 const HospitalDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [services, setServices] = useState<any[]>([]);
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
@@ -101,9 +104,11 @@ const HospitalDashboard = () => {
   };
 
   useEffect(() => {
-    reloadServices();
-    const savedType = localStorage.getItem(`hospital_type_${user?.id}`);
-    if (savedType) setHospitalType(savedType);
+    if (user?.id) {
+      reloadServices();
+      const savedType = localStorage.getItem(`hospital_type_${user?.id}`);
+      if (savedType) setHospitalType(savedType);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -164,7 +169,7 @@ const HospitalDashboard = () => {
     }
   };
 
-  const handleTypeChange = (type) => {
+  const handleTypeChange = (type: string) => {
     setHospitalType(type);
     localStorage.setItem(`hospital_type_${user?.id}`, type);
     
@@ -456,10 +461,20 @@ const HospitalDashboard = () => {
                     </Select>
                   </div>
 
-                  <Button className="w-full" variant="outline">
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Hospital Info
-                  </Button>
+                  <div className="space-y-2">
+                    <Button className="w-full" variant="outline">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Hospital Info
+                    </Button>
+                    <Button 
+                      className="w-full" 
+                      variant="secondary"
+                      onClick={() => navigate(`/provider/${user?.id}`)}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      See Public Profile
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

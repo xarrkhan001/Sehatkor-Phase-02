@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import ServiceManager from "@/lib/serviceManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,11 +23,13 @@ import {
   CreditCard,
   Settings,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  User
 } from "lucide-react";
 
 const PatientDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [bookingPrices, setBookingPrices] = useState<Record<string, number>>({});
@@ -432,16 +435,32 @@ const PatientDashboard = () => {
                     <Mail className="w-4 h-4 text-muted-foreground" />
                     <span>{user?.email}</span>
                   </div>
+                  <div className="flex items-center space-x-3 text-sm">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    <span>{user?.phone || 'Not provided'}</span>
+                  </div>
                 </div>
 
-                <Button className="w-full mt-6" variant="outline">
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit Profile
-                </Button>
+                <div className="space-y-2 mt-6">
+                  <Button className="w-full" variant="outline">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                  {user?.role === 'provider' && (
+                    <Button 
+                      className="w-full" 
+                      variant="secondary"
+                      onClick={() => navigate(`/provider/${user?.id}`)}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      See Public Profile
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
+            {/* Quick Actions Card */}
             <Card className="card-healthcare">
               <CardHeader>
                 <CardTitle className="text-lg">Quick Actions</CardTitle>

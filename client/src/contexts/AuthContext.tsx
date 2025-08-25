@@ -18,6 +18,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   updateCurrentUser: (partial: Partial<User>) => void;
+  updateUser: (updatedUser: User) => void;
   mode: UserMode;
   toggleMode: () => void;
 }
@@ -158,6 +159,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('sehatkor_current_user', JSON.stringify(next));
         return next;
       });
+    },
+    updateUser: (updatedUser: User) => {
+      setUser(updatedUser);
+      localStorage.setItem('sehatkor_current_user', JSON.stringify(updatedUser));
     }
   };
 
