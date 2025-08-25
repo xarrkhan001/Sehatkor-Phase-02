@@ -30,7 +30,7 @@ interface SearchService {
   providerType: Service['providerType'];
   price?: number;
   rating?: number;
-  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  ratingBadge?: "excellent" | "good" | "fair" | "poor" | null;
   providerPhone?: string;
   googleMapLink?: string;
   detailAddress?: string;
@@ -223,7 +223,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
         return 'bg-emerald-50 text-emerald-700 border-emerald-100';
       case 'good':
         return 'bg-sky-50 text-sky-700 border-sky-100';
-      case 'normal':
+      case 'fair':
         return 'bg-amber-50 text-amber-700 border-amber-100';
       case 'poor':
         return 'bg-rose-50 text-rose-700 border-rose-100';

@@ -36,7 +36,7 @@ export interface BaseService {
   createdAt: string;
   updatedAt: string;
   totalRatings?: number;
-  ratingBadge?: 'excellent' | 'good' | 'normal' | 'poor' | null;
+  ratingBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   city?: string;
   detailAddress?: string;
   googleMapLink?: string;
@@ -44,6 +44,7 @@ export interface BaseService {
   rating?: number;
   providerPhone?: string;
   averageRating?: number;
+  ratingCounts?: { excellent: number; good: number; fair: number } | null;
 }
 
 export interface DoctorService extends BaseService {
@@ -294,6 +295,7 @@ class ServiceManager {
       ratingBadge: service.ratingBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
+      ratingCounts: service.ratingCounts ?? null,
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
         ? {
@@ -318,7 +320,7 @@ class ServiceManager {
         : {}),
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
-    };
+    } as Service;
   }
 
   // Fetch all services from server (removed local storage sync)

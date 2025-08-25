@@ -245,6 +245,7 @@ io.on("connection", (socket) => {
 
   socket.on("submit_rating", async (payload, callback) => {
     try {
+      console.log('Received rating payload:', payload); // Debug log
       const { serviceId, serviceType, rating, stars } = payload || {};
       if (!serviceId || !serviceType || !rating) {
         return callback?.({ success: false, error: "Missing required fields" });
@@ -260,20 +261,38 @@ io.on("connection", (socket) => {
         return callback?.({ success: false, error: "Service not found" });
       }
 
+      // Normalize any legacy ratings already stored on this document to the new enum
+      try {
+        if (Array.isArray(service.ratings)) {
+          let didChange = false;
+          for (const r of service.ratings) {
+            if (!r) continue;
+            const raw = (r.rating || "").toString().trim().toLowerCase();
+            if (raw === "very good") { r.rating = "Good"; didChange = true; }
+            else if (raw === "normal") { r.rating = "Fair"; didChange = true; }
+            else if (raw === "excellent") { r.rating = "Excellent"; }
+            else if (raw === "good") { r.rating = "Good"; }
+            else if (raw === "fair") { r.rating = "Fair"; }
+          }
+          if (didChange) {
+            try { service.markModified && service.markModified("ratings"); } catch {}
+            await service.save();
+          }
+        }
+      } catch {}
+
       // Normalize incoming rating to the schema's title enum and helpers
       const toTitle = (val) => {
         if (typeof val === "string") {
           const v = val.trim().toLowerCase();
           if (v === "excellent") return "Excellent";
-          // Treat UI "Good" as Very Good to map to 'good' badge category
-          if (v === "good" || v === "very good") return "Very Good";
-          // Accept "normal" explicitly (maps to numeric below)
-          if (v === "normal") return "Good"; // persists within enum, but becomes 'normal' badge via numeric mapping
+          if (v === "good") return "Good";
+          if (v === "fair") return "Fair";
         }
         if (typeof val === "number") {
           if (val >= 4.5) return "Excellent";
-          if (val >= 3.5) return "Very Good";
-          if (val > 0) return "Good";
+          if (val >= 3.5) return "Good";
+          if (val > 0) return "Fair";
         }
         return "Good"; // safe default
       };
@@ -281,8 +300,8 @@ io.on("connection", (socket) => {
       const titleToNumeric = (title) => {
         const t = (title || "").toString().trim().toLowerCase();
         if (t === "excellent") return 5;
-        if (t === "very good") return 4; // UI 'Good' maps here
-        if (t === "good") return 3; // UI 'Normal' maps here
+        if (t === "good") return 4;
+        if (t === "fair") return 3;
         return 0;
       };
 
@@ -294,12 +313,13 @@ io.on("connection", (socket) => {
             ? maybeStars
             : titleToNumeric(valueOrTitle));
         if (n >= 4.5) return "excellent";
-        if (n >= 3.5) return "good"; // map Very Good -> good badge
-        if (n > 0) return "normal";  // map Good -> normal badge
+        if (n >= 3.5) return "good";
+        if (n > 0) return "fair";
         return null;
       };
 
       const titleInput = toTitle(rating);
+      console.log('Rating input:', rating, 'Title output:', titleInput); // Debug log
 
       // Upsert the user's rating (update if exists, otherwise push)
       if (!Array.isArray(service.ratings)) service.ratings = [];
@@ -318,6 +338,10 @@ io.on("connection", (socket) => {
           const s = Number(stars);
           if (!isNaN(s) && s >= 1 && s <= 5) doc.stars = s;
         } catch {}
+        // Ensure doc conforms to enum before push (defensive)
+        if (doc.rating !== "Excellent" && doc.rating !== "Good" && doc.rating !== "Fair") {
+          doc.rating = "Fair";
+        }
         service.ratings.push(doc);
       }
 
@@ -325,7 +349,7 @@ io.on("connection", (socket) => {
       const toCategory = (n) => {
         if (n >= 4.5) return "excellent";
         if (n >= 3.5) return "good";
-        if (n > 0) return "normal";
+        if (n > 0) return "fair";
         return null;
       };
 
@@ -350,7 +374,7 @@ io.on("connection", (socket) => {
 
       let ratingBadge = null;
       let maxCount = -1;
-      for (const cat of ["excellent", "good", "normal"]) {
+      for (const cat of ["excellent", "good", "fair"]) {
         const count = categoryCounts[cat] || 0;
         if (count > maxCount) {
           maxCount = count;

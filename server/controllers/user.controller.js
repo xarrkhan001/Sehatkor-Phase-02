@@ -207,6 +207,22 @@ export const getPublicServiceById = async (req, res) => {
       return res.status(404).json({ message: "Service not found" });
     }
 
+    // Compute per-category rating counts from embedded ratings array (if present)
+    const counts = { excellent: 0, good: 0, fair: 0 };
+    try {
+      const ratingsArr = Array.isArray(service.ratings) ? service.ratings : [];
+      for (const r of ratingsArr) {
+        const raw = ((r && (r.rating ?? r.title)) || "").toString().trim().toLowerCase();
+        if (raw === "excellent") counts.excellent += 1;
+        else if (raw === "very good" || raw === "good") counts.good += 1;
+        else if (raw === "normal" || raw === "fair") counts.fair += 1;
+        else if (typeof r?.stars === "number") {
+          const s = Number(r.stars);
+          if (s >= 5) counts.excellent += 1; else if (s >= 4) counts.good += 1; else if (s > 0) counts.fair += 1;
+        }
+      }
+    } catch {}
+
     const serviceObject = {
       ...(service.toObject ? service.toObject() : service),
       id: service._id,
@@ -216,6 +232,7 @@ export const getPublicServiceById = async (req, res) => {
       averageRating: service.averageRating || 0,
       totalRatings: service.totalRatings || 0,
       ratingBadge: service.ratingBadge || null,
+      ratingCounts: counts,
     };
 
     res.status(200).json(serviceObject);
