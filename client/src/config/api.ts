@@ -1,9 +1,15 @@
 // Centralized API configuration
-// Reads from Vite env var VITE_API_BASE_URL, falls back to localhost
+// Prefer VITE_API_BASE_URL; otherwise use VITE_API_URL and strip trailing /api
 
-export const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8080';
+const raw = (import.meta as any)?.env?.VITE_API_BASE_URL || (import.meta as any)?.env?.VITE_API_URL || '';
+const normalized = typeof raw === 'string' && raw
+  ? raw.replace(/\/$/, '').replace(/\/api$/, '')
+  : '';
+
+export const API_BASE_URL = normalized || 'http://localhost:4000';
 
 export const apiUrl = (path: string) => {
+  if (!path) return API_BASE_URL;
   if (!path.startsWith('/')) return `${API_BASE_URL}/${path}`;
   return `${API_BASE_URL}${path}`;
 };
