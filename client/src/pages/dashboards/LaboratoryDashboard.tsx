@@ -13,6 +13,7 @@ import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
+import EditProfileDialog from "@/components/EditProfileDialog";
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
@@ -54,26 +55,11 @@ const LaboratoryDashboard = () => {
     communicationChannel: 'SehatKor Chat',
   });
   const [isAddTestOpen, setIsAddTestOpen] = useState(false);
-  const [labType, setLabType] = useState('');
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [testImagePreview, setTestImagePreview] = useState('');
   const [testImageFile, setTestImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isAddingTest, setIsAddingTest] = useState(false);
-
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingTestId, setEditingTestId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({
-    name: '',
-    price: '',
-    duration: '',
-    description: '',
-    category: '',
-    googleMapLink: '',
-    city: '',
-    detailAddress: ''
-  });
-  const [editImagePreview, setEditImagePreview] = useState('');
-  const [editImageFile, setEditImageFile] = useState<File | null>(null);
 
   const [testForm, setTestForm] = useState({
     name: '',
@@ -85,11 +71,6 @@ const LaboratoryDashboard = () => {
     city: '',
     detailAddress: ''
   });
-
-  const labTypes = [
-    'Pathology Lab', 'Radiology Center', 'Clinical Lab', 
-    'Diagnostic Center', 'Medical Lab', 'Research Lab'
-  ];
 
   const testCategories = [
     'Blood Test', 'Urine Test', 'X-Ray', 'MRI', 'CT Scan', 'Ultrasound'
@@ -278,8 +259,6 @@ const LaboratoryDashboard = () => {
     if (user?.id) {
       reloadTests();
       fetchBookings();
-      const savedType = localStorage.getItem(`lab_type_${user.id}`);
-      if (savedType) setLabType(savedType);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -370,83 +349,9 @@ const LaboratoryDashboard = () => {
     }
   };
 
-  const openEdit = (t: any) => {
-    const id = t._id || t.id;
-    setEditingTestId(String(id));
-    setEditForm({
-      name: t.name || '',
-      price: t.price != null ? String(t.price) : '',
-      duration: t.duration || '',
-      description: t.description || '',
-      category: t.category || '',
-      googleMapLink: t.googleMapLink || '',
-      city: t.city || '',
-      detailAddress: t.detailAddress || ''
-    });
-    setEditImagePreview(t.imageUrl || t.image || '');
-    setEditImageFile(null);
-    setIsEditOpen(true);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingTestId) return;
-    try {
-      let imageUrl: string | undefined = editImagePreview || undefined;
-      let imagePublicId: string | undefined = undefined;
-      if (editImageFile) {
-        setIsUploadingImage(true);
-        try {
-          const result = await uploadFile(editImageFile);
-          imageUrl = result?.url;
-          imagePublicId = result?.public_id;
-        } finally {
-          setIsUploadingImage(false);
-        }
-      }
-      const parsedPrice = editForm.price ? parseFloat(editForm.price) : 0;
-      const updated = await apiUpdate(editingTestId, {
-        name: editForm.name,
-        description: editForm.description,
-        price: parsedPrice,
-        category: editForm.category || 'Test',
-        duration: editForm.duration,
-        imageUrl,
-        imagePublicId,
-        googleMapLink: editForm.googleMapLink,
-        city: editForm.city,
-        detailAddress: editForm.detailAddress,
-        providerName: user?.name || 'Laboratory',
-      });
-      
-      // Update in local storage
-      const updatedTest = {
-        name: updated.name,
-        description: updated.description,
-        price: updated.price,
-        category: updated.category,
-        duration: updated.duration,
-        image: updated.imageUrl,
-        providerId: user.id,
-        providerName: updated.providerName,
-        providerType: 'laboratory' as const,
-      };
-      
-      // Note: Local storage sync is handled in reloadTests
-      await reloadTests();
-      
-      setIsEditOpen(false);
-      setEditingTestId(null);
-      toast.success("Test updated successfully");
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to update test");
-    }
-  };
-
   const handleTypeChange = (type: string) => {
-    setLabType(type);
-    localStorage.setItem(`lab_type_${user?.id}`, type);
-    
-    toast.success("Lab type updated successfully");
+    // Deprecated: specialization is edited via Edit Profile dialog now
+    // setLabType(type);
   };
 
   const pendingTests = [
@@ -553,21 +458,21 @@ const LaboratoryDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Edit Test Dialog */}
-            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
               <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Edit Test</DialogTitle>
+                  <DialogTitle>Add New Test</DialogTitle>
                   <DialogDescription>
-                    Update the details of your diagnostic test.
+                    Add a new diagnostic test to your lab
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="editTestName">Test Name *</Label>
+                    <Label htmlFor="testName">Test Name *</Label>
                     <Input
-                      id="editTestName"
-                      value={editForm.name}
-                      onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                      id="testName"
+                      value={testForm.name}
+                      onChange={(e) => setTestForm({...testForm, name: e.target.value})}
                       placeholder="e.g., Complete Blood Count"
                     />
                   </div>
@@ -576,44 +481,43 @@ const LaboratoryDashboard = () => {
                     <Label>Test Image</Label>
                     <ImageUpload
                       onImageSelect={(file, preview) => {
-                        setEditImageFile(file);
-                        setEditImagePreview(preview);
+                        setTestImageFile(file);
+                        setTestImagePreview(preview);
                       }}
                       onImageRemove={() => {
-                        setEditImageFile(null);
-                        setEditImagePreview('');
+                        setTestImageFile(null);
+                        setTestImagePreview('');
                       }}
-                      currentImage={editImagePreview}
-                      placeholder="Upload new test image"
+                      currentImage={testImagePreview}
+                      placeholder="Upload test image"
                       className="max-w-xs"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="editTestPrice">Price (PKR) *</Label>
+                      <Label htmlFor="testPrice">Price (PKR) *</Label>
                       <Input
-                        id="editTestPrice"
+                        id="testPrice"
                         type="number"
-                        value={editForm.price}
-                        onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                        value={testForm.price}
+                        onChange={(e) => setTestForm({...testForm, price: e.target.value})}
                         placeholder="e.g., 1500"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="editTestDuration">Duration (hours)</Label>
+                      <Label htmlFor="testDuration">Duration (hours)</Label>
                       <Input
-                        id="editTestDuration"
-                        value={editForm.duration}
-                        onChange={(e) => setEditForm({...editForm, duration: e.target.value})}
+                        id="testDuration"
+                        value={testForm.duration}
+                        onChange={(e) => setTestForm({...testForm, duration: e.target.value})}
                         placeholder="e.g., 2"
                       />
                     </div>
                   </div>
-
                   <div>
-                    <Label htmlFor="editTestCategory">Category</Label>
-                    <Select value={editForm.category} onValueChange={(value) => setEditForm({...editForm, category: value})}>
+                    <Label htmlFor="testCategory">Category</Label>
+                    <Select value={testForm.category} onValueChange={(value) => setTestForm({...testForm, category: value})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select test category" />
                       </SelectTrigger>
@@ -624,13 +528,12 @@ const LaboratoryDashboard = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
-                    <Label htmlFor="editTestDescription">Description</Label>
+                    <Label htmlFor="testDescription">Description</Label>
                     <Textarea
-                      id="editTestDescription"
-                      value={editForm.description}
-                      onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                      id="testDescription"
+                      value={testForm.description}
+                      onChange={(e) => setTestForm({...testForm, description: e.target.value})}
                       placeholder="Brief description of the test"
                     />
                   </div>
@@ -639,37 +542,37 @@ const LaboratoryDashboard = () => {
                   <div className="space-y-3 border-t pt-3">
                     <h4 className="font-medium text-sm">Location Information</h4>
                     <div>
-                      <Label htmlFor="editTestCity">City</Label>
+                      <Label htmlFor="testCity">City</Label>
                       <Input
-                        id="editTestCity"
-                        value={editForm.city}
-                        onChange={(e) => setEditForm({...editForm, city: e.target.value})}
+                        id="testCity"
+                        value={testForm.city}
+                        onChange={(e) => setTestForm({...testForm, city: e.target.value})}
                         placeholder="e.g., Karachi"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="editTestAddress">Detailed Address</Label>
+                      <Label htmlFor="testAddress">Detailed Address</Label>
                       <Textarea
-                        id="editTestAddress"
-                        value={editForm.detailAddress}
-                        onChange={(e) => setEditForm({...editForm, detailAddress: e.target.value})}
+                        id="testAddress"
+                        value={testForm.detailAddress}
+                        onChange={(e) => setTestForm({...testForm, detailAddress: e.target.value})}
                         placeholder="e.g., Floor 2, Medical Plaza, Main Road"
                         rows={2}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="editTestMapLink">Google Maps Link (Optional)</Label>
+                      <Label htmlFor="testMapLink">Google Maps Link (Optional)</Label>
                       <Input
-                        id="editTestMapLink"
-                        value={editForm.googleMapLink}
-                        onChange={(e) => setEditForm({...editForm, googleMapLink: e.target.value})}
+                        id="testMapLink"
+                        value={testForm.googleMapLink}
+                        onChange={(e) => setTestForm({...testForm, googleMapLink: e.target.value})}
                         placeholder="https://maps.google.com/..."
                       />
                     </div>
                   </div>
 
-                  <Button onClick={handleSaveEdit} className="w-full" disabled={isUploadingImage}>
-                    {isUploadingImage ? 'Uploading...' : 'Save Changes'}
+                  <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
+                    {isAddingTest ? 'Adding Test...' : 'Add Test'}
                   </Button>
                 </div>
               </DialogContent>
@@ -894,10 +797,10 @@ const LaboratoryDashboard = () => {
                                     </div>
                                   </div>
                                   <div className="mt-3 grid grid-cols-2 gap-2">
-                                    <Button size="sm" variant="outline" onClick={() => openEdit(test)} className="w-full">
+                                    <Button size="sm" variant="outline" className="w-full">
                                       <Edit className="w-4 h-4 mr-1" /> Edit
                                     </Button>
-                                    <Button size="sm" variant="destructive" onClick={() => handleDeleteTest(test.id)} className="w-full">
+                                    <Button size="sm" variant="destructive" className="w-full">
                                       <Trash2 className="w-4 h-4 mr-1" /> Delete
                                     </Button>
                                   </div>
@@ -946,10 +849,10 @@ const LaboratoryDashboard = () => {
                                       <TableCell>{test.duration || 'N/A'}</TableCell>
                                       <TableCell>
                                         <div className="flex space-x-2">
-                                          <Button size="sm" variant="outline" onClick={() => openEdit(test)}>
+                                          <Button size="sm" variant="outline">
                                             <Edit className="w-4 h-4 mr-1" /> Edit
                                           </Button>
-                                          <Button size="sm" variant="destructive" onClick={() => handleDeleteTest(test.id)}>
+                                          <Button size="sm" variant="destructive">
                                             <Trash2 className="w-4 h-4 mr-1" /> Delete
                                           </Button>
                                         </div>
@@ -1173,31 +1076,19 @@ const LaboratoryDashboard = () => {
                   </div>
                   <h3 className="text-lg font-semibold">{user?.name}</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
-                  {labType && (
-                    <Badge variant="secondary" className="mt-2">{labType}</Badge>
+                  {user?.specialization && (
+                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
                   )}
                   <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="labType">Laboratory Type</Label>
-                    <Select value={labType} onValueChange={handleTypeChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select lab type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {labTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Specialization now managed via Edit Profile dialog */}
 
                   <div className="space-y-2">
-                    <Button className="w-full" variant="outline">
+                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
                       <Edit className="w-4 h-4 mr-2" />
-                      Edit Lab Info
+                      Edit Profile
                     </Button>
                     <Button 
                       className="w-full" 
@@ -1211,6 +1102,16 @@ const LaboratoryDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Edit Profile Dialog */}
+            <EditProfileDialog 
+              open={isEditProfileOpen}
+              onOpenChange={setIsEditProfileOpen}
+              role={(user?.role as any) || 'laboratory'}
+              name={user?.name}
+              specialization={user?.specialization}
+              avatar={user?.avatar}
+            />
 
             <Card className="card-healthcare">
               <CardHeader>

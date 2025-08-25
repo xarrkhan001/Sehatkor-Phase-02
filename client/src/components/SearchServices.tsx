@@ -85,6 +85,24 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     loadInitialServices();
   }, [searchTerm, selectedCategory]);
 
+  // Live update provider name in dropdown when profile changes
+  useEffect(() => {
+    const handleProviderProfileUpdated = (e: any) => {
+      const detail = e?.detail as { providerId?: string; id?: string; name?: string } | undefined;
+      if (!detail) return;
+      const pid = detail.providerId || detail.id;
+      if (!pid) return;
+      setRealServices(prev => prev.map(s => {
+        if (s.providerId && s.providerId === pid) {
+          return { ...s, providerName: typeof detail.name === 'string' ? detail.name : s.providerName };
+        }
+        return s;
+      }));
+    };
+    window.addEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
+  }, []);
+
   const mapServices = (services: Service[]): SearchService[] => {
     return (services || []).map((s: Service) => ({
       id: s.id,

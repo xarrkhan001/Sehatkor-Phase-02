@@ -62,15 +62,8 @@ export const uploadProfileImage = async (req, res) => {
       }
     }
 
-    // Upload new image to Cloudinary
-    const uploadOptions = { 
-      resource_type: 'image',
-      transformation: [
-        { width: 400, height: 400, crop: 'fill', gravity: 'face' },
-        { quality: 'auto' }
-      ]
-    };
-
+    // Upload new image to Cloudinary (full size, no transformation)
+    const uploadOptions = { resource_type: 'image' };
     const result = await uploadStreamToCloudinary(file.buffer, uploadOptions);
 
     // Update user avatar

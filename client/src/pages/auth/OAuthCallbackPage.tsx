@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { fetchMyProfile } from '@/lib/chatApi';
 
 function useQuery() {
   const { search } = useLocation();
@@ -29,17 +30,17 @@ const OAuthCallbackPage = () => {
           navigate('/login');
           return;
         }
-        // Optionally fetch profile via /api/user/me to normalize user state
-        const res = await fetch('http://localhost:4000/api/user/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const user = await res.json();
-          await login({ ...user, id: user._id }, token);
-        } else {
-          // Fallback: store token only
-          await login({}, token);
+        // Fetch profile via /api/profile to normalize user state
+        let u: any = {};
+        try {
+          // Temporarily stash token so fetchMyProfile includes it
+          localStorage.setItem('sehatkor_token', token);
+          const data = await fetchMyProfile();
+          u = data?.user || data || {};
+        } catch {
+          // ignore, will proceed with token-only login
         }
+        await login(u?._id || u.id ? { ...u, id: u._id || u.id } : {}, token);
         toast({ title: 'Welcome!', description: 'Signed in successfully.' });
         navigate('/');
       } catch (e: any) {

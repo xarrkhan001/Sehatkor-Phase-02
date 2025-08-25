@@ -13,6 +13,8 @@ import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
+import EditProfileDialog from "@/components/EditProfileDialog";
+
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
@@ -53,6 +55,7 @@ const ClinicDashboard = () => {
     communicationChannel: 'SehatKor Chat',
   });
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [clinicType, setClinicType] = useState('');
   const [serviceImage, setServiceImage] = useState('');
@@ -858,7 +861,7 @@ const ClinicDashboard = () => {
           </div>
 
           {/* Profile Sidebar */}
-          <div className="space-y-6">
+          <div className="lg:col-span-1 space-y-4">
             <Card className="card-healthcare">
               <CardHeader>
                 <CardTitle>Clinic Profile</CardTitle>
@@ -874,62 +877,40 @@ const ClinicDashboard = () => {
                   </div>
                   <h3 className="text-lg font-semibold">{user?.name} Clinic</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
-                  {clinicType && (
-                    <Badge variant="secondary" className="mt-2">{clinicType}</Badge>
+                  {user?.specialization && (
+                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
                   )}
                   <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="clinicType">Clinic Type</Label>
-                    <Select value={clinicType} onValueChange={handleTypeChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select clinic type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {clinicTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-2">
+                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button
+                      className="w-full"
+                      variant="secondary"
+                      onClick={() => navigate(`/provider/${user?.id}`)}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      See Public Profile
+                    </Button>
                   </div>
-
-                  <Button className="w-full" variant="outline">
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Clinic Info
-                  </Button>
-                  <Button 
-                    className="w-full" 
-                    variant="secondary"
-                    onClick={() => navigate(`/provider/${user?.id}`)}
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    See Public Profile
-                  </Button>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Manage Schedules
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Generate Reports
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Users className="w-4 h-4 mr-2" />
-                  Staff Management
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Edit Profile Dialog */}
+            <EditProfileDialog
+              open={isEditProfileOpen}
+              onOpenChange={setIsEditProfileOpen}
+              role={(user?.role as any) || 'clinic/hospital'}
+              name={user?.name}
+              specialization={user?.specialization}
+              avatar={user?.avatar}
+            />
           </div>
         </div>
       </div>
