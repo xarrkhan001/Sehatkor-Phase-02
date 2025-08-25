@@ -30,8 +30,8 @@ type Unified = {
   googleMapLink?: string;
   coordinates?: { lat: number; lng: number } | null;
   address?: string | null;
-  ratingBadge?: 'excellent' | 'good' | 'normal' | 'poor' | null;
-  myBadge?: 'excellent' | 'good' | 'normal' | 'poor' | null;
+  ratingBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
+  myBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   homeService?: boolean;
 };
 
@@ -43,9 +43,24 @@ const ServiceDetailPage = () => {
   const { user, mode } = useAuth();
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [yourBadge, setYourBadge] = useState<Unified['myBadge']>((locationHook.state as any)?.service?.myBadge ?? null);
+  const [freshCounts, setFreshCounts] = useState<{ excellent: number; good: number; fair: number } | null>(null);
 
   // Prefer service passed in via navigation state for full fidelity
-  const stateService = (locationHook.state as any)?.service as Unified | undefined;
+  const rawStateService = (locationHook.state as any)?.service as any | undefined;
+  const stateService: Unified | undefined = useMemo(() => {
+    if (!rawStateService) return undefined;
+    const normalized: Unified = {
+      ...(rawStateService as any),
+      // Normalize providerType coming from list pages where it may be `_providerType`
+      providerType: (rawStateService.providerType ?? rawStateService._providerType) as Unified['providerType'],
+      // Treat real services coming from API as real unless explicitly stated otherwise
+      isReal: (rawStateService.isReal ?? true),
+      // Normalize common optional fields
+      providerId: rawStateService.providerId ?? rawStateService._providerId,
+      address: rawStateService.detailAddress ?? rawStateService.address ?? null,
+    };
+    return normalized;
+  }, [rawStateService]);
   const fromPath = (locationHook.state as any)?.from as string | undefined;
 
   const handleBack = () => {
@@ -118,7 +133,7 @@ const ServiceDetailPage = () => {
   // Listen for immediate badge updates from RatingModal (optimistic UI)
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
       if (!detail) return;
       if (detail.serviceId === item?.id && detail.serviceType === item?.providerType) {
         setYourBadge(detail.yourBadge);
@@ -126,6 +141,22 @@ const ServiceDetailPage = () => {
     };
     window.addEventListener('my_rating_updated', handler as EventListener);
     return () => window.removeEventListener('my_rating_updated', handler as EventListener);
+  }, [item?.id, item?.providerType]);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (!item?.isReal || !item?.providerType || !item?.id) return;
+      // If counts already present from list payload, reuse
+      if ((stateService as any)?.ratingCounts) {
+        setFreshCounts((stateService as any).ratingCounts);
+        return;
+      }
+      try {
+        const svc = await ServiceManager.fetchServiceById(String(item.id), item.providerType);
+        setFreshCounts(((svc as any).ratingCounts) ?? null);
+      } catch {}
+    };
+    fetchCounts();
   }, [item?.id, item?.providerType]);
 
   const handleBookNow = (svc: Unified) => {
@@ -233,6 +264,13 @@ const ServiceDetailPage = () => {
                       {item.location}
                     </div>
                     <Badge variant="outline">{item.type}</Badge>
+                    {freshCounts && (
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <span>Excellent: {freshCounts.excellent}</span>
+                        <span>Good: {freshCounts.good}</span>
+                        <span>Fair: {freshCounts.fair}</span>
+                      </div>
+                    )}
                     {item.homeService && (
                       <div className="flex items-center gap-1 text-green-600">
                         <Home className="w-4 h-4" />

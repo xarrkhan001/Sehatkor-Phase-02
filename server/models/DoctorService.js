@@ -43,7 +43,7 @@ const DoctorServiceSchema = new mongoose.Schema(
     ],
     ratings: [
       {
-        rating: { type: String, enum: ["Excellent", "Very Good", "Good"] },
+        rating: { type: String, enum: ["Excellent", "Good", "Fair"] },
         stars: { type: Number, min: 1, max: 5 },
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       },

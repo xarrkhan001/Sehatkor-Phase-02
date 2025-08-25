@@ -29,9 +29,9 @@ interface SearchService extends Service {
   address?: string;
   providerPhone?: string;
   googleMapLink?: string;
-  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  ratingBadge?: "excellent" | "good" | "fair" | "poor" | null;
   totalRatings?: number;
-  myBadge?: 'excellent' | 'good' | 'normal' | 'poor';
+  myBadge?: 'excellent' | 'good' | 'fair' | 'poor';
   diseases?: string[];
 }
 
@@ -142,7 +142,7 @@ const SearchPage = () => {
           if (typeof (data as any).averageRating === 'number') next.rating = (data as any).averageRating;
           if (typeof (data as any).totalRatings === 'number') next.totalRatings = (data as any).totalRatings;
           const incomingBadge = (data as any).ratingBadge as string | undefined;
-          const allowed = ["excellent", "good", "normal", "poor"] as const;
+          const allowed = ["excellent", "good", "fair", "poor"] as const;
           if (incomingBadge && (allowed as readonly string[]).includes(incomingBadge)) {
             next.ratingBadge = incomingBadge as typeof allowed[number];
           }
@@ -180,7 +180,7 @@ const SearchPage = () => {
   // Listen for per-user immediate badge updates (optimistic UI)
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
       if (!detail) return;
       setAllServices(prev => prev.map(s => {
         const matches = s.id === detail.serviceId && (s as any)._providerType === detail.serviceType;
@@ -293,12 +293,12 @@ const SearchPage = () => {
       const aOwn = a._providerId && user?.id && a._providerId === user.id;
       const bOwn = b._providerId && user?.id && b._providerId === user.id;
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
-      // Badge priority: excellent > good > normal > others
+      // Badge priority: excellent > good > fair > others
       const rank = (s: any) => {
         const badge = (s?.ratingBadge || '').toString().toLowerCase();
         if (badge === 'excellent') return 3;
         if (badge === 'good') return 2;
-        if (badge === 'normal') return 1;
+        if (badge === 'fair') return 1;
         return 0;
       };
       const rb = rank(b) - rank(a);
@@ -407,12 +407,12 @@ const SearchPage = () => {
       const bOwn = b._providerId && user?.id && b._providerId === user.id;
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
       if (a.isReal !== b.isReal) return a.isReal ? -1 : 1;
-      // Badge priority: excellent > good > normal > others
+      // Badge priority: excellent > good > fair > others
       const rank = (s: any) => {
         const badge = (s?.ratingBadge || '').toString().toLowerCase();
         if (badge === 'excellent') return 3;
         if (badge === 'good') return 2;
-        if (badge === 'normal') return 1;
+        if (badge === 'fair') return 1;
         return 0;
       };
       const rb = rank(b) - rank(a);

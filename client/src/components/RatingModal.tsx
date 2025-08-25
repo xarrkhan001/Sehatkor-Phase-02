@@ -14,7 +14,7 @@ interface RatingModalProps {
   serviceName: string;
 }
 
-type RatingOption = "Excellent" | "Very Good" | "Good";
+type RatingOption = "Excellent" | "Good" | "Fair";
 
 const RatingModal = ({ 
   isOpen, 
@@ -51,9 +51,10 @@ const RatingModal = ({
 
     setIsSubmitting(true);
     const lowerChosen = String(chosen).toLowerCase();
-    const ratingKey = lowerChosen === 'very good' ? 'good' : (lowerChosen === 'good' ? 'normal' : lowerChosen); // map for backend
+    const ratingKey = lowerChosen; // direct mapping for backend
     const selectedStars = starsFor(chosen as RatingOption);
     const payload = { serviceId, serviceType, rating: ratingKey, stars: selectedStars } as const;
+    console.log('Sending rating payload:', payload); // Debug log
     socket.emit("submit_rating", payload, (response: { success: boolean; error?: string }) => {
       setIsSubmitting(false);
       if (response.success) {
@@ -62,7 +63,7 @@ const RatingModal = ({
           description: "Thank you for your feedback!",
         });
         // Derive user's own badge from selection and broadcast for optimistic UI
-        const yourBadge = (ratingKey === 'excellent' ? 'excellent' : ratingKey === 'good' ? 'good' : 'normal') as 'excellent'|'good'|'normal';
+        const yourBadge = (ratingKey === 'excellent' ? 'excellent' : ratingKey === 'good' ? 'good' : 'fair') as 'excellent'|'good'|'fair';
 
         // Persist to localStorage so it survives refresh
         try {
@@ -92,7 +93,7 @@ const RatingModal = ({
     onClose();
   };
 
-  const ratingOptions: RatingOption[] = ["Excellent", "Very Good", "Good"];
+  const ratingOptions: RatingOption[] = ["Excellent", "Good", "Fair"];
 
   const colorFor = (opt: RatingOption) => {
     switch (opt) {
@@ -102,13 +103,13 @@ const RatingModal = ({
           icon: 'text-amber-500',
           hover: 'hover:from-yellow-100 hover:via-amber-100 hover:to-yellow-100',
         };
-      case 'Very Good':
+      case 'Good':
         return {
           wrap: 'bg-emerald-50 border-emerald-200',
           icon: 'text-emerald-500',
           hover: 'hover:bg-emerald-100',
         };
-      case 'Good':
+      case 'Fair':
         return {
           wrap: 'bg-violet-50 border-violet-200',
           icon: 'text-violet-500',
@@ -121,9 +122,9 @@ const RatingModal = ({
     switch (opt) {
       case 'Excellent':
         return 5;
-      case 'Very Good':
-        return 4;
       case 'Good':
+        return 4;
+      case 'Fair':
         return 3;
     }
   };
@@ -165,8 +166,8 @@ const RatingModal = ({
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
                     {option === 'Excellent' && 'Outstanding experience'}
-                    {option === 'Very Good' && 'Very satisfied'}
-                    {option === 'Good' && 'Average / acceptable'}
+                    {option === 'Good' && 'Very satisfied'}
+                    {option === 'Fair' && 'Average / acceptable'}
                   </p>
                 </button>
               );

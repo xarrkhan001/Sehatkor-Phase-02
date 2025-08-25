@@ -83,7 +83,7 @@ const DoctorsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            // Badge priority: excellent > good > normal > others
+            // Badge priority: excellent > good > fair > others
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
               if (badge === 'excellent') return 3;
@@ -120,7 +120,7 @@ const DoctorsPage = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
+    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'fair' | 'poor' }) => {
       setDoctorServices(prevServices => {
         const updated = prevServices.map(service =>
           service.id === data.serviceId
@@ -181,7 +181,7 @@ const DoctorsPage = () => {
   // Listen for per-user immediate badge updates
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
       if (!detail) return;
       if (detail.serviceType !== 'doctor') return;
       setDoctorServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));

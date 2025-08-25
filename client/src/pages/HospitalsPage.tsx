@@ -57,7 +57,7 @@ const HospitalsPage = () => {
           provider: (service as any).providerName || "Hospital",
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
-          _providerType: (service as any).providerType,
+          _providerType: ((service as any).providerType === 'hospital' ? 'clinic' : (service as any).providerType) || 'clinic',
           googleMapLink: (service as any).googleMapLink,
           city: (service as any).city,
           detailAddress: (service as any).detailAddress,
@@ -68,7 +68,7 @@ const HospitalsPage = () => {
             try {
               const uid = user?.id || (user as any)?._id || 'anon';
               const key = `myRating:${uid}:clinic:${service.id}`;
-              const my = localStorage.getItem(key) as 'excellent'|'good'|'normal'|'poor'|null;
+              const my = localStorage.getItem(key) as 'excellent'|'good'|'fair'|'poor'|null;
               return my ? { myBadge: my } : {};
             } catch { return {}; }
           })(),
@@ -81,7 +81,7 @@ const HospitalsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            // Badge priority: excellent > good > normal > others
+            // Badge priority: excellent > good > fair > others
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
               if (badge === 'excellent') return 3;
@@ -139,7 +139,7 @@ const HospitalsPage = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
+    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'fair' | 'poor' }) => {
       setHospitalServices(prevServices => {
         const updated = prevServices.map(service =>
           service.id === data.serviceId
@@ -180,7 +180,7 @@ const HospitalsPage = () => {
   // Listen for per-user immediate badge updates
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
       if (!detail) return;
       if (detail.serviceType !== 'clinic') return;
       setHospitalServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));
@@ -209,7 +209,7 @@ const HospitalsPage = () => {
         provider: (service as any).providerName || "Hospital",
         createdAt: (service as any).createdAt,
         _providerId: (service as any).providerId,
-        _providerType: (service as any).providerType,
+        _providerType: ((service as any).providerType === 'hospital' ? 'clinic' : (service as any).providerType) || 'clinic',
         googleMapLink: (service as any).googleMapLink,
         city: (service as any).city,
         detailAddress: (service as any).detailAddress,

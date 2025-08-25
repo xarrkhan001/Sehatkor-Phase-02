@@ -4,7 +4,7 @@ export interface Service {
   name: string;
   price: number;
   rating: number;
-  ratingBadge?: 'excellent' | 'good' | 'normal' | 'poor';
+  ratingBadge?: 'excellent' | 'good' | 'fair' | 'poor';
   location: string;
   type: "Treatment" | "Medicine" | "Test" | "Surgery";
   homeService: boolean;

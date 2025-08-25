@@ -19,7 +19,7 @@ export type UnifiedService = {
   provider: string;
   isReal?: boolean;
   // provider + ratings
-  ratingBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  ratingBadge?: "excellent" | "good" | "fair" | "poor" | null;
   totalRatings?: number;
   providerPhone?: string;
   _providerId?: string;

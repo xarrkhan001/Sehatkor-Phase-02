@@ -58,6 +58,7 @@ const PharmaciesPage = () => {
             provider: (service as any).providerName || "Pharmacy",
             createdAt: (service as any).createdAt,
             _providerId: (service as any).providerId,
+            _providerType: (service as any).providerType ?? 'pharmacy',
             googleMapLink: (service as any).googleMapLink,
             detailAddress: (service as any).detailAddress,
             providerPhone: (service as any).providerPhone,
@@ -81,7 +82,7 @@ const PharmaciesPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            // Badge priority: excellent > good > normal > others
+            // Badge priority: excellent > good > fair > others
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
               if (badge === 'excellent') return 3;
@@ -118,7 +119,7 @@ const PharmaciesPage = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
+    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'fair' | 'poor' }) => {
       setPharmacyServices(prevServices => {
         const updated = prevServices.map(service =>
           service.id === data.serviceId
@@ -189,6 +190,7 @@ const PharmaciesPage = () => {
           provider: (service as any).providerName || "Pharmacy",
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
+          _providerType: (service as any).providerType ?? 'pharmacy',
           googleMapLink: (service as any).googleMapLink,
           detailAddress: (service as any).detailAddress,
           providerPhone: (service as any).providerPhone,

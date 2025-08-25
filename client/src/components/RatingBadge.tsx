@@ -4,16 +4,16 @@ import { Star } from "lucide-react";
 interface RatingBadgeProps {
   rating?: number;
   totalRatings?: number;
-  ratingBadge?: "excellent" | "good" | "normal" | "poor" | "Excellent" | "Good" | "Normal" | "Poor" | null;
+  ratingBadge?: "excellent" | "good" | "fair" | "poor" | "Excellent" | "Good" | "Fair" | "Poor" | null;
   showStars?: boolean;
   size?: "sm" | "md" | "lg";
-  yourBadge?: "excellent" | "good" | "normal" | "poor" | null;
+  yourBadge?: "excellent" | "good" | "fair" | "poor" | null;
   layout?: 'row' | 'column-compact';
 }
 
 const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = true, size = "md", yourBadge = null, layout = 'row' }: RatingBadgeProps) => {
   const safeRating = Number.isFinite(rating) ? rating : 0;
-  const getRatingBadge = (numeric: number, ratingBadge?: "excellent" | "good" | "normal" | "poor" | null) => {
+  const getRatingBadge = (numeric: number, ratingBadge?: "excellent" | "good" | "fair" | "poor" | null) => {
     // Use backend ratingBadge if available, otherwise derive from numeric rating
     if (ratingBadge) {
       switch (ratingBadge) {
@@ -25,13 +25,13 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
           };
         case "good":
           return {
-            label: "Very Good",
+            label: "Good",
             variant: "secondary" as const,
             className: "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 hover:from-emerald-400 hover:via-emerald-600 hover:to-emerald-700 text-white border-emerald-300"
           };
-        case "normal":
+        case "fair":
           return {
-            label: "Good",
+            label: "Fair",
             variant: "secondary" as const,
             className: "bg-gradient-to-r from-purple-400 via-violet-500 to-fuchsia-600 hover:from-purple-500 hover:via-violet-600 hover:to-fuchsia-700 text-white border-violet-300"
           };
@@ -53,13 +53,13 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
       };
     } else if (numeric >= 3.5) {
       return {
-        label: "Very Good",
+        label: "Good",
         variant: "secondary" as const,
         className: "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 hover:from-emerald-400 hover:via-emerald-600 hover:to-emerald-700 text-white border-emerald-300"
       };
     } else if (numeric > 0) {
       return {
-        label: "Good",
+        label: "Fair",
         variant: "secondary" as const,
         className: "bg-gradient-to-r from-purple-400 via-violet-500 to-fuchsia-600 hover:from-purple-500 hover:via-violet-600 hover:to-fuchsia-700 text-white border-violet-300"
       };
@@ -72,9 +72,9 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
     }
   };
 
-  const normalizedBadge = ratingBadge ? (String(ratingBadge).toLowerCase() as "excellent" | "good" | "normal" | "poor") : null;
+  const normalizedBadge = ratingBadge ? (String(ratingBadge).toLowerCase() as "excellent" | "good" | "fair" | "poor") : null;
   const badge = getRatingBadge(safeRating, normalizedBadge);
-  const normalizedYour = yourBadge ? (String(yourBadge).toLowerCase() as "excellent" | "good" | "normal" | "poor") : null;
+  const normalizedYour = yourBadge ? (String(yourBadge).toLowerCase() as "excellent" | "good" | "fair" | "poor") : null;
   const your = normalizedYour ? getRatingBadge(safeRating, normalizedYour) : null;
   
   const sizeClasses = {
@@ -92,8 +92,8 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
   const starsFor = (kindLabel: string) => {
     const k = kindLabel.toLowerCase();
     if (k === 'excellent') return 5;
-    if (k === 'very good') return 4;
-    if (k === 'good') return 3; // UI 'Good' (was Normal)
+    if (k === 'good') return 4;
+    if (k === 'fair') return 3;
     if (k === 'poor') return 2;
     return 0;
   };
@@ -101,8 +101,8 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
   const starColorFor = (kindLabel: string) => {
     const k = kindLabel.toLowerCase();
     if (k === 'excellent') return 'text-amber-500';
-    if (k === 'very good') return 'text-emerald-500';
-    if (k === 'good') return 'text-violet-500';
+    if (k === 'good') return 'text-emerald-500';
+    if (k === 'fair') return 'text-violet-500';
     if (k === 'poor') return 'text-red-500';
     return 'text-gray-400';
   };
