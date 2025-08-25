@@ -202,12 +202,21 @@ const Navbar = () => {
                       <div className="min-w-0 space-y-2">
                         <p className="text-sm font-semibold leading-none text-gray-900 truncate">{user.name}</p>
                         <p className="text-xs leading-none text-gray-500 truncate">{user.email}</p>
-                        <div className="mt-2 flex items-center gap-3">
-                          <UserBadge role={(user as any).role} />
-                          {user.isVerified && (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                              <BadgeCheck className="h-3 w-3" /> Verified
-                            </span>
+                        <div className="mt-2 flex flex-col gap-1">
+                          <div className="flex items-center gap-3">
+                            <UserBadge role={(user as any).role} />
+                            {user.isVerified && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                                <BadgeCheck className="h-3 w-3" /> Verified
+                              </span>
+                            )}
+                          </div>
+                          {user?.specialization && (
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-[9px] font-normal">
+                                {user.specialization} Specialist
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -301,12 +310,21 @@ const Navbar = () => {
           <div className="px-4 py-2">
             <p className="text-sm font-medium text-gray-900">{user.name}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
-            <div className="mt-2 flex items-center gap-2">
-              <UserBadge role={(user as any).role} />
-              {user.isVerified && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                  <BadgeCheck className="h-3 w-3" /> Verified
-                </span>
+            <div className="mt-2 flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <UserBadge role={(user as any).role} />
+                {user.isVerified && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                    <BadgeCheck className="h-3 w-3" /> Verified
+                  </span>
+                )}
+              </div>
+              {user?.specialization && (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-[9px] font-normal">
+                    {user.specialization} Specialist
+                  </span>
+                </div>
               )}
             </div>
           </div>

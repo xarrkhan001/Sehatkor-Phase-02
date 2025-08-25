@@ -374,6 +374,27 @@ const SearchPage = () => {
     }
   }, [searchParams]);
 
+  // Live update provider name on search cards when profile changes
+  useEffect(() => {
+    const handleProviderProfileUpdated = (e: any) => {
+      const detail = e?.detail as { providerId?: string; id?: string; name?: string; avatar?: string; specialization?: string } | undefined;
+      if (!detail) return;
+      const pid = detail.providerId || detail.id;
+      if (!pid) return;
+      setAllServices(prev => prev.map(s => {
+        const serviceProviderId = (s as any)._providerId;
+        if (serviceProviderId && serviceProviderId === pid) {
+          const next: any = { ...s };
+          if (typeof detail.name === 'string') next.provider = detail.name;
+          return next as SearchService;
+        }
+        return s;
+      }));
+    };
+    window.addEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
+  }, []);
+
   const filteredServices = useMemo(() => {
     const filtered = allServices.filter(service => {
       const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

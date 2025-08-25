@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserBadge from "./UserBadge";
 import { getSocket } from "@/lib/socket";
-import { fetchVerifiedUsers, fetchMessages, getOrCreateConversation, uploadFile, fetchConversations, markAsRead, updateMyProfile, deleteMessage as apiDeleteMessage, clearConversation as apiClearConversation } from "@/lib/chatApi";
+import { fetchVerifiedUsers, fetchMessages, getOrCreateConversation, uploadFile, uploadProfileImage, fetchConversations, markAsRead, updateMyProfile, deleteMessage as apiDeleteMessage, clearConversation as apiClearConversation } from "@/lib/chatApi";
 import { getPendingRequests, getConnectedUsers, deleteUserConnection } from "@/lib/connectionApi";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -958,11 +958,11 @@ const FloatingChat = () => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    const uploaded = await uploadFile(file);
-    const resp = await updateMyProfile({ avatar: uploaded.url });
-    const updatedUser = resp?.user || resp;
-    if (updatedUser?.avatar) {
-      updateCurrentUser({ avatar: updatedUser.avatar, name: updatedUser.name });
+    // Use dedicated avatar upload endpoint which persists and returns updated user
+    const uploaded = await uploadProfileImage(file);
+    if (uploaded?.user?.avatar || uploaded?.avatar || uploaded?.url) {
+      const avatarUrl = uploaded?.user?.avatar || uploaded?.avatar || uploaded?.url;
+      updateCurrentUser({ avatar: avatarUrl });
     }
   };
 

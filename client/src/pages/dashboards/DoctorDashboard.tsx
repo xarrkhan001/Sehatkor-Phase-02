@@ -12,12 +12,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import ImageUpload from "@/components/ui/image-upload";
 import ServiceManager, { DoctorService } from "@/lib/serviceManager";
 import { listServices as apiList } from "@/lib/doctorApi";
 import ServiceManagement from "@/components/ServiceManagement";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
-import { toast } from "sonner";
+import EditProfileDialog from "@/components/EditProfileDialog";
 import { 
   Stethoscope, 
   Calendar, 
@@ -41,7 +40,7 @@ const DoctorDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [services, setServices] = useState<DoctorService[]>([]);
-  const [specialization, setSpecialization] = useState('');
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
   const [isScheduling, setIsScheduling] = useState(false);
@@ -58,10 +57,7 @@ const DoctorDashboard = () => {
     return Number.isFinite(num) ? num : 0;
   };
 
-  const specialties = [
-    'Cardiologist', 'Neurologist', 'Dermatologist', 'Pediatrician', 
-    'Orthopedic', 'Gynecologist', 'Psychiatrist', 'General Physician'
-  ];
+  
 
   const syncLocalFromDocs = (docs: any[]) => {
     if (!user?.id) return;
@@ -257,23 +253,11 @@ const DoctorDashboard = () => {
     if (!user?.id) return;
     reloadServices();
     fetchBookings();
-    const savedSpecialization = localStorage.getItem(`doctor_specialization_${user.id}`);
-    if (savedSpecialization) setSpecialization(savedSpecialization);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
 
-  const handleSpecialtyChange = (specialty: string) => {
-    setSpecialization(specialty);
-    localStorage.setItem(`doctor_specialization_${user?.id}`, specialty);
-    
-    toast({
-      title: "Success",
-      description: "Specialization updated successfully"
-    });
-  };
-
-  
+  // Note: Removed legacy handleSpecialtyChange; specialization is edited via EditProfileDialog now.
 
   return (
     <div className="min-h-screen bg-background">
@@ -557,29 +541,15 @@ const DoctorDashboard = () => {
                   </div>
                   <h3 className="text-lg font-semibold">Dr. {user?.name}</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
-                  {specialization && (
-                    <Badge variant="secondary" className="mt-2">{specialization}</Badge>
+                  {user?.specialization && (
+                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
                   )}
                   <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="specialty">Medical Specialty</Label>
-                    <Select value={specialization} onValueChange={handleSpecialtyChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your specialty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {specialties.map((specialty) => (
-                          <SelectItem key={specialty} value={specialty}>{specialty}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   <div className="space-y-2">
-                    <Button className="w-full" variant="outline">
+                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
@@ -595,6 +565,16 @@ const DoctorDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Edit Profile Dialog */}
+            <EditProfileDialog 
+              open={isEditProfileOpen}
+              onOpenChange={setIsEditProfileOpen}
+              role={(user?.role as any) || 'doctor'}
+              name={user?.name}
+              specialization={user?.specialization}
+              avatar={user?.avatar}
+            />
 
             <Card className="card-healthcare">
               <CardHeader>

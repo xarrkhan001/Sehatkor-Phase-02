@@ -7,6 +7,7 @@ interface User {
   role: 'patient' | 'doctor' | 'clinic/hospital' | 'laboratory' | 'pharmacy';
   isVerified: boolean;
   avatar?: string;
+  specialization?: string;
 }
 
 type UserMode = 'patient' | 'provider';
@@ -157,6 +158,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser((prev) => {
         const next = { ...(prev as User), ...partial } as User;
         localStorage.setItem('sehatkor_current_user', JSON.stringify(next));
+        // Broadcast profile changes so service lists and profile pages can update immediately
+        try {
+          window.dispatchEvent(
+            new CustomEvent('provider_profile_updated', {
+              detail: {
+                providerId: next.id,
+                name: next.name,
+                avatar: next.avatar,
+                specialization: next.specialization,
+              },
+            })
+          );
+        } catch {}
         return next;
       });
     },

@@ -25,6 +25,8 @@ interface ProviderUser {
   avatar?: string;
   phone?: string;
   address?: string;
+  specialization?: string;
+  isVerified?: boolean;
   createdAt: string;
 }
 
@@ -189,6 +191,21 @@ const ProviderProfilePage = () => {
     };
   }, [socket]);
 
+  // React to live provider profile updates (name, avatar, specialization)
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { providerId: string; name?: string; avatar?: string; specialization?: string } | undefined;
+      if (!detail) return;
+      if (String(detail.providerId) !== String(providerId)) return;
+      // Update header user info
+      setProviderUser((prev) => ({ ...(prev || { _id: detail.providerId, name: '', email: '', role: providerType || 'doctor', createdAt: new Date().toISOString() }), ...detail, _id: detail.providerId } as any));
+      // Patch services providerName locally for immediate UI consistency
+      setServices((prev) => prev.map((s) => ({ ...s, providerName: detail.name || s.providerName })));
+    };
+    window.addEventListener('provider_profile_updated', handler as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handler as EventListener);
+  }, [providerId, providerType]);
+
   // Listen for per-user immediate badge updates
   useEffect(() => {
     const handler = (e: any) => {
@@ -352,6 +369,13 @@ const ProviderProfilePage = () => {
                       Verified Provider
                     </Badge>
                   </div>
+                  {providerUser?.specialization && (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <Badge variant="outline" className="px-2 py-0.5 text-[12px] bg-gray-100 text-gray-700 border-gray-200">
+                        {providerUser.specialization} Specialist
+                      </Badge>
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
@@ -481,7 +505,7 @@ const ProviderProfilePage = () => {
                       {service.name}
                       <Badge variant="outline" className={`text-xs px-1.5 py-0.5 ${meta.badgeClass}`}>{meta.label}</Badge>
                     </h3>
-                    <p className="text-sm text-gray-500">{service.providerName}</p>
+                    <p className="text-sm text-gray-500">{providerUser?.name || service.providerName}</p>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-primary">

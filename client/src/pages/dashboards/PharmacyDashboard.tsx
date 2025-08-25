@@ -13,6 +13,7 @@ import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
+import EditProfileDialog from "@/components/EditProfileDialog";
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
@@ -54,7 +55,8 @@ const PharmacyDashboard = () => {
     communicationChannel: 'SehatKor Chat',
   });
   const [isAddMedicineOpen, setIsAddMedicineOpen] = useState(false);
-  const [pharmacyType, setPharmacyType] = useState('');
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+
   const [medicineImagePreview, setMedicineImagePreview] = useState('');
   const [medicineImageFile, setMedicineImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -85,11 +87,6 @@ const PharmacyDashboard = () => {
     city: '',
     detailAddress: ''
   });
-
-  const pharmacyTypes = [
-    'Retail Pharmacy', 'Hospital Pharmacy', 'Online Pharmacy', 
-    'Compounding Pharmacy', 'Clinical Pharmacy', 'Chain Pharmacy'
-  ];
 
   const medicineCategories = [
     'Tablets', 'Capsules', 'Syrups', 'Injections', 'Ointments', 'Drops'
@@ -288,8 +285,6 @@ const PharmacyDashboard = () => {
     if (user?.id) {
       reloadMedicines();
       fetchBookings();
-      const savedType = localStorage.getItem(`pharmacy_type_${user.id}`);
-      if (savedType) setPharmacyType(savedType);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -440,13 +435,6 @@ const PharmacyDashboard = () => {
     } catch (error: any) {
       toast.error("Failed to update medicine", { description: error?.message });
     }
-  };
-
-  const handleTypeChange = (type: string) => {
-    setPharmacyType(type);
-    localStorage.setItem(`pharmacy_type_${user?.id}`, type);
-    
-    toast.success("Pharmacy type updated successfully");
   };
 
   const recentOrders = [
@@ -1027,31 +1015,19 @@ const PharmacyDashboard = () => {
                   </div>
                   <h3 className="text-lg font-semibold">{user?.name}</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
-                  {pharmacyType && (
-                    <Badge variant="secondary" className="mt-2">{pharmacyType}</Badge>
+                  {user?.specialization && (
+                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
                   )}
                   <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="pharmacyType">Pharmacy Type</Label>
-                    <Select value={pharmacyType} onValueChange={handleTypeChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select pharmacy type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {pharmacyTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Specialization now managed via Edit Profile dialog */}
 
                   <div className="space-y-2">
-                    <Button className="w-full" variant="outline">
+                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
                       <Edit className="w-4 h-4 mr-2" />
-                      Edit Pharmacy Info
+                      Edit Profile
                     </Button>
                     <Button 
                       className="w-full" 
@@ -1065,6 +1041,16 @@ const PharmacyDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Edit Profile Dialog */}
+            <EditProfileDialog 
+              open={isEditProfileOpen}
+              onOpenChange={setIsEditProfileOpen}
+              role={(user?.role as any) || 'pharmacy'}
+              name={user?.name}
+              specialization={user?.specialization}
+              avatar={user?.avatar}
+            />
 
             <Card className="card-healthcare">
               <CardHeader>

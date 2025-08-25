@@ -69,7 +69,24 @@ export async function uploadFile(file: File) {
   let data: any = {};
   try { data = await res.json(); } catch {}
   if (!res.ok || !data.success) throw new Error(data.message || 'Upload failed');
-  return data;
+  const url = data.url || data.avatar;
+  return { ...data, url };
+}
+
+export async function uploadProfileImage(file: File) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const token = localStorage.getItem('sehatkor_token');
+  const res = await fetch('http://localhost:4000/api/profile/upload-image', {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: formData,
+  });
+  let data: any = {};
+  try { data = await res.json(); } catch {}
+  if (!res.ok || !data.success) throw new Error(data.message || 'Upload failed');
+  const url = data.url || data.avatar;
+  return { ...data, url };
 }
 
 export async function fetchConversations() {
@@ -116,7 +133,7 @@ export async function clearConversation(conversationId: string) {
 
 export async function fetchMyProfile() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/user/me', {
+  const res = await fetch('http://localhost:4000/api/profile', {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -128,7 +145,7 @@ export async function fetchMyProfile() {
 
 export async function updateMyProfile(updates: Record<string, any>) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/user/me', {
+  const res = await fetch('http://localhost:4000/api/profile', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
