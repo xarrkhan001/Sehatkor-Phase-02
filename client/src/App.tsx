@@ -43,6 +43,7 @@ const DoctorsPage = lazy(() => import("./pages/DoctorsPage"));
 const HospitalsPage = lazy(() => import("./pages/HospitalsPage"));
 const LabsPage = lazy(() => import("./pages/LabsPage"));
 const PharmaciesPage = lazy(() => import("./pages/PharmaciesPage"));
+const ProviderProfilePage = lazy(() => import("./pages/ProviderProfilePage"));
 const ComparePage = lazy(() => import("./pages/ComparePage"));
 const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 import { CompareProvider } from "./contexts/CompareContext";
@@ -69,6 +70,7 @@ const AppShell = () => {
             <Route path="/hospitals" element={<Suspense fallback={<PageSkeleton />}><HospitalsPage /></Suspense>} />
             <Route path="/labs" element={<Suspense fallback={<PageSkeleton />}><LabsPage /></Suspense>} />
             <Route path="/pharmacies" element={<Suspense fallback={<PageSkeleton />}><PharmaciesPage /></Suspense>} />
+            <Route path="/provider/:providerId" element={<Suspense fallback={<PageSkeleton />}><ProviderProfilePage /></Suspense>} />
             <Route path="/compare" element={<Suspense fallback={<PageSkeleton />}><ComparePage /></Suspense>} />
             <Route path="/payment" element={<Suspense fallback={<PageSkeleton />}><PaymentPage /></Suspense>} />
             <Route path="/service/:id" element={<Suspense fallback={<ServiceSkeleton />}><ServiceDetailPage /></Suspense>} />

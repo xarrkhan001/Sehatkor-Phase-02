@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +12,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProfileImageUpload from "@/components/ProfileImageUpload";
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listMedicines as apiList, createMedicine as apiCreate, updateMedicine as apiUpdate, deleteMedicine as apiDelete } from "@/lib/pharmacyApi";
 import { 
   ShoppingBag, 
+  Pill, 
   Calendar, 
   Users, 
   Clock, 
@@ -25,18 +28,22 @@ import {
   LogOut,
   Bell,
   Edit,
+  Star,
   FileText,
   Package,
-  Truck,
   Activity,
-  Pill,
   Plus,
   Trash2,
-  Phone
+  DollarSign,
+  Heart,
+  Shield,
+  User,
+  Truck
 } from "lucide-react";
 
 const PharmacyDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [medicines, setMedicines] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
@@ -435,7 +442,7 @@ const PharmacyDashboard = () => {
     }
   };
 
-  const handleTypeChange = (type) => {
+  const handleTypeChange = (type: string) => {
     setPharmacyType(type);
     localStorage.setItem(`pharmacy_type_${user?.id}`, type);
     
@@ -1011,8 +1018,12 @@ const PharmacyDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ShoppingBag className="w-8 h-8 text-primary" />
+                  <div className="mb-4">
+                    <ProfileImageUpload 
+                      currentImage={user?.avatar}
+                      userName={user?.name || 'Pharmacy'}
+                      size="lg"
+                    />
                   </div>
                   <h3 className="text-lg font-semibold">{user?.name}</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
@@ -1037,10 +1048,20 @@ const PharmacyDashboard = () => {
                     </Select>
                   </div>
 
-                  <Button className="w-full" variant="outline">
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Pharmacy Info
-                  </Button>
+                  <div className="space-y-2">
+                    <Button className="w-full" variant="outline">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Pharmacy Info
+                    </Button>
+                    <Button 
+                      className="w-full" 
+                      variant="secondary"
+                      onClick={() => navigate(`/provider/${user?.id}`)}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      See Public Profile
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

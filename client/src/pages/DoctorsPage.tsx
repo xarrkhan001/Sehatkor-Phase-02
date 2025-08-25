@@ -570,7 +570,12 @@ const DoctorsPage = () => {
                         Doctor
                       </Badge>
                     </h3>
-                    <p className="text-sm text-gray-500">{service.provider}</p>
+                    <button
+                      className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
+                      onClick={() => navigate(`/provider/${(service as any)._providerId}`)}
+                    >
+                      {service.provider}
+                    </button>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-primary">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProfileImageUpload from "@/components/ProfileImageUpload";
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
@@ -33,11 +35,13 @@ import {
   Plus,
   Trash2,
   DollarSign,
-  Phone
+  Phone,
+  User
 } from "lucide-react";
 
 const ClinicDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [services, setServices] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
@@ -861,8 +865,12 @@ const ClinicDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Building className="w-8 h-8 text-primary" />
+                  <div className="mb-4">
+                    <ProfileImageUpload 
+                      currentImage={user?.avatar}
+                      userName={user?.name || 'Clinic'}
+                      size="lg"
+                    />
                   </div>
                   <h3 className="text-lg font-semibold">{user?.name} Clinic</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
@@ -890,6 +898,14 @@ const ClinicDashboard = () => {
                   <Button className="w-full" variant="outline">
                     <Edit className="w-4 h-4 mr-2" />
                     Edit Clinic Info
+                  </Button>
+                  <Button 
+                    className="w-full" 
+                    variant="secondary"
+                    onClick={() => navigate(`/provider/${user?.id}`)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    See Public Profile
                   </Button>
                 </div>
               </CardContent>

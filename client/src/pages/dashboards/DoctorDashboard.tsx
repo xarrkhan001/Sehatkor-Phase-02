@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import ImageUpload from "@/components/ui/image-upload";
 import ServiceManager, { DoctorService } from "@/lib/serviceManager";
 import { listServices as apiList } from "@/lib/doctorApi";
 import ServiceManagement from "@/components/ServiceManagement";
+import ProfileImageUpload from "@/components/ProfileImageUpload";
 import { toast } from "sonner";
 import { 
   Stethoscope, 
@@ -29,11 +31,14 @@ import {
   Star,
   FileText,
   Plus,
-  Trash2
+  Trash2,
+  Eye,
+  User
 } from "lucide-react";
 
 const DoctorDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [services, setServices] = useState<DoctorService[]>([]);
   const [specialization, setSpecialization] = useState('');
@@ -543,8 +548,12 @@ const DoctorDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Stethoscope className="w-8 h-8 text-primary" />
+                  <div className="mb-4">
+                    <ProfileImageUpload 
+                      currentImage={user?.avatar}
+                      userName={user?.name || 'Doctor'}
+                      size="lg"
+                    />
                   </div>
                   <h3 className="text-lg font-semibold">Dr. {user?.name}</h3>
                   <Badge variant="outline" className="capitalize">{user?.role}</Badge>
@@ -569,10 +578,20 @@ const DoctorDashboard = () => {
                     </Select>
                   </div>
 
-                  <Button className="w-full" variant="outline">
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Profile
-                  </Button>
+                  <div className="space-y-2">
+                    <Button className="w-full" variant="outline">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button 
+                      className="w-full" 
+                      variant="secondary"
+                      onClick={() => navigate(`/provider/${user?.id}`)}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      See Public Profile
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

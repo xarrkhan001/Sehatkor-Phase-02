@@ -194,7 +194,7 @@ const Navbar = () => {
                   <DropdownMenuLabel className="font-normal px-4 pt-4 pb-3 bg-white">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
-                        <AvatarImage src={(user as any).avatar} alt={user.name} />
+                        <AvatarImage src={user.avatar || (user as any).avatar} alt={user.name} />
                         <AvatarFallback className="bg-red-100 text-red-700 font-semibold">
                           {user.name?.charAt(0) ?? 'U'}
                         </AvatarFallback>

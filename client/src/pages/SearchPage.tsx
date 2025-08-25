@@ -47,6 +47,7 @@ const SearchPage = () => {
   const [maxPrice, setMaxPrice] = useState(50000);
   const [minRating, setMinRating] = useState(0);
   const [homeServiceOnly, setHomeServiceOnly] = useState(false);
+  const [priceFilter, setPriceFilter] = useState("all");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
@@ -689,23 +690,59 @@ const SearchPage = () => {
                 {/* Price Range */}
                 <div>
                   <Label className="text-base font-medium">Price Range</Label>
-                  <div className="mt-4 px-2">
-                    <Slider
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                      max={maxPrice}
-                      min={0}
-                      step={100}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                      <span>PKR {priceRange[0]}</span>
-                      <span>PKR {priceRange[1]}</span>
+                  <div className="mt-2">
+                    <Select value={priceFilter} onValueChange={(value) => {
+                      setPriceFilter(value);
+                      if (value === "all") setPriceRange([0, maxPrice]);
+                      else if (value === "free") setPriceRange([0, 0]);
+                      else if (value === "0-500") setPriceRange([0, 500]);
+                      else if (value === "500-1000") setPriceRange([500, 1000]);
+                      else if (value === "1000-2000") setPriceRange([1000, 2000]);
+                      else if (value === "2000-5000") setPriceRange([2000, 5000]);
+                      else if (value === "5000+") setPriceRange([5000, maxPrice]);
+                    }}>
+                      <SelectTrigger className="bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+                        <SelectValue placeholder="Select price range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Prices</SelectItem>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="0-500">PKR 0-500</SelectItem>
+                        <SelectItem value="500-1000">PKR 500-1K</SelectItem>
+                        <SelectItem value="1000-2000">PKR 1K-2K</SelectItem>
+                        <SelectItem value="2000-5000">PKR 2K-5K</SelectItem>
+                        <SelectItem value="5000+">PKR 5K+</SelectItem>
+                        <SelectItem value="custom">Custom Range</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <div className="mt-4 px-2">
+                      <div className="relative">
+                        <Slider
+                          value={priceRange}
+                          onValueChange={setPriceRange}
+                          max={maxPrice}
+                          min={0}
+                          step={100}
+                          className="w-full [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-blue-500 [&_[role=slider]]:to-purple-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_.slider-track]:bg-gradient-to-r [&_.slider-track]:from-blue-200 [&_.slider-track]:to-purple-200 [&_.slider-range]:bg-gradient-to-r [&_.slider-range]:from-blue-500 [&_.slider-range]:to-purple-500"
+                          style={{
+                            background: `linear-gradient(to right, 
+                              #e2e8f0 0%, 
+                              #e2e8f0 ${(priceRange[0] / maxPrice) * 100}%, 
+                              #3b82f6 ${(priceRange[0] / maxPrice) * 100}%, 
+                              #8b5cf6 ${(priceRange[1] / maxPrice) * 100}%, 
+                              #e2e8f0 ${(priceRange[1] / maxPrice) * 100}%, 
+                              #e2e8f0 100%)`
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-sm text-muted-foreground mt-2">
+                        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-medium">PKR {priceRange[0].toLocaleString()}</span>
+                        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-medium">PKR {priceRange[1].toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                
 
                 {/* Home Service */}
                 <div className="flex items-center space-x-2">
@@ -826,7 +863,12 @@ const SearchPage = () => {
           </Badge>
         )}
       </h3>
-      <p className="text-sm text-gray-500">{service.provider}</p>
+      <button
+        className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
+        onClick={() => navigate(`/provider/${(service as any)._providerId}`)}
+      >
+        {service.provider}
+      </button>
     </div>
     <div className="text-right">
       <div className="text-lg font-bold text-primary">
