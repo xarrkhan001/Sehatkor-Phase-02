@@ -18,39 +18,27 @@ function uploadStreamToCloudinary(buffer, opts = {}) {
 
 export const uploadProfileImage = async (req, res) => {
   try {
-    console.log('Upload request received:', {
-      userId: req.userId,
-      hasFile: !!req.file,
-      headers: req.headers.authorization ? 'Present' : 'Missing'
-    });
-
     const userId = req.userId; // Changed from req.user.id to req.userId
     const file = req.file;
 
     if (!userId) {
-      console.log('No userId found in request');
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
     if (!file) {
-      console.log('No file uploaded');
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
     // Only allow images
     if (!file.mimetype.startsWith('image/')) {
-      console.log('Invalid file type:', file.mimetype);
       return res.status(400).json({ success: false, message: 'Only images are allowed' });
     }
 
     // Find user
     const user = await User.findById(userId);
     if (!user) {
-      console.log('User not found:', userId);
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-
-    console.log('User found:', user.name);
 
     // Delete old profile image from Cloudinary if exists
     if (user.avatar && user.avatar.includes('cloudinary')) {
@@ -58,7 +46,7 @@ export const uploadProfileImage = async (req, res) => {
         const publicId = user.avatar.split('/').pop().split('.')[0];
         await cloudinary.uploader.destroy(`sehatkor/profiles/${publicId}`);
       } catch (error) {
-        console.log('Error deleting old profile image:', error);
+        // Silently handle deletion error
       }
     }
 

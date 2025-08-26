@@ -240,8 +240,10 @@ const ServiceDetailPage = () => {
             <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2 min-w-0">
                 <CardTitle className="text-xl sm:text-2xl md:text-3xl leading-tight break-words">{item.name}</CardTitle>
-                {item.isReal && (
+                {item.isReal ? (
                   <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
+                ) : (
+                  <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Not Verified</Badge>
                 )}
               </div>
               <CardDescription className="break-words leading-snug text-sm sm:text-base">{item.provider}</CardDescription>
