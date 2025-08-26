@@ -183,7 +183,91 @@ const CompareExplorer = () => {
   }, [names, nameQuery]);
   const effectiveSelectedName = useMemo(() => selectedName || (nameQuery ? filteredNames[0] : ""), [selectedName, nameQuery, filteredNames]);
   const offerings = useMemo(() => (effectiveSelectedName ? allItems.filter(i => i.name === effectiveSelectedName) : []), [allItems, effectiveSelectedName]);
-  const limitedOfferings = useMemo(() => offerings.slice(0, 6), [offerings]);
+
+  // Filters: location + price range
+  const [locFilter, setLocFilter] = useState<string>("all");
+  const [priceRange, setPriceRange] = useState<number[]>([0, 100000]);
+  const [maxPrice, setMaxPrice] = useState<number>(100000);
+  const [priceFilter, setPriceFilter] = useState<string>("all");
+  const [customFrom, setCustomFrom] = useState<string>("");
+  const [customTo, setCustomTo] = useState<string>("");
+
+  // Static location list mirroring SearchPage.tsx
+  const LOCATION_OPTIONS: { value: string; label: string }[] = [
+    { value: 'all', label: 'All Locations' },
+    // Sindh
+    { value: 'Karachi', label: 'Karachi (Sindh)' },
+    { value: 'Hyderabad', label: 'Hyderabad (Sindh)' },
+    { value: 'Sukkur', label: 'Sukkur (Sindh)' },
+    { value: 'Larkana', label: 'Larkana (Sindh)' },
+    { value: 'Nawabshah', label: 'Nawabshah (Sindh)' },
+    { value: 'Mirpur Khas', label: 'Mirpur Khas (Sindh)' },
+    // Punjab
+    { value: 'Lahore', label: 'Lahore (Punjab)' },
+    { value: 'Faisalabad', label: 'Faisalabad (Punjab)' },
+    { value: 'Rawalpindi', label: 'Rawalpindi (Punjab)' },
+    { value: 'Multan', label: 'Multan (Punjab)' },
+    { value: 'Gujranwala', label: 'Gujranwala (Punjab)' },
+    { value: 'Sialkot', label: 'Sialkot (Punjab)' },
+    { value: 'Bahawalpur', label: 'Bahawalpur (Punjab)' },
+    { value: 'Sargodha', label: 'Sargodha (Punjab)' },
+    { value: 'Gujrat', label: 'Gujrat (Punjab)' },
+    { value: 'Sheikhupura', label: 'Sheikhupura (Punjab)' },
+    // Khyber Pakhtunkhwa
+    { value: 'Peshawar', label: 'Peshawar (KPK)' },
+    { value: 'Mardan', label: 'Mardan (KPK)' },
+    { value: 'Lund Khwar', label: 'Lund Khwar (KPK)' },
+    { value: 'Shergarh', label: 'Shergarh (KPK)' },
+    { value: 'Abbottabad', label: 'Abbottabad (KPK)' },
+    { value: 'Swat', label: 'Swat/Mingora (KPK)' },
+    { value: 'Kohat', label: 'Kohat (KPK)' },
+    { value: 'Dera Ismail Khan', label: 'Dera Ismail Khan (KPK)' },
+    { value: 'Mansehra', label: 'Mansehra (KPK)' },
+    { value: 'Bannu', label: 'Bannu (KPK)' },
+    // Balochistan
+    { value: 'Quetta', label: 'Quetta (Balochistan)' },
+    { value: 'Gwadar', label: 'Gwadar (Balochistan)' },
+    { value: 'Khuzdar', label: 'Khuzdar (Balochistan)' },
+    { value: 'Turbat', label: 'Turbat (Balochistan)' },
+    { value: 'Chaman', label: 'Chaman (Balochistan)' },
+    { value: 'Sibi', label: 'Sibi (Balochistan)' },
+    { value: 'Zhob', label: 'Zhob (Balochistan)' },
+    { value: 'Hub', label: 'Hub (Balochistan)' },
+    // Capital Territory
+    { value: 'Islamabad', label: 'Islamabad (ICT)' },
+  ];
+
+  // Recompute max price and reset range when offerings change
+  useEffect(() => {
+    if (!offerings.length) {
+      setMaxPrice(100000);
+      setPriceRange([0, 100000]);
+      setLocFilter('all');
+      setPriceFilter('all');
+      setCustomFrom("");
+      setCustomTo("");
+      return;
+    }
+    const computedMax = Math.max(0, ...offerings.map(o => Number(o.price) || 0));
+    const safeMax = Number.isFinite(computedMax) && computedMax > 0 ? computedMax : 100000;
+    setMaxPrice(safeMax);
+    setPriceRange([0, safeMax]);
+    setLocFilter('all');
+    setPriceFilter('all');
+    setCustomFrom("");
+    setCustomTo("");
+  }, [offerings]);
+
+  const filteredOfferings = useMemo(() => {
+    return offerings.filter(o => {
+      const byLoc = locFilter === 'all' || (o.city ? String(o.city) === locFilter : false);
+      const p = Number(o.price) || 0;
+      const byPrice = p >= priceRange[0] && p <= priceRange[1];
+      return byLoc && byPrice;
+    });
+  }, [offerings, locFilter, priceRange]);
+
+  const limitedOfferings = useMemo(() => filteredOfferings.slice(0, 6), [filteredOfferings]);
   const selected = useMemo(() => offerings.filter(i => selectedIds.includes(i.id)), [offerings, selectedIds]);
 
   // Variant slider state and helpers
@@ -377,6 +461,111 @@ const CompareExplorer = () => {
                     </div>
                   )}
                 </div>
+                {/* Inline filters: Location + Price */}
+                {effectiveSelectedName && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Location Filter */}
+                    <div>
+                      <label className="text-xs text-gray-600">Location</label>
+                      <Select value={locFilter} onValueChange={setLocFilter}>
+                        <SelectTrigger className="mt-1 h-10 rounded-xl bg-white/70 border border-white/60 hover:bg-white focus:ring-2 focus:ring-primary/30">
+                          <SelectValue placeholder="All locations" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LOCATION_OPTIONS.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Price Filter (Preset Ranges + Custom) */}
+                    <div>
+                      <label className="text-xs text-gray-600">Price Range</label>
+                      <Select
+                        value={priceFilter}
+                        onValueChange={(value) => {
+                          setPriceFilter(value);
+                          if (value === 'all') setPriceRange([0, maxPrice]);
+                          else if (value === 'free') setPriceRange([0, 0]);
+                          else if (value === '0-500') setPriceRange([0, 500]);
+                          else if (value === '500-1000') setPriceRange([500, 1000]);
+                          else if (value === '1000-2000') setPriceRange([1000, 2000]);
+                          else if (value === '2000-5000') setPriceRange([2000, 5000]);
+                          else if (value === '5000+') setPriceRange([5000, maxPrice]);
+                          // For custom, keep current range; inputs below will commit
+                          else if (value === 'custom') {
+                            setCustomFrom("");
+                            setCustomTo("");
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="mt-1 w-[140px] h-10 text-sm bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+                          <SelectValue placeholder="Price Range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Prices</SelectItem>
+                          <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="0-500">PKR 0-500</SelectItem>
+                          <SelectItem value="500-1000">PKR 500-1K</SelectItem>
+                          <SelectItem value="1000-2000">PKR 1K-2K</SelectItem>
+                          <SelectItem value="2000-5000">PKR 2K-5K</SelectItem>
+                          <SelectItem value="5000+">PKR 5K+</SelectItem>
+                          <SelectItem value="custom">Custom Range</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {priceFilter === 'custom' && (
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div>
+                            <div className="text-[11px] text-gray-600">From (PKR)</div>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={maxPrice}
+                              value={customFrom}
+                              placeholder={String(0)}
+                              onChange={(e) => setCustomFrom(e.target.value)}
+                              onBlur={() => {
+                                const parsed = customFrom.trim() === '' ? null : Number(customFrom);
+                                const n = parsed != null && Number.isFinite(parsed) ? parsed : 0;
+                                const clamped = Math.max(0, Math.min(n, maxPrice));
+                                const newFrom = Math.min(clamped, priceRange[1]);
+                                setPriceRange([newFrom, priceRange[1]]);
+                                setCustomFrom(String(newFrom));
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                              }}
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <div className="text-[11px] text-gray-600">To (PKR)</div>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={maxPrice}
+                              value={customTo}
+                              placeholder={String(maxPrice)}
+                              onChange={(e) => setCustomTo(e.target.value)}
+                              onBlur={() => {
+                                const parsed = customTo.trim() === '' ? null : Number(customTo);
+                                const n = parsed != null && Number.isFinite(parsed) ? parsed : maxPrice;
+                                const clamped = Math.max(0, Math.min(n, maxPrice));
+                                const newTo = Math.max(clamped, priceRange[0]);
+                                setPriceRange([priceRange[0], newTo]);
+                                setCustomTo(String(newTo));
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                              }}
+                              className="h-9"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <Select value={effectiveSelectedName} onValueChange={(v) => { setSelectedName(v); setNameQuery(v); }}>
                   <SelectTrigger className="h-12 rounded-2xl bg-white/70 border border-white/60 hover:bg-white focus:ring-2 focus:ring-primary/30 shadow-sm transition-colors">
                     <SelectValue placeholder="Select service name" />

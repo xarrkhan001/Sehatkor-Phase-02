@@ -48,6 +48,9 @@ const SearchPage = () => {
   const [minRating, setMinRating] = useState(0);
   const [homeServiceOnly, setHomeServiceOnly] = useState(false);
   const [priceFilter, setPriceFilter] = useState("all");
+  // Local states for manual custom price inputs (allow typing, including empty values)
+  const [customFrom, setCustomFrom] = useState<string>("");
+  const [customTo, setCustomTo] = useState<string>("");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
@@ -343,6 +346,34 @@ const SearchPage = () => {
     loadServices();
   }, [user?.id]);
 
+  // Initialize manual inputs when switching to custom price filter
+  useEffect(() => {
+    if (priceFilter === 'custom') {
+      // Clear fields so placeholders (defaults) are visible
+      setCustomFrom("");
+      setCustomTo("");
+    }
+  }, [priceFilter]);
+
+  // Helpers to commit manual input values with validation/clamping
+  const commitCustomFrom = () => {
+    const parsed = customFrom.trim() === '' ? null : Number(customFrom);
+    const n = parsed != null && Number.isFinite(parsed) ? parsed : 0;
+    const clamped = Math.max(0, Math.min(n, maxPrice));
+    const newFrom = Math.min(clamped, priceRange[1]);
+    setPriceRange([newFrom, priceRange[1]]);
+    setCustomFrom(String(newFrom));
+  };
+
+  const commitCustomTo = () => {
+    const parsed = customTo.trim() === '' ? null : Number(customTo);
+    const n = parsed != null && Number.isFinite(parsed) ? parsed : maxPrice;
+    const clamped = Math.max(0, Math.min(n, maxPrice));
+    const newTo = Math.max(clamped, priceRange[0]);
+    setPriceRange([priceRange[0], newTo]);
+    setCustomTo(String(newTo));
+  };
+
   // Backfill exact prices for cards that show 0
   useEffect(() => {
     const fillPrices = async () => {
@@ -385,6 +416,17 @@ const SearchPage = () => {
       setSearchTerm(queryParam);
     }
   }, [searchParams]);
+
+  // Debounced sync of search term to the URL (?q=)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const params = new URLSearchParams(routerLocation.search);
+      if (searchTerm?.trim()) params.set('q', searchTerm.trim());
+      else params.delete('q');
+      navigate({ pathname: routerLocation.pathname, search: params.toString() }, { replace: true });
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   // Live update provider name on search cards when profile changes
   useEffect(() => {
@@ -602,8 +644,18 @@ const SearchPage = () => {
                   placeholder="Search for services, providers, or treatments..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 h-11 rounded-md border border-gray-300 bg-white/90 text-gray-800 placeholder:text-gray-400 shadow-sm transition focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 hover:border-gray-400"
+                  className="w-full pl-9 pr-9 h-12 rounded-2xl bg-white/70 border border-white/60 hover:bg-white focus:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/30 shadow-sm focus:shadow-md transition-all placeholder:text-gray-400"
                 />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
+                    onClick={() => setSearchTerm("")}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               {/* Mobile: Filters toggle */}
               <div className="flex justify-start mt-2 md:mt-3 lg:hidden">
@@ -748,6 +800,50 @@ const SearchPage = () => {
                         <SelectItem value="custom">Custom Range</SelectItem>
                       </SelectContent>
                     </Select>
+                    {priceFilter === 'custom' && (
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor="customPriceFrom" className="text-sm text-gray-600">From (PKR)</Label>
+                          <Input
+                            id="customPriceFrom"
+                            type="number"
+                            min={0}
+                            max={maxPrice}
+                            value={customFrom}
+                            onChange={(e) => setCustomFrom(e.target.value)}
+                            onBlur={commitCustomFrom}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                commitCustomFrom();
+                              }
+                            }}
+                            className="mt-1"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="customPriceTo" className="text-sm text-gray-600">To (PKR)</Label>
+                          <Input
+                            id="customPriceTo"
+                            type="number"
+                            min={0}
+                            max={maxPrice}
+                            value={customTo}
+                            onChange={(e) => setCustomTo(e.target.value)}
+                            onBlur={commitCustomTo}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                commitCustomTo();
+                              }
+                            }}
+                            className="mt-1"
+                            placeholder={String(maxPrice)}
+                          />
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="mt-4 px-2">
                       <div className="relative">
