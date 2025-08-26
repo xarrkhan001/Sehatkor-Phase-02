@@ -1,5 +1,9 @@
 // controllers/profile.controller.js
 import User from '../models/User.js';
+import DoctorService from '../models/DoctorService.js';
+import ClinicService from '../models/ClinicService.js';
+import Medicine from '../models/Medicine.js';
+import LaboratoryTest from '../models/LaboratoryTest.js';
 import cloudinary from '../config/cloudinary.js';
 import streamifier from 'streamifier';
 
@@ -112,6 +116,8 @@ export const updateProfile = async (req, res) => {
     delete updates.resetPasswordToken;
     delete updates.resetPasswordExpire;
 
+    // Keep the previous user doc to compare name changes
+    const before = await User.findById(userId).select('name');
     const user = await User.findByIdAndUpdate(
       userId,
       updates,
@@ -120,6 +126,23 @@ export const updateProfile = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // If the provider's name changed, propagate to all their services
+    try {
+      const prevName = before?.name?.toString?.() || '';
+      const nextName = user?.name?.toString?.() || '';
+      if (prevName && nextName && prevName !== nextName) {
+        await Promise.all([
+          DoctorService.updateMany({ providerId: userId }, { $set: { providerName: nextName } }),
+          ClinicService.updateMany({ providerId: userId }, { $set: { providerName: nextName } }),
+          Medicine.updateMany({ providerId: userId }, { $set: { providerName: nextName } }),
+          LaboratoryTest.updateMany({ providerId: userId }, { $set: { providerName: nextName } }),
+        ]);
+      }
+    } catch (e) {
+      // Do not fail the request if propagation fails; log for diagnostics
+      console.error('Service providerName propagation failed:', e?.message || e);
     }
 
     res.status(200).json({
