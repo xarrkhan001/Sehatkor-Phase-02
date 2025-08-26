@@ -356,6 +356,23 @@ const ProviderProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
+      {/* Profile Hero Header */}
+      <div className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-200 border-b border-gray-200/60">
+        <div className="max-w-7xl mx-auto px-4 py-7">
+          <div className="flex items-center gap-3 justify-center md:justify-start">
+            <span className="inline-flex items-center justify-center p-3 rounded-xl bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-sm">
+              <Award className="w-5 h-5" />
+            </span>
+            <div className="text-center md:text-left">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+                {(providerUser?.name || providerName)} — {meta.label} Profile
+              </h1>
+              <p className="mt-1 text-xs text-gray-600">Official provider profile</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col xl:flex-row gap-8 max-w-7xl mx-auto px-4 py-8">
         {/* Left Sidebar - Provider Information - Shows first on mobile */}
         <div className="w-full xl:w-96 xl:flex-shrink-0 xl:order-1">
