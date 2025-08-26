@@ -591,9 +591,9 @@ const ProviderProfilePage = () => {
             {filteredServices.map((service) => (
               <Card
                 key={service.id}
-                className="group relative shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl border border-gray-100 bg-white hover:border-blue-200 flex flex-col overflow-hidden hover:-translate-y-[3px] ring-1 ring-transparent hover:ring-blue-200/70"
+                className="group relative z-10 shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl border border-gray-100 bg-white hover:border-blue-200 flex flex-col overflow-visible hover:-translate-y-[3px] ring-1 ring-transparent hover:ring-blue-200/70 hover:z-50"
               >
-                <CardContent className="p-0 h-full flex flex-col">
+                <CardContent className="p-0 h-full flex flex-col overflow-visible">
                   {/* Compact header with circular service image */}
                   <div className="p-6 pb-0">
                     <div className="flex items-start justify-between gap-3">
@@ -668,12 +668,14 @@ const ProviderProfilePage = () => {
                         </div>
                       )}
                       {(service as any).providerPhone && (
-                        <ServiceWhatsAppButton 
-                          phoneNumber={(service as any).providerPhone}
-                          serviceName={service.name}
-                          providerName={service.providerName}
-                          providerId={(service as any).providerId}
-                        />
+                        <div className="relative z-50">
+                          <ServiceWhatsAppButton 
+                            phoneNumber={(service as any).providerPhone}
+                            serviceName={service.name}
+                            providerName={service.providerName}
+                            providerId={(service as any).providerId}
+                          />
+                        </div>
                       )}
                     </div>
 
