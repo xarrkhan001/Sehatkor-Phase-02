@@ -34,28 +34,28 @@ export const getAllPublicServices = async (req, res) => {
     if (!hasType || type === "doctor") {
       doctorServices = await applyPaging(
         DoctorService.find({})
-          .populate("providerId", "phone")
+          .populate("providerId", "phone name avatar")
           .sort({ createdAt: -1 })
       ).lean();
     }
     if (!hasType || type === "clinic") {
       clinicServices = await applyPaging(
         ClinicService.find({})
-          .populate("providerId", "phone")
+          .populate("providerId", "phone name avatar")
           .sort({ createdAt: -1 })
       ).lean();
     }
     if (!hasType || type === "pharmacy") {
       pharmacyServices = await applyPaging(
         Medicine.find({})
-          .populate("providerId", "phone")
+          .populate("providerId", "phone name avatar")
           .sort({ createdAt: -1 })
       ).lean();
     }
     if (!hasType || type === "laboratory") {
       laboratoryServices = await applyPaging(
         LaboratoryTest.find({})
-          .populate("providerId", "phone")
+          .populate("providerId", "phone name avatar")
           .sort({ createdAt: -1 })
       ).lean();
     }
@@ -67,6 +67,8 @@ export const getAllPublicServices = async (req, res) => {
         id: service._id,
         providerType: "doctor",
         providerPhone: service.providerId?.phone || null,
+        // ensure latest name overrides any stale providerName on the document
+        providerName: service.providerId?.name || service.providerName,
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
@@ -77,6 +79,7 @@ export const getAllPublicServices = async (req, res) => {
         id: service._id,
         providerType: "clinic",
         providerPhone: service.providerId?.phone || null,
+        providerName: service.providerId?.name || service.providerName,
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
@@ -87,6 +90,7 @@ export const getAllPublicServices = async (req, res) => {
         id: service._id,
         providerType: "pharmacy",
         providerPhone: service.providerId?.phone || null,
+        providerName: service.providerId?.name || service.providerName,
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
@@ -97,6 +101,7 @@ export const getAllPublicServices = async (req, res) => {
         id: service._id,
         providerType: "laboratory",
         providerPhone: service.providerId?.phone || null,
+        providerName: service.providerId?.name || service.providerName,
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
@@ -199,7 +204,7 @@ export const getPublicServiceById = async (req, res) => {
 
     if (ServiceModel) {
       service = await ServiceModel.findById(serviceId)
-        .populate("providerId", "phone")
+        .populate("providerId", "phone name avatar")
         .lean();
     }
 
@@ -228,6 +233,8 @@ export const getPublicServiceById = async (req, res) => {
       id: service._id,
       providerType: type,
       providerPhone: service.providerId?.phone || null,
+      // ensure latest name
+      providerName: service.providerId?.name || service.providerName,
       rating: service.averageRating || 0,
       averageRating: service.averageRating || 0,
       totalRatings: service.totalRatings || 0,
