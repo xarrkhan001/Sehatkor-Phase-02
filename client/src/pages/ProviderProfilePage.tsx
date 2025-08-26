@@ -57,6 +57,15 @@ const ProviderProfilePage = () => {
   const providerName = useMemo(() => services[0]?.providerName || "Provider", [services]);
   const providerType = useMemo(() => services[0]?.providerType || undefined, [services]);
 
+  // Smart display name: show full if short; if long, at least show first word then ellipsis
+  const getDisplayServiceName = (name?: string) => {
+    if (!name) return "Service";
+    const trimmed = name.trim();
+    if (trimmed.length <= 22) return trimmed;
+    const firstWord = trimmed.split(/\s+/)[0];
+    return firstWord + (trimmed.length > firstWord.length ? " …" : "");
+  };
+
   // Normalize avatar URL: if it's relative (e.g., "/uploads/..."), prefix with API base
   const avatarSrc = useMemo(() => {
     const src = providerUser?.avatar || "";
@@ -64,6 +73,13 @@ const ProviderProfilePage = () => {
     if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) return src;
     try { return apiUrl(src); } catch { return src; }
   }, [providerUser?.avatar]);
+
+  // Normalize service image URL similar to avatar handling
+  const getServiceImage = (src?: string) => {
+    if (!src) return undefined;
+    if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) return src;
+    try { return apiUrl(src); } catch { return src; }
+  };
 
   // Filter services based on search and price filters
   const filteredServices = useMemo(() => {
@@ -339,318 +355,454 @@ const ProviderProfilePage = () => {
   const meta = headingByType(providerType);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        {/* Enhanced Header */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 border border-gray-200 shadow-lg">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="flex items-center gap-6">
-                <div className="relative">
-                  <Avatar className="w-20 h-20 ring-2 ring-white shadow-lg">
-                    <AvatarImage
-                      src={avatarSrc}
-                      alt={providerUser?.name || providerName}
-                    />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl font-bold">
-                      {(providerUser?.name || providerName).charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold text-gray-800 mb-2">{providerUser?.name || providerName}</h1>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge className={`text-sm px-3 py-1 ${meta.badgeClass} font-semibold`}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
+      <div className="flex flex-col xl:flex-row gap-8 max-w-7xl mx-auto px-4 py-8">
+        {/* Left Sidebar - Provider Information - Shows first on mobile */}
+        <div className="w-full xl:w-96 xl:flex-shrink-0 xl:order-1">
+          <div className="xl:sticky xl:top-8">
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden md:min-h-[740px] xl:min-h-[880px]">
+              {/* Header with grayish gradient (slightly darker) */}
+              <div className="bg-gradient-to-r from-white via-blue-100/50 to-indigo-100/50 p-8 text-gray-800 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
+                <div className="relative z-10">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="relative mb-4">
+                      <div className="p-1.5 rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500 shadow-2xl">
+                        <Avatar className="w-24 h-24 rounded-full bg-white ring-2 ring-white">
+                          <AvatarImage
+                            src={avatarSrc}
+                            alt={providerUser?.name || providerName}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-white text-gray-700 text-2xl font-bold">
+                            {(providerUser?.name || providerName).charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg">
+                        <Award className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+                    <h1 className="text-2xl font-bold mb-2 text-gray-800">{providerUser?.name || providerName}</h1>
+                    <Badge className="bg-gray-100 text-gray-700 border-gray-200 font-medium px-3 py-1">
                       <User className="w-4 h-4 mr-1" />
                       {meta.label}
                     </Badge>
-                    <Badge variant="outline" className="text-sm px-3 py-1 bg-green-50 text-green-700 border-green-200">
-                      <Award className="w-4 h-4 mr-1" />
-                      Verified Provider
-                    </Badge>
-                  </div>
-                  {providerUser?.specialization && (
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <Badge variant="outline" className="px-2 py-0.5 text-[12px] bg-gray-100 text-gray-700 border-gray-200">
-                        {providerUser.specialization} Specialist
-                      </Badge>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>Active since 2023</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-500" />
-                      <span>{services.length} Services</span>
-                    </div>
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="bg-white rounded-xl p-4 shadow-md border">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">{filteredServices.length}</div>
-                  <div className="text-sm text-gray-600">{filteredServices.length === services.length ? 'Total Services' : `Showing ${filteredServices.length} of ${services.length}`}</div>
+              {/* Provider Details */}
+              <div className="p-6 space-y-6">
+                {/* Verification Status */}
+                <div className="flex items-center justify-center">
+                  <Badge className="bg-green-50 text-green-700 border-green-200 px-4 py-2 font-semibold">
+                    <Award className="w-4 h-4 mr-2" />
+                    Verified Provider
+                  </Badge>
+                </div>
+                {/* Specialization */}
+                {providerUser?.specialization && (
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Specialization</h3>
+                    <p className="text-gray-900 font-medium">{providerUser.specialization} Specialist</p>
+                  </div>
+                )}
+                {/* Contact Information */}
+                {(providerUser?.phone || providerUser?.email) && (
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Contact Information</h3>
+                    <div className="space-y-2">
+                      {providerUser?.phone && (
+                        <div className="flex items-center gap-3">
+                          <Phone className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm text-gray-900">{providerUser.phone}</span>
+                        </div>
+                      )}
+                      {providerUser?.email && (
+                        <div className="flex items-center gap-3">
+                          <User className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm text-gray-900">{providerUser.email}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* Statistics */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-blue-50 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600 mb-1">{services.length}</div>
+                    <div className="text-xs text-blue-700 font-medium">Total Services</div>
+                  </div>
+                  <div className="bg-green-50 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600 mb-1">{filteredServices.length}</div>
+                    <div className="text-xs text-green-700 font-medium">Showing</div>
+                  </div>
+                </div>
+                {/* Member Since */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-700">Member Since</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900">2023</span>
+                  </div>
                 </div>
               </div>
+            </div>
           </div>
         </div>
-      </div>
+        {/* Main Content Area - Shows second on mobile */}
+        <div className="flex-1 min-w-0 xl:order-2">
+          {/* Search and Filter Section */}
+          <div className="bg-gradient-to-r from-white via-blue-50/30 to-indigo-50/30 rounded-3xl shadow-xl border border-gray-100/50 backdrop-blur-sm p-6 md:p-8 mb-8 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full -translate-y-16 translate-x-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-200/20 to-cyan-200/20 rounded-full translate-y-12 -translate-x-12"></div>
+            <div className="relative z-10">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                  <Search className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-800">Find Services</h2>
+                  <p className="text-sm text-gray-600">Search and filter through available services</p>
+                </div>
+              </div>
 
-      {/* Search and Filter Section */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-8">
-        <div className="flex-1 max-w-sm">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Search services..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 text-sm bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-            />
+              <div className="space-y-6">
+                {/* Search Input */}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative">
+                    <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors duration-200 group-focus-within:text-blue-500" />
+                    <Input
+                      type="text"
+                      placeholder="Search for medical services, treatments, or specialties..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-14 pr-6 h-14 text-base bg-white/80 backdrop-blur-sm border-2 border-gray-200/50 rounded-2xl shadow-lg focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 transition-all duration-300 focus:bg-white focus:shadow-xl placeholder:text-gray-400"
+                    />
+                  </div>
+                </div>
+                {/* Filter Section */}
+                <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/50 shadow-inner">
+                  <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+                    {/* Price Filter */}
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg shadow-md">
+                          <Filter className="text-white w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">Price Range</span>
+                      </div>
+                      <Select value={priceFilter} onValueChange={setPriceFilter}>
+                        <SelectTrigger className="w-full lg:w-[180px] h-12 text-sm bg-white/80 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl shadow-md focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition-all duration-200 hover:shadow-lg">
+                          <SelectValue placeholder="Select price range" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/95 backdrop-blur-md border-gray-200/50 shadow-2xl rounded-xl">
+                          <SelectItem value="all" className="hover:bg-blue-50">All Prices</SelectItem>
+                          <SelectItem value="free" className="hover:bg-green-50">Free</SelectItem>
+                          <SelectItem value="0-500" className="hover:bg-blue-50">PKR 0 - 500</SelectItem>
+                          <SelectItem value="500-1000" className="hover:bg-blue-50">PKR 500 - 1,000</SelectItem>
+                          <SelectItem value="1000-2000" className="hover:bg-blue-50">PKR 1,000 - 2,000</SelectItem>
+                          <SelectItem value="2000-5000" className="hover:bg-blue-50">PKR 2,000 - 5,000</SelectItem>
+                          <SelectItem value="5000+" className="hover:bg-blue-50">PKR 5,000+</SelectItem>
+                          <SelectItem value="custom" className="hover:bg-purple-50">Custom Range</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Custom Range Inputs */}
+                    {priceFilter === "custom" && (
+                      <div className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200/50">
+                        <span className="text-sm font-medium text-purple-700">Custom:</span>
+                        <Input
+                          type="number"
+                          placeholder="Min"
+                          value={minPrice}
+                          onChange={(e) => setMinPrice(e.target.value)}
+                          className="w-28 h-10 text-sm bg-white border-2 border-purple-200 rounded-lg shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
+                        />
+                        <span className="text-purple-400 font-bold">—</span>
+                        <Input
+                          type="number"
+                          placeholder="Max"
+                          value={maxPrice}
+                          onChange={(e) => setMaxPrice(e.target.value)}
+                          className="w-28 h-10 text-sm bg-white border-2 border-purple-200 rounded-lg shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-xl p-4 border border-gray-200/50">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-gray-600">
+                      Showing <span className="font-semibold text-blue-600">{filteredServices.length}</span> of <span className="font-semibold text-gray-800">{services.length}</span> services
+                    </span>
+                  </div>
+                  {(searchQuery || priceFilter !== "all") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setPriceFilter("all");
+                        setMinPrice("");
+                        setMaxPrice("");
+                      }}
+                      className="text-xs text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                    >
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
-          {/* Price Filter */}
-          <div className="flex gap-2 items-center">
-            <Filter className="text-gray-400 w-4 h-4" />
-            <Select value={priceFilter} onValueChange={setPriceFilter}>
-              <SelectTrigger className="w-[140px] h-10 text-sm bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
-                <SelectValue placeholder="Price Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Prices</SelectItem>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="0-500">PKR 0-500</SelectItem>
-                <SelectItem value="500-1000">PKR 500-1K</SelectItem>
-                <SelectItem value="1000-2000">PKR 1K-2K</SelectItem>
-                <SelectItem value="2000-5000">PKR 2K-5K</SelectItem>
-                <SelectItem value="5000+">PKR 5K+</SelectItem>
-                <SelectItem value="custom">Custom Range</SelectItem>
-              </SelectContent>
-            </Select>
+
+          {/* No Results Message */}
+          {filteredServices.length === 0 && services.length > 0 && (
+            <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-gray-100">
+              <div className="text-gray-300 text-8xl mb-6">🔍</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">No services found</h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">Try adjusting your search or filter criteria to find what you're looking for</p>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchQuery("");
+                  setPriceFilter("all");
+                  setMinPrice("");
+                  setMaxPrice("");
+                }}
+                className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 px-6 py-3 rounded-xl"
+              >
+                Clear All Filters
+              </Button>
+            </div>
+          )}
+
+          <div className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-2">
+            {filteredServices.map((service) => (
+              <Card
+                key={service.id}
+                className="group relative shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl border border-gray-100 bg-white hover:border-blue-200 flex flex-col overflow-hidden hover:-translate-y-[3px] ring-1 ring-transparent hover:ring-blue-200/70"
+              >
+                <CardContent className="p-0 h-full flex flex-col">
+                  {/* Compact header with circular service image */}
+                  <div className="p-6 pb-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-4 min-w-0">
+                        <Avatar className="w-24 h-24 md:w-28 md:h-28 ring-2 ring-white shadow-md border border-gray-200">
+                          <AvatarImage
+                            src={getServiceImage((service as any).image) || '/placeholder.svg'}
+                            alt={service.name}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = '/placeholder.svg';
+                            }}
+                          />
+                          <AvatarFallback className="text-sm">{service.name?.[0]?.toUpperCase?.() || 'S'}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[1.25rem] md:text-2xl font-semibold text-gray-900 mb-1 truncate">
+                            {getDisplayServiceName(service.name)}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-gray-500 font-medium truncate max-w-[12rem] md:max-w-[16rem]">
+                              {providerUser?.name || service.providerName}
+                            </p>
+                            <Badge className="bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md">
+                              {(service as any).category || 'Service'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-5 pt-3 pb-5 flex-1 flex flex-col">
+                    <div className="my-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                    
+                    <div className="flex items-center justify-between mb-3 gap-3">
+                      <div className="flex items-center gap-2">
+                        <Badge className={`text-xs px-2 py-1 ${meta.badgeClass} font-medium`}>
+                          <User className="w-3 h-3 mr-1" />
+                          {meta.label}
+                        </Badge>
+                        <Badge className="bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md">
+                          {(service as any).category || 'Service'}
+                        </Badge>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-sm md:text-base font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-none">
+                          {(service as any).price === 0 ? 'PKR 0' : `PKR ${(service as any).price?.toLocaleString?.() || (service as any).price}`}
+                        </div>
+                        <div className="text-[10px] text-gray-400 leading-none">per service</div>
+                      </div>
+                    </div>
+
+                    <p className="text-[0.95rem] text-gray-700 line-clamp-3 mt-3">{service.description || 'No description provided.'}</p>
+
+                    <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
+                      <RatingBadge 
+                        rating={(service as any).averageRating ?? (service as any).rating ?? 0} 
+                        totalRatings={(service as any).totalRatings || 0}
+                        ratingBadge={(service as any).ratingBadge}
+                        yourBadge={(service as any).myBadge || null}
+                      />
+                      <div className="flex items-center gap-1.5 text-gray-500">
+                        <MapPin className="w-4 h-4" />
+                        <span className="font-medium">{(service as any).city || (service as any).location}</span>
+                      </div>
+                      {service.providerType === 'doctor' && (
+                        <div className="flex items-center gap-1.5 text-green-600">
+                          <Home className="w-4 h-4" />
+                          <span className="font-medium">Home service</span>
+                        </div>
+                      )}
+                      {(service as any).providerPhone && (
+                        <ServiceWhatsAppButton 
+                          phoneNumber={(service as any).providerPhone}
+                          serviceName={service.name}
+                          providerName={service.providerName}
+                          providerId={(service as any).providerId}
+                        />
+                      )}
+                    </div>
+
+                    <div className="mt-auto space-y-2">
+                      <Button 
+                        className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-200 rounded-xl font-semibold py-4 text-[15px]"
+                        onClick={() => handleBookNow(service)}
+                      >
+                        <Clock className="w-5 h-5 mr-2" /> Book Now
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowLocationMap(service.id)}
+                          className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800 rounded-xl font-medium py-3 text-[15px]"
+                        >
+                          <MapPin className="w-5 h-5 mr-1" /> Location
+                        </Button>
+                        {user && user.role === 'patient' ? (
+                          <Button
+                            variant="outline"
+                            onClick={() => handleRateService(service)}
+                            className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border-purple-200 hover:from-purple-100 hover:to-pink-100 hover:text-purple-800 rounded-xl font-medium py-3 text-[15px]"
+                          >
+                            <Star className="w-5 h-5 mr-1" /> Rate
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            onClick={() => toast.info('Login as patient to rate services')}
+                            className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border-purple-200 hover:from-purple-100 hover:to-pink-100 hover:text-purple-800 rounded-xl font-medium py-3 text-[15px]"
+                          >
+                            <Star className="w-5 h-5 mr-1" /> Rate
+                          </Button>
+                        )}
+                      </div>
+                      <Button
+                        variant="secondary"
+                        onClick={() => navigate(`/service/${service.id}`, { state: { service } })}
+                        className="w-full rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 py-3 text-[15px]"
+                      >
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          
-          {/* Custom Range Inputs */}
-          {priceFilter === "custom" && (
-            <div className="flex gap-2 items-center">
-              <Input
-                type="number"
-                placeholder="Min"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                className="w-20 h-10 text-sm bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-              />
-              <span className="text-gray-400">-</span>
-              <Input
-                type="number"
-                placeholder="Max"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-20 h-10 text-sm bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-              />
+
+          {services.length > 0 && hasMore && (
+            <div className="flex justify-center mt-8">
+              <Button 
+                onClick={loadMore} 
+                disabled={isLoading} 
+                variant="outline"
+                className="bg-white border-gray-200 hover:bg-gray-50 px-8 py-3 rounded-xl font-medium shadow-sm"
+              >
+                {isLoading ? 'Loading...' : 'Load More Services'}
+              </Button>
+            </div>
+          )}
+
+          {services.length === 0 && !isLoading && (
+            <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
+              <div className="text-gray-300 text-8xl mb-6">📋</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">No services available</h3>
+              <p className="text-gray-500 max-w-md mx-auto">This provider hasn't added any services yet. Please check back later.</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* No Results Message */}
-      {filteredServices.length === 0 && services.length > 0 && (
-        <div className="text-center py-12 bg-white rounded-xl shadow-md border border-gray-200">
-          <div className="text-gray-400 text-6xl mb-4">🔍</div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No services found</h3>
-          <p className="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setSearchQuery("");
-              setPriceFilter("all");
-              setMinPrice("");
-              setMaxPrice("");
-            }}
-          >
-            Clear Filters
-          </Button>
-        </div>
-      )}
-
-        {/* Services Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredServices.map((service) => (
-            <Card key={service.id} className="shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 h-full flex flex-col">
-              <CardContent className="p-5 h-full flex flex-col">
-                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
-                  {service.image ? (
-                    <img
-                      src={(service as any).image}
-                      alt={service.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <span className="text-gray-400 text-4xl">⚕️</span>
-                  )}
-                </div>
-
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      {service.name}
-                      <Badge variant="outline" className={`text-xs px-1.5 py-0.5 ${meta.badgeClass}`}>{meta.label}</Badge>
-                    </h3>
-                    <p className="text-sm text-gray-500">{providerUser?.name || service.providerName}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-primary">
-                      {(service as any).price === 0 ? 'Free' : `PKR ${(service as any).price?.toLocaleString?.() || (service as any).price}`}
-                    </div>
-                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600 border-gray-100">
-                      {(service as any).category || 'Service'}
-                    </Badge>
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{service.description}</p>
-
-                <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                  <RatingBadge 
-                    rating={(service as any).averageRating ?? (service as any).rating ?? 0} 
-                    totalRatings={(service as any).totalRatings || 0}
-                    ratingBadge={(service as any).ratingBadge}
-                    yourBadge={(service as any).myBadge || null}
-                  />
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <MapPin className="w-4 h-4" />
-                    <span>{(service as any).city || (service as any).location}</span>
-                  </div>
-                  {service.providerType === 'doctor' && (
-                    <div className="flex items-center gap-1 text-green-600">
-                      <Home className="w-4 h-4" />
-                      <span>Home service</span>
-                    </div>
-                  )}
-                  {(service as any).providerPhone && (
-                    <ServiceWhatsAppButton 
-                      phoneNumber={(service as any).providerPhone}
-                      serviceName={service.name}
-                      providerName={service.providerName}
-                      providerId={(service as any).providerId}
-                    />
-                  )}
-                </div>
-
-                <div className="mt-auto flex flex-wrap gap-2">
-                  <Button 
-                    className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-                    onClick={() => handleBookNow(service)}
-                  >
-                    <Clock className="w-4 h-4 mr-1" /> Book Now
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowLocationMap(service.id)}
-                    className="flex-1 min-w-[100px] bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
-                  >
-                    <MapPin className="w-4 h-4 mr-1" /> Location
-                  </Button>
-                  {user && user.role === 'patient' && (
-                    <Button
-                      variant="outline"
-                      onClick={() => handleRateService(service)}
-                      className="flex-1 min-w-[100px]"
-                    >
-                      <Star className="w-4 h-4 mr-1" /> Rate
-                    </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate(`/service/${service.id}`, { state: { service } })}
-                    className="flex-1 min-w-[100px]"
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {services.length > 0 && hasMore && (
-          <div className="col-span-full flex justify-center mt-8">
-            <Button onClick={loadMore} disabled={isLoading} variant="outline">
-              {isLoading ? 'Loading...' : 'Load more'}
-            </Button>
-          </div>
-        )}
-
-        {services.length === 0 && !isLoading && (
-          <div className="text-center text-gray-600 py-16">No services found for this provider.</div>
-        )}
-
-        {/* Location Map Modal */}
-        {showLocationMap && currentMapService && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-sm w-full">
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800">{currentMapService.name}</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowLocationMap(null)}
-                    className="h-6 w-6 p-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+      {/* Location Map Modal */}
+      {showLocationMap && currentMapService && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-xl font-bold text-gray-800">{currentMapService.name}</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowLocationMap(null)}
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Location</p>
+                  <p className="text-sm text-gray-900">{currentMapService.address}</p>
                 </div>
                 
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Location</p>
-                    <p className="text-sm text-gray-600">{currentMapService.address}</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Address</p>
-                    <p className="text-sm text-gray-600">{currentMapService.providerName}</p>
-                  </div>
-                  
-                  {((currentMapService as any).googleMapLink) && (
-                    <Button 
-                      className="w-full bg-teal-500 hover:bg-teal-600 text-white"
-                      onClick={() => window.open((currentMapService as any).googleMapLink as string, '_blank')}
-                    >
-                      <MapPin className="w-4 h-4 mr-2" />
-                      Open in Google Maps
-                    </Button>
-                  )}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Provider</p>
+                  <p className="text-sm text-gray-900">{currentMapService.providerName}</p>
                 </div>
+                
+                {((currentMapService as any).googleMapLink) && (
+                  <Button 
+                    className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white rounded-xl py-3 font-medium shadow-lg"
+                    onClick={() => window.open((currentMapService as any).googleMapLink as string, '_blank')}
+                  >
+                    <MapPin className="w-5 h-5 mr-2" />
+                    Open in Google Maps
+                  </Button>
+                )}
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Rating Modal */}
-        {ratingModalOpen && selectedRatingService && (
-          <RatingModal
-            isOpen={ratingModalOpen}
-            onClose={() => {
-              setRatingModalOpen(false);
-              setSelectedRatingService(null);
-            }}
-            serviceId={selectedRatingService.id}
-            serviceName={selectedRatingService.name}
-            serviceType={selectedRatingService.providerType}
-          />
-        )}
-      </div>
+      {/* Rating Modal */}
+      {ratingModalOpen && selectedRatingService && (
+        <RatingModal
+          isOpen={ratingModalOpen}
+          onClose={() => {
+            setRatingModalOpen(false);
+            setSelectedRatingService(null);
+          }}
+          serviceId={selectedRatingService.id}
+          serviceName={selectedRatingService.name}
+          serviceType={selectedRatingService.providerType}
+        />
+      )}
     </div>
   );
 };
