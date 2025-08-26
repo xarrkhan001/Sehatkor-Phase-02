@@ -159,6 +159,18 @@ const SearchPage = () => {
     };
   }, [socket]);
 
+  // If the logged-in user's name changes, update provider names of their services in-place
+  useEffect(() => {
+    if (!user?.id) return;
+    setAllServices(prev => prev.map(s => {
+      const pid = (s as any)._providerId;
+      if (pid && String(pid) === String(user.id)) {
+        return { ...s, provider: user.name || s.provider } as SearchService;
+      }
+      return s;
+    }));
+  }, [user?.id, user?.name]);
+
   // Auto-advance variant/base slides every 10 seconds for services with multiple slides
   useEffect(() => {
     if (!allServices.length) return;
@@ -260,7 +272,7 @@ const SearchPage = () => {
         price: service.price,
         rating: service.averageRating || service.rating || 0,
         ratingBadge: (service as any).ratingBadge || null,
-        provider: service.providerName,
+        provider: (user && String((service as any).providerId) === String(user.id)) ? (user.name || service.providerName) : service.providerName,
         location: service.city || "Karachi",
         type: mapServiceTypeToSearch(service),
         homeService: service.providerType === 'doctor',
@@ -291,8 +303,8 @@ const SearchPage = () => {
 
     // Sort: own services first, then by rating badge priority, then by rating (highest first), then by creation date
     formattedRealServices.sort((a: any, b: any) => {
-      const aOwn = a._providerId && user?.id && a._providerId === user.id;
-      const bOwn = b._providerId && user?.id && b._providerId === user.id;
+      const aOwn = a._providerId && user?.id && String(a._providerId) === String(user.id);
+      const bOwn = b._providerId && user?.id && String(b._providerId) === String(user.id);
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
       // Badge priority: excellent > good > fair > others
       const rank = (s: any) => {
@@ -383,7 +395,7 @@ const SearchPage = () => {
       if (!pid) return;
       setAllServices(prev => prev.map(s => {
         const serviceProviderId = (s as any)._providerId;
-        if (serviceProviderId && serviceProviderId === pid) {
+        if (serviceProviderId && String(serviceProviderId) === String(pid)) {
           const next: any = { ...s };
           if (typeof detail.name === 'string') next.provider = detail.name;
           return next as SearchService;
@@ -425,8 +437,8 @@ const SearchPage = () => {
 
     // User's own items first (newest first), then other real items (newest), then mock
     return filtered.sort((a: any, b: any) => {
-      const aOwn = a._providerId && user?.id && a._providerId === user.id;
-      const bOwn = b._providerId && user?.id && b._providerId === user.id;
+      const aOwn = a._providerId && user?.id && String(a._providerId) === String(user.id);
+      const bOwn = b._providerId && user?.id && String(b._providerId) === String(user.id);
       if (aOwn !== bOwn) return aOwn ? -1 : 1;
       if (a.isReal !== b.isReal) return a.isReal ? -1 : 1;
       // Badge priority: excellent > good > fair > others

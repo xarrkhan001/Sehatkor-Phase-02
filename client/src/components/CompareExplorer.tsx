@@ -92,32 +92,36 @@ const CompareExplorer = () => {
       try {
         setLoading(true);
         const res = await ServiceManager.fetchPublicServices({ limit: 500 });
-        const unified: Unified[] = (res.services || []).map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          description: s.description,
-          price: s.price,
-          rating: (s as any)?.averageRating || (s as any)?.rating || 0,
-          location: [s.detailAddress, s.city].filter(Boolean).join(', ') || 'Location not provided',
-          city: s.city,
-          detailAddress: s.detailAddress,
-          googleMapLink: s.googleMapLink,
-          provider: s.providerName,
-          image: (s as any)?.image,
-          type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : (s as any)?.category === "Surgery" ? "Surgery" : "Treatment",
-          createdAt: (s as any)?.createdAt,
-          updatedAt: (s as any)?.updatedAt,
-          ratingBadge: (s as any)?.ratingBadge || null,
-          providerPhone: (s as any)?.providerPhone,
-          _providerId: (s as any)?.providerId,
-          _providerType: (s as any)?.providerType,
-          totalRatings: (s as any)?.totalRatings || 0,
-          timeLabel: (s as any)?.timeLabel,
-          startTime: (s as any)?.startTime,
-          endTime: (s as any)?.endTime,
-          days: (s as any)?.days,
-          variants: (s as any)?.variants || [],
-        }));
+        const unified: Unified[] = (res.services || []).map((s: any) => {
+          const isOwn = String((s as any)?.providerId) === String((user as any)?.id || '');
+          const resolvedProviderName = isOwn ? ((user as any)?.name || (s as any)?.providerName) : (s as any)?.providerName;
+          return {
+            id: s.id,
+            name: s.name,
+            description: s.description,
+            price: s.price,
+            rating: (s as any)?.averageRating || (s as any)?.rating || 0,
+            location: [s.detailAddress, s.city].filter(Boolean).join(', ') || 'Location not provided',
+            city: s.city,
+            detailAddress: s.detailAddress,
+            googleMapLink: s.googleMapLink,
+            provider: resolvedProviderName,
+            image: (s as any)?.image,
+            type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : (s as any)?.category === "Surgery" ? "Surgery" : "Treatment",
+            createdAt: (s as any)?.createdAt,
+            updatedAt: (s as any)?.updatedAt,
+            ratingBadge: (s as any)?.ratingBadge || null,
+            providerPhone: (s as any)?.providerPhone,
+            _providerId: (s as any)?.providerId,
+            _providerType: (s as any)?.providerType,
+            totalRatings: (s as any)?.totalRatings || 0,
+            timeLabel: (s as any)?.timeLabel,
+            startTime: (s as any)?.startTime,
+            endTime: (s as any)?.endTime,
+            days: (s as any)?.days,
+            variants: (s as any)?.variants || [],
+          } as Unified;
+        });
         if (isMounted) setServices(unified);
       } catch (e) {
         console.error("Failed to fetch services for CompareExplorer", e);
@@ -127,7 +131,36 @@ const CompareExplorer = () => {
       }
     })();
     return () => { isMounted = false; };
+  }, [user?.id, user?.name]);
+
+  // React to live provider profile updates (e.g., name change) and patch visible cards immediately
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { providerId: string; name?: string } | undefined;
+      if (!detail) return;
+      setServices(prev => prev.map(svc => {
+        const pid = (svc as any)._providerId;
+        if (String(pid) === String(detail.providerId)) {
+          return { ...svc, provider: detail.name || svc.provider } as Unified;
+        }
+        return svc;
+      }));
+    };
+    window.addEventListener('provider_profile_updated', handler as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handler as EventListener);
   }, []);
+
+  // Fallback: if current user's name changes, patch own cards
+  useEffect(() => {
+    if (!user?.id || !user?.name) return;
+    setServices(prev => prev.map(svc => {
+      const pid = (svc as any)._providerId;
+      if (String(pid) === String(user.id)) {
+        return { ...svc, provider: user.name } as Unified;
+      }
+      return svc;
+    }));
+  }, [user?.id, user?.name]);
 
   const allItems: Unified[] = useMemo(() => services, [services]);
 
