@@ -44,35 +44,39 @@ const HospitalsPage = () => {
           limit: 6,
         });
         if (!isMounted) return;
-        const mapped = services.map((service: any) => ({
-          id: service.id,
-          name: service.name,
-          description: service.description,
-          price: service.price,
-          rating: service.averageRating || service.rating || 0,
-          location: (service as any).city || "Karachi",
-          type: service.category === "Surgery" ? "Surgery" : "Treatment",
-          homeService: false,
-          image: service.image,
-          provider: (service as any).providerName || "Hospital",
-          createdAt: (service as any).createdAt,
-          _providerId: (service as any).providerId,
-          _providerType: ((service as any).providerType === 'hospital' ? 'clinic' : (service as any).providerType) || 'clinic',
-          googleMapLink: (service as any).googleMapLink,
-          city: (service as any).city,
-          detailAddress: (service as any).detailAddress,
-          providerPhone: (service as any).providerPhone,
-          totalRatings: (service as any).totalRatings,
-          ratingBadge: (service as any).ratingBadge || null,
-          ...(function(){
-            try {
-              const uid = user?.id || (user as any)?._id || 'anon';
-              const key = `myRating:${uid}:clinic:${service.id}`;
-              const my = localStorage.getItem(key) as 'excellent'|'good'|'fair'|'poor'|null;
-              return my ? { myBadge: my } : {};
-            } catch { return {}; }
-          })(),
-        }) as unknown as Service);
+        const mapped = services.map((service: any) => {
+          const isOwn = String((service as any).providerId) === String(user?.id || '');
+          const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Hospital') : ((service as any).providerName || 'Hospital');
+          return ({
+            id: service.id,
+            name: service.name,
+            description: service.description,
+            price: service.price,
+            rating: service.averageRating || service.rating || 0,
+            location: (service as any).city || "Karachi",
+            type: service.category === "Surgery" ? "Surgery" : "Treatment",
+            homeService: false,
+            image: service.image,
+            provider: resolvedProviderName,
+            createdAt: (service as any).createdAt,
+            _providerId: (service as any).providerId,
+            _providerType: ((service as any).providerType === 'hospital' ? 'clinic' : (service as any).providerType) || 'clinic',
+            googleMapLink: (service as any).googleMapLink,
+            city: (service as any).city,
+            detailAddress: (service as any).detailAddress,
+            providerPhone: (service as any).providerPhone,
+            totalRatings: (service as any).totalRatings,
+            ratingBadge: (service as any).ratingBadge || null,
+            ...(function(){
+              try {
+                const uid = user?.id || (user as any)?._id || 'anon';
+                const key = `myRating:${uid}:clinic:${service.id}`;
+                const my = localStorage.getItem(key) as 'excellent'|'good'|'fair'|'poor'|null;
+                return my ? { myBadge: my } : {};
+              } catch { return {}; }
+            })(),
+          }) as unknown as Service;
+        });
         setHospitalServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
           for (const s of mapped) byId.set(s.id, s);
@@ -112,7 +116,7 @@ const HospitalsPage = () => {
     setPage(1);
     loadPage(1);
     return () => { isMounted = false; };
-  }, [user?.id]);
+  }, [user?.id, user?.name]);
 
   // Backfill exact prices for zero-priced cards
   useEffect(() => {
@@ -189,6 +193,35 @@ const HospitalsPage = () => {
     return () => window.removeEventListener('my_rating_updated', handler as EventListener);
   }, []);
 
+  // React to live provider profile updates and patch visible cards
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { providerId: string; name?: string } | undefined;
+      if (!detail) return;
+      setHospitalServices(prev => prev.map(s => {
+        const pid = (s as any)._providerId;
+        if (String(pid) === String(detail.providerId)) {
+          return { ...s, provider: detail.name || s.provider } as any;
+        }
+        return s;
+      }));
+    };
+    window.addEventListener('provider_profile_updated', handler as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handler as EventListener);
+  }, []);
+
+  // Fallback: when current user's name changes, patch own cards
+  useEffect(() => {
+    if (!user?.id || !user?.name) return;
+    setHospitalServices(prev => prev.map(s => {
+      const pid = (s as any)._providerId;
+      if (String(pid) === String(user.id)) {
+        return { ...s, provider: user.name } as any;
+      }
+      return s;
+    }));
+  }, [user?.id, user?.name]);
+
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
     const next = page + 1;
@@ -196,27 +229,31 @@ const HospitalsPage = () => {
     setIsLoading(true);
     try {
       const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'clinic', page: next, limit: 9 });
-      const mapped = services.map((service: any) => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        rating: service.averageRating || service.rating || 0,
-        location: (service as any).city || "Karachi",
-        type: service.category === "Surgery" ? "Surgery" : "Treatment",
-        homeService: false,
-        image: service.image,
-        provider: (service as any).providerName || "Hospital",
-        createdAt: (service as any).createdAt,
-        _providerId: (service as any).providerId,
-        _providerType: ((service as any).providerType === 'hospital' ? 'clinic' : (service as any).providerType) || 'clinic',
-        googleMapLink: (service as any).googleMapLink,
-        city: (service as any).city,
-        detailAddress: (service as any).detailAddress,
-        providerPhone: (service as any).providerPhone,
-        totalRatings: (service as any).totalRatings,
-        ratingBadge: (service as any).ratingBadge || null,
-      }) as unknown as Service);
+      const mapped = services.map((service: any) => {
+        const isOwn = String((service as any).providerId) === String(user?.id || '');
+        const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Hospital') : ((service as any).providerName || 'Hospital');
+        return ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          rating: service.averageRating || service.rating || 0,
+          location: (service as any).city || "Karachi",
+          type: service.category === "Surgery" ? "Surgery" : "Treatment",
+          homeService: false,
+          image: service.image,
+          provider: resolvedProviderName,
+          createdAt: (service as any).createdAt,
+          _providerId: (service as any).providerId,
+          _providerType: ((service as any).providerType === 'hospital' ? 'clinic' : (service as any).providerType) || 'clinic',
+          googleMapLink: (service as any).googleMapLink,
+          city: (service as any).city,
+          detailAddress: (service as any).detailAddress,
+          providerPhone: (service as any).providerPhone,
+          totalRatings: (service as any).totalRatings,
+          ratingBadge: (service as any).ratingBadge || null,
+        }) as unknown as Service;
+      });
       setHospitalServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
         for (const s of mapped) byId.set(s.id, s);

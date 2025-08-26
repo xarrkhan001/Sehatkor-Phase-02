@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ServiceManager, { Service } from "@/lib/serviceManager";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SearchService {
   id: string;
@@ -47,6 +48,7 @@ type SearchServicesProps = {
 const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light = false }: SearchServicesProps) => {
   const navigate = useNavigate();
   const locationHook = useLocation();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -93,7 +95,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       const pid = detail.providerId || detail.id;
       if (!pid) return;
       setRealServices(prev => prev.map(s => {
-        if (s.providerId && s.providerId === pid) {
+        if (s.providerId && String(s.providerId) === String(pid)) {
           return { ...s, providerName: typeof detail.name === 'string' ? detail.name : s.providerName };
         }
         return s;
@@ -102,6 +104,12 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     window.addEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
     return () => window.removeEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
   }, []);
+
+  // Fallback: if logged-in user's name changes, patch their own services in place
+  useEffect(() => {
+    if (!user?.id) return;
+    setRealServices(prev => prev.map(s => String(s.providerId) === String(user.id) ? { ...s, providerName: user.name || s.providerName } : s));
+  }, [user?.name, user?.id]);
 
   const mapServices = (services: Service[]): SearchService[] => {
     return (services || []).map((s: Service) => ({
@@ -112,7 +120,8 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       icon: getServiceIcon(s),
       image: (s as any).image,
       variants: Array.isArray((s as any).variants) ? (s as any).variants : [],
-      providerName: s.providerName,
+      // Override provider name for logged-in user's own services
+      providerName: (user && String(s.providerId) === String(user.id) ? (user.name || s.providerName) : s.providerName),
       providerId: s.providerId,
       city: (s as any).city,
       providerType: s.providerType,

@@ -49,32 +49,36 @@ const DoctorsPage = () => {
           disease: initialDisease || undefined,
         });
         if (!isMounted) return;
-        const mapped = services.map((service: any) => ({
-          id: service.id,
-          name: service.name,
-          description: service.description,
-          price: service.price,
-          rating: service.averageRating || service.rating || 0,
-          location: (service as any).city || "Karachi",
-          type: service.category === "Surgery" ? "Surgery" : "Treatment",
-          homeService: true,
-          image: service.image,
-          provider: (service as any).providerName || "Doctor",
-          createdAt: (service as any).createdAt,
-          _providerId: (service as any).providerId,
-          googleMapLink: (service as any).googleMapLink,
-          detailAddress: (service as any).detailAddress,
-          providerPhone: (service as any).providerPhone,
-          totalRatings: (service as any).totalRatings || 0,
-          ratingBadge: (service as any).ratingBadge || null,
-          ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
-            ? { diseases: (service as any).diseases }
-            : {}),
-          // Preserve variants from backend if available
-          ...(Array.isArray((service as any).variants) && (service as any).variants.length > 0
-            ? { variants: (service as any).variants }
-            : {}),
-        }) as Service);
+        const mapped = services.map((service: any) => {
+          const isOwn = String((service as any).providerId) === String(user?.id || '');
+          const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Doctor') : ((service as any).providerName || 'Doctor');
+          return ({
+            id: service.id,
+            name: service.name,
+            description: service.description,
+            price: service.price,
+            rating: service.averageRating || service.rating || 0,
+            location: (service as any).city || "Karachi",
+            type: service.category === "Surgery" ? "Surgery" : "Treatment",
+            homeService: true,
+            image: service.image,
+            provider: resolvedProviderName,
+            createdAt: (service as any).createdAt,
+            _providerId: (service as any).providerId,
+            googleMapLink: (service as any).googleMapLink,
+            detailAddress: (service as any).detailAddress,
+            providerPhone: (service as any).providerPhone,
+            totalRatings: (service as any).totalRatings || 0,
+            ratingBadge: (service as any).ratingBadge || null,
+            ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
+              ? { diseases: (service as any).diseases }
+              : {}),
+            // Preserve variants from backend if available
+            ...(Array.isArray((service as any).variants) && (service as any).variants.length > 0
+              ? { variants: (service as any).variants }
+              : {}),
+          }) as Service;
+        });
         setDoctorServices(prev => {
           const byId = new Map(prev.map(s => [s.id, s] as const));
           for (const s of mapped) byId.set(s.id, s);
@@ -83,7 +87,6 @@ const DoctorsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            // Badge priority: excellent > good > fair > others
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
               if (badge === 'excellent') return 3;
@@ -115,7 +118,7 @@ const DoctorsPage = () => {
     setPage(1);
     loadPage(1);
     return () => { isMounted = false; };
-  }, [user?.id, initialDisease]);
+  }, [user?.id, user?.name, initialDisease]);
 
   useEffect(() => {
     if (!socket) return;
@@ -158,37 +161,34 @@ const DoctorsPage = () => {
     };
   }, [socket]);
 
-  // Auto-advance variant/base slides every 10 seconds for services with multiple slides
-  useEffect(() => {
-    if (!doctorServices.length) return;
-    const timer = setInterval(() => {
-      setActiveVariantIndex(prev => {
-        const next: Record<string, number> = { ...prev };
-        for (const svc of doctorServices) {
-          const variants = (svc as any).variants as any[] | undefined;
-          const total = 1 + (Array.isArray(variants) ? variants.length : 0);
-          if (total > 1) {
-            const curr = prev[svc.id] ?? 0;
-            next[svc.id] = (curr + 1) % total;
-          }
-        }
-        return next;
-      });
-    }, 10000);
-    return () => clearInterval(timer);
-  }, [doctorServices]);
-
-  // Listen for per-user immediate badge updates
+  // React to live provider profile updates (e.g., name change) and patch visible cards immediately
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
+      const detail = e?.detail as { providerId: string; name?: string } | undefined;
       if (!detail) return;
-      if (detail.serviceType !== 'doctor') return;
-      setDoctorServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));
+      setDoctorServices(prev => prev.map(s => {
+        const pid = (s as any)._providerId;
+        if (String(pid) === String(detail.providerId)) {
+          return { ...s, provider: detail.name || s.provider } as any;
+        }
+        return s;
+      }));
     };
-    window.addEventListener('my_rating_updated', handler as EventListener);
-    return () => window.removeEventListener('my_rating_updated', handler as EventListener);
+    window.addEventListener('provider_profile_updated', handler as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handler as EventListener);
   }, []);
+
+  // Fallback: if current user's name changes, patch own cards
+  useEffect(() => {
+    if (!user?.id || !user?.name) return;
+    setDoctorServices(prev => prev.map(s => {
+      const pid = (s as any)._providerId;
+      if (String(pid) === String(user.id)) {
+        return { ...s, provider: user.name } as any;
+      }
+      return s;
+    }));
+  }, [user?.id, user?.name]);
 
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
@@ -198,28 +198,32 @@ const DoctorsPage = () => {
     setIsLoading(true);
     try {
       const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 9, disease: initialDisease || undefined });
-      const mapped = services.map((service: any) => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        rating: service.averageRating || service.rating || 0,
-        location: (service as any).city || "Karachi",
-        type: service.category === "Surgery" ? "Surgery" : "Treatment",
-        homeService: true,
-        image: service.image,
-        provider: (service as any).providerName || "Doctor",
-        createdAt: (service as any).createdAt,
-        _providerId: (service as any).providerId,
-        googleMapLink: (service as any).googleMapLink,
-        detailAddress: (service as any).detailAddress,
-        providerPhone: (service as any).providerPhone,
-        totalRatings: (service as any).totalRatings || 0,
-        ratingBadge: (service as any).ratingBadge || null,
-        ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
-          ? { diseases: (service as any).diseases }
-          : {}),
-      }) as Service);
+      const mapped = services.map((service: any) => {
+        const isOwn = String((service as any).providerId) === String(user?.id || '');
+        const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Doctor') : ((service as any).providerName || 'Doctor');
+        return ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          rating: service.averageRating || service.rating || 0,
+          location: (service as any).city || "Karachi",
+          type: service.category === "Surgery" ? "Surgery" : "Treatment",
+          homeService: true,
+          image: service.image,
+          provider: resolvedProviderName,
+          createdAt: (service as any).createdAt,
+          _providerId: (service as any).providerId,
+          googleMapLink: (service as any).googleMapLink,
+          detailAddress: (service as any).detailAddress,
+          providerPhone: (service as any).providerPhone,
+          totalRatings: (service as any).totalRatings || 0,
+          ratingBadge: (service as any).ratingBadge || null,
+          ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
+            ? { diseases: (service as any).diseases }
+            : {}),
+        }) as Service;
+      });
 
       setDoctorServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));

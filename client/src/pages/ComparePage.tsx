@@ -19,6 +19,10 @@ const ComparePage = () => {
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
+  // Tick to trigger rerender on provider profile updates
+  const [profileTick, setProfileTick] = useState(0);
+  // Cache latest provider names from live updates (keyed by providerId)
+  const [latestProviderNames, setLatestProviderNames] = useState<Record<string, string>>({});
 
   // Variant slider state per item
   const [activeIdxById, setActiveIdxById] = useState<Record<string, number>>({});
@@ -40,6 +44,19 @@ const ComparePage = () => {
     return [base, ...variants];
   };
 
+  // Compute display provider: override if this is the logged-in user's own service,
+  // otherwise return any latest name we have for that provider, falling back to item's provider
+  const getDisplayProvider = (svc: any): string => {
+    const providerId = (svc as any)._providerId;
+    if (user?.id && providerId && String(user.id) === String(providerId)) {
+      return user.name || (svc as any).provider;
+    }
+    if (providerId && latestProviderNames[providerId]) {
+      return latestProviderNames[providerId] || (svc as any).provider;
+    }
+    return (svc as any).provider;
+  };
+
   const handleViewDetails = (item: any) => {
     const slides = getSlides(item);
     const rawIdx = activeIdxById[item.id] ?? 0;
@@ -56,7 +73,7 @@ const ComparePage = () => {
           description: (item as any).description,
           price: Number(getDisplayPrice(item) ?? (item as any).price ?? 0),
           rating: (item as any).rating ?? 0,
-          provider: (item as any).provider,
+          provider: getDisplayProvider(item),
           image: getDisplayImage(item) || (item as any).image,
           type: (item as any).type,
           providerType: (item as any)._providerType,
@@ -182,12 +199,12 @@ const ComparePage = () => {
     const svc = items.find(s => s.id === showLocationMap);
     if (!svc) return null;
     const loc = getDisplayLocation(svc) || (svc as any).location || "Karachi";
-    const provider = (svc as any).provider || "Provider";
+    const provider = getDisplayProvider(svc) || "Provider";
     const coordinates = getCoordinatesForLocation(loc);
     const address = getDisplayAddress(svc) || getMockAddress(provider, (svc as any).name || "Service", loc);
     const googleMapLink = getDisplayMapLink(svc);
     return { ...svc, location: loc, provider, coordinates, address, googleMapLink } as any;
-  }, [showLocationMap, items, activeIdxById]);
+  }, [showLocationMap, items, activeIdxById, user?.id, user?.name, profileTick, latestProviderNames]);
 
   const handleBookNow = (item: any) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
@@ -196,7 +213,7 @@ const ComparePage = () => {
       });
       return;
     }
-    if (user && (item as any)._providerId && user.id === (item as any)._providerId) {
+    if (user && (item as any)._providerId && String(user.id) === String((item as any)._providerId)) {
       toast.error('You cannot book your own service.');
       return;
     }
@@ -210,7 +227,7 @@ const ComparePage = () => {
         serviceId: item.id,
         serviceName: item.name,
         providerId: (item as any)._providerId || item.id,
-        providerName: item.provider,
+        providerName: getDisplayProvider(item),
         providerType: (item as any)._providerType,
         price: Number(getDisplayPrice(item) ?? (item as any).price ?? 0),
         currency: 'PKR',
@@ -223,6 +240,26 @@ const ComparePage = () => {
       }
     });
   };
+
+  // Listen for provider profile update events; store latest names and trigger re-render
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { providerId?: string; id?: string; name?: string } | undefined;
+      if (!detail) return;
+      const pid = detail.providerId || detail.id;
+      if (!pid) return;
+      // Save latest provider name if provided
+      if (typeof detail.name === 'string' && detail.name.length > 0) {
+        setLatestProviderNames(prev => ({ ...prev, [pid]: detail.name! }));
+      }
+      // Rerender when this tab's logged-in user id matches, or any compared item matches
+      if ((user?.id && String(pid) === String(user.id)) || items.some(it => String((it as any)._providerId) === String(pid))) {
+        setProfileTick(t => t + 1);
+      }
+    };
+    window.addEventListener('provider_profile_updated', handler as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handler as EventListener);
+  }, [items, user?.id]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-sky-50 to-emerald-50 bg-fixed">
@@ -274,7 +311,7 @@ const ComparePage = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="text-xs text-muted-foreground">{item.provider}</div>
+                              <div className="text-xs text-muted-foreground">{getDisplayProvider(item)}</div>
                               {getDisplayTimeInfo(item) && (
                                 <div className="text-[11px] text-muted-foreground mt-1">{getDisplayTimeInfo(item)}</div>
                               )}
@@ -358,7 +395,7 @@ const ComparePage = () => {
                   <span>Service Details</span>
                   <Badge variant="outline">{(currentDetail as any).type}</Badge>
                 </CardTitle>
-                <CardDescription>Viewing details for {(currentDetail as any).name} — {(currentDetail as any).provider}</CardDescription>
+                <CardDescription>Viewing details for {(currentDetail as any).name} — {getDisplayProvider(currentDetail)}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 {getSlides(currentDetail).length > 1 && (
@@ -383,7 +420,7 @@ const ComparePage = () => {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <div className="text-lg font-semibold">{(currentDetail as any).name}</div>
-                      <div className="text-sm text-muted-foreground">{(currentDetail as any).provider}</div>
+                      <div className="text-sm text-muted-foreground">{getDisplayProvider(currentDetail)}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-xl font-bold text-primary">

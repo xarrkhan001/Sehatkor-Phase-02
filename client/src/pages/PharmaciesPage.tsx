@@ -45,6 +45,8 @@ const PharmaciesPage = () => {
         });
         if (!isMounted) return;
         const mapped = services.map((service: any) => {
+          const isOwn = String((service as any).providerId) === String(user?.id || '');
+          const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Pharmacy') : ((service as any).providerName || 'Pharmacy');
           const s = {
             id: service.id,
             name: service.name,
@@ -55,7 +57,7 @@ const PharmaciesPage = () => {
             type: (service as any).category || "Pharmacy",
             homeService: false,
             image: service.image,
-            provider: (service as any).providerName || "Pharmacy",
+            provider: resolvedProviderName,
             createdAt: (service as any).createdAt,
             _providerId: (service as any).providerId,
             _providerType: (service as any).providerType ?? 'pharmacy',
@@ -114,7 +116,7 @@ const PharmaciesPage = () => {
     setPage(1);
     loadPage(1);
     return () => { isMounted = false; };
-  }, [user?.id]);
+  }, [user?.id, user?.name]);
 
   useEffect(() => {
     if (!socket) return;
@@ -169,6 +171,35 @@ const PharmaciesPage = () => {
     return () => window.removeEventListener('my_rating_updated', handler as EventListener);
   }, []);
 
+  // React to live provider profile updates (e.g., name change) and patch visible cards immediately
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { providerId: string; name?: string } | undefined;
+      if (!detail) return;
+      setPharmacyServices(prev => prev.map(s => {
+        const pid = (s as any)._providerId;
+        if (String(pid) === String(detail.providerId)) {
+          return { ...s, provider: detail.name || s.provider } as any;
+        }
+        return s;
+      }));
+    };
+    window.addEventListener('provider_profile_updated', handler as EventListener);
+    return () => window.removeEventListener('provider_profile_updated', handler as EventListener);
+  }, []);
+
+  // Fallback: if current user's name changes, patch own cards
+  useEffect(() => {
+    if (!user?.id || !user?.name) return;
+    setPharmacyServices(prev => prev.map(s => {
+      const pid = (s as any)._providerId;
+      if (String(pid) === String(user.id)) {
+        return { ...s, provider: user.name } as any;
+      }
+      return s;
+    }));
+  }, [user?.id, user?.name]);
+
   const loadMore = async () => {
     if (isLoading || hasMore === false) return;
     const next = page + 1;
@@ -177,6 +208,8 @@ const PharmaciesPage = () => {
     try {
       const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'pharmacy', page: next, limit: 9 });
       const mapped = services.map((service: any) => {
+        const isOwn = String((service as any).providerId) === String(user?.id || '');
+        const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Pharmacy') : ((service as any).providerName || 'Pharmacy');
         const s = {
           id: service.id,
           name: service.name,
@@ -187,7 +220,7 @@ const PharmaciesPage = () => {
           type: (service as any).category || "Pharmacy",
           homeService: false,
           image: service.image,
-          provider: (service as any).providerName || "Pharmacy",
+          provider: resolvedProviderName,
           createdAt: (service as any).createdAt,
           _providerId: (service as any).providerId,
           _providerType: (service as any).providerType ?? 'pharmacy',
