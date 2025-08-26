@@ -270,16 +270,6 @@ const DoctorDashboard = () => {
               Welcome to your medical practice dashboard
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-4 md:mt-0">
-            <Button variant="outline" size="sm">
-              <Bell className="w-4 h-4 mr-2" />
-              Notifications
-            </Button>
-            <Button variant="outline" size="sm" onClick={logout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
         </div>
 
         {/* Verification Banner */}

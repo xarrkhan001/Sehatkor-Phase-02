@@ -454,16 +454,6 @@ const PharmacyDashboard = () => {
               Manage medicines, prescriptions, and customer orders
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mt-4 md:mt-0 w-full md:w-auto">
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              <Bell className="w-4 h-4 mr-2" />
-              Notifications
-            </Button>
-            <Button variant="outline" size="sm" onClick={logout} className="w-full sm:w-auto">
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
         </div>
 
         {/* Stats Cards */}

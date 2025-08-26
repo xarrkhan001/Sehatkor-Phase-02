@@ -48,10 +48,12 @@ const getValidationSchema = (role: string) => {
       .email('Please enter a valid email address')
       .required('Email address is required'),
     phone: Yup.string()
-      .matches(/^\+92[0-9]{10}$/, 'Phone number must be in format +92XXXXXXXXXX')
+      .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
       .required('WhatsApp number is required'),
+    phoneCountryCode: Yup.string().required('Country code is required'),
     phoneAlternate: Yup.string()
-      .matches(/^(\+92[0-9]{10})?$/, 'Alternate phone must be in format +92XXXXXXXXXX'),
+      .matches(/^([0-9]{10})?$/, 'Alternate phone must be 10 digits'),
+    phoneAlternateCountryCode: Yup.string(),
     cnic: Yup.string()
       .matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1')
       .required('CNIC number is required'),
@@ -70,8 +72,11 @@ const getValidationSchema = (role: string) => {
 
   if (role === 'doctor') {
     roleSpecificSchema.licenseNumber = Yup.string()
-      .min(3, 'License number must be at least 3 characters')
-      .required('License number is required for doctors');
+      .test('min-length-if-provided', 'License number must be at least 3 characters', function(value) {
+        if (!value || value.trim() === '') return true; // Allow empty
+        return value.length >= 3; // Validate only if provided
+      })
+      .notRequired();
     roleSpecificSchema.designation = Yup.string()
       .min(2, 'Designation must be at least 2 characters')
       .required('Designation is required for doctors');
@@ -86,8 +91,11 @@ const getValidationSchema = (role: string) => {
       .min(2, 'Business name must be at least 2 characters')
       .required('Business name is required');
     roleSpecificSchema.licenseNumber = Yup.string()
-      .min(3, 'License number must be at least 3 characters')
-      .required('License/Registration number is required');
+      .test('min-length-if-provided', 'License number must be at least 3 characters', function(value) {
+        if (!value || value.trim() === '') return true; // Allow empty
+        return value.length >= 3; // Validate only if provided
+      })
+      .notRequired();
     roleSpecificSchema.designation = Yup.string()
       .min(2, 'Designation must be at least 2 characters')
       .required('Designation is required');
@@ -99,11 +107,6 @@ const getValidationSchema = (role: string) => {
   }
 
   // Optional fields with validation when provided
-  roleSpecificSchema.mapsLocation = Yup.string()
-    .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
-    .notRequired()
-    .url('Please enter a valid URL for Google Maps location');
-  
   roleSpecificSchema.description = Yup.string()
     .max(500, 'Description must be less than 500 characters');
 
@@ -134,27 +137,6 @@ const getValidationSchema = (role: string) => {
       .notRequired()
   });
 
-  // Operating hours validation
-  const daySchema = Yup.object({
-    open: Yup.string()
-      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
-      .notRequired()
-      .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format'),
-    close: Yup.string()
-      .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
-      .notRequired()
-      .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format')
-  });
-
-  roleSpecificSchema.operatingHours = Yup.object({
-    monday: daySchema,
-    tuesday: daySchema,
-    wednesday: daySchema,
-    thursday: daySchema,
-    friday: daySchema,
-    saturday: daySchema,
-    sunday: daySchema
-  });
 
   return Yup.object({ ...baseSchema, ...roleSpecificSchema });
 };
@@ -165,7 +147,9 @@ const RegisterPage = () => {
     name: "",
     email: "",
     phone: "",
+    phoneCountryCode: "+92",
     phoneAlternate: "",
+    phoneAlternateCountryCode: "+92",
     cnic: "",
     password: "",
     confirmPassword: "",
@@ -174,22 +158,12 @@ const RegisterPage = () => {
     address: "",
     city: "",
     province: "",
-    mapsLocation: "",
     specialization: "",
     description: "",
     designation: "",
     servicesOffered: [] as string[],
     deliveryAvailable: false,
     service24x7: false,
-    operatingHours: {
-      monday: { open: "", close: "" },
-      tuesday: { open: "", close: "" },
-      wednesday: { open: "", close: "" },
-      thursday: { open: "", close: "" },
-      friday: { open: "", close: "" },
-      saturday: { open: "", close: "" },
-      sunday: { open: "", close: "" }
-    },
     staffDetails: {
       doctors: "",
       specialists: "",
@@ -236,6 +210,19 @@ const RegisterPage = () => {
 
   const paymentModes = ["Bank Transfer", "Easypaisa/JazzCash", "Manual Settlement"];
 
+  const countryCodes = [
+    { code: "+92", country: "Pakistan", flag: "🇵🇰" },
+    { code: "+1", country: "USA/Canada", flag: "🇺🇸" },
+    { code: "+44", country: "UK", flag: "🇬🇧" },
+    { code: "+971", country: "UAE", flag: "🇦🇪" },
+    { code: "+966", country: "Saudi Arabia", flag: "🇸🇦" },
+    { code: "+91", country: "India", flag: "🇮🇳" },
+    { code: "+86", country: "China", flag: "🇨🇳" },
+    { code: "+49", country: "Germany", flag: "🇩🇪" },
+    { code: "+33", country: "France", flag: "🇫🇷" },
+    { code: "+61", country: "Australia", flag: "🇦🇺" }
+  ];
+
   // Helper functions for Formik and non-Formik contexts
   const handleInputChange = (
     field: string,
@@ -265,27 +252,6 @@ const RegisterPage = () => {
     });
   };
 
-  const handleOperatingHoursChange = (
-    day: string,
-    type: 'open' | 'close',
-    value: string,
-    setFieldValue?: (field: string, value: any) => void
-  ) => {
-    if (setFieldValue) {
-      setFieldValue(`operatingHours.${day}.${type}`, value);
-      return;
-    }
-    setCurrentFormValues((prev) => ({
-      ...prev,
-      operatingHours: {
-        ...prev.operatingHours,
-        [day]: {
-          ...((prev as any).operatingHours?.[day] || {}),
-          [type]: value,
-        },
-      },
-    }));
-  };
 
   const handleServiceToggle = (
     service: string,
@@ -355,7 +321,8 @@ const RegisterPage = () => {
 
     try {
       const additionalFields = {
-        phone: currentFormValues.phone,
+        phone: currentFormValues.phoneCountryCode + currentFormValues.phone,
+        phoneAlternate: currentFormValues.phoneAlternateCountryCode + currentFormValues.phoneAlternate,
         cnic: currentFormValues.cnic,
         licenseNumber: currentFormValues.licenseNumber,
         businessName: currentFormValues.businessName,
@@ -444,8 +411,8 @@ const RegisterPage = () => {
       id: generateUserId(),
       name: values.name,
       email: values.email,
-      phone: values.phone,
-      phoneAlternate: values.phoneAlternate,
+      phone: values.phoneCountryCode + values.phone,
+      phoneAlternate: values.phoneAlternateCountryCode + values.phoneAlternate,
       cnic: values.cnic,
       role: values.role,
       isVerified: isPatient ? true : false,
@@ -455,14 +422,12 @@ const RegisterPage = () => {
       address: values.address,
       city: values.city,
       province: values.province,
-      mapsLocation: values.mapsLocation,
       specialization: values.specialization,
       description: values.description,
       designation: values.designation,
       servicesOffered: values.servicesOffered,
       deliveryAvailable: values.deliveryAvailable,
       service24x7: values.service24x7,
-      operatingHours: values.operatingHours,
       staffDetails: values.staffDetails,
       bankDetails: values.bankDetails
     };
@@ -618,6 +583,35 @@ const RegisterPage = () => {
     </Field>
   );
 
+  const PhoneInputWithCountryCode = ({ phoneName, countryCodeName, placeholder, required = false }: {
+    phoneName: string;
+    countryCodeName: string;
+    placeholder: string;
+    required?: boolean;
+  }) => (
+    <div className="flex gap-2">
+      <div className="w-32">
+        <FormikSelect name={countryCodeName} placeholder="Code">
+          {countryCodes.map((country) => (
+            <SelectItem key={country.code} value={country.code}>
+              <span className="flex items-center gap-2">
+                <span>{country.flag}</span>
+                <span>{country.code}</span>
+              </span>
+            </SelectItem>
+          ))}
+        </FormikSelect>
+      </div>
+      <div className="flex-1">
+        <FormikInput
+          name={phoneName}
+          placeholder={placeholder}
+          className=""
+        />
+      </div>
+    </div>
+  );
+
   const getRoleSpecificFields = (values: any, setFieldValue: any) => {
     if (values.role === "patient") return null;
 
@@ -650,7 +644,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField name="licenseNumber" label="Registration/License Number" required>
+            <FormField name="licenseNumber" label="Registration/License Number (Optional)">
               <FormikInput
                 name="licenseNumber"
                 placeholder="Enter license number"
@@ -686,7 +680,7 @@ const RegisterPage = () => {
             />
           </FormField>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <FormField
               name="province"
               label="Province/State"
@@ -697,12 +691,6 @@ const RegisterPage = () => {
                   <SelectItem key={province} value={province}>{province}</SelectItem>
                 ))}
               </FormikSelect>
-            </FormField>
-            <FormField name="mapsLocation" label="Google Maps Location Link">
-              <FormikInput
-                name="mapsLocation"
-                placeholder="https://maps.google.com/..."
-              />
             </FormField>
           </div>
 
@@ -791,37 +779,6 @@ const RegisterPage = () => {
           </div>
         </div>
 
-        {/* Operating Hours */}
-        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Operating Hours
-          </h3>
-          
-          <div className="space-y-3">
-            {Object.keys(values.operatingHours).map((day) => (
-              <div key={day} className="grid grid-cols-3 gap-4 items-center">
-                <Label className="capitalize">{day}</Label>
-                <div>
-                  <FormikInput
-                    name={`operatingHours.${day}.open`}
-                    type="time"
-                    placeholder="Open Time"
-                  />
-                  <ErrorMessage name={`operatingHours.${day}.open`} component="div" className="text-sm text-red-500 mt-1" />
-                </div>
-                <div>
-                  <FormikInput
-                    name={`operatingHours.${day}.close`}
-                    type="time"
-                    placeholder="Close Time"
-                  />
-                  <ErrorMessage name={`operatingHours.${day}.close`} component="div" className="text-sm text-red-500 mt-1" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Bank Details */}
         <div className="space-y-4 rounded-xl border bg-white/60 p-5">
@@ -1125,13 +1082,34 @@ const RegisterPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="google-phone">Phone Number *</Label>
-                        <Input
-                          id="google-phone"
-                          value={currentFormValues.phone}
-                          onChange={(e) => handleInputChange("phone", e.target.value)}
-                          placeholder="+92 300 1234567"
-                          required
-                        />
+                        <div className="flex gap-2">
+                          <div className="w-32">
+                            <Select value={currentFormValues.phoneCountryCode} onValueChange={(value) => handleInputChange("phoneCountryCode", value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Code" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {countryCodes.map((country) => (
+                                  <SelectItem key={country.code} value={country.code}>
+                                    <span className="flex items-center gap-2">
+                                      <span>{country.flag}</span>
+                                      <span>{country.code}</span>
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex-1">
+                            <Input
+                              id="google-phone"
+                              value={currentFormValues.phone}
+                              onChange={(e) => handleInputChange("phone", e.target.value)}
+                              placeholder="300 1234567"
+                              required
+                            />
+                          </div>
+                        </div>
                       </div>
                       <div>
                         <Label htmlFor="google-cnic">CNIC Number *</Label>
@@ -1403,26 +1381,31 @@ const RegisterPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField name="phone" label="Whatsapp Number" required>
                     <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
                         <Phone className="w-4 h-4" />
                       </span>
-                      <FormikInput
-                        name="phone"
-                        className="pl-9"
-                        placeholder="+92 300 1234567"
-                      />
+                      <div className="pl-9">
+                        <PhoneInputWithCountryCode
+                          phoneName="phone"
+                          countryCodeName="phoneCountryCode"
+                          placeholder="300 1234567"
+                          required
+                        />
+                      </div>
                     </div>
                   </FormField>
                   <FormField name="phoneAlternate" label="Alternate Phone Numbers">
                     <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
                         <Phone className="w-4 h-4" />
                       </span>
-                      <FormikInput
-                        name="phoneAlternate"
-                        className="pl-9"
-                        placeholder="+92 300 1234567"
-                      />
+                      <div className="pl-9">
+                        <PhoneInputWithCountryCode
+                          phoneName="phoneAlternate"
+                          countryCodeName="phoneAlternateCountryCode"
+                          placeholder="300 1234567"
+                        />
+                      </div>
                     </div>
                   </FormField>
                 </div>

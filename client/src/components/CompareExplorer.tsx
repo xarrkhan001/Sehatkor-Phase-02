@@ -439,8 +439,10 @@ const CompareExplorer = () => {
                         <div>
                           <h3 className="text-lg font-semibold flex items-center gap-2">
                             {item.name}
-                            {item._providerId && (
+                            {item._providerId ? (
                               <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
+                            ) : (
+                              <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Not Verified</Badge>
                             )}
                             {isSelected && (
                               <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">Selected</Badge>

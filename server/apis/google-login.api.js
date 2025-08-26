@@ -55,7 +55,6 @@ const generateToken = (user) => jwt.sign(
 
 export const googleLogin = async (req, res) => {
   try {
-    console.log('Google login request received:', { body: req.body, headers: req.headers });
     const { idToken, role = 'patient', additionalFields } = req.body || {};
     if (!idToken) return res.status(400).json({ message: 'idToken required' });
 

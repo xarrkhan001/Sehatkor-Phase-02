@@ -134,6 +134,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
+    navigate('/login');
   };
 
   return (
@@ -205,9 +206,13 @@ const Navbar = () => {
                         <div className="mt-2 flex flex-col gap-1">
                           <div className="flex items-center gap-3">
                             <UserBadge role={(user as any).role} />
-                            {user.isVerified && (
+                            {user.isVerified ? (
                               <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
                                 <BadgeCheck className="h-3 w-3" /> Verified
+                              </span>
+                            ) : user.role !== 'patient' && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                                <X className="h-3 w-3" /> Not Verified
                               </span>
                             )}
                           </div>
@@ -313,9 +318,13 @@ const Navbar = () => {
             <div className="mt-2 flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <UserBadge role={(user as any).role} />
-                {user.isVerified && (
+                {user.isVerified ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
                     <BadgeCheck className="h-3 w-3" /> Verified
+                  </span>
+                ) : user.role !== 'patient' && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                    <X className="h-3 w-3" /> Not Verified
                   </span>
                 )}
               </div>

@@ -475,6 +475,15 @@ const LabsPage = () => {
                   <div>
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                       {service.name}
+                      {(service as any)._providerVerified ? (
+                        <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">
+                          Verified
+                        </Badge>
+                      ) : (
+                        <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">
+                          Not Verified
+                        </Badge>
+                      )}
                       <Badge className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-100">
                         Lab
                       </Badge>

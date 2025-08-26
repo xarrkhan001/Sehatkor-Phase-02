@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newUser = {
         ...userData,
         id: Date.now().toString(),
-        isVerified: userData.role === 'patient' // Patients are auto-verified, others need approval
+        isVerified: userData.role === 'patient' // Only patients are auto-verified, providers need admin approval
       };
 
       // Save to users list

@@ -471,6 +471,12 @@ const AdminPanel = () => {
                           <Badge variant="outline">{user.role}</Badge>
                           <span className="truncate">{user.phone}</span>
                         </div>
+                        {user.licenseNumber && (
+                          <div className="mt-1 text-xs">
+                            <span className="font-medium">License: </span>
+                            <span>{user.licenseNumber}</span>
+                          </div>
+                        )}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Button size="sm" variant="outline"><Eye className="w-4 h-4" /></Button>
@@ -492,6 +498,7 @@ const AdminPanel = () => {
                       <TableHead>User</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Contact</TableHead>
+                      <TableHead>License</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -515,6 +522,13 @@ const AdminPanel = () => {
                         </TableCell>
                         <TableCell>
                           <p className="text-sm">{user.phone}</p>
+                        </TableCell>
+                        <TableCell>
+                          {user.licenseNumber ? (
+                            <p className="text-sm font-mono">{user.licenseNumber}</p>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Not provided</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {user.isVerified ? (
