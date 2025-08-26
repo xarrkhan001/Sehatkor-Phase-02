@@ -20,6 +20,7 @@ import bookingRoutes from "./routes/booking.routes.js";
 import ratingRoutes from "./routes/rating.routes.js";
 import documentRoutes from "./routes/document.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
+import contactRoutes from "./routes/contact.routes.js";
 import {
   registerUserSocket,
   unregisterUserSocket,
@@ -72,6 +73,7 @@ app.use("/api/connections", connectionRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api", contactRoutes);
 
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
 app.get("/auth/facebook/callback", facebookCallback);
