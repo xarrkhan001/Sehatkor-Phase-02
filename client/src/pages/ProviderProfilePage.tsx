@@ -377,10 +377,10 @@ const ProviderProfilePage = () => {
         {/* Left Sidebar - Provider Information - Shows first on mobile */}
         <div className="w-full xl:w-96 xl:flex-shrink-0 xl:order-1">
           <div className="xl:sticky xl:top-8">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden md:min-h-[740px] xl:min-h-[880px]">
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden md:min-h-[740px] xl:min-h-[880px] flex flex-col">
               {/* Header with grayish gradient (slightly darker) */}
-              <div className="bg-gradient-to-r from-white via-blue-100/50 to-indigo-100/50 p-8 text-gray-800 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
+              <div className="bg-gradient-to-br from-gray-100 via-gray-200 to-blue-400 p-8 text-gray-800 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-500/20 via-blue-700/22 to-blue-900/22"></div>
                 <div className="relative z-10">
                   <div className="flex flex-col items-center text-center">
                     <div className="relative mb-4">
@@ -409,7 +409,7 @@ const ProviderProfilePage = () => {
                 </div>
               </div>
               {/* Provider Details */}
-              <div className="p-6 space-y-6">
+              <div className="p-6 space-y-6 flex-1">
                 {/* Verification Status */}
                 <div className="flex items-center justify-center">
                   <Badge className="bg-green-50 text-green-700 border-green-200 px-4 py-2 font-semibold">
@@ -465,6 +465,10 @@ const ProviderProfilePage = () => {
                     <span className="text-sm font-semibold text-gray-900">2023</span>
                   </div>
                 </div>
+              </div>
+              {/* Sidebar Bottom Tagline */}
+              <div className="px-6 py-4 text-[11px] md:text-xs text-gray-500 text-center bg-gradient-to-r from-gray-50/70 via-white to-blue-50/60 border-t border-gray-100">
+                Care you can count on — trusted, verified, and here for your wellbeing.
               </div>
             </div>
           </div>
