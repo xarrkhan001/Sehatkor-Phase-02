@@ -34,6 +34,7 @@ const PaymentPage = () => {
   
   const [paymentMethod, setPaymentMethod] = useState<'easypaisa' | 'jazzcash'>('easypaisa');
   const [paymentNumber, setPaymentNumber] = useState('');
+  const [patientContact, setPatientContact] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   const serviceData = location.state as ServiceData;
@@ -69,6 +70,11 @@ const PaymentPage = () => {
       return;
     }
 
+    if (!patientContact || patientContact.length < 8) {
+      toast.error('Please enter a valid contact number');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(apiUrl('/api/bookings'), {
@@ -80,6 +86,7 @@ const PaymentPage = () => {
         body: JSON.stringify({
           patientId: user.id,
           patientName: user.name,
+          patientContact: patientContact,
           providerId: serviceData.providerId,
           providerName: serviceData.providerName,
           providerType: serviceData.providerType,
@@ -198,34 +205,55 @@ const PaymentPage = () => {
                 </RadioGroup>
               </div>
 
-              <div className="space-y-4">
-                <Label htmlFor="paymentNumber" className="text-gray-700 font-medium flex items-center space-x-2">
-                  <Phone className="w-4 h-4" />
-                  <span>{paymentMethod === 'easypaisa' ? 'Easypaisa' : 'JazzCash'} Account Number</span>
-                </Label>
-                <Input
-                  id="paymentNumber"
-                  type="tel"
-                  placeholder="e.g., 03XXXXXXXXX"
-                  value={paymentNumber}
-                  onChange={(e) => setPaymentNumber(e.target.value)}
-                  className="text-lg py-4 px-4 border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl transition-all duration-300"
-                  aria-describedby="paymentNumberHelp"
-                />
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <p id="paymentNumberHelp" className="text-xs text-gray-500">
-                    Enter your mobile wallet number (Pakistani format).
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <Label htmlFor="patientContact" className="text-gray-700 font-medium flex items-center space-x-2">
+                    <Phone className="w-4 h-4" />
+                    <span>Your Contact Number</span>
+                  </Label>
+                  <Input
+                    id="patientContact"
+                    type="tel"
+                    placeholder="e.g., 03XXXXXXXXX"
+                    value={patientContact}
+                    onChange={(e) => setPatientContact(e.target.value)}
+                    className="text-lg py-4 px-4 border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl transition-all duration-300"
+                    aria-describedby="patientContactHelp"
+                  />
+                  <p id="patientContactHelp" className="text-xs text-gray-500">
+                    Provider will use this number to contact you about the service.
                   </p>
-                  <p className="text-sm text-gray-500 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Your payment information is secure and encrypted
-                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Label htmlFor="paymentNumber" className="text-gray-700 font-medium flex items-center space-x-2">
+                    <Phone className="w-4 h-4" />
+                    <span>{paymentMethod === 'easypaisa' ? 'Easypaisa' : 'JazzCash'} Account Number</span>
+                  </Label>
+                  <Input
+                    id="paymentNumber"
+                    type="tel"
+                    placeholder="e.g., 03XXXXXXXXX"
+                    value={paymentNumber}
+                    onChange={(e) => setPaymentNumber(e.target.value)}
+                    className="text-lg py-4 px-4 border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl transition-all duration-300"
+                    aria-describedby="paymentNumberHelp"
+                  />
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p id="paymentNumberHelp" className="text-xs text-gray-500">
+                      Enter your mobile wallet number (Pakistani format).
+                    </p>
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      Your payment information is secure and encrypted
+                    </p>
+                  </div>
                 </div>
               </div>
 
               <Button
                 onClick={handlePayment}
-                disabled={isLoading || !paymentNumber}
+                disabled={isLoading || !paymentNumber || !patientContact}
                 className="w-full text-lg py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 size="lg"
               >

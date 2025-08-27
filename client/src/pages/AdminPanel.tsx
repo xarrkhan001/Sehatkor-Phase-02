@@ -25,9 +25,11 @@ import {
   TrendingUp,
   Activity,
   Download,
-  Stethoscope
+  Stethoscope,
+  CreditCard
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AdminPaymentDashboard from "@/components/AdminPaymentDashboard";
 
 const AdminPanel = () => {
   // Simple in-page gate for /admin route
@@ -405,314 +407,89 @@ const AdminPanel = () => {
           })}
         </div>
 
-        {/* Main Content */}
-        <Tabs defaultValue="verifications" className="space-y-6">
-          <TabsList className="w-full overflow-x-auto flex sm:grid md:grid-cols-2 gap-0 lg:gap-2">
-            <TabsTrigger value="verifications">Verify Entities</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-          </TabsList>
-
-          {/* User Verifications */}
-          <TabsContent value="verifications" className="space-y-6">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        {/* Stylish Navigation Header */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
+              
+              {/* Verify Entities Card */}
+              <div 
+                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-blue-200"
+                onClick={() => window.location.href = '/admin/verifications'}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <UserCheck className="w-6 h-6" />
+                  </div>
                   <div>
-                    <CardTitle>Pending Verifications</CardTitle>
-                    <CardDescription>
-                      Review and approve healthcare provider registrations
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-                    <div className="relative w-full sm:w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <Input
-                        placeholder="Search users..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 w-full"
-                      />
-                    </div>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Verify Entities</h3>
+                    <p className="text-sm text-gray-500 mt-1">Review & approve providers</p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {/* Mobile Card List */}
-                <div className="space-y-3 lg:hidden">
-                  {pendingUsers.map((user: any) => (
-                    <div key={user.id || user._id} className="border rounded-lg p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shrink-0">
-                          {getRoleIcon(user.role)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate">{user.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                        </div>
-                        {user.isVerified ? (
-                          <Badge className="bg-success text-success-foreground shrink-0">Verified</Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-warning border-warning shrink-0">Pending</Badge>
-                        )}
-                      </div>
-                      <div className="mt-3 text-sm text-muted-foreground">
-                        <div className="flex gap-2">
-                          <Badge variant="outline">{user.role}</Badge>
-                          <span className="truncate">{user.phone}</span>
-                        </div>
-                        {user.licenseNumber && (
-                          <div className="mt-1 text-xs">
-                            <span className="font-medium">License: </span>
-                            <span>{user.licenseNumber}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Button size="sm" variant="outline"><Eye className="w-4 h-4" /></Button>
-                        <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => handleApprove(user._id)}>
-                          <CheckCircle className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleReject(user._id)}>
-                          <XCircle className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+              </div>
+
+              {/* Documents Card */}
+              <div 
+                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-purple-200"
+                onClick={() => window.location.href = '/admin/documents'}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <Eye className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Documents</h3>
+                    <p className="text-sm text-gray-500 mt-1">Manage uploaded files</p>
+                  </div>
                 </div>
+              </div>
 
-                {/* Desktop Table */}
-                <Table className="hidden lg:table">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>License</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pendingUsers.map((user: any) => (
-                      <TableRow key={user._id || user.id}>
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                              {getRoleIcon(user.role)}
-                            </div>
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{user.role}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm">{user.phone}</p>
-                        </TableCell>
-                        <TableCell>
-                          {user.licenseNumber ? (
-                            <p className="text-sm font-mono">{user.licenseNumber}</p>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">Not provided</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {user.isVerified ? (
-                            <Badge className="bg-success text-success-foreground">Verified</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-warning border-warning">Pending</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button size="sm" variant="outline">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              className="bg-success hover:bg-success/90"
-                              onClick={() => handleApprove(user._id)}
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="destructive"
-                              onClick={() => handleReject(user._id)}
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Removed: Service Management */}
-
-          {/* Documents Management */}
-          <TabsContent value="documents" className="space-y-6">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Pending Provider Documents</CardTitle>
-                <CardDescription>Review, download, verify, or delete uploaded documents</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Provider</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>File</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pendingDocs.map((doc: any) => (
-                      <TableRow key={doc._id}>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{doc.userId?.name || '—'}</span>
-                            <span className="text-sm text-muted-foreground">{doc.userId?.email}</span>
-                            <span className="text-sm text-muted-foreground">{doc.userId?.phone}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{doc.userId?.role}</Badge>
-                        </TableCell>
-                        <TableCell>
-                                                    <a href={getDownloadUrl(doc.url)} download={doc.fileName || 'document'} className="inline-flex items-center gap-2 underline">
-                            <Download className="w-4 h-4" /> {doc.fileName || 'Document'}
-                          </a>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="capitalize">{doc.status}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button size="sm" variant="destructive" onClick={() => handleDeleteDocument(doc._id)}>
-                              <Trash2 className="w-4 h-4" />
-                              Delete
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {pendingDocs.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">No pending documents</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Orders & Billing */}
-          <TabsContent value="orders" className="space-y-6">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Orders & Billing</CardTitle>
-                <CardDescription>
-                  Manage medicine orders and financial transactions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-xl text-muted-foreground mb-2">Order Management</p>
-                  <p className="text-muted-foreground">
-                    Orders and billing management interface will be implemented here
-                  </p>
+              {/* Payment Management Card */}
+              <div 
+                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-blue-200"
+                onClick={() => window.location.href = '/admin/payments'}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Payment Management</h3>
+                    <p className="text-sm text-gray-500 mt-1">Handle transactions & releases</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
 
-          {/* Analytics */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="card-healthcare">
-                <CardHeader>
-                  <CardTitle>User Growth</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-12 h-12 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-healthcare">
-                <CardHeader>
-                  <CardTitle>Service Usage</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                    <Activity className="w-12 h-12 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-healthcare">
-                <CardHeader>
-                  <CardTitle>Revenue Analytics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-12 h-12 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-healthcare">
-                <CardHeader>
-                  <CardTitle>System Health</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span>Server Status</span>
-                      <Badge className="bg-success text-success-foreground">Online</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Database</span>
-                      <Badge className="bg-success text-success-foreground">Healthy</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>API Response</span>
-                      <Badge variant="outline" className="text-warning border-warning">Slow</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Payment Gateway</span>
-                      <Badge className="bg-success text-success-foreground">Active</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
+
+        {/* Welcome Message */}
+        <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200">
+          <CardContent className="p-8">
+            <div className="text-center">
+              <ShieldCheck className="w-16 h-16 mx-auto text-indigo-600 mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Admin Dashboard</h2>
+              <p className="text-gray-600 mb-6">
+                Use the navigation cards above to access different admin sections
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center justify-center gap-2 text-green-600">
+                  <UserCheck className="w-4 h-4" />
+                  <span>Entity Verifications</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-purple-600">
+                  <Eye className="w-4 h-4" />
+                  <span>Document Management</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-blue-600">
+                  <CreditCard className="w-4 h-4" />
+                  <span>Payment Management</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
