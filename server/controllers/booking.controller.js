@@ -1,5 +1,6 @@
 // controllers/booking.controller.js
 import Booking from "../models/Booking.js";
+import Payment from "../models/Payment.js";
 
 // POST /api/bookings
 export const createBooking = async (req, res) => {
@@ -7,6 +8,7 @@ export const createBooking = async (req, res) => {
     const {
       patientId,
       patientName,
+      patientContact,
       providerId,
       providerName,
       providerType,
@@ -29,6 +31,7 @@ export const createBooking = async (req, res) => {
     const missing = [];
     if (!patientId) missing.push("patientId");
     if (!patientName) missing.push("patientName");
+    if (!patientContact) missing.push("patientContact");
     if (!providerId) missing.push("providerId");
     if (!providerName) missing.push("providerName");
     if (!providerType) missing.push("providerType");
@@ -36,6 +39,7 @@ export const createBooking = async (req, res) => {
     if (!serviceName) missing.push("serviceName");
     if (!paymentMethod) missing.push("paymentMethod");
     if (!paymentNumber) missing.push("paymentNumber");
+    if (!price || price <= 0) missing.push("price");
     if (missing.length) {
       return res
         .status(400)
@@ -68,6 +72,7 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ message: "Invalid paymentNumber length" });
     }
 
+    // Create booking first
     const booking = await Booking.create({
       patientId,
       patientName,
@@ -89,7 +94,39 @@ export const createBooking = async (req, res) => {
       phone: phone || undefined,
     });
 
-    return res.status(201).json(booking);
+    // Create payment record
+    const transactionId = `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const payment = await Payment.create({
+      bookingId: booking._id,
+      patientId,
+      patientName,
+      patientContact,
+      providerId,
+      providerName,
+      providerType: providerTypeNormalized,
+      serviceId,
+      serviceName,
+      amount: Number(price),
+      paymentMethod,
+      paymentNumber,
+      transactionId,
+      metadata: {
+        variantIndex,
+        variantLabel,
+        variantTimeRange,
+        image,
+        location,
+        phone
+      }
+    });
+
+    return res.status(201).json({
+      success: true,
+      booking,
+      payment,
+      message: "Service booked and payment recorded successfully"
+    });
   } catch (error) {
     return res.status(500).json({ message: "Booking error", error: error?.message || error });
   }

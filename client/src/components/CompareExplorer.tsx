@@ -347,7 +347,7 @@ const CompareExplorer = () => {
     }
   }, [filteredNames, nameQuery, selectedName]);
 
-  
+
 
   const currentMapService = useMemo(() => {
     if (!showLocationMap) return null;
@@ -406,7 +406,7 @@ const CompareExplorer = () => {
     setRatingModalOpen(true);
   };
 
-  
+
 
   const cheapest = useMemo(() => (selected.length ? [...selected].sort((a, b) => a.price - b.price)[0] : undefined), [selected]);
   const bestRated = useMemo(() => (selected.length ? [...selected].sort((a, b) => b.rating - a.rating)[0] : undefined), [selected]);
@@ -576,7 +576,7 @@ const CompareExplorer = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                                <div className="text-xs text-gray-600 text-center h-4">{effectiveSelectedName ? `Showing ${offerings.length} providers` : ""}</div>
+                <div className="text-xs text-gray-600 text-center h-4">{effectiveSelectedName ? `Showing ${offerings.length} providers` : ""}</div>
               </div>
             </div>
           </div>
@@ -679,7 +679,7 @@ const CompareExplorer = () => {
                           variant="secondary"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/service/${item.id}` , {
+                            navigate(`/service/${item.id}`, {
                               state: {
                                 from: window.location.pathname + window.location.search,
                                 fromCompare: true,
@@ -825,7 +825,7 @@ const CompareExplorer = () => {
                           <td className="p-4 font-medium">Action</td>
                           {selected.map(s => (
                             <td key={s.id} className="p-4">
-                              <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => navigate(`/service/${s.id}` , {
+                              <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => navigate(`/service/${s.id}`, {
                                 state: {
                                   from: window.location.pathname + window.location.search,
                                   fromCompare: true,
@@ -911,7 +911,7 @@ const CompareExplorer = () => {
                 </div>
               </div>
               {currentMapService.googleMapLink && (
-                <Button 
+                <Button
                   className="w-full mt-4"
                   onClick={() => window.open(currentMapService.googleMapLink, '_blank', 'noopener,noreferrer')}
                 >
