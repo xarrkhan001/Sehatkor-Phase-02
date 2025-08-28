@@ -9,7 +9,9 @@ import {
   getPendingReleasePayments,
   getPaymentStats,
   getProviderWallet,
-  requestWithdrawal
+  requestWithdrawal,
+  getProvidersSummary,
+  bulkReleasePayments
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -26,8 +28,12 @@ router.get('/provider/:providerId', getPaymentsByProvider);
 router.put('/:paymentId/complete', markServiceCompleted);
 router.put('/:paymentId/release', releasePaymentToProvider);
 
-// Provider wallet and withdrawal routes
+// Provider wallet routes
 router.get('/wallet/:providerId', getProviderWallet);
 router.post('/withdraw/:providerId', requestWithdrawal);
+
+// Admin provider management routes
+router.get('/providers-summary', getProvidersSummary);
+router.post('/bulk-release/:providerId', bulkReleasePayments);
 
 export default router;
