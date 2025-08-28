@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, TrendingUp, Users, Clock, DollarSign } from 'lucide-react';
 import AdminPaymentRecords from './AdminPaymentRecords';
+import AdminProviderPayments from './AdminProviderPayments';
 
 const AdminPaymentDashboard: React.FC = () => {
   const [analytics, setAnalytics] = useState({
@@ -118,12 +119,17 @@ const AdminPaymentDashboard: React.FC = () => {
         <h1 className="text-3xl font-bold">Payment Management</h1>
       </div>
 
-      <Tabs defaultValue="records" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="records" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="providers">Provider Payments</TabsTrigger>
           <TabsTrigger value="records">Payment Records</TabsTrigger>
           <TabsTrigger value="pending">Pending Release</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="providers">
+          <AdminProviderPayments />
+        </TabsContent>
 
         <TabsContent value="records">
           <AdminPaymentRecords />

@@ -352,13 +352,24 @@ export const getProviderWallet = async (req, res) => {
       .populate('bookingId')
       .sort({ createdAt: -1 });
 
-    // Calculate wallet statistics
-    const totalEarnings = payments.reduce((sum, payment) => sum + payment.amount, 0);
+    // Calculate wallet statistics with proper commission handling
+    const totalEarnings = payments.reduce((sum, payment) => {
+      // Use original amount if available, otherwise use current amount
+      return sum + (payment.originalAmount || payment.amount);
+    }, 0);
+    
     const releasedPayments = payments.filter(p => p.releasedToProvider);
     const pendingPayments = payments.filter(p => p.serviceCompleted && !p.releasedToProvider);
     
-    const availableBalance = releasedPayments.reduce((sum, payment) => sum + payment.amount, 0);
-    const pendingBalance = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    // Available balance should be net amount (after commission deduction)
+    const availableBalance = releasedPayments.reduce((sum, payment) => {
+      return sum + (payment.netReleaseAmount || payment.amount);
+    }, 0);
+    
+    // Pending balance should be original amount (before commission)
+    const pendingBalance = pendingPayments.reduce((sum, payment) => {
+      return sum + (payment.originalAmount || payment.amount);
+    }, 0);
 
     const walletData = {
       providerId,
@@ -403,53 +414,279 @@ export const getProviderWallet = async (req, res) => {
   }
 };
 
-// Provider withdrawal request
+// Handle provider withdrawal requests
 export const requestWithdrawal = async (req, res) => {
   try {
     const { providerId } = req.params;
     const { amount, paymentMethod, accountNumber, accountName } = req.body;
-    
-    console.log('💸 Processing withdrawal request:', { providerId, amount, paymentMethod });
+
+    console.log('💸 Processing withdrawal request:', {
+      providerId,
+      amount,
+      paymentMethod,
+      accountNumber: accountNumber?.substring(0, 4) + '****',
+      accountName
+    });
+
+    // Validate required fields
+    if (!amount || !paymentMethod || !accountNumber || !accountName) {
+      return res.status(400).json({
+        success: false,
+        message: 'All withdrawal details are required'
+      });
+    }
+
+    // Validate amount
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid withdrawal amount'
+      });
+    }
 
     // Get provider's available balance
-    const releasedPayments = await Payment.find({
-      providerId,
-      releasedToProvider: true
+    const payments = await Payment.find({ 
+      providerId, 
+      serviceCompleted: true, 
+      releasedToProvider: true 
     });
     
-    const availableBalance = releasedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const availableBalance = payments.reduce((sum, payment) => sum + payment.amount, 0);
     
     if (amount > availableBalance) {
       return res.status(400).json({
         success: false,
-        message: "Insufficient balance for withdrawal"
+        message: 'Insufficient balance for withdrawal'
       });
     }
 
-    // For now, we'll just log the withdrawal request
-    // In a real implementation, this would integrate with payment gateways
+    // Generate withdrawal ID
+    const withdrawalId = `WD${Date.now()}`;
+    
+    // Log withdrawal request (in production, save to database)
     console.log('✅ Withdrawal request logged:', {
+      withdrawalId,
       providerId,
       amount,
       paymentMethod,
       accountNumber,
       accountName,
-      availableBalance
+      requestDate: new Date(),
+      status: 'pending'
     });
 
     res.json({
       success: true,
-      message: "Withdrawal request submitted successfully",
-      withdrawalId: `WD_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      message: 'Withdrawal request submitted successfully',
+      withdrawalId,
       amount,
-      paymentMethod,
-      status: "pending"
+      estimatedProcessingTime: '24-48 hours'
     });
+
   } catch (error) {
     console.error('💥 Withdrawal request error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to process withdrawal request",
+      message: 'Failed to process withdrawal request',
+      error: error.message
+    });
+  }
+};
+
+// Get providers summary for admin
+export const getProvidersSummary = async (req, res) => {
+  try {
+    console.log('📊 Fetching providers summary...');
+
+    // Aggregate payments by provider
+    const providerStats = await Payment.aggregate([
+      {
+        $group: {
+          _id: '$providerId',
+          totalServices: { $sum: 1 },
+          completedServices: { $sum: { $cond: ['$serviceCompleted', 1, 0] } },
+          pendingServices: { $sum: { $cond: [{ $and: ['$serviceCompleted', { $not: '$releasedToProvider' }] }, 1, 0] } },
+          totalEarnings: { $sum: '$amount' },
+          pendingAmount: { 
+            $sum: { 
+              $cond: [
+                { $and: ['$serviceCompleted', { $not: '$releasedToProvider' }] }, 
+                '$amount', 
+                0
+              ] 
+            }
+          },
+          releasedAmount: { 
+            $sum: { 
+              $cond: ['$releasedToProvider', '$amount', 0] 
+            }
+          }
+        }
+      }
+    ]);
+
+    // Get detailed payments for each provider
+    const providersData = [];
+    
+    for (const stat of providerStats) {
+      const payments = await Payment.find({ providerId: stat._id })
+        .populate('patientId', 'name email')
+        .sort({ createdAt: -1 });
+
+      if (payments.length > 0) {
+        // Get provider info from first payment or user collection
+        const providerInfo = {
+          providerId: stat._id,
+          providerName: payments[0].providerName || 'Unknown Provider',
+          providerType: payments[0].providerType || 'unknown'
+        };
+
+        providersData.push({
+          ...providerInfo,
+          totalServices: stat.totalServices,
+          completedServices: stat.completedServices,
+          pendingServices: stat.pendingServices,
+          totalEarnings: stat.totalEarnings,
+          pendingAmount: stat.pendingAmount,
+          releasedAmount: stat.releasedAmount,
+          payments: payments.map(payment => ({
+            _id: payment._id,
+            serviceName: payment.serviceName,
+            patientName: payment.patientName,
+            amount: payment.amount,
+            currency: payment.currency,
+            serviceCompleted: payment.serviceCompleted,
+            releasedToProvider: payment.releasedToProvider,
+            releaseDate: payment.releaseDate,
+            createdAt: payment.createdAt,
+            completionDate: payment.completionDate
+          }))
+        });
+      }
+    }
+
+    console.log('✅ Providers summary fetched:', providersData.length, 'providers');
+
+    res.json({
+      success: true,
+      providers: providersData
+    });
+
+  } catch (error) {
+    console.error('💥 Providers summary error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch providers summary',
+      error: error.message
+    });
+  }
+};
+
+// Bulk release payments for a provider
+export const bulkReleasePayments = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const { adminCommission, deductionAmount, finalAmount } = req.body;
+    const adminId = req.user?.id;
+
+    console.log('💰 Processing bulk payment release:', {
+      providerId,
+      adminCommission,
+      deductionAmount,
+      finalAmount,
+      adminId
+    });
+
+    // Find all completed but unreleased payments for this provider
+    const pendingPayments = await Payment.find({
+      providerId,
+      serviceCompleted: true,
+      releasedToProvider: false
+    });
+
+    if (pendingPayments.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No pending payments found for this provider'
+      });
+    }
+
+    const totalAmount = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    
+    // Validate amounts
+    if (Math.abs(totalAmount - (finalAmount + deductionAmount)) > 0.01) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount calculation mismatch'
+      });
+    }
+
+    // Convert adminId to ObjectId if valid, otherwise set to null
+    let adminObjectId = null;
+    if (adminId && mongoose.Types.ObjectId.isValid(adminId)) {
+      adminObjectId = new mongoose.Types.ObjectId(adminId);
+    }
+
+    // Update each payment individually with proper amount calculation
+    const updatePromises = pendingPayments.map(async (payment) => {
+      const originalAmount = payment.amount;
+      const commissionDeduction = (originalAmount * adminCommission) / 100;
+      const netAmountToProvider = originalAmount - commissionDeduction;
+      
+      return Payment.findByIdAndUpdate(
+        payment._id,
+        {
+          $set: {
+            releasedToProvider: true,
+            releaseDate: new Date(),
+            adminId: adminObjectId,
+            adminCommission: adminCommission,
+            adminCommissionAmount: commissionDeduction,
+            originalAmount: originalAmount,
+            netReleaseAmount: netAmountToProvider,
+            amount: netAmountToProvider // Update amount to net amount after commission
+          }
+        },
+        { new: true }
+      );
+    });
+
+    const updatedPayments = await Promise.all(updatePromises);
+    console.log('✅ Bulk payment release completed:', updatedPayments.length, 'payments updated with commission deduction');
+
+    // Calculate totals for response
+    const totalCommissionEarned = updatedPayments.reduce((sum, payment) => sum + (payment.adminCommissionAmount || 0), 0);
+    const totalNetReleased = updatedPayments.reduce((sum, payment) => sum + (payment.netReleaseAmount || 0), 0);
+
+    // Emit WebSocket notification to provider with NET amount
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('bulk_payment_released', {
+        providerId,
+        totalPayments: pendingPayments.length,
+        totalAmount: totalNetReleased, // Send only net amount to provider
+        adminCommission,
+        deductionAmount: totalCommissionEarned,
+        releaseDate: new Date()
+      });
+      console.log('📡 WebSocket notification sent - Provider receives NET amount:', totalNetReleased);
+    }
+
+    res.json({
+      success: true,
+      message: 'Bulk payment release completed successfully',
+      releasedPayments: updatedPayments.length,
+      totalOriginalAmount: totalAmount,
+      adminCommissionEarned: totalCommissionEarned,
+      netAmountToProvider: totalNetReleased,
+      adminCommissionPercentage: adminCommission
+    });
+
+  } catch (error) {
+    console.error('💥 Bulk payment release error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process bulk payment release',
       error: error.message
     });
   }
