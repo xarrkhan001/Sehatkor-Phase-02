@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
@@ -40,6 +39,16 @@ interface Payment {
   completionDate?: string;
 }
 
+interface Withdrawal {
+  _id: string;
+  amount: number;
+  paymentMethod: 'easypaisa' | 'jazzcash' | string;
+  accountNumber: string;
+  accountName: string;
+  status: 'pending' | 'approved' | 'completed' | 'rejected' | string;
+  createdAt: string;
+}
+
 interface WalletData {
   providerId: string;
   totalEarnings: number;
@@ -54,6 +63,8 @@ const ProviderWallet: React.FC = () => {
   const { user } = useAuth();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [loadingWithdrawals, setLoadingWithdrawals] = useState<boolean>(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
   const [withdrawalData, setWithdrawalData] = useState({
@@ -63,6 +74,7 @@ const ProviderWallet: React.FC = () => {
     accountName: ''
   });
   const [socket, setSocket] = useState<any>(null);
+  // Use backend-provided availableBalance for withdrawal validations/UI
 
   useEffect(() => {
     if (!user?.id) return;
@@ -95,6 +107,7 @@ const ProviderWallet: React.FC = () => {
   useEffect(() => {
     if (user?.id) {
       fetchWallet();
+      fetchWithdrawals();
     }
   }, [user?.id]);
 
@@ -125,6 +138,28 @@ const ProviderWallet: React.FC = () => {
     }
   };
 
+  const fetchWithdrawals = async () => {
+    if (!user?.id) return;
+    setLoadingWithdrawals(true);
+    try {
+      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/${user.id}` , {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWithdrawals(data.withdrawals || []);
+      } else {
+        console.error('❌ Failed to fetch withdrawals:', res.status);
+      }
+    } catch (err) {
+      console.error('💥 Withdrawals fetch error:', err);
+    } finally {
+      setLoadingWithdrawals(false);
+    }
+  };
+
   const handleWithdrawal = async () => {
     if (!user?.id || !withdrawalData.amount || !withdrawalData.accountNumber || !withdrawalData.accountName) {
       toast.error('Please fill in all withdrawal details');
@@ -137,8 +172,13 @@ const ProviderWallet: React.FC = () => {
       return;
     }
 
+    // Validate against backend computed availableBalance (released - withdrawals)
     if (wallet && amount > wallet.availableBalance) {
       toast.error('Insufficient balance for withdrawal');
+      return;
+    }
+    if (wallet && wallet.availableBalance <= 0) {
+      toast.error('No available balance to withdraw');
       return;
     }
 
@@ -169,6 +209,9 @@ const ProviderWallet: React.FC = () => {
           accountNumber: '',
           accountName: ''
         });
+        // Refresh wallet to reflect any backend-side changes (if implemented later)
+        fetchWallet();
+        fetchWithdrawals();
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || 'Failed to process withdrawal');
@@ -212,6 +255,8 @@ const ProviderWallet: React.FC = () => {
       </div>
     );
   }
+
+  // Single list: show all withdrawals; no explicit "Pending" tag shown in UI
 
   return (
     <div className="space-y-6">
@@ -279,7 +324,7 @@ const ProviderWallet: React.FC = () => {
         </div>
         <Dialog open={withdrawalOpen} onOpenChange={setWithdrawalOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button className="flex items-center gap-2" disabled={!wallet || wallet.availableBalance <= 0}>
               <ArrowUpRight className="w-4 h-4" />
               Withdraw Funds
             </Button>
@@ -302,6 +347,8 @@ const ProviderWallet: React.FC = () => {
                   id="amount"
                   type="number"
                   placeholder="Enter amount"
+                  min={1}
+                  max={wallet.availableBalance}
                   value={withdrawalData.amount}
                   onChange={(e) => setWithdrawalData(prev => ({ ...prev, amount: e.target.value }))}
                 />
@@ -343,7 +390,11 @@ const ProviderWallet: React.FC = () => {
                 />
               </div>
 
-              <Button onClick={handleWithdrawal} className="w-full">
+              <Button
+                onClick={handleWithdrawal}
+                className="w-full"
+                disabled={!withdrawalData.amount || parseFloat(withdrawalData.amount) <= 0 || parseFloat(withdrawalData.amount) > wallet.availableBalance}
+              >
                 Submit Withdrawal Request
               </Button>
             </div>
@@ -398,6 +449,63 @@ const ProviderWallet: React.FC = () => {
                         <div className="text-xs text-muted-foreground">
                           Released: {new Date(payment.releaseDate).toLocaleDateString()}
                         </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Withdrawal History */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ArrowUpRight className="w-5 h-5" />
+            Withdrawal History ({withdrawals.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loadingWithdrawals ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground mt-2">Loading withdrawals...</p>
+            </div>
+          ) : withdrawals.length === 0 ? (
+            <div className="text-center py-8">
+              <Wallet className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No withdrawals yet</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {withdrawals.map((w) => (
+                <div key={w._id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="font-medium">{w.paymentMethod?.toUpperCase()} Withdrawal</div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-4">
+                      <div className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        {w.accountName} • {w.accountNumber}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(w.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium text-lg">PKR {w.amount.toLocaleString()}</div>
+                    <div className="flex items-center justify-end">
+                      {w.status === 'completed' && (
+                        <Badge variant="default" className="bg-green-600">Completed</Badge>
+                      )}
+                      {w.status === 'approved' && (
+                        <Badge variant="default" className="bg-blue-600">Approved</Badge>
+                      )}
+                      {w.status === 'rejected' && (
+                        <Badge variant="destructive">Rejected</Badge>
                       )}
                     </div>
                   </div>

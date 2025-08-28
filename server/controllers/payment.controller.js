@@ -1,6 +1,7 @@
 import Payment from "../models/Payment.js";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
+import Withdrawal from "../models/Withdrawal.js";
 import mongoose from "mongoose";
 
 // Create payment record when booking is made
@@ -52,6 +53,54 @@ export const createPayment = async (req, res) => {
       success: false,
       message: "Payment creation failed",
       error: error.message
+    });
+  }
+};
+
+// Approve all pending withdrawals (admin utility)
+export const approveAllPendingWithdrawals = async (req, res) => {
+  try {
+    const result = await Withdrawal.updateMany(
+      { status: 'pending' },
+      { $set: { status: 'approved' } }
+    );
+
+    return res.json({
+      success: true,
+      message: 'All pending withdrawals set to approved',
+      matched: result.matchedCount ?? result.nMatched,
+      modified: result.modifiedCount ?? result.nModified,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to approve pending withdrawals',
+      error: error.message,
+    });
+  }
+};
+
+// Approve pending withdrawals for a given provider
+export const approveProviderPendingWithdrawals = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const result = await Withdrawal.updateMany(
+      { providerId, status: 'pending' },
+      { $set: { status: 'approved' } }
+    );
+
+    return res.json({
+      success: true,
+      message: 'Provider pending withdrawals set to approved',
+      providerId,
+      matched: result.matchedCount ?? result.nMatched,
+      modified: result.modifiedCount ?? result.nModified,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to approve provider pending withdrawals',
+      error: error.message,
     });
   }
 };
@@ -132,6 +181,27 @@ export const getPaymentsByProvider = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch provider payments",
+      error: error.message
+    });
+  }
+};
+
+// Get withdrawals by provider
+export const getWithdrawalsByProvider = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+
+    const withdrawals = await Withdrawal.find({ providerId })
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      withdrawals
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch withdrawals',
       error: error.message
     });
   }
@@ -352,25 +422,30 @@ export const getProviderWallet = async (req, res) => {
       .populate('bookingId')
       .sort({ createdAt: -1 });
 
-    // Calculate wallet statistics with proper commission handling
+    // Calculate wallet statistics
     const totalEarnings = payments.reduce((sum, payment) => {
       // Use original amount if available, otherwise use current amount
       return sum + (payment.originalAmount || payment.amount);
     }, 0);
-    
+
     const releasedPayments = payments.filter(p => p.releasedToProvider);
     const pendingPayments = payments.filter(p => p.serviceCompleted && !p.releasedToProvider);
-    
-    // Available balance should be net amount (after commission deduction)
-    const availableBalance = releasedPayments.reduce((sum, payment) => {
-      return sum + (payment.netReleaseAmount || payment.amount);
-    }, 0);
-    
-    // Pending balance should be original amount (before commission)
-    const pendingBalance = pendingPayments.reduce((sum, payment) => {
-      return sum + (payment.originalAmount || payment.amount);
-    }, 0);
 
+    // For clarity:
+    // - releasedNet: funds already released to provider (after commission)
+    // - pendingBalance: funds for completed services not yet released (before commission if stored)
+    const releasedNet = releasedPayments.reduce((sum, payment) => sum + (payment.netReleaseAmount || payment.amount), 0);
+
+    const withdrawalsAgg = await Withdrawal.aggregate([
+      { $match: { providerId: new mongoose.Types.ObjectId(providerId), status: { $ne: 'rejected' } } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const totalWithdrawn = withdrawalsAgg[0]?.total || 0;
+    const availableBalance = Math.max(0, releasedNet - totalWithdrawn);
+
+    const pendingBalance = pendingPayments.reduce((sum, payment) => sum + (payment.originalAmount || payment.amount), 0);
+
+    // Sum withdrawals (exclude rejected) to compute net available (released - withdrawn)
     const walletData = {
       providerId,
       totalEarnings,
@@ -397,6 +472,7 @@ export const getProviderWallet = async (req, res) => {
       totalEarnings,
       availableBalance,
       pendingBalance,
+      releasedNet,
       totalServices: payments.length
     });
 
@@ -451,8 +527,15 @@ export const requestWithdrawal = async (req, res) => {
       releasedToProvider: true 
     });
     
-    const availableBalance = payments.reduce((sum, payment) => sum + payment.amount, 0);
-    
+    const releasedNet = payments.reduce((sum, payment) => sum + (payment.netReleaseAmount || payment.amount), 0);
+
+    const withdrawalsAgg = await Withdrawal.aggregate([
+      { $match: { providerId: new mongoose.Types.ObjectId(providerId), status: { $ne: 'rejected' } } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const totalWithdrawn = withdrawalsAgg[0]?.total || 0;
+    const availableBalance = Math.max(0, releasedNet - totalWithdrawn);
+
     if (amount > availableBalance) {
       return res.status(400).json({
         success: false,
@@ -463,7 +546,16 @@ export const requestWithdrawal = async (req, res) => {
     // Generate withdrawal ID
     const withdrawalId = `WD${Date.now()}`;
     
-    // Log withdrawal request (in production, save to database)
+    // Create withdrawal record (mark as approved immediately to avoid 'pending' state)
+    const created = await Withdrawal.create({
+      providerId,
+      amount,
+      paymentMethod,
+      accountNumber,
+      accountName,
+      status: 'approved'
+    });
+
     console.log('✅ Withdrawal request logged:', {
       withdrawalId,
       providerId,
@@ -472,7 +564,7 @@ export const requestWithdrawal = async (req, res) => {
       accountNumber,
       accountName,
       requestDate: new Date(),
-      status: 'pending'
+      status: 'approved'
     });
 
     res.json({
