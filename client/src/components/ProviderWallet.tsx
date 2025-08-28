@@ -29,6 +29,7 @@ interface Payment {
   _id: string;
   serviceName: string;
   patientName: string;
+  patientId?: string;
   amount: number;
   currency: string;
   paymentMethod: string;
@@ -374,7 +375,12 @@ const ProviderWallet: React.FC = () => {
                     <div className="text-sm text-muted-foreground flex items-center gap-4">
                       <div className="flex items-center gap-1">
                         <User className="w-3 h-3" />
-                        {payment.patientName}
+                        <span 
+                          className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline"
+                          onClick={() => window.open(`/patient/${payment.patientId || 'unknown'}`, '_blank')}
+                        >
+                          {payment.patientName}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />

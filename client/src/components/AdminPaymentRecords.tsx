@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 interface Payment {
   _id: string;
   patientName: string;
+  patientId?: string;
   patientContact: string;
   providerName: string;
   providerType: string;
@@ -346,7 +347,14 @@ const AdminPaymentRecords: React.FC = () => {
                     <TableRow key={payment._id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{payment.patientName}</div>
+                          <div className="font-medium">
+                            <span 
+                              className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline"
+                              onClick={() => window.open(`/patient/${payment.patientId || 'unknown'}`, '_blank')}
+                            >
+                              {payment.patientName}
+                            </span>
+                          </div>
                           <div className="text-sm text-muted-foreground">{payment.patientContact}</div>
                         </div>
                       </TableCell>

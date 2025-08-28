@@ -194,7 +194,18 @@ const Navbar = () => {
                 <DropdownMenuContent align="end" className="w-60 bg-white border shadow-xl rounded-2xl mt-2 p-0 overflow-hidden" sideOffset={5} alignOffset={-10}>
                   <DropdownMenuLabel className="font-normal px-4 pt-4 pb-3 bg-white">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
+                      <Avatar 
+                        className="h-10 w-10 ring-2 ring-white shadow-sm cursor-pointer hover:ring-red-300 transition-all duration-200 hover:scale-105"
+                        onClick={() => {
+                          if (user) {
+                            if (user.role === 'patient') {
+                              navigate(`/patient/${user.id}`);
+                            } else {
+                              navigate(`/provider/${user.id}`);
+                            }
+                          }
+                        }}
+                      >
                         <AvatarImage src={user.avatar || (user as any).avatar} alt={user.name} />
                         <AvatarFallback className="bg-red-100 text-red-700 font-semibold">
                           {user.name?.charAt(0) ?? 'U'}
@@ -204,7 +215,7 @@ const Navbar = () => {
                         <p className="text-sm font-semibold leading-none text-gray-900 truncate">{user.name}</p>
                         <p className="text-xs leading-none text-gray-500 truncate">{user.email}</p>
                         <div className="mt-2 flex flex-col gap-1">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             <UserBadge role={(user as any).role} />
                             {user.isVerified ? (
                               <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
