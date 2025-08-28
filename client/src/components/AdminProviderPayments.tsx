@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import {
   User,
@@ -38,6 +39,7 @@ interface ProviderData {
   providerId: string;
   providerName: string;
   providerType: string;
+  providerAvatar?: string;
   totalServices: number;
   completedServices: number;
   pendingServices: number;
@@ -241,9 +243,12 @@ const AdminProviderPayments: React.FC = () => {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-blue-600" />
-                    </div>
+                    <Avatar className="h-12 w-12 ring-2 ring-blue-200 shadow-sm">
+                      <AvatarImage src={provider.providerAvatar || undefined} alt={provider.providerName} />
+                      <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
+                        {provider.providerName?.charAt(0) ?? 'P'}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <CardTitle className="text-xl">{provider.providerName}</CardTitle>
                       <Badge variant="outline" className="mt-1">
@@ -428,8 +433,13 @@ const AdminProviderPayments: React.FC = () => {
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
+            <DialogTitle className="flex items-center gap-3">
+              <Avatar className="h-8 w-8 ring-2 ring-blue-200">
+                <AvatarImage src={selectedProviderDetails?.providerAvatar || undefined} alt={selectedProviderDetails?.providerName} />
+                <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold text-sm">
+                  {selectedProviderDetails?.providerName?.charAt(0) ?? 'P'}
+                </AvatarFallback>
+              </Avatar>
               {selectedProviderDetails?.providerName} - Payment Details
             </DialogTitle>
           </DialogHeader>
