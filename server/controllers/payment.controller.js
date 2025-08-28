@@ -1,6 +1,7 @@
 import Payment from "../models/Payment.js";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
+import mongoose from "mongoose";
 
 // Create payment record when booking is made
 export const createPayment = async (req, res) => {
@@ -179,19 +180,27 @@ export const markServiceCompleted = async (req, res) => {
 // Admin: Release payment to provider
 export const releasePaymentToProvider = async (req, res) => {
   try {
+    console.log('💰 Processing payment release request...');
     const { paymentId } = req.params;
     const { adminId, releaseNotes = "" } = req.body;
+    
+    console.log('📋 Payment ID:', paymentId);
+    console.log('👤 Admin ID:', adminId);
 
     const payment = await Payment.findById(paymentId);
     
     if (!payment) {
+      console.log('❌ Payment not found:', paymentId);
       return res.status(404).json({
         success: false,
         message: "Payment record not found"
       });
     }
 
+    console.log('📄 Payment found:', payment._id, 'Service completed:', payment.serviceCompleted);
+
     if (!payment.serviceCompleted) {
+      console.log('⚠️ Service not completed yet');
       return res.status(400).json({
         success: false,
         message: "Cannot release payment - service not completed yet"
@@ -199,23 +208,53 @@ export const releasePaymentToProvider = async (req, res) => {
     }
 
     if (payment.releasedToProvider) {
+      console.log('⚠️ Payment already released');
       return res.status(400).json({
         success: false,
         message: "Payment already released to provider"
       });
     }
 
+    // Handle adminId - if it's not a valid ObjectId, set to null
+    let validAdminId = null;
+    if (adminId && adminId !== 'admin-user') {
+      try {
+        validAdminId = new mongoose.Types.ObjectId(adminId);
+      } catch (err) {
+        console.log('⚠️ Invalid adminId, setting to null:', adminId);
+        validAdminId = null;
+      }
+    }
+
+    console.log('🔄 Updating payment with valid adminId:', validAdminId);
+
     const updatedPayment = await Payment.findByIdAndUpdate(
       paymentId,
       {
         releasedToProvider: true,
         releaseDate: new Date(),
-        releasedBy: adminId,
+        releasedBy: validAdminId,
         releaseNotes,
         paymentStatus: "released"
       },
       { new: true }
     ).populate('patientId', 'name email phone');
+
+    console.log('✅ Payment released successfully:', updatedPayment._id);
+
+    // Emit WebSocket notification to provider
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('payment_released', {
+        providerId: payment.providerId,
+        paymentId: updatedPayment._id,
+        amount: updatedPayment.amount,
+        serviceName: updatedPayment.serviceName,
+        patientName: updatedPayment.patientName,
+        releaseDate: updatedPayment.releaseDate
+      });
+      console.log('📡 WebSocket notification sent for payment release');
+    }
 
     res.json({
       success: true,
@@ -223,6 +262,7 @@ export const releasePaymentToProvider = async (req, res) => {
       message: "Payment released to provider successfully"
     });
   } catch (error) {
+    console.error('💥 Payment release error:', error);
     res.status(500).json({
       success: false,
       message: "Failed to release payment",
@@ -295,6 +335,121 @@ export const getPaymentStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch payment statistics",
+      error: error.message
+    });
+  }
+};
+
+// Get provider's payment history and wallet balance
+export const getProviderWallet = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    console.log('💰 Fetching wallet for provider:', providerId);
+
+    // Get all payments for this provider
+    const payments = await Payment.find({ providerId })
+      .populate('patientId', 'name email phone')
+      .populate('bookingId')
+      .sort({ createdAt: -1 });
+
+    // Calculate wallet statistics
+    const totalEarnings = payments.reduce((sum, payment) => sum + payment.amount, 0);
+    const releasedPayments = payments.filter(p => p.releasedToProvider);
+    const pendingPayments = payments.filter(p => p.serviceCompleted && !p.releasedToProvider);
+    
+    const availableBalance = releasedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const pendingBalance = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
+
+    const walletData = {
+      providerId,
+      totalEarnings,
+      availableBalance,
+      pendingBalance,
+      totalServices: payments.length,
+      completedServices: payments.filter(p => p.serviceCompleted).length,
+      payments: payments.map(payment => ({
+        _id: payment._id,
+        serviceName: payment.serviceName,
+        patientName: payment.patientName,
+        amount: payment.amount,
+        currency: payment.currency,
+        paymentMethod: payment.paymentMethod,
+        serviceCompleted: payment.serviceCompleted,
+        releasedToProvider: payment.releasedToProvider,
+        releaseDate: payment.releaseDate,
+        createdAt: payment.createdAt,
+        completionDate: payment.completionDate
+      }))
+    };
+
+    console.log('📋 Wallet data calculated:', {
+      totalEarnings,
+      availableBalance,
+      pendingBalance,
+      totalServices: payments.length
+    });
+
+    res.json({
+      success: true,
+      wallet: walletData
+    });
+  } catch (error) {
+    console.error('💥 Provider wallet fetch error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch provider wallet",
+      error: error.message
+    });
+  }
+};
+
+// Provider withdrawal request
+export const requestWithdrawal = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const { amount, paymentMethod, accountNumber, accountName } = req.body;
+    
+    console.log('💸 Processing withdrawal request:', { providerId, amount, paymentMethod });
+
+    // Get provider's available balance
+    const releasedPayments = await Payment.find({
+      providerId,
+      releasedToProvider: true
+    });
+    
+    const availableBalance = releasedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    
+    if (amount > availableBalance) {
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient balance for withdrawal"
+      });
+    }
+
+    // For now, we'll just log the withdrawal request
+    // In a real implementation, this would integrate with payment gateways
+    console.log('✅ Withdrawal request logged:', {
+      providerId,
+      amount,
+      paymentMethod,
+      accountNumber,
+      accountName,
+      availableBalance
+    });
+
+    res.json({
+      success: true,
+      message: "Withdrawal request submitted successfully",
+      withdrawalId: `WD_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      amount,
+      paymentMethod,
+      status: "pending"
+    });
+  } catch (error) {
+    console.error('💥 Withdrawal request error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to process withdrawal request",
       error: error.message
     });
   }

@@ -26,20 +26,26 @@ const AdminPaymentDashboard: React.FC = () => {
 
   const fetchAnalytics = async () => {
     try {
+      console.log('🔍 Fetching payment analytics...');
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/api/payments/statistics', {
+      const response = await fetch('http://localhost:4000/api/payments/stats', {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
         }
       });
+
+      console.log('📊 Analytics response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        setAnalytics(data);
+        console.log('📈 Analytics data received:', data);
+        setAnalytics(data.stats || data);
+      } else {
+        console.error('❌ Analytics fetch failed:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      console.error('💥 Analytics fetch error:', error);
     } finally {
       setLoading(false);
     }
@@ -47,6 +53,7 @@ const AdminPaymentDashboard: React.FC = () => {
 
   const fetchPendingReleases = async () => {
     try {
+      console.log('⏳ Fetching pending release payments...');
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
       const response = await fetch('http://localhost:4000/api/payments/pending-release', {
         headers: {
@@ -54,34 +61,54 @@ const AdminPaymentDashboard: React.FC = () => {
           ...(token && { 'Authorization': `Bearer ${token}` })
         }
       });
+
+      console.log('📋 Pending releases response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        setPendingPayments(Array.isArray(data) ? data : []);
+        console.log('📝 Pending releases data:', data);
+        setPendingPayments(Array.isArray(data.payments) ? data.payments : Array.isArray(data) ? data : []);
+      } else {
+        console.error('❌ Pending releases fetch failed:', response.status, response.statusText);
+        setPendingPayments([]);
       }
     } catch (error) {
-      console.error('Failed to fetch pending releases:', error);
+      console.error('💥 Pending releases fetch error:', error);
       setPendingPayments([]);
     }
   };
 
   const handleReleasePayment = async (paymentId: string) => {
     try {
+      console.log('💰 Releasing payment:', paymentId);
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
+      const adminId = localStorage.getItem('userId') || 'admin-user';
+      
       const response = await fetch(`http://localhost:4000/api/payments/${paymentId}/release`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
-        }
+        },
+        body: JSON.stringify({
+          adminId: adminId,
+          releaseNotes: 'Released from admin dashboard'
+        })
       });
+
+      console.log('💸 Payment release response status:', response.status);
       
       if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Payment released successfully:', data);
         fetchPendingReleases();
         fetchAnalytics();
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('❌ Payment release failed:', response.status, errorData);
       }
     } catch (error) {
-      console.error('Failed to release payment:', error);
+      console.error('💥 Payment release error:', error);
     }
   };
 
@@ -153,49 +180,49 @@ const AdminPaymentDashboard: React.FC = () => {
                     <DollarSign className="w-5 h-5 text-green-600" />
                     <div>
                       <div className="text-2xl font-bold">
-                        PKR {loading ? '...' : analytics.totalRevenue.toLocaleString()}
+                        PKR {loading ? '...' : (analytics.totalRevenue || 0).toLocaleString()}
                       </div>
                       <div className="text-sm text-muted-foreground">Total Revenue</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-blue-600" />
                     <div>
                       <div className="text-2xl font-bold">
-                        PKR {loading ? '...' : analytics.monthlyRevenue.toLocaleString()}
+                        PKR {loading ? '...' : (analytics.monthlyRevenue || 0).toLocaleString()}
                       </div>
                       <div className="text-sm text-muted-foreground">This Month</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-purple-600" />
                     <div>
                       <div className="text-2xl font-bold">
-                        {loading ? '...' : analytics.activeBookings}
+                        {loading ? '...' : (analytics.activeBookings || 0)}
                       </div>
                       <div className="text-sm text-muted-foreground">Active Bookings</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-orange-600" />
                     <div>
                       <div className="text-2xl font-bold">
-                        {loading ? '...' : analytics.pendingReleases}
+                        {loading ? '...' : (analytics.pendingReleases || 0)}
                       </div>
                       <div className="text-sm text-muted-foreground">Pending Releases</div>
                     </div>
@@ -219,12 +246,12 @@ const AdminPaymentDashboard: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <div className="font-medium">
-                          {loading ? '...' : `${analytics.easyPaisaPercentage}%`}
+                          {loading ? '...' : `${analytics.easyPaisaPercentage || 0}%`}
                         </div>
                         <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${analytics.easyPaisaPercentage}%` }}
+                            style={{ width: `${analytics.easyPaisaPercentage || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -236,12 +263,12 @@ const AdminPaymentDashboard: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <div className="font-medium">
-                          {loading ? '...' : `${analytics.jazzCashPercentage}%`}
+                          {loading ? '...' : `${analytics.jazzCashPercentage || 0}%`}
                         </div>
                         <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className="bg-red-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${analytics.jazzCashPercentage}%` }}
+                            style={{ width: `${analytics.jazzCashPercentage || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -259,19 +286,19 @@ const AdminPaymentDashboard: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span>Completed Services</span>
                       <span className="font-medium text-green-600">
-                        {loading ? '...' : analytics.completedBookings}
+                        {loading ? '...' : (analytics.completedBookings || 0)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Active Services</span>
                       <span className="font-medium text-blue-600">
-                        {loading ? '...' : analytics.activeBookings}
+                        {loading ? '...' : (analytics.activeBookings || 0)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Avg. Processing Time</span>
                       <span className="font-medium">
-                        {loading ? '...' : `${analytics.avgProcessingTime} days`}
+                        {loading ? '...' : `${analytics.avgProcessingTime || 0} days`}
                       </span>
                     </div>
                   </div>
@@ -292,7 +319,7 @@ const AdminPaymentDashboard: React.FC = () => {
                     </div>
                     <span className="text-xs text-muted-foreground">Live</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
@@ -301,7 +328,7 @@ const AdminPaymentDashboard: React.FC = () => {
                     <span className="text-xs text-muted-foreground">Just now</span>
                   </div>
 
-                  {analytics.totalRevenue > 0 && (
+                  {(analytics.totalRevenue || 0) > 0 && (
                     <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-purple-600 rounded-full"></div>

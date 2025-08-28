@@ -14,16 +14,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
+import ProviderWallet from "@/components/ProviderWallet";
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listTests as apiList, createTest as apiCreate, updateTest as apiUpdate, deleteTest as apiDelete } from "@/lib/laboratoryApi";
-import { 
-  Microscope, 
-  Calendar, 
-  Users, 
-  Clock, 
-  CheckCircle, 
+import {
+  Microscope,
+  Calendar,
+  Users,
+  Clock,
+  CheckCircle,
   AlertCircle,
   LogOut,
   Bell,
@@ -39,7 +40,8 @@ import {
   Shield,
   User,
   Phone,
-  Download
+  Download,
+  Wallet
 } from "lucide-react";
 
 const LaboratoryDashboard = () => {
@@ -82,7 +84,7 @@ const LaboratoryDashboard = () => {
       const all = ServiceManager.getAllServices();
       // Remove existing laboratory services from this user
       const filtered = all.filter((s: any) => !(s.providerType === 'laboratory' && s.providerId === user.id));
-      
+
       // Add new tests from backend
       const mapped = docs.map((d: any) => ({
         id: String(d._id),
@@ -101,7 +103,7 @@ const LaboratoryDashboard = () => {
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
-      
+
       const next = [...filtered, ...mapped];
       localStorage.setItem('sehatkor_services', JSON.stringify(next));
       window.dispatchEvent(new StorageEvent('storage', { key: 'sehatkor_services' }));
@@ -116,7 +118,7 @@ const LaboratoryDashboard = () => {
       console.log('Fetching laboratory tests for user:', user.id);
       const docs = await apiList();
       console.log('Laboratory tests fetched:', docs);
-      
+
       // Map to UI Test type for table
       const mapped: any[] = docs.map((d: any) => ({
         id: String(d._id),
@@ -132,12 +134,12 @@ const LaboratoryDashboard = () => {
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }));
-      
+
       setTests(mapped);
-      
+
       // Sync to local storage for other pages
       syncServicesFromBackend(docs);
-      
+
     } catch (error) {
       console.error('Error loading tests:', error);
       toast.error('Failed to load tests. Please refresh the page.');
@@ -275,7 +277,7 @@ const LaboratoryDashboard = () => {
     try {
       let imageUrl: string | undefined = undefined;
       let imagePublicId: string | undefined = undefined;
-      
+
       if (testImageFile) {
         setIsUploadingImage(true);
         try {
@@ -325,10 +327,10 @@ const LaboratoryDashboard = () => {
       setTestImagePreview('');
       setTestImageFile(null);
       setIsAddTestOpen(false);
-      
+
       // Reload tests from backend
       await reloadTests();
-      
+
       toast.success("Test added successfully and is now available to all users");
     } catch (error: any) {
       console.error('Error adding test:', error);
@@ -462,7 +464,7 @@ const LaboratoryDashboard = () => {
                     <Input
                       id="testName"
                       value={testForm.name}
-                      onChange={(e) => setTestForm({...testForm, name: e.target.value})}
+                      onChange={(e) => setTestForm({ ...testForm, name: e.target.value })}
                       placeholder="e.g., Complete Blood Count"
                     />
                   </div>
@@ -491,7 +493,7 @@ const LaboratoryDashboard = () => {
                         id="testPrice"
                         type="number"
                         value={testForm.price}
-                        onChange={(e) => setTestForm({...testForm, price: e.target.value})}
+                        onChange={(e) => setTestForm({ ...testForm, price: e.target.value })}
                         placeholder="e.g., 1500"
                       />
                     </div>
@@ -500,14 +502,14 @@ const LaboratoryDashboard = () => {
                       <Input
                         id="testDuration"
                         value={testForm.duration}
-                        onChange={(e) => setTestForm({...testForm, duration: e.target.value})}
+                        onChange={(e) => setTestForm({ ...testForm, duration: e.target.value })}
                         placeholder="e.g., 2"
                       />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="testCategory">Category</Label>
-                    <Select value={testForm.category} onValueChange={(value) => setTestForm({...testForm, category: value})}>
+                    <Select value={testForm.category} onValueChange={(value) => setTestForm({ ...testForm, category: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select test category" />
                       </SelectTrigger>
@@ -523,7 +525,7 @@ const LaboratoryDashboard = () => {
                     <Textarea
                       id="testDescription"
                       value={testForm.description}
-                      onChange={(e) => setTestForm({...testForm, description: e.target.value})}
+                      onChange={(e) => setTestForm({ ...testForm, description: e.target.value })}
                       placeholder="Brief description of the test"
                     />
                   </div>
@@ -536,7 +538,7 @@ const LaboratoryDashboard = () => {
                       <Input
                         id="testCity"
                         value={testForm.city}
-                        onChange={(e) => setTestForm({...testForm, city: e.target.value})}
+                        onChange={(e) => setTestForm({ ...testForm, city: e.target.value })}
                         placeholder="e.g., Karachi"
                       />
                     </div>
@@ -545,7 +547,7 @@ const LaboratoryDashboard = () => {
                       <Textarea
                         id="testAddress"
                         value={testForm.detailAddress}
-                        onChange={(e) => setTestForm({...testForm, detailAddress: e.target.value})}
+                        onChange={(e) => setTestForm({ ...testForm, detailAddress: e.target.value })}
                         placeholder="e.g., Floor 2, Medical Plaza, Main Road"
                         rows={2}
                       />
@@ -555,7 +557,7 @@ const LaboratoryDashboard = () => {
                       <Input
                         id="testMapLink"
                         value={testForm.googleMapLink}
-                        onChange={(e) => setTestForm({...testForm, googleMapLink: e.target.value})}
+                        onChange={(e) => setTestForm({ ...testForm, googleMapLink: e.target.value })}
                         placeholder="https://maps.google.com/..."
                       />
                     </div>
@@ -569,9 +571,10 @@ const LaboratoryDashboard = () => {
             </Dialog>
 
             <Tabs defaultValue="tests">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="tests">Tests</TabsTrigger>
                 <TabsTrigger value="bookings">Bookings</TabsTrigger>
+                <TabsTrigger value="wallet">Wallet</TabsTrigger>
               </TabsList>
               <TabsContent value="tests">
                 <div className="space-y-6">
@@ -645,7 +648,7 @@ const LaboratoryDashboard = () => {
                                 <Input
                                   id="testName"
                                   value={testForm.name}
-                                  onChange={(e) => setTestForm({...testForm, name: e.target.value})}
+                                  onChange={(e) => setTestForm({ ...testForm, name: e.target.value })}
                                   placeholder="e.g., Complete Blood Count"
                                 />
                               </div>
@@ -674,7 +677,7 @@ const LaboratoryDashboard = () => {
                                     id="testPrice"
                                     type="number"
                                     value={testForm.price}
-                                    onChange={(e) => setTestForm({...testForm, price: e.target.value})}
+                                    onChange={(e) => setTestForm({ ...testForm, price: e.target.value })}
                                     placeholder="e.g., 1500"
                                   />
                                 </div>
@@ -683,14 +686,14 @@ const LaboratoryDashboard = () => {
                                   <Input
                                     id="testDuration"
                                     value={testForm.duration}
-                                    onChange={(e) => setTestForm({...testForm, duration: e.target.value})}
+                                    onChange={(e) => setTestForm({ ...testForm, duration: e.target.value })}
                                     placeholder="e.g., 2"
                                   />
                                 </div>
                               </div>
                               <div>
                                 <Label htmlFor="testCategory">Category</Label>
-                                <Select value={testForm.category} onValueChange={(value) => setTestForm({...testForm, category: value})}>
+                                <Select value={testForm.category} onValueChange={(value) => setTestForm({ ...testForm, category: value })}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select test category" />
                                   </SelectTrigger>
@@ -706,7 +709,7 @@ const LaboratoryDashboard = () => {
                                 <Textarea
                                   id="testDescription"
                                   value={testForm.description}
-                                  onChange={(e) => setTestForm({...testForm, description: e.target.value})}
+                                  onChange={(e) => setTestForm({ ...testForm, description: e.target.value })}
                                   placeholder="Brief description of the test"
                                 />
                               </div>
@@ -719,7 +722,7 @@ const LaboratoryDashboard = () => {
                                   <Input
                                     id="testCity"
                                     value={testForm.city}
-                                    onChange={(e) => setTestForm({...testForm, city: e.target.value})}
+                                    onChange={(e) => setTestForm({ ...testForm, city: e.target.value })}
                                     placeholder="e.g., Karachi"
                                   />
                                 </div>
@@ -728,7 +731,7 @@ const LaboratoryDashboard = () => {
                                   <Textarea
                                     id="testAddress"
                                     value={testForm.detailAddress}
-                                    onChange={(e) => setTestForm({...testForm, detailAddress: e.target.value})}
+                                    onChange={(e) => setTestForm({ ...testForm, detailAddress: e.target.value })}
                                     placeholder="e.g., Floor 2, Medical Plaza, Main Road"
                                     rows={2}
                                   />
@@ -738,7 +741,7 @@ const LaboratoryDashboard = () => {
                                   <Input
                                     id="testMapLink"
                                     value={testForm.googleMapLink}
-                                    onChange={(e) => setTestForm({...testForm, googleMapLink: e.target.value})}
+                                    onChange={(e) => setTestForm({ ...testForm, googleMapLink: e.target.value })}
                                     placeholder="https://maps.google.com/..."
                                   />
                                 </div>
@@ -872,8 +875,8 @@ const LaboratoryDashboard = () => {
                         <CardDescription>Bookings from patients for your services</CardDescription>
                       </div>
                       {bookings.length > 0 && (
-                        <Button 
-                          variant="destructive" 
+                        <Button
+                          variant="destructive"
                           size="sm"
                           onClick={deleteAllBookings}
                           className="w-full sm:w-auto"
@@ -1004,6 +1007,10 @@ const LaboratoryDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              <TabsContent value="wallet">
+                <ProviderWallet />
+              </TabsContent>
             </Tabs>
 
             <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
@@ -1017,16 +1024,16 @@ const LaboratoryDashboard = () => {
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="scheduleTime">Appointment Time</Label>
-                    <Input 
+                    <Input
                       id="scheduleTime"
-                      type="datetime-local" 
+                      type="datetime-local"
                       value={scheduleDetails.scheduledTime}
                       onChange={(e) => setScheduleDetails(prev => ({ ...prev, scheduledTime: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="communicationChannel">Communication Channel</Label>
-                    <Select 
+                    <Select
                       value={scheduleDetails.communicationChannel}
                       onValueChange={(value) => setScheduleDetails(prev => ({ ...prev, communicationChannel: value }))}
                     >
@@ -1058,7 +1065,7 @@ const LaboratoryDashboard = () => {
               <CardContent>
                 <div className="text-center mb-6">
                   <div className="mb-4">
-                    <ProfileImageUpload 
+                    <ProfileImageUpload
                       currentImage={user?.avatar}
                       userName={user?.name || 'Laboratory'}
                       size="lg"
@@ -1080,8 +1087,8 @@ const LaboratoryDashboard = () => {
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
-                    <Button 
-                      className="w-full" 
+                    <Button
+                      className="w-full"
                       variant="secondary"
                       onClick={() => navigate(`/provider/${user?.id}`)}
                     >
@@ -1094,7 +1101,7 @@ const LaboratoryDashboard = () => {
             </Card>
 
             {/* Edit Profile Dialog */}
-            <EditProfileDialog 
+            <EditProfileDialog
               open={isEditProfileOpen}
               onOpenChange={setIsEditProfileOpen}
               role={(user?.role as any) || 'laboratory'}

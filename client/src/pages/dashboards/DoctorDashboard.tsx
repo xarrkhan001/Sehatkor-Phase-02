@@ -17,12 +17,13 @@ import { listServices as apiList } from "@/lib/doctorApi";
 import ServiceManagement from "@/components/ServiceManagement";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
-import { 
-  Stethoscope, 
-  Calendar, 
-  Users, 
-  Clock, 
-  CheckCircle, 
+import ProviderWallet from "@/components/ProviderWallet";
+import {
+  Stethoscope,
+  Calendar,
+  Users,
+  Clock,
+  CheckCircle,
   AlertCircle,
   LogOut,
   Bell,
@@ -32,7 +33,8 @@ import {
   Plus,
   Trash2,
   Eye,
-  User
+  User,
+  Wallet
 } from "lucide-react";
 
 const DoctorDashboard = () => {
@@ -57,7 +59,7 @@ const DoctorDashboard = () => {
     return Number.isFinite(num) ? num : 0;
   };
 
-  
+
 
   const syncLocalFromDocs = (docs: any[]) => {
     if (!user?.id) return;
@@ -93,7 +95,7 @@ const DoctorDashboard = () => {
       console.log('Fetching doctor services for user:', user.id);
       const docs = await apiList();
       console.log('Doctor services fetched:', docs);
-      
+
       // Map to UI Service type for table
       const mapped: DoctorService[] = docs.map((d: any) => ({
         id: String(d._id),
@@ -347,9 +349,10 @@ const DoctorDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-6">
             <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="w-full -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto flex gap-2 sm:grid sm:grid-cols-2 snap-x snap-mandatory">
+              <TabsList className="w-full -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto flex gap-2 sm:grid sm:grid-cols-3 snap-x snap-mandatory">
                 <TabsTrigger value="bookings" className="shrink-0 whitespace-nowrap snap-start">Bookings</TabsTrigger>
                 <TabsTrigger value="services" className="shrink-0 whitespace-nowrap snap-start">Services</TabsTrigger>
+                <TabsTrigger value="wallet" className="shrink-0 whitespace-nowrap snap-start">Wallet</TabsTrigger>
               </TabsList>
 
               <TabsContent value="bookings" className="space-y-4">
@@ -361,8 +364,8 @@ const DoctorDashboard = () => {
                         <CardDescription>Bookings from patients for your services</CardDescription>
                       </div>
                       {bookings.length > 0 && (
-                        <Button 
-                          variant="destructive" 
+                        <Button
+                          variant="destructive"
                           size="sm"
                           onClick={deleteAllBookings}
                           className="shrink-0 self-start sm:self-auto w-full sm:w-auto"
@@ -450,16 +453,16 @@ const DoctorDashboard = () => {
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
                       <Label htmlFor="scheduleTime">Appointment Time</Label>
-                      <Input 
+                      <Input
                         id="scheduleTime"
-                        type="datetime-local" 
+                        type="datetime-local"
                         value={scheduleDetails.scheduledTime}
                         onChange={(e) => setScheduleDetails(prev => ({ ...prev, scheduledTime: e.target.value }))}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="communicationChannel">Communication Channel</Label>
-                      <Select 
+                      <Select
                         value={scheduleDetails.communicationChannel}
                         onValueChange={(value) => setScheduleDetails(prev => ({ ...prev, communicationChannel: value }))}
                       >
@@ -511,6 +514,10 @@ const DoctorDashboard = () => {
                   }}
                 />
               </TabsContent>
+
+              <TabsContent value="wallet" className="space-y-4">
+                <ProviderWallet />
+              </TabsContent>
             </Tabs>
           </div>
 
@@ -523,7 +530,7 @@ const DoctorDashboard = () => {
               <CardContent>
                 <div className="text-center mb-6">
                   <div className="mb-4">
-                    <ProfileImageUpload 
+                    <ProfileImageUpload
                       currentImage={user?.avatar}
                       userName={user?.name || 'Doctor'}
                       size="lg"
@@ -543,8 +550,8 @@ const DoctorDashboard = () => {
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
-                    <Button 
-                      className="w-full" 
+                    <Button
+                      className="w-full"
                       variant="secondary"
                       onClick={() => navigate(`/provider/${user?.id}`)}
                     >
@@ -557,7 +564,7 @@ const DoctorDashboard = () => {
             </Card>
 
             {/* Edit Profile Dialog */}
-            <EditProfileDialog 
+            <EditProfileDialog
               open={isEditProfileOpen}
               onOpenChange={setIsEditProfileOpen}
               role={(user?.role as any) || 'doctor'}
