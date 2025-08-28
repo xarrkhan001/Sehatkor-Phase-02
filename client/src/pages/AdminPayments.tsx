@@ -9,7 +9,7 @@ const AdminPayments = () => {
       <div className="flex items-center gap-4 mb-8">
         <Button 
           variant="outline" 
-          onClick={() => window.history.back()}
+          onClick={() => window.location.href = '/admin'}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />

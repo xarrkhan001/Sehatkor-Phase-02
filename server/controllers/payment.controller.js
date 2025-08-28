@@ -626,11 +626,14 @@ export const getProvidersSummary = async (req, res) => {
         .sort({ createdAt: -1 });
 
       if (payments.length > 0) {
-        // Get provider info from first payment or user collection
+        // Get provider info from user collection to include avatar
+        const providerUser = await User.findById(stat._id).select('name avatar role');
+        
         const providerInfo = {
           providerId: stat._id,
-          providerName: payments[0].providerName || 'Unknown Provider',
-          providerType: payments[0].providerType || 'unknown'
+          providerName: providerUser?.name || payments[0].providerName || 'Unknown Provider',
+          providerType: providerUser?.role || payments[0].providerType || 'unknown',
+          providerAvatar: providerUser?.avatar || null
         };
 
         providersData.push({
