@@ -7,7 +7,9 @@ import {
   markServiceCompleted,
   releasePaymentToProvider,
   getPendingReleasePayments,
-  getPaymentStats
+  getPaymentStats,
+  getProviderWallet,
+  requestWithdrawal
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -23,5 +25,9 @@ router.get('/provider/:providerId', getPaymentsByProvider);
 // Service completion and payment release
 router.put('/:paymentId/complete', markServiceCompleted);
 router.put('/:paymentId/release', releasePaymentToProvider);
+
+// Provider wallet and withdrawal routes
+router.get('/wallet/:providerId', getProviderWallet);
+router.post('/withdraw/:providerId', requestWithdrawal);
 
 export default router;

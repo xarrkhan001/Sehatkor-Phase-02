@@ -8,13 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { 
-  CreditCard, 
-  Filter, 
-  Search, 
-  Eye, 
-  CheckCircle, 
-  Clock, 
+import {
+  CreditCard,
+  Filter,
+  Search,
+  Eye,
+  CheckCircle,
+  Clock,
   DollarSign,
   Users,
   TrendingUp,
@@ -69,17 +69,25 @@ const AdminPaymentRecords: React.FC = () => {
 
   const fetchPayments = async () => {
     try {
+      console.log('📋 Fetching payment records...');
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (providerTypeFilter !== 'all') params.append('providerType', providerTypeFilter);
 
-      const response = await fetch(`/api/payments?${params.toString()}`);
-      const data = await response.json();
+      const response = await fetch(`http://localhost:4000/api/payments?${params.toString()}`);
+      console.log('📊 Payment records response status:', response.status);
       
+      const data = await response.json();
+      console.log('📝 Payment records data:', data);
+
       if (data.success) {
         setPayments(data.payments);
+      } else {
+        console.error('❌ Failed to fetch payments:', data.message);
+        toast.error(data.message || 'Failed to fetch payments');
       }
     } catch (error) {
+      console.error('💥 Payment fetch error:', error);
       toast.error('Failed to fetch payments');
     } finally {
       setLoading(false);
@@ -88,65 +96,85 @@ const AdminPaymentRecords: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/payments/stats');
-      const data = await response.json();
+      console.log('📈 Fetching payment statistics...');
+      const response = await fetch('http://localhost:4000/api/payments/stats');
+      console.log('📊 Payment stats response status:', response.status);
       
+      const data = await response.json();
+      console.log('📋 Payment stats data:', data);
+
       if (data.success) {
         setStats(data.stats);
+      } else {
+        console.error('❌ Failed to fetch payment stats:', data.message);
       }
     } catch (error) {
-      console.error('Failed to fetch payment stats');
+      console.error('💥 Payment stats fetch error:', error);
     }
   };
 
   const markServiceCompleted = async (paymentId: string) => {
     try {
-      const response = await fetch(`/api/payments/${paymentId}/complete`, {
+      console.log('✅ Marking service as completed:', paymentId);
+      const response = await fetch(`http://localhost:4000/api/payments/${paymentId}/complete`, {
         method: 'PUT',
       });
-      
+
+      console.log('🔄 Service completion response status:', response.status);
       const data = await response.json();
-      
+      console.log('📋 Service completion data:', data);
+
       if (data.success) {
+        console.log('✅ Service marked as completed successfully');
         toast.success('Service marked as completed');
         fetchPayments();
         fetchStats();
       } else {
+        console.error('❌ Failed to mark service as completed:', data.message);
         throw new Error(data.message);
       }
     } catch (error: any) {
+      console.error('💥 Service completion error:', error);
       toast.error(error.message || 'Failed to mark service as completed');
     }
   };
 
   const releasePayment = async () => {
     if (!selectedPayment) return;
-    
+
     setReleasingPayment(true);
     try {
-      const response = await fetch(`/api/payments/${selectedPayment._id}/release`, {
+      console.log('💰 Releasing payment to provider:', selectedPayment._id);
+      const adminId = localStorage.getItem('userId') || 'admin-user';
+      
+      const response = await fetch(`http://localhost:4000/api/payments/${selectedPayment._id}/release`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          adminId: 'current-admin-id', // Replace with actual admin ID
+          adminId: adminId,
           releaseNotes
         }),
       });
-      
+
+      console.log('💸 Payment release response status:', response.status);
       const data = await response.json();
-      
+      console.log('📋 Payment release data:', data);
+
       if (data.success) {
+        console.log('✅ Payment released successfully to provider');
         toast.success('Payment released to provider successfully');
         setSelectedPayment(null);
         setReleaseNotes('');
         fetchPayments();
         fetchStats();
       } else {
+        console.error('❌ Payment release failed:', data.message);
         throw new Error(data.message);
       }
     } catch (error: any) {
+      console.error('💥 Payment release error:', error);
       toast.error(error.message || 'Failed to release payment');
     } finally {
       setReleasingPayment(false);
@@ -154,12 +182,12 @@ const AdminPaymentRecords: React.FC = () => {
   };
 
   const filteredPayments = payments.filter(payment => {
-    const matchesSearch = 
+    const matchesSearch =
       payment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.providerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesSearch;
   });
 
@@ -178,7 +206,7 @@ const AdminPaymentRecords: React.FC = () => {
       easypaisa: { variant: "default", label: "EasyPaisa" },
       jazzcash: { variant: "secondary", label: "JazzCash" }
     };
-    
+
     const config = variants[method] || { variant: "outline", label: method };
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
@@ -199,7 +227,7 @@ const AdminPaymentRecords: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -211,7 +239,7 @@ const AdminPaymentRecords: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -223,7 +251,7 @@ const AdminPaymentRecords: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -259,7 +287,7 @@ const AdminPaymentRecords: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
@@ -270,7 +298,7 @@ const AdminPaymentRecords: React.FC = () => {
                 <SelectItem value="released">Released</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={providerTypeFilter} onValueChange={setProviderTypeFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by type" />
@@ -387,7 +415,7 @@ const AdminPaymentRecords: React.FC = () => {
                               </div>
                             </DialogContent>
                           </Dialog>
-                          
+
                           {!payment.serviceCompleted && (
                             <Button
                               variant="outline"
@@ -397,7 +425,7 @@ const AdminPaymentRecords: React.FC = () => {
                               Mark Complete
                             </Button>
                           )}
-                          
+
                           {payment.serviceCompleted && !payment.releasedToProvider && (
                             <Dialog>
                               <DialogTrigger asChild>

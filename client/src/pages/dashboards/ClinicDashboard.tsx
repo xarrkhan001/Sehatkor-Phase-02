@@ -14,17 +14,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
+import ProviderWallet from "@/components/ProviderWallet";
 
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listServices as apiList, createService as apiCreate, updateService as apiUpdate, deleteService as apiDelete } from "@/lib/clinicApi";
-import { 
-  Building, 
-  Calendar, 
-  Users, 
-  Clock, 
-  CheckCircle, 
+import {
+  Building,
+  Calendar,
+  Users,
+  Clock,
+  CheckCircle,
   AlertCircle,
   LogOut,
   Bell,
@@ -38,7 +39,8 @@ import {
   Trash2,
   DollarSign,
   Phone,
-  User
+  User,
+  Wallet
 } from "lucide-react";
 
 const ClinicDashboard = () => {
@@ -75,7 +77,7 @@ const ClinicDashboard = () => {
   });
 
   const clinicTypes = [
-    'General Hospital', 'Specialized Hospital', 'Eye Hospital', 
+    'General Hospital', 'Specialized Hospital', 'Eye Hospital',
     'Heart Hospital', 'Children Hospital', 'Emergency Center'
   ];
 
@@ -269,7 +271,7 @@ const ClinicDashboard = () => {
           if (svc?.price != null) {
             updates[b._id] = Number(svc.price) || 0;
           }
-        } catch {}
+        } catch { }
       }
       if (Object.keys(updates).length) {
         setBookingPrices(prev => ({ ...prev, ...updates }));
@@ -461,9 +463,10 @@ const ClinicDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="services">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="services">Services</TabsTrigger>
                 <TabsTrigger value="bookings">Bookings</TabsTrigger>
+                <TabsTrigger value="wallet">Wallet</TabsTrigger>
               </TabsList>
               <TabsContent value="services">
                 {/* Services Management */}
@@ -494,11 +497,11 @@ const ClinicDashboard = () => {
                               <Input
                                 id="serviceName"
                                 value={serviceForm.name}
-                                onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
+                                onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
                                 placeholder="e.g., X-Ray Scan"
                               />
                             </div>
-                            
+
                             <div>
                               <Label>Service Image</Label>
                               <ImageUpload
@@ -520,7 +523,7 @@ const ClinicDashboard = () => {
                                   id="servicePrice"
                                   type="number"
                                   value={serviceForm.price}
-                                  onChange={(e) => setServiceForm({...serviceForm, price: e.target.value})}
+                                  onChange={(e) => setServiceForm({ ...serviceForm, price: e.target.value })}
                                   placeholder="e.g., 3000"
                                 />
                               </div>
@@ -529,7 +532,7 @@ const ClinicDashboard = () => {
                                 <Input
                                   id="serviceDuration"
                                   value={serviceForm.duration}
-                                  onChange={(e) => setServiceForm({...serviceForm, duration: e.target.value})}
+                                  onChange={(e) => setServiceForm({ ...serviceForm, duration: e.target.value })}
                                   placeholder="e.g., 45"
                                 />
                               </div>
@@ -539,7 +542,7 @@ const ClinicDashboard = () => {
                               <Input
                                 id="serviceDepartment"
                                 value={serviceForm.department}
-                                onChange={(e) => setServiceForm({...serviceForm, department: e.target.value})}
+                                onChange={(e) => setServiceForm({ ...serviceForm, department: e.target.value })}
                                 placeholder="e.g., Cardiology"
                               />
                             </div>
@@ -548,11 +551,11 @@ const ClinicDashboard = () => {
                               <Textarea
                                 id="serviceDescription"
                                 value={serviceForm.description}
-                                onChange={(e) => setServiceForm({...serviceForm, description: e.target.value})}
+                                onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
                                 placeholder="Brief description of the service"
                               />
                             </div>
-                            
+
                             {/* Location Fields */}
                             <div className="space-y-3 border-t pt-3">
                               <h4 className="font-medium text-sm">Location Information</h4>
@@ -561,7 +564,7 @@ const ClinicDashboard = () => {
                                 <Input
                                   id="serviceCity"
                                   value={serviceForm.city}
-                                  onChange={(e) => setServiceForm({...serviceForm, city: e.target.value})}
+                                  onChange={(e) => setServiceForm({ ...serviceForm, city: e.target.value })}
                                   placeholder="e.g., Karachi"
                                 />
                               </div>
@@ -570,7 +573,7 @@ const ClinicDashboard = () => {
                                 <Textarea
                                   id="serviceAddress"
                                   value={serviceForm.detailAddress}
-                                  onChange={(e) => setServiceForm({...serviceForm, detailAddress: e.target.value})}
+                                  onChange={(e) => setServiceForm({ ...serviceForm, detailAddress: e.target.value })}
                                   placeholder="Complete address with landmarks"
                                   rows={2}
                                 />
@@ -580,7 +583,7 @@ const ClinicDashboard = () => {
                                 <Input
                                   id="serviceGoogleMap"
                                   value={serviceForm.googleMapLink}
-                                  onChange={(e) => setServiceForm({...serviceForm, googleMapLink: e.target.value})}
+                                  onChange={(e) => setServiceForm({ ...serviceForm, googleMapLink: e.target.value })}
                                   placeholder="https://maps.google.com/..."
                                 />
                               </div>
@@ -725,8 +728,8 @@ const ClinicDashboard = () => {
                         <CardDescription>Bookings from patients for your services</CardDescription>
                       </div>
                       {bookings.length > 0 && (
-                        <Button 
-                          variant="destructive" 
+                        <Button
+                          variant="destructive"
                           size="sm"
                           onClick={deleteAllBookings}
                           className="shrink-0 self-start sm:self-auto w-full sm:w-auto"
@@ -804,6 +807,10 @@ const ClinicDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              <TabsContent value="wallet">
+                <ProviderWallet />
+              </TabsContent>
             </Tabs>
 
             <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
@@ -817,16 +824,16 @@ const ClinicDashboard = () => {
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="scheduleTime">Appointment Time</Label>
-                    <Input 
+                    <Input
                       id="scheduleTime"
-                      type="datetime-local" 
+                      type="datetime-local"
                       value={scheduleDetails.scheduledTime}
                       onChange={(e) => setScheduleDetails(prev => ({ ...prev, scheduledTime: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="communicationChannel">Communication Channel</Label>
-                    <Select 
+                    <Select
                       value={scheduleDetails.communicationChannel}
                       onValueChange={(value) => setScheduleDetails(prev => ({ ...prev, communicationChannel: value }))}
                     >
@@ -859,7 +866,7 @@ const ClinicDashboard = () => {
               <CardContent>
                 <div className="text-center mb-6">
                   <div className="mb-4">
-                    <ProfileImageUpload 
+                    <ProfileImageUpload
                       currentImage={user?.avatar}
                       userName={user?.name || 'Clinic'}
                       size="lg"
