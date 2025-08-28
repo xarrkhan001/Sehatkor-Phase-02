@@ -16,6 +16,7 @@ export const getAllPublicServices = async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 0);
     const limitRaw = Number(req.query.limit) || 0;
     const limit = limitRaw > 0 ? Math.min(limitRaw, 100) : 0; // cap to 100
+    const disease = (req.query.disease || "").toString().trim();
 
     // Fetch services from all providers with provider details
     let doctorServices = [];
@@ -32,8 +33,39 @@ export const getAllPublicServices = async (req, res) => {
     };
 
     if (!hasType || type === "doctor") {
+      // Build query for doctor services, optionally filtered by disease
+      const docQuery = {};
+      if (disease) {
+        // Escape regex special characters to avoid unintended patterns
+        const escapeRegExp = (s = "") => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const normalized = disease.trim();
+        // Also create a variant with parenthetical content removed, e.g. "(DNS)"
+        const withoutParens = normalized
+          .replace(/\s*\([^)]*\)\s*/g, " ") // remove ( ... )
+          .replace(/\s+/g, " ")
+          .trim();
+        // Extract acronym within parentheses if present, e.g., DNS from "(DNS)"
+        const m = normalized.match(/\(([^)]+)\)/);
+        const acronym = m && m[1] ? m[1].trim() : "";
+
+        const rxList = [
+          // exact match with optional surrounding whitespace
+          new RegExp(`^\\s*${escapeRegExp(normalized)}\\s*$`, "i"),
+        ];
+        if (withoutParens && withoutParens.toLowerCase() !== normalized.toLowerCase()) {
+          rxList.push(new RegExp(`^\\s*${escapeRegExp(withoutParens)}\\s*$`, "i"));
+        }
+        if (acronym) {
+          rxList.push(new RegExp(`^\\s*${escapeRegExp(acronym)}\\s*$`, "i"));
+        }
+        // Fallback: partial contains to catch minor punctuation/spacing variants
+        rxList.push(new RegExp(`${escapeRegExp(withoutParens || normalized)}`, "i"));
+
+        // Match diseases array elements against any of the variants
+        docQuery.diseases = { $in: rxList };
+      }
       doctorServices = await applyPaging(
-        DoctorService.find({})
+        DoctorService.find(docQuery)
           .populate("providerId", "phone name avatar")
           .sort({ createdAt: -1 })
       ).lean();

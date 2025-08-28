@@ -1018,11 +1018,6 @@ const SearchPage = () => {
     </div>
   </div>
 
-  {/* Description */}
-  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-    {service.description}
-  </p>
-
   {/* Rating Badge, Location, Home Service, WhatsApp */}
   <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
     <RatingBadge 

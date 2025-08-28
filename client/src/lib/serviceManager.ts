@@ -45,6 +45,8 @@ export interface BaseService {
   providerPhone?: string;
   averageRating?: number;
   ratingCounts?: { excellent: number; good: number; fair: number } | null;
+  hospitalClinic?: string;
+  [key: string]: any; // Allow additional properties
 }
 
 export interface DoctorService extends BaseService {
@@ -222,6 +224,7 @@ class ServiceManager {
       providerName: service.providerName || service.providerId?.name || 'Provider',
       image: service.imageUrl,
       duration: service.duration,
+      hospitalClinic: service.hospitalClinic,
       city: service.city,
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
@@ -287,6 +290,7 @@ class ServiceManager {
       providerName: service.providerName || service.providerId?.name || 'Provider',
       image: service.imageUrl,
       duration: service.duration,
+      hospitalClinic: service.hospitalClinic,
       city: service.city,
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
@@ -349,6 +353,7 @@ class ServiceManager {
         providerName: service.providerName,
         image: service.imageUrl,
         duration: service.duration,
+        hospitalClinic: service.hospitalClinic,
         city: service.city,
         detailAddress: service.detailAddress,
         googleMapLink: service.googleMapLink,

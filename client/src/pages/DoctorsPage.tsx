@@ -261,10 +261,15 @@ const DoctorsPage = () => {
   };
 
   const filteredServices = useMemo(() => {
-    return doctorServices.filter(service => {
-      return service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             service.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = (searchTerm || "").toLowerCase();
+    if (!q) return doctorServices;
+    return doctorServices.filter((service: any) => {
+      const inText = service.name.toLowerCase().includes(q)
+        || service.provider.toLowerCase().includes(q)
+        || service.description.toLowerCase().includes(q);
+      const inDiseases = Array.isArray(service.diseases)
+        && service.diseases.some((d: string) => (d || "").toLowerCase().includes(q));
+      return inText || inDiseases;
     });
   }, [doctorServices, searchTerm]);
 
@@ -604,11 +609,6 @@ const DoctorsPage = () => {
                     </Badge>
                   </div>
                 </div>
-
-                {/* Description */}
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                  {service.description}
-                </p>
 
                 {/* Address + Disease (badge on right) */}
                 <div className="flex items-center justify-between gap-3 mb-4">

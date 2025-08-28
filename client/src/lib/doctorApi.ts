@@ -30,6 +30,11 @@ export type DoctorServiceDoc = {
   diseases?: string[];
   createdAt: string;
   updatedAt: string;
+  hospitalClinic?: string;
+  googleMapLink?: string;
+  city?: string;
+  detailAddress?: string;
+  [key: string]: any; // Allow additional properties
 };
 
 function authHeaders() {
