@@ -460,16 +460,6 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="serviceDescription">Description</Label>
-                  <Textarea
-                    id="serviceDescription"
-                    value={serviceForm.description}
-                    onChange={(e) => setServiceForm({...serviceForm, description: e.target.value})}
-                    placeholder="Brief description of the service"
-                  />
-                </div>
-
                 {/* Location Fields */}
                 <div className="space-y-3 border-t pt-3">
                   <h4 className="font-medium text-sm">Location Information</h4>
