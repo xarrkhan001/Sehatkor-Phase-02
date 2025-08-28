@@ -26,6 +26,8 @@ import {
   AlertCircle,
   User
 } from "lucide-react";
+import ProfileImageUpload from "@/components/ProfileImageUpload";
+import EditProfileDialog from "@/components/EditProfileDialog";
 
 const PatientDashboard = () => {
   const { user, logout } = useAuth();
@@ -33,6 +35,7 @@ const PatientDashboard = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [bookingPrices, setBookingPrices] = useState<Record<string, number>>({});
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   const [stats] = useState({
     totalBookings: 8,
@@ -418,12 +421,12 @@ const PatientDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center space-x-4 mb-6">
-                  <Avatar className="w-16 h-16">
-                    <AvatarImage src="" alt={user?.name} />
-                    <AvatarFallback className="text-lg font-semibold">
-                      {user?.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
+                  <ProfileImageUpload
+                    currentImage={user?.avatar}
+                    userName={user?.name}
+                    size="lg"
+                    showEditButton={true}
+                  />
                   <div>
                     <h3 className="text-lg font-semibold">{user?.name}</h3>
                     <Badge variant="outline" className="capitalize">{user?.role}</Badge>
@@ -437,25 +440,27 @@ const PatientDashboard = () => {
                   </div>
                   <div className="flex items-center space-x-3 text-sm">
                     <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span>{user?.phone || 'Not provided'}</span>
+                    <span>{(user as any)?.phone || 'Not provided'}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2 mt-6">
-                  <Button className="w-full" variant="outline">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => setEditDialogOpen(true)}
+                  >
                     <Edit className="w-4 h-4 mr-2" />
                     Edit Profile
                   </Button>
-                  {user?.role === 'provider' && (
-                    <Button 
-                      className="w-full" 
-                      variant="secondary"
-                      onClick={() => navigate(`/provider/${user?.id}`)}
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      See Public Profile
-                    </Button>
-                  )}
+                  <Button 
+                    className="w-full" 
+                    variant="secondary"
+                    onClick={() => navigate(`/patient/${user?.id}`)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    See Public Profile
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -483,6 +488,16 @@ const PatientDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Dialog */}
+      <EditProfileDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        role="doctor"
+        name={user?.name}
+        specialization={(user as any)?.specialization}
+        avatar={user?.avatar}
+      />
     </div>
   );
 };

@@ -24,6 +24,7 @@ interface Payment {
   _id: string;
   serviceName: string;
   patientName: string;
+  patientId?: string;
   amount: number;
   currency: string;
   serviceCompleted: boolean;
@@ -312,7 +313,12 @@ const AdminProviderPayments: React.FC = () => {
                         <div className="flex-1">
                           <div className="font-medium text-sm">{payment.serviceName}</div>
                           <div className="text-xs text-muted-foreground">
-                            Patient: {payment.patientName} • 
+                            Patient: <span 
+                              className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline"
+                              onClick={() => window.open(`/patient/${payment.patientId || 'unknown'}`, '_blank')}
+                            >
+                              {payment.patientName}
+                            </span> • 
                             {new Date(payment.createdAt).toLocaleDateString()}
                           </div>
                         </div>
@@ -461,7 +467,12 @@ const AdminProviderPayments: React.FC = () => {
                         <div className="text-sm text-muted-foreground flex items-center gap-4 mt-1">
                           <div className="flex items-center gap-1">
                             <User className="w-3 h-3" />
-                            Patient: {payment.patientName}
+                            Patient: <span 
+                              className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline"
+                              onClick={() => window.open(`/patient/${payment.patientId || 'unknown'}`, '_blank')}
+                            >
+                              {payment.patientName}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
