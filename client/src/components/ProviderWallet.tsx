@@ -20,8 +20,20 @@ import {
   CreditCard,
   ArrowUpRight,
   Calendar,
-  User
+  User,
+  Trash2
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import io from 'socket.io-client';
 
 interface Payment {
@@ -65,6 +77,10 @@ const ProviderWallet: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loadingWithdrawals, setLoadingWithdrawals] = useState<boolean>(false);
+  const [selectedWithdrawals, setSelectedWithdrawals] = useState<string[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMode, setConfirmMode] = useState<'single' | 'bulk' | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
   const [withdrawalData, setWithdrawalData] = useState({
@@ -221,6 +237,81 @@ const ProviderWallet: React.FC = () => {
       toast.error('Failed to process withdrawal request');
     }
   };
+
+  const handleDeleteWithdrawal = async (withdrawalId: string) => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/${user.id}/${withdrawalId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Delete failed');
+      toast.success('Withdrawal deleted');
+      // Refresh list and clear selection of this id
+      setSelectedWithdrawals(prev => prev.filter(id => id !== withdrawalId));
+      fetchWithdrawals();
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to delete withdrawal');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!user?.id) return;
+    if (selectedWithdrawals.length === 0) return toast.error('No items selected');
+    try {
+      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+        body: JSON.stringify({ providerId: user.id, ids: selectedWithdrawals }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Bulk delete failed');
+      toast.success(`Deleted ${data.deletedCount ?? selectedWithdrawals.length} item(s)`);
+      setSelectedWithdrawals([]);
+      fetchWithdrawals();
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to bulk delete');
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!user?.id) return;
+    if (withdrawals.length === 0) return;
+    const ok = window.confirm(`Delete ALL ${withdrawals.length} withdrawals for this provider?`);
+    if (!ok) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/provider/${user.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Delete all failed');
+      toast.success(`Deleted ${data.deletedCount ?? withdrawals.length} withdrawal(s)`);
+      setSelectedWithdrawals([]);
+      fetchWithdrawals();
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to delete all');
+    }
+  };
+
+  const toggleSelected = (id: string, checked: boolean | 'indeterminate') => {
+    setSelectedWithdrawals(prev => {
+      const set = new Set(prev);
+      if (checked) set.add(id); else set.delete(id);
+      return Array.from(set);
+    });
+  };
+
+  const allSelected = withdrawals.length > 0 && selectedWithdrawals.length === withdrawals.length;
+  const anySelected = selectedWithdrawals.length > 0;
 
   const getStatusBadge = (payment: Payment) => {
     if (payment.releasedToProvider) {
@@ -462,10 +553,35 @@ const ProviderWallet: React.FC = () => {
       {/* Withdrawal History */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ArrowUpRight className="w-5 h-5" />
-            Withdrawal History ({withdrawals.length})
-          </CardTitle>
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle className="flex items-center gap-2">
+              <ArrowUpRight className="w-5 h-5" />
+              Withdrawal History ({withdrawals.length})
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(val) => {
+                  if (val) setSelectedWithdrawals(withdrawals.map(w => w._id));
+                  else setSelectedWithdrawals([]);
+                }}
+                aria-label="Select all"
+              />
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={!anySelected}
+                onClick={() => {
+                  if (!anySelected) return toast.error('No items selected');
+                  setConfirmMode('bulk');
+                  setPendingId(null);
+                  setConfirmOpen(true);
+                }}
+              >
+                Delete Selected
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loadingWithdrawals ? (
@@ -483,6 +599,13 @@ const ProviderWallet: React.FC = () => {
               {withdrawals.map((w) => (
                 <div key={w._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
+                    <div className="mb-2">
+                      <Checkbox
+                        checked={selectedWithdrawals.includes(w._id)}
+                        onCheckedChange={(val) => toggleSelected(w._id, !!val)}
+                        aria-label={`Select ${w._id}`}
+                      />
+                    </div>
                     <div className="font-medium">{w.paymentMethod?.toUpperCase()} Withdrawal</div>
                     <div className="text-sm text-muted-foreground flex items-center gap-4">
                       <div className="flex items-center gap-1">
@@ -497,7 +620,7 @@ const ProviderWallet: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <div className="font-medium text-lg">PKR {w.amount.toLocaleString()}</div>
-                    <div className="flex items-center justify-end">
+                    <div className="flex items-center justify-end gap-2">
                       {w.status === 'completed' && (
                         <Badge variant="default" className="bg-green-600">Completed</Badge>
                       )}
@@ -507,6 +630,18 @@ const ProviderWallet: React.FC = () => {
                       {w.status === 'rejected' && (
                         <Badge variant="destructive">Rejected</Badge>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title={'Delete this withdrawal'}
+                        onClick={() => {
+                          setConfirmMode('single');
+                          setPendingId(w._id);
+                          setConfirmOpen(true);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -515,6 +650,39 @@ const ProviderWallet: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirm Delete Dialog */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmMode === 'single' ? 'Delete withdrawal?' : 'Delete selected withdrawals?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmMode === 'single'
+                ? 'This action will permanently remove this withdrawal from the server.'
+                : `This action will permanently remove ${selectedWithdrawals.length} withdrawal(s) from the server.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (confirmMode === 'single' && pendingId) {
+                  await handleDeleteWithdrawal(pendingId);
+                } else if (confirmMode === 'bulk') {
+                  await handleBulkDelete();
+                }
+                setConfirmOpen(false);
+                setConfirmMode(null);
+                setPendingId(null);
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
