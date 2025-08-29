@@ -14,7 +14,10 @@ import {
   bulkReleasePayments,
   getWithdrawalsByProvider,
   approveAllPendingWithdrawals,
-  approveProviderPendingWithdrawals
+  approveProviderPendingWithdrawals,
+  deleteWithdrawal,
+  bulkDeleteWithdrawals,
+  deleteAllWithdrawalsForProvider
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -38,6 +41,11 @@ router.get('/withdrawals/:providerId', getWithdrawalsByProvider);
 // Admin utilities to remove 'pending' from DB
 router.put('/withdrawals/approve-all', approveAllPendingWithdrawals);
 router.put('/withdrawals/:providerId/approve-pending', approveProviderPendingWithdrawals);
+
+// Deletion routes for withdrawals
+router.delete('/withdrawals/:providerId/:withdrawalId', deleteWithdrawal);
+router.post('/withdrawals/bulk-delete', bulkDeleteWithdrawals);
+router.delete('/withdrawals/provider/:providerId', deleteAllWithdrawalsForProvider);
 
 // Admin provider management routes
 router.get('/providers-summary', getProvidersSummary);

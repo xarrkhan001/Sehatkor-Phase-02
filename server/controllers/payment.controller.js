@@ -206,6 +206,73 @@ export const getWithdrawalsByProvider = async (req, res) => {
     });
   }
 };
+// Delete a single withdrawal for a provider
+export const deleteWithdrawal = async (req, res) => {
+  try {
+    const { providerId, withdrawalId } = req.params;
+    if (!providerId || !withdrawalId) {
+      return res.status(400).json({ success: false, message: 'providerId and withdrawalId are required' });
+    }
+
+    const filter = { _id: withdrawalId };
+    try {
+      // If providerId looks like ObjectId, cast; otherwise rely on schema casting or string compare
+      filter.providerId = mongoose.Types.ObjectId.isValid(providerId)
+        ? new mongoose.Types.ObjectId(providerId)
+        : providerId;
+    } catch {
+      filter.providerId = providerId;
+    }
+
+    const deleted = await Withdrawal.findOneAndDelete(filter);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Withdrawal not found for this provider' });
+    }
+    return res.json({ success: true, message: 'Withdrawal deleted', withdrawalId });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to delete withdrawal', error: error.message });
+  }
+};
+
+// Bulk delete withdrawals for a provider
+export const bulkDeleteWithdrawals = async (req, res) => {
+  try {
+    const { providerId, ids } = req.body || {};
+    if (!providerId || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'providerId and non-empty ids array are required' });
+    }
+
+    const filter = {
+      _id: { $in: ids },
+      providerId: mongoose.Types.ObjectId.isValid(providerId)
+        ? new mongoose.Types.ObjectId(providerId)
+        : providerId,
+    };
+    const result = await Withdrawal.deleteMany(filter);
+    return res.json({ success: true, deletedCount: result.deletedCount || 0 });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to bulk delete withdrawals', error: error.message });
+  }
+};
+
+// Delete all withdrawals for a provider
+export const deleteAllWithdrawalsForProvider = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    if (!providerId) {
+      return res.status(400).json({ success: false, message: 'providerId is required' });
+    }
+    const filter = {
+      providerId: mongoose.Types.ObjectId.isValid(providerId)
+        ? new mongoose.Types.ObjectId(providerId)
+        : providerId,
+    };
+    const result = await Withdrawal.deleteMany(filter);
+    return res.json({ success: true, deletedCount: result.deletedCount || 0 });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to delete all withdrawals', error: error.message });
+  }
+};
 
 // Mark service as completed (triggers payment release eligibility)
 export const markServiceCompleted = async (req, res) => {
