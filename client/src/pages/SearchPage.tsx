@@ -196,7 +196,7 @@ const SearchPage = () => {
   // Listen for per-user immediate badge updates (optimistic UI)
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent' | 'good' | 'fair' | 'poor' } | undefined;
       if (!detail) return;
       setAllServices(prev => prev.map(s => {
         const matches = s.id === detail.serviceId && (s as any)._providerType === detail.serviceType;
@@ -229,8 +229,8 @@ const SearchPage = () => {
   // Generate mock address based on provider and type
   const getMockAddress = (provider: string, type: string, location: string): string => {
     const street = Math.floor(Math.random() * 100) + 1;
-    
-    switch(type) {
+
+    switch (type) {
       case 'Treatment':
       case 'Surgery':
         return `${street} ${location} Clinic, ${location}, ${location === 'Karachi' ? 'Karachi' : location}`;
@@ -265,67 +265,67 @@ const SearchPage = () => {
       // Fetch directly from server without saving to local storage
       const serverData = await ServiceManager.fetchPublicServices();
       const realServices = serverData.services;
-    
-    // Convert real services to search format with proper filtering
-    const formattedRealServices: SearchService[] = realServices.map((service: any) => {
-      const s: SearchService = {
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        rating: service.averageRating || service.rating || 0,
-        ratingBadge: (service as any).ratingBadge || null,
-        provider: (user && String((service as any).providerId) === String(user.id)) ? (user.name || service.providerName) : service.providerName,
-        location: service.city || "Karachi",
-        type: mapServiceTypeToSearch(service),
-        homeService: service.providerType === 'doctor',
-        isReal: true,
-        image: service.image,
-        coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
-        address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
-        googleMapLink: service.googleMapLink,
-        detailAddress: service.detailAddress,
-        createdAt: (service as any).createdAt,
-        _providerId: (service as any).providerId,
-        _providerType: service.providerType,
-        providerPhone: service.providerPhone,
-        totalRatings: service.totalRatings || 0,
-        ...(Array.isArray(service.diseases) && service.diseases.length > 0 ? { diseases: service.diseases } : {}),
-      } as any;
-      // Preserve variants if provided by backend (doctor services)
-      (s as any).variants = (service as any)?.variants || [];
-      // Hydrate user's own badge from localStorage
-      try {
-        const uid = (user as any)?.id || (user as any)?._id || 'anon';
-        const key = `myRating:${uid}:${service.providerType}:${service.id}`;
-        const my = localStorage.getItem(key);
-        if (my) (s as any).myBadge = my as any;
-      } catch {}
-      return s as SearchService;
-    });
 
-    // Sort: own services first, then by rating badge priority, then by rating (highest first), then by creation date
-    formattedRealServices.sort((a: any, b: any) => {
-      const aOwn = a._providerId && user?.id && String(a._providerId) === String(user.id);
-      const bOwn = b._providerId && user?.id && String(b._providerId) === String(user.id);
-      if (aOwn !== bOwn) return aOwn ? -1 : 1;
-      // Badge priority: excellent > good > fair > others
-      const rank = (s: any) => {
-        const badge = (s?.ratingBadge || '').toString().toLowerCase();
-        if (badge === 'excellent') return 3;
-        if (badge === 'good') return 2;
-        if (badge === 'fair') return 1;
-        return 0;
-      };
-      const rb = rank(b) - rank(a);
-      if (rb !== 0) return rb;
-      // Sort by rating (highest first)
-      if (a.rating !== b.rating) return b.rating - a.rating;
-      const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
-      const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
-      return bd - ad;
-    });
-    
+      // Convert real services to search format with proper filtering
+      const formattedRealServices: SearchService[] = realServices.map((service: any) => {
+        const s: SearchService = {
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          rating: service.averageRating || service.rating || 0,
+          ratingBadge: (service as any).ratingBadge || null,
+          provider: (user && String((service as any).providerId) === String(user.id)) ? (user.name || service.providerName) : service.providerName,
+          location: service.city || "Karachi",
+          type: mapServiceTypeToSearch(service),
+          homeService: service.providerType === 'doctor',
+          isReal: true,
+          image: service.image,
+          coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
+          address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
+          googleMapLink: service.googleMapLink,
+          detailAddress: service.detailAddress,
+          createdAt: (service as any).createdAt,
+          _providerId: (service as any).providerId,
+          _providerType: service.providerType,
+          providerPhone: service.providerPhone,
+          totalRatings: service.totalRatings || 0,
+          ...(Array.isArray(service.diseases) && service.diseases.length > 0 ? { diseases: service.diseases } : {}),
+        } as any;
+        // Preserve variants if provided by backend (doctor services)
+        (s as any).variants = (service as any)?.variants || [];
+        // Hydrate user's own badge from localStorage
+        try {
+          const uid = (user as any)?.id || (user as any)?._id || 'anon';
+          const key = `myRating:${uid}:${service.providerType}:${service.id}`;
+          const my = localStorage.getItem(key);
+          if (my) (s as any).myBadge = my as any;
+        } catch { }
+        return s as SearchService;
+      });
+
+      // Sort: own services first, then by rating badge priority, then by rating (highest first), then by creation date
+      formattedRealServices.sort((a: any, b: any) => {
+        const aOwn = a._providerId && user?.id && String(a._providerId) === String(user.id);
+        const bOwn = b._providerId && user?.id && String(b._providerId) === String(user.id);
+        if (aOwn !== bOwn) return aOwn ? -1 : 1;
+        // Badge priority: excellent > good > fair > others
+        const rank = (s: any) => {
+          const badge = (s?.ratingBadge || '').toString().toLowerCase();
+          if (badge === 'excellent') return 3;
+          if (badge === 'good') return 2;
+          if (badge === 'fair') return 1;
+          return 0;
+        };
+        const rb = rank(b) - rank(a);
+        if (rb !== 0) return rb;
+        // Sort by rating (highest first)
+        if (a.rating !== b.rating) return b.rating - a.rating;
+        const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+        return bd - ad;
+      });
+
       setAllServices(formattedRealServices);
       // Dynamically set the price slider max to include all services
       const computedMax = Math.max(
@@ -388,7 +388,7 @@ const SearchPage = () => {
           if (svc?.price != null && Number(svc.price) > 0) {
             updates[s.id] = Number(svc.price);
           }
-        } catch {}
+        } catch { }
       }
       if (Object.keys(updates).length) {
         setPriceCache(prev => ({ ...prev, ...updates }));
@@ -408,7 +408,7 @@ const SearchPage = () => {
   useEffect(() => {
     const serviceParam = searchParams.get('service');
     const queryParam = searchParams.get('q');
-    
+
     if (serviceParam) {
       setSearchTerm(serviceParam);
       setHighlightedService(serviceParam);
@@ -452,7 +452,7 @@ const SearchPage = () => {
   const filteredServices = useMemo(() => {
     const filtered = allServices.filter(service => {
       const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           service.provider.toLowerCase().includes(searchTerm.toLowerCase());
+        service.provider.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = serviceType === "all" || service.type === serviceType;
       const matchesLocation = location === "all" || service.location?.includes(location);
       const matchesPrice = service.price >= priceRange[0] && service.price <= priceRange[1];
@@ -469,7 +469,7 @@ const SearchPage = () => {
         const bMatches = b.name.toLowerCase() === highlightedService.toLowerCase();
         if (aMatches && !bMatches) return -1;
         if (!aMatches && bMatches) return 1;
-        
+
         // If neither matches highlight, prioritize real services
         if (a.isReal && !b.isReal) return -1;
         if (!a.isReal && b.isReal) return 1;
@@ -565,7 +565,7 @@ const SearchPage = () => {
   };
 
 
-  const selectedServicesData = allServices.filter(service => 
+  const selectedServicesData = allServices.filter(service =>
     selectedServices.includes(service.id)
   );
 
@@ -844,7 +844,7 @@ const SearchPage = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="mt-4 px-2">
                       <div className="relative">
                         <Slider
@@ -891,7 +891,7 @@ const SearchPage = () => {
           {/* Results */}
           <div className={`${isSidebarOpen ? 'lg:col-span-4' : 'lg:col-span-6'}`}>
             <div className="flex items-center justify-between">
-              
+
               {selectedServices.length > 0 && (
                 <Badge variant="secondary" className="px-3 py-1">
                   {selectedServices.length} selected for comparison
@@ -900,237 +900,256 @@ const SearchPage = () => {
             </div>
 
             <div className={`grid gap-6 sm:grid-cols-2 ${isSidebarOpen ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
-  {servicesToDisplay.map((service) => {
-    const isHighlighted =
-      highlightedService &&
-      service.name.toLowerCase() === highlightedService.toLowerCase();
+              {servicesToDisplay.map((service) => {
+                const isHighlighted =
+                  highlightedService &&
+                  service.name.toLowerCase() === highlightedService.toLowerCase();
 
-    return (
-      <Card
-        key={service.id}
-        className={`h-full flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 ${
-          isHighlighted ? "ring-2 ring-primary bg-primary/5" : ""
-        }`}
-      >
-       <CardContent className="p-5 flex flex-col h-full">
-  {/* Image with Variant Slider (if any) */}
-  <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
-    {getDisplayImage(service) ? (
-      <img
-        src={getDisplayImage(service)}
-        alt={service.name}
-        className="w-full h-full object-cover"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.onerror = null; // prevent infinite loop
-          target.style.display = 'none';
-          const fallback = document.createElement('span');
-          fallback.className = 'text-gray-400 text-4xl';
-          fallback.textContent = getServiceEmoji(service.type);
-          target.parentElement?.appendChild(fallback);
-        }}
-      />
-    ) : (
-      <span className="text-gray-400 text-4xl">{getServiceEmoji(service.type)}</span>
-    )}
+                return (
+                  <Card
+                    key={service.id}
+                    className={`h-full flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 ${isHighlighted ? "ring-2 ring-primary bg-primary/5" : ""
+                      }`}
+                  >
+                    <CardContent className="p-5 flex flex-col h-full">
+                      {/* Image with Variant Slider (if any) */}
+                      <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
+                        {getDisplayImage(service) ? (
+                          <img
+                            src={getDisplayImage(service)}
+                            alt={service.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null; // prevent infinite loop
+                              target.style.display = 'none';
+                              const fallback = document.createElement('span');
+                              fallback.className = 'text-gray-400 text-4xl';
+                              fallback.textContent = getServiceEmoji(service.type);
+                              target.parentElement?.appendChild(fallback);
+                            }}
+                          />
+                        ) : (
+                          <span className="text-gray-400 text-4xl">{getServiceEmoji(service.type)}</span>
+                        )}
+                        
+                        {/* Top-right corner badges */}
+                        <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
+                          {(service as any)._providerVerified ? (
+                            <Badge className="text-[9px] px-1.5 py-0.5 bg-green-600 text-white border-0 shadow-lg">
+                              Verified
+                            </Badge>
+                          ) : (
+                            <Badge className="text-[9px] px-1.5 py-0.5 bg-red-600 text-white border-0 shadow-lg">
+                              Not Verified
+                            </Badge>
+                          )}
+                          <Badge className="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
+                            {(service as any)._providerType === 'doctor' && 'Doctor'}
+                            {(service as any)._providerType === 'clinic' && 'Hospital'}
+                            {(service as any)._providerType === 'laboratory' && 'Lab'}
+                            {(service as any)._providerType === 'pharmacy' && 'Pharmacy'}
+                            {!(service as any)._providerType && 'Provider'}
+                          </Badge>
+                        </div>
 
-    {getSlides(service).length > 1 && (
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
-        <button
-          onClick={(e) => { e.stopPropagation(); prevVariant(service.id); }}
-          className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow"
-          aria-label="Previous variant"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); nextVariant(service.id); }}
-          className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow"
-          aria-label="Next variant"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-    )}
+                        {getSlides(service).length > 1 && (
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); prevVariant(service.id); }}
+                              className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+                              aria-label="Previous variant"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); nextVariant(service.id); }}
+                              className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow"
+                              aria-label="Next variant"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
 
-    {(getSlides(service).length > 1 || getDisplayTimeInfo(service)) && (
-      <div className="absolute left-2 bottom-2 flex items-center gap-2">
-        {getSlides(service).length > 1 && (
-          <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
-            {((((activeVariantIndexByService[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
-          </div>
-        )}
-        {getDisplayTimeInfo(service) && (
-          <div className="bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            <span>{getDisplayTimeInfo(service)}</span>
-          </div>
-        )}
-      </div>
-    )}
-    {getDisplayTimeRange(service) && (
-      <div className="absolute right-2 bottom-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
-        <Clock className="w-3 h-3" />
-        <span>{getDisplayTimeRange(service)}</span>
-      </div>
-    )}
-  </div>
+                        {(getSlides(service).length > 1 || getDisplayTimeInfo(service)) && (
+                          <div className="absolute left-2 bottom-2 flex items-center gap-2">
+                            {getSlides(service).length > 1 && (
+                              <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
+                                {((((activeVariantIndexByService[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                              </div>
+                            )}
+                            {getDisplayTimeInfo(service) && (
+                              <div className="bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{getDisplayTimeInfo(service)}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {getDisplayTimeRange(service) && (
+                          <div className="absolute right-2 bottom-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{getDisplayTimeRange(service)}</span>
+                          </div>
+                        )}
+                      </div>
 
-  {/* Title and Provider */}
-  <div className="flex justify-between items-start mb-2">
-    <div>
-      <h3 className="text-lg font-semibold flex items-center gap-2">
-        {service.name}
-        {(service as any)._providerVerified ? (
-          <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">
-            Verified
-          </Badge>
-        ) : (
-          <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">
-            Not Verified
-          </Badge>
-        )}
-        {isHighlighted && (
-          <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">
-            Selected
-          </Badge>
-        )}
-      </h3>
-      <button
-        className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
-        onClick={() => navigate(`/provider/${(service as any)._providerId}`)}
-      >
-        {service.provider}
-      </button>
-    </div>
-    <div className="text-right">
-      <div className="text-lg font-bold text-primary">
-        {getDisplayPrice(service) === 0
-          ? "Free"
-          : `PKR ${getDisplayPrice(service).toLocaleString()}`}
-      </div>
-      <Badge 
-        variant="outline" 
-        className="text-xs px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
-      >
-        {service.type}
-      </Badge>
-    </div>
-  </div>
+                      {/* Title and Provider */}
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="text-lg font-semibold flex items-center gap-2">
+                            {service.name}
+                            {isHighlighted && (
+                              <Badge className="text-[11px] px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">
+                                Selected
+                              </Badge>
+                            )}
+                          </h3>
+                          <button
+                            className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
+                            onClick={() => navigate(`/provider/${(service as any)._providerId}`)}
+                          >
+                            {service.provider}
+                          </button>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-blue-600">
+                            {getDisplayPrice(service) === 0
+                              ? "Free"
+                              : (
+                                <>
+                                  <span className="text-xs">PKR </span>
+                                  <span className="text-sm">{getDisplayPrice(service).toLocaleString()}</span>
+                                </>
+                              )}
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
+                          >
+                            {service.type}
+                          </Badge>
+                        </div>
+                      </div>
 
-  {/* Rating Badge, Location, Home Service, WhatsApp */}
-  <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-    <RatingBadge 
-      rating={service.rating} 
-      ratingBadge={service.ratingBadge}
-      totalRatings={(service as any).totalRatings}
-      yourBadge={(service as any).myBadge || null}
-      size="sm"
-    />
-    <div className="flex items-center gap-1 text-gray-500">
-      <MapPin className="w-4 h-4" />
-      <span>{getDisplayLocation(service)}</span>
-    </div>
-    {service.homeService && (
-      <div className="flex items-center gap-1 text-green-600">
-        <Home className="w-4 h-4" />
-        <span>Home service</span>
-      </div>
-    )}
-    {(service as any).providerPhone && (
-      <ServiceWhatsAppButton 
-        phoneNumber={(service as any).providerPhone}
-        serviceName={service.name}
-        providerName={service.provider}
-        providerId={(service as any)._providerId}
-      />
-    )}
-  </div>
-  {/* Address + Single Disease Badge */}
-  <div className="flex items-center justify-between mb-4 text-sm">
-    <div className="flex items-center gap-1 text-gray-600 min-w-0">
-      <MapPin className="w-4 h-4" />
-      <span className="truncate" title={getDisplayAddress(service) || getDisplayLocation(service)}>
-        {getDisplayAddress(service) || getDisplayLocation(service)}
-      </span>
-    </div>
-    {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-      <Badge
-        variant="outline"
-        className="ml-2 text-[11px] px-2 py-0.5 bg-sky-50 text-sky-700 border-sky-100 whitespace-nowrap"
-        title={(service as any).diseases[0]}
-      >
-        {(service as any).diseases[0]}
-      </Badge>
-    )}
-  </div>
-  {/* Buttons */}
-  <div className="mt-auto flex flex-wrap gap-2">
-    <Button 
-      className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-      onClick={() => handleBookNow({ ...(service as any), price: getDisplayPrice(service), image: getDisplayImage(service), location: getDisplayLocation(service) } as any)}
-    >
-      <Clock className="w-4 h-4 mr-1" /> Book Now
-    </Button>
-    <Button
-      variant="outline"
-      onClick={() => {
-        const augmented: any = { ...service, location: getDisplayLocation(service), address: getDisplayAddress(service), googleMapLink: getDisplayMapLink(service) };
-        setCurrentMapService(augmented);
-        setShowLocationMap(service.id);
-      }}
-      className="flex-1 min-w-[100px] bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
-    >
-      <MapPin className="w-4 h-4 mr-1" /> Location
-    </Button>
-    <Button
-      variant="secondary"
-      onClick={() => {
-        const timeInfo = getDisplayTimeInfo(service);
-        navigate(`/service/${service.id}`, {
-          state: {
-            from: `${routerLocation.pathname}${routerLocation.search}`,
-            fromSearch: true,
-            service: {
-              ...service,
-              // active slide overrides
-              image: getDisplayImage(service) || service.image,
-              price: getDisplayPrice(service) ?? service.price,
-              location: getDisplayLocation(service) || service.location,
-              address: getDisplayAddress(service) || (service as any).address,
-              googleMapLink: getDisplayMapLink(service) || (service as any).googleMapLink,
-              // provider/meta
-              providerType: (service as any)._providerType,
-              providerId: (service as any)._providerId,
-              totalRatings: (service as any).totalRatings,
-              providerPhone: (service as any).providerPhone,
-              coordinates: (service as any).coordinates,
-              ratingBadge: (service as any).ratingBadge,
-              myBadge: (service as any).myBadge,
-              timeInfo,
-            }
-          }
-        });
-      }}
-      className="flex-1 min-w-[100px]"
-    >
-      View Details
-    </Button>
-    {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
-      <Button
-        variant="outline"
-        onClick={() => handleRateService(service)}
-        className="flex-1 min-w-[100px]"
-      >
-        <Star className="w-4 h-4 mr-1" /> Rate
-      </Button>
-    )}
-  </div>
-</CardContent>
-      </Card>
-    );
-  })}
-</div>
+                      {/* Rating Badge, Location, Home Service, WhatsApp */}
+                      <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
+                        <RatingBadge
+                          rating={service.rating}
+                          ratingBadge={service.ratingBadge}
+                          totalRatings={(service as any).totalRatings}
+                          yourBadge={(service as any).myBadge || null}
+                          size="sm"
+                        />
+                        <div className="flex items-center gap-1 text-gray-500">
+                          <MapPin className="w-4 h-4" />
+                          <span>{getDisplayLocation(service)}</span>
+                        </div>
+                        {service.homeService && (
+                          <div className="flex items-center gap-1 text-green-600">
+                            <Home className="w-4 h-4" />
+                            <span>Home service</span>
+                          </div>
+                        )}
+                        {(service as any).providerPhone && (
+                          <ServiceWhatsAppButton
+                            phoneNumber={(service as any).providerPhone}
+                            serviceName={service.name}
+                            providerName={service.provider}
+                            providerId={(service as any)._providerId}
+                          />
+                        )}
+                      </div>
+                      {/* Address + Single Disease Badge */}
+                      <div className="flex items-center justify-between mb-4 text-sm">
+                        <div className="flex items-center gap-1 text-gray-600 min-w-0">
+                          <MapPin className="w-4 h-4" />
+                          <span className="truncate" title={getDisplayAddress(service) || getDisplayLocation(service)}>
+                            {getDisplayAddress(service) || getDisplayLocation(service)}
+                          </span>
+                        </div>
+                        {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                          <Badge
+                            variant="outline"
+                            className="ml-2 text-[10px] px-2 py-0.5 bg-sky-50 text-sky-700 border-sky-100 whitespace-nowrap"
+                            title={(service as any).diseases[0]}
+                          >
+                            {(service as any).diseases[0]}
+                          </Badge>
+                        )}
+                      </div>
+                      {/* Buttons */}
+                      <div className="mt-auto flex flex-wrap gap-1.5">
+                        <Button
+                          size="sm"
+                          className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
+                          onClick={() => handleBookNow({ ...(service as any), price: getDisplayPrice(service), image: getDisplayImage(service), location: getDisplayLocation(service) } as any)}
+                        >
+                          <Clock className="w-3 h-3 mr-1" /> Book
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const augmented: any = { ...service, location: getDisplayLocation(service), address: getDisplayAddress(service), googleMapLink: getDisplayMapLink(service) };
+                            setCurrentMapService(augmented);
+                            setShowLocationMap(service.id);
+                          }}
+                          className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
+                        >
+                          <MapPin className="w-3 h-3 mr-1" /> Location
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            const timeInfo = getDisplayTimeInfo(service);
+                            navigate(`/service/${service.id}`, {
+                              state: {
+                                from: `${routerLocation.pathname}${routerLocation.search}`,
+                                fromSearch: true,
+                                service: {
+                                  ...service,
+                                  // active slide overrides
+                                  image: getDisplayImage(service) || service.image,
+                                  price: getDisplayPrice(service) ?? service.price,
+                                  location: getDisplayLocation(service) || service.location,
+                                  address: getDisplayAddress(service) || (service as any).address,
+                                  googleMapLink: getDisplayMapLink(service) || (service as any).googleMapLink,
+                                  // provider/meta
+                                  providerType: (service as any)._providerType,
+                                  providerId: (service as any)._providerId,
+                                  totalRatings: (service as any).totalRatings,
+                                  providerPhone: (service as any).providerPhone,
+                                  coordinates: (service as any).coordinates,
+                                  ratingBadge: (service as any).ratingBadge,
+                                  myBadge: (service as any).myBadge,
+                                  timeInfo,
+                                }
+                              }
+                            });
+                          }}
+                          className="flex-1 min-w-[80px] h-8 text-xs"
+                        >
+                          Details
+                        </Button>
+                        {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRateService(service)}
+                            className="flex-1 min-w-[80px] h-8 text-xs"
+                          >
+                            <Star className="w-3 h-3 mr-1" /> Rate
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
 
             {filteredServices.length > visibleCount && (
               <div className="col-span-full flex justify-center mt-8">
@@ -1186,8 +1205,13 @@ const SearchPage = () => {
                     <tr className="border-b">
                       <td className="p-4 font-medium">Price</td>
                       {selectedServicesData.map((service) => (
-                        <td key={service.id} className="p-4 font-semibold text-primary">
-                          {service.price === 0 ? 'Free' : `PKR ${service.price.toLocaleString()}`}
+                        <td key={service.id} className="p-4 font-semibold text-blue-600">
+                          {service.price === 0 ? 'Free' : (
+                            <>
+                              <span className="text-xs">PKR </span>
+                              <span className="text-sm">{service.price.toLocaleString()}</span>
+                            </>
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -1208,9 +1232,9 @@ const SearchPage = () => {
                         <td key={service.id} className="p-4">
                           <div className="flex items-center gap-2">
                             {service.location}
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-6 w-6 p-0"
                               onClick={() => toggleLocationMap(service.id)}
                             >
@@ -1275,31 +1299,31 @@ const SearchPage = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{currentMapService.name}</h3>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowLocationMap(null)}
                 className="h-8 w-8"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <p className="text-sm font-medium text-gray-600">Location</p>
                 <p className="text-base">{currentMapService.location}</p>
               </div>
-              
+
               {currentMapService.address && (
                 <div>
                   <p className="text-sm font-medium text-gray-600">Address</p>
                   <p className="text-base">{currentMapService.address}</p>
                 </div>
               )}
-              
+
               {currentMapService.googleMapLink && (
-                <Button 
+                <Button
                   className="w-full mt-4"
                   onClick={() => window.open(currentMapService.googleMapLink, '_blank')}
                 >

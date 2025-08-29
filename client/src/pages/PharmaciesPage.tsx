@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock, Star } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -73,7 +73,7 @@ const PharmaciesPage = () => {
             const key = `myRating:${uid}:pharmacy:${service.id}`;
             const my = localStorage.getItem(key);
             if (my) (s as any).myBadge = my as any;
-          } catch {}
+          } catch { }
           return s;
         });
         setPharmacyServices(prev => {
@@ -162,7 +162,7 @@ const PharmaciesPage = () => {
   // Listen for per-user immediate badge updates
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent' | 'good' | 'normal' | 'poor' } | undefined;
       if (!detail) return;
       if (detail.serviceType !== 'pharmacy') return;
       setPharmacyServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));
@@ -236,7 +236,7 @@ const PharmaciesPage = () => {
           const key = `myRating:${uid}:pharmacy:${service.id}`;
           const my = localStorage.getItem(key);
           if (my) (s as any).myBadge = my as any;
-        } catch {}
+        } catch { }
         return s;
       });
       setPharmacyServices(prev => {
@@ -278,8 +278,8 @@ const PharmaciesPage = () => {
   const filteredServices = useMemo(() => {
     return pharmacyServices.filter(service => {
       return service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             service.description.toLowerCase().includes(searchTerm.toLowerCase());
+        service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        service.description.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [pharmacyServices, searchTerm]);
 
@@ -351,12 +351,12 @@ const PharmaciesPage = () => {
 
   const currentMapService = showLocationMap
     ? (() => {
-        const svc = pharmacyServices.find(s => s.id === showLocationMap);
-        if (!svc) return null;
-        const coordinates = getCoordinatesForLocation(svc.location || "Karachi");
-        const address = getServiceAddress(svc);
-        return { ...svc, coordinates, address } as any;
-      })()
+      const svc = pharmacyServices.find(s => s.id === showLocationMap);
+      if (!svc) return null;
+      const coordinates = getCoordinatesForLocation(svc.location || "Karachi");
+      const address = getServiceAddress(svc);
+      return { ...svc, coordinates, address } as any;
+    })()
     : null;
 
   if (isLoading) {
@@ -425,7 +425,7 @@ const PharmaciesPage = () => {
             >
               <CardContent className="p-5 h-full flex flex-col">
                 {/* Image */}
-                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
+                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4 relative">
                   {service.image ? (
                     <img
                       src={service.image}
@@ -444,25 +444,29 @@ const PharmaciesPage = () => {
                   ) : (
                     <span className="text-gray-400 text-4xl">💊</span>
                   )}
+                  
+                  {/* Top-right corner badges */}
+                  <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
+                    {(service as any)._providerVerified ? (
+                      <Badge className="text-[8px] px-1 py-0.5 bg-green-600 text-white border-0 shadow-lg">
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge className="text-[8px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
+                        Not Verified
+                      </Badge>
+                    )}
+                    <Badge className="text-[8px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
+                      Pharmacy
+                    </Badge>
+                  </div>
                 </div>
 
                 {/* Title and Provider */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">
                       {service.name}
-                      {(service as any)._providerVerified ? (
-                        <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">
-                          Verified
-                        </Badge>
-                      ) : (
-                        <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">
-                          Not Verified
-                        </Badge>
-                      )}
-                      <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">
-                        Pharmacy
-                      </Badge>
                     </h3>
                     <button
                       className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
@@ -472,14 +476,19 @@ const PharmaciesPage = () => {
                     </button>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-sm font-bold text-blue-600">
                       {service.price === 0
                         ? "Free"
-                        : `PKR ${service.price.toLocaleString()}`}
+                        : (
+                          <>
+                            <span className="text-xs">PKR </span>
+                            <span className="text-sm">{service.price.toLocaleString()}</span>
+                          </>
+                        )}
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 border-blue-100"
+                    <Badge
+                      variant="outline"
+                      className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
                     >
                       {service.type}
                     </Badge>
@@ -499,7 +508,7 @@ const PharmaciesPage = () => {
                     <span>{service.location}</span>
                   </div>
                   {(service as any).providerPhone && (
-                    <ServiceWhatsAppButton 
+                    <ServiceWhatsAppButton
                       phoneNumber={(service as any).providerPhone}
                       serviceName={service.name}
                       providerName={service.provider}
@@ -509,36 +518,40 @@ const PharmaciesPage = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="flex flex-wrap gap-2 mt-auto">
-                  <Button 
-                    className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
+                <div className="mt-auto flex flex-wrap gap-1.5">
+                  <Button
+                    size="sm"
+                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
                     onClick={() => handleBookNow(service)}
                   >
-                    <Clock className="w-4 h-4 mr-1" /> Book Now
+                    <Clock className="w-3 h-3 mr-1" /> Book
                   </Button>
                   <Button
+                    size="sm"
                     variant="outline"
                     onClick={() => setShowLocationMap(service.id)}
-                    className="flex-1 min-w-[100px] bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
+                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
                   >
-                    <MapPin className="w-4 h-4 mr-1" /> Location
+                    <MapPin className="w-3 h-3 mr-1" /> Location
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => navigate(`/service/${service.id}`, { state: { service, fromPharmacies: true } })}
+                    className="flex-1 min-w-[80px] h-8 text-xs"
+                  >
+                    Details
                   </Button>
                   {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
                     <Button
-                      variant="secondary"
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleRateService(service)}
-                      className="flex-1 min-w-[100px]"
+                      className="flex-1 min-w-[80px] h-8 text-xs"
                     >
-                      Rate
+                      <Star className="w-3 h-3 mr-1" /> Rate
                     </Button>
                   )}
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate(`/service/${service.id}`, { state: { service } })}
-                    className="flex-1 min-w-[100px]"
-                  >
-                    View Details
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -571,31 +584,31 @@ const PharmaciesPage = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{currentMapService.name}</h3>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowLocationMap(null)}
                 className="h-8 w-8"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <p className="text-sm font-medium text-gray-600">Location</p>
                 <p className="text-base">{currentMapService.location}</p>
               </div>
-              
+
               {currentMapService.address && (
                 <div>
                   <p className="text-sm font-medium text-gray-600">Address</p>
                   <p className="text-base">{currentMapService.address}</p>
                 </div>
               )}
-              
+
               {currentMapService.googleMapLink && (
-                <Button 
+                <Button
                   className="w-full mt-4"
                   onClick={() => window.open(currentMapService.googleMapLink, '_blank')}
                 >
