@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
@@ -20,6 +20,7 @@ import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 
 const DoctorsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [doctorServices, setDoctorServices] = useState<Service[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialDisease = searchParams.get('disease') || "";
@@ -36,7 +37,6 @@ const DoctorsPage = () => {
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
   const [activeVariantIndex, setActiveVariantIndex] = useState<Record<string, number>>({});
-
   useEffect(() => {
     let isMounted = true;
     const loadPage = async (nextPage: number) => {
@@ -340,31 +340,75 @@ const DoctorsPage = () => {
     return v?.city || service.location || service.city || "Location not specified";
   };
 
-  const getDisplayForService = (service: any) => {
+  const getDisplayForService = (service: Service) => {
+    const variantIndex = activeVariantIndex[service.id] ?? 0;
     const variants = (service as any).variants as any[] | undefined;
-    const vlen = Array.isArray(variants) ? variants.length : 0;
-    const totalSlides = 1 + vlen; // 0 => base, 1.. => variants
-    const rawIdx = activeVariantIndex[service.id] ?? 0;
-    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
-    if (idx === 0 || vlen === 0) {
+    
+    if (!Array.isArray(variants) || variants.length === 0 || variantIndex === 0) {
       return {
-        image: service.image,
+        name: service.name,
         price: service.price,
+        image: service.image,
         location: service.location,
-        city: service.location || service.city,
-        detailAddress: service.detailAddress,
-        googleMapLink: service.googleMapLink,
+        detailAddress: (service as any).detailAddress,
+        description: service.description,
+        googleMapLink: (service as any).googleMapLink
       };
     }
-    const v = variants![idx - 1];
-    return {
-      image: v?.imageUrl || service.image,
-      price: typeof v?.price === 'number' ? v!.price : service.price,
-      location: v?.city || service.location || service.city,
-      city: v?.city || service.location || service.city,
-      detailAddress: v?.detailAddress || service.detailAddress,
-      googleMapLink: v?.googleMapLink || service.googleMapLink,
+    
+    const variant = variants[variantIndex - 1];
+    if (!variant) return {
+      name: service.name,
+      price: service.price,
+      image: service.image,
+      location: service.location,
+      detailAddress: (service as any).detailAddress,
+      description: service.description,
+      googleMapLink: (service as any).googleMapLink
     };
+    
+    return {
+      name: variant.name || service.name,
+      price: variant.price ?? service.price,
+      image: variant.image || service.image,
+      location: variant.location || service.location,
+      detailAddress: variant.detailAddress || (service as any).detailAddress,
+      description: variant.description || service.description,
+      googleMapLink: variant.googleMapLink || (service as any).googleMapLink
+    };
+  };
+
+  const getSlides = (service: Service) => {
+    const variants = (service as any).variants as any[] | undefined;
+    const slides = [service];
+    if (Array.isArray(variants)) {
+      slides.push(...variants);
+    }
+    return slides;
+  };
+
+  const getDisplayTimeInfo = (service: Service) => {
+    const variantIndex = activeVariantIndex[service.id] ?? 0;
+    const variants = (service as any).variants as any[] | undefined;
+    
+    if (!Array.isArray(variants) || variants.length === 0 || variantIndex === 0) {
+      return (service as any).timeLabel || 'Available';
+    }
+    
+    const variant = variants[variantIndex - 1];
+    return variant?.timeLabel || (service as any).timeLabel || 'Available';
+  };
+
+  const getDisplayTimeRange = (service: Service) => {
+    const variantIndex = activeVariantIndex[service.id] ?? 0;
+    const variants = (service as any).variants as any[] | undefined;
+    
+    if (!Array.isArray(variants) || variants.length === 0 || variantIndex === 0) {
+      return (service as any).timeRange || '9:00 AM - 5:00 PM';
+    }
+    
+    const variant = variants[variantIndex - 1];
+    return variant?.timeRange || (service as any).timeRange || '9:00 AM - 5:00 PM';
   };
 
   // Build display time label for the active variant (timeLabel or start-end + days)
@@ -413,12 +457,12 @@ const DoctorsPage = () => {
 
   const currentMapService = showLocationMap
     ? (() => {
-        const svc = doctorServices.find(s => s.id === showLocationMap);
-        if (!svc) return null;
-        const coordinates = getCoordinatesForLocation(svc.location || "Karachi");
-        const address = getServiceAddress(svc);
-        return { ...svc, coordinates, address } as any;
-      })()
+      const svc = doctorServices.find(s => s.id === showLocationMap);
+      if (!svc) return null;
+      const coordinates = getCoordinatesForLocation(svc.location || "Karachi");
+      const address = getServiceAddress(svc);
+      return { ...svc, coordinates, address } as any;
+    })()
     : null;
 
   if (isLoading) {
@@ -522,6 +566,22 @@ const DoctorsPage = () => {
                   ) : (
                     <span className="text-gray-400 text-4xl">🩺</span>
                   )}
+                  
+                  {/* Top-right corner badges */}
+                  <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
+                    {(service as any)._providerVerified ? (
+                      <Badge className="text-[8px] px-1 py-0.5 bg-green-600 text-white border-0 shadow-lg">
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge className="text-[8px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
+                        Not Verified
+                      </Badge>
+                    )}
+                    <Badge className="text-[8px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
+                      Doctor
+                    </Badge>
+                  </div>
                   {/* Variant slider controls */}
                   {(() => { const v = (service as any).variants as any[] | undefined; const total = 1 + (Array.isArray(v) ? v.length : 0); return total > 1; })() && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2">
@@ -573,20 +633,8 @@ const DoctorsPage = () => {
                 {/* Title and Provider */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">
                       {service.name}
-                      {(service as any)._providerVerified ? (
-                        <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">
-                          Verified
-                        </Badge>
-                      ) : (
-                        <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">
-                          Not Verified
-                        </Badge>
-                      )}
-                      <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">
-                        Doctor
-                      </Badge>
                     </h3>
                     <button
                       className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
@@ -596,16 +644,21 @@ const DoctorsPage = () => {
                     </button>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-sm font-bold text-blue-600">
                       {getDisplayForService(service).price === 0
                         ? "Free"
-                        : `PKR ${Number(getDisplayForService(service).price).toLocaleString()}`}
+                        : (
+                          <>
+                            <span className="text-xs">PKR </span>
+                            <span className="text-sm">{Number(getDisplayForService(service).price).toLocaleString()}</span>
+                          </>
+                        )}
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 border-blue-100"
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
                     >
-                      {service.type}
+                      Treatment
                     </Badge>
                   </div>
                 </div>
@@ -616,7 +669,7 @@ const DoctorsPage = () => {
                     {getDisplayForService(service).detailAddress || getDisplayForService(service).location || 'Address not specified'}
                   </span>
                   {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                    <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap">
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap">
                       {((service as any).diseases as string[])[0]}
                     </Badge>
                   )}
@@ -624,8 +677,8 @@ const DoctorsPage = () => {
 
                 {/* Rating, Location, Home Service, WhatsApp */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                  <RatingBadge 
-                    rating={service.rating} 
+                  <RatingBadge
+                    rating={service.rating}
                     totalRatings={(service as any).totalRatings || 0}
                     ratingBadge={(service as any).ratingBadge}
                     yourBadge={(service as any).myBadge || null}
@@ -641,7 +694,7 @@ const DoctorsPage = () => {
                     </div>
                   )}
                   {(service as any).providerPhone && (
-                    <ServiceWhatsAppButton 
+                    <ServiceWhatsAppButton
                       phoneNumber={(service as any).providerPhone}
                       serviceName={service.name}
                       providerName={service.provider}
@@ -651,28 +704,30 @@ const DoctorsPage = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="mt-auto flex flex-wrap gap-2">
-                  <Button 
-                    className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
+                <div className="mt-auto flex flex-wrap gap-1.5">
+                  <Button
+                    size="sm"
+                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
                     onClick={() => {
-                      const disp = getDisplayForService(service);
-                      // Navigate with active variant values
                       if (user && user.role !== 'patient' && mode !== 'patient') {
                         toast.error('Providers must switch to Patient Mode to book services.', {
                           description: 'Click your profile icon and use the toggle to switch modes.',
                         });
                         return;
                       }
+
                       if (user && (service as any)._providerId === user.id) {
                         toast.error("You cannot book your own service.");
                         return;
                       }
-                      const variants = (service as any).variants as any[] | undefined;
-                      const total = 1 + (Array.isArray(variants) ? variants.length : 0);
+
+                      const disp = getDisplayForService(service);
+                      const slides = getSlides(service);
                       const rawIdx = activeVariantIndex[service.id] ?? 0;
-                      const activeIdx = ((rawIdx % total) + total) % total; // 0 = base, 1.. = variant
-                      const timeLabel = getTimeInfoForService(service);
-                      const timeRange = getTimeRangeForService(service);
+                      const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
+                      const timeLabel = getDisplayTimeInfo(service);
+                      const timeRange = getDisplayTimeRange(service);
+
                       navigate('/payment', {
                         state: {
                           serviceId: service.id,
@@ -685,7 +740,6 @@ const DoctorsPage = () => {
                           image: disp.image,
                           location: disp.location,
                           phone: (service as any).providerPhone,
-                          // variant context
                           variantIndex: activeIdx,
                           variantLabel: timeLabel,
                           variantTimeRange: timeRange,
@@ -693,74 +747,85 @@ const DoctorsPage = () => {
                       });
                     }}
                   >
-                    <Clock className="w-4 h-4 mr-1" /> Book Now
+                    <Clock className="w-3 h-3 mr-1" /> Book
                   </Button>
                   <Button
+                    size="sm"
                     variant="outline"
-                    onClick={() => setShowLocationMap(service.id)}
-                    className="flex-1 min-w-[100px] bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
+                    onClick={() => {
+                      setShowLocationMap(service.id);
+                    }}
+                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
                   >
-                    <MapPin className="w-4 h-4 mr-1" /> Location
+                    <MapPin className="w-3 h-3 mr-1" /> Location
                   </Button>
-                  {user && user.role === 'patient' && (
-                    <Button
-                      variant="outline"
-                      onClick={() => handleRateService(service)}
-                      className="flex-1 min-w-[100px]"
-                    >
-                      <Star className="w-4 h-4 mr-1" /> Rate
-                    </Button>
-                  )}
                   <Button
+                    size="sm"
                     variant="secondary"
                     onClick={() => {
-                      const disp = getDisplayForService(service);
-                      const timeInfo = getTimeInfoForService(service);
+                      const timeInfo = getDisplayTimeInfo(service);
                       navigate(`/service/${service.id}`, {
                         state: {
+                          from: `${location.pathname}${location.search}`,
+                          fromDoctors: true,
                           service: {
                             ...service,
-                            image: disp.image,
-                            price: disp.price,
-                            location: disp.location,
-                            detailAddress: disp.detailAddress,
-                            googleMapLink: disp.googleMapLink,
-                            _providerType: 'doctor',
+                            ...getDisplayForService(service),
+                            providerType: 'doctor',
+                            providerId: (service as any)._providerId,
+                            totalRatings: (service as any).totalRatings,
+                            providerPhone: (service as any).providerPhone,
+                            coordinates: (service as any).coordinates,
+                            ratingBadge: (service as any).ratingBadge,
+                            myBadge: (service as any).myBadge,
                             timeInfo,
                           }
                         }
                       });
                     }}
-                    className="flex-1 min-w-[100px]"
+                    className="flex-1 min-w-[80px] h-8 text-xs"
                   >
-                    View Details
+                    Details
                   </Button>
+                  {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedRatingService(service);
+                        setRatingModalOpen(true);
+                      }}
+                      className="flex-1 min-w-[80px] h-8 text-xs"
+                    >
+                      <Star className="w-3 h-3 mr-1" /> Rate
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {hasMore && (
-          <div className="col-span-full flex justify-center mt-8">
-            <Button onClick={loadMore} disabled={isLoading} variant="outline">
-              {isLoading ? 'Loading...' : 'Load More'}
-            </Button>
-          </div>
-        )}
+      {hasMore && (
+        <div className="flex justify-center mt-8">
+          <Button onClick={loadMore} disabled={isLoading} variant="outline">
+            {isLoading ? 'Loading...' : 'Load More'}
+          </Button>
+        </div>
+      )}
 
-        {filteredServices.length === 0 && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="text-muted-foreground mb-4">
-                <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-xl">No doctors found</p>
-                <p>Try adjusting your search criteria</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {filteredServices.length === 0 && (
+        <Card className="text-center py-12">
+          <CardContent>
+            <div className="text-muted-foreground mb-4">
+              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="text-xl">No doctors found</p>
+              <p>Try adjusting your search criteria</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
 
       {/* Location Map Card */}
       {showLocationMap && currentMapService && (
@@ -768,31 +833,31 @@ const DoctorsPage = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{currentMapService.name}</h3>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowLocationMap(null)}
                 className="h-8 w-8"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <p className="text-sm font-medium text-gray-600">Location</p>
                 <p className="text-base">{getDisplayForService(currentMapService).location}</p>
               </div>
-              
+
               {getServiceAddress(currentMapService) && (
                 <div>
                   <p className="text-sm font-medium text-gray-600">Address</p>
                   <p className="text-base">{getServiceAddress(currentMapService)}</p>
                 </div>
               )}
-              
+
               {(getDisplayForService(currentMapService).googleMapLink) && (
-                <Button 
+                <Button
                   className="w-full mt-4"
                   onClick={() => window.open(getDisplayForService(currentMapService).googleMapLink as string, '_blank')}
                 >

@@ -326,8 +326,13 @@ const ComparePage = () => {
                     <tr className="border-b">
                       <td className="p-4 font-medium">Price</td>
                       {sorted.map(item => (
-                        <td key={item.id} className="p-4 font-semibold text-primary">
-                          {getDisplayPrice(item) === 0 ? "Free" : `PKR ${getDisplayPrice(item).toLocaleString()}`}
+                        <td key={item.id} className="p-4 font-semibold text-blue-600">
+                          {getDisplayPrice(item) === 0 ? "Free" : (
+                            <>
+                              <span className="text-xs">PKR </span>
+                              <span className="text-sm">{getDisplayPrice(item).toLocaleString()}</span>
+                            </>
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -367,7 +372,7 @@ const ComparePage = () => {
                       {sorted.map(item => (
                         <td key={item.id} className="p-4">
                           <div className="flex flex-col gap-2">
-                            <Button size="sm" className="w-full" onClick={() => handleBookNow(item)}>Book Now</Button>
+                            <Button size="sm" className="w-full h-7 text-xs" onClick={() => handleBookNow(item)}>Book</Button>
                             <Button
                               size="sm"
                               variant="secondary"
@@ -409,12 +414,32 @@ const ComparePage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="w-full h-44 bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                <div className="w-full h-44 bg-muted rounded-md overflow-hidden flex items-center justify-center relative">
                   {getDisplayImage(currentDetail) ? (
                     <img src={getDisplayImage(currentDetail)!} alt={(currentDetail as any).name} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-muted-foreground text-sm">No Image</span>
                   )}
+                  
+                  {/* Top-right corner badges */}
+                  <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
+                    {(currentDetail as any)._providerVerified ? (
+                      <Badge className="text-[7px] px-1 py-0.5 bg-green-600 text-white border-0 shadow-lg">
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge className="text-[7px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
+                        Not Verified
+                      </Badge>
+                    )}
+                    <Badge className="text-[7px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
+                      {(currentDetail as any)._providerType === 'doctor' && 'Doctor'}
+                      {(currentDetail as any)._providerType === 'clinic' && 'Hospital'}
+                      {(currentDetail as any)._providerType === 'laboratory' && 'Lab'}
+                      {(currentDetail as any)._providerType === 'pharmacy' && 'Pharmacy'}
+                      {!(currentDetail as any)._providerType && 'Provider'}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="md:col-span-2 grid gap-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -423,8 +448,13 @@ const ComparePage = () => {
                       <div className="text-sm text-muted-foreground">{getDisplayProvider(currentDetail)}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xl font-bold text-primary">
-                        {getDisplayPrice(currentDetail) === 0 ? 'Free' : `PKR ${getDisplayPrice(currentDetail).toLocaleString()}`}
+                      <div className="text-lg font-bold text-blue-600">
+                        {getDisplayPrice(currentDetail) === 0 ? 'Free' : (
+                          <>
+                            <span className="text-sm">PKR </span>
+                            <span className="text-lg">{getDisplayPrice(currentDetail).toLocaleString()}</span>
+                          </>
+                        )}
                       </div>
                       {getDisplayTimeInfo(currentDetail) && (
                         <div className="text-xs text-muted-foreground">{getDisplayTimeInfo(currentDetail)}</div>
@@ -442,7 +472,7 @@ const ComparePage = () => {
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <Button size="sm" onClick={() => handleBookNow(currentDetail)}>Book Now</Button>
+                    <Button size="sm" className="h-7 text-xs" onClick={() => handleBookNow(currentDetail)}>Book</Button>
                     <Button size="sm" variant="secondary" onClick={() => setDetailId(sorted.find(s => s.id !== (currentDetail as any).id)?.id || (sorted[0]?.id ?? null)!)}>Next Item</Button>
                   </div>
                 </div>

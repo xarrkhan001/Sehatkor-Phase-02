@@ -67,11 +67,11 @@ const HospitalsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
-            ...(function(){
+            ...(function () {
               try {
                 const uid = user?.id || (user as any)?._id || 'anon';
                 const key = `myRating:${uid}:clinic:${service.id}`;
-                const my = localStorage.getItem(key) as 'excellent'|'good'|'fair'|'poor'|null;
+                const my = localStorage.getItem(key) as 'excellent' | 'good' | 'fair' | 'poor' | null;
                 return my ? { myBadge: my } : {};
               } catch { return {}; }
             })(),
@@ -130,7 +130,7 @@ const HospitalsPage = () => {
           const svc = await ServiceManager.fetchServiceById(String(s.id), type);
           const p = Number((svc as any)?.price ?? 0);
           if (p > 0) updates[s.id] = p;
-        } catch {}
+        } catch { }
       }
       if (Object.keys(updates).length) {
         setPriceCache(prev => ({ ...prev, ...updates }));
@@ -184,7 +184,7 @@ const HospitalsPage = () => {
   // Listen for per-user immediate badge updates
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent' | 'good' | 'fair' | 'poor' } | undefined;
       if (!detail) return;
       if (detail.serviceType !== 'clinic') return;
       setHospitalServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));
@@ -292,8 +292,8 @@ const HospitalsPage = () => {
   const filteredServices = useMemo(() => {
     return hospitalServices.filter(service => {
       return service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             service.description.toLowerCase().includes(searchTerm.toLowerCase());
+        service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        service.description.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [hospitalServices, searchTerm]);
 
@@ -365,12 +365,12 @@ const HospitalsPage = () => {
 
   const currentMapService = showLocationMap
     ? (() => {
-        const svc = hospitalServices.find(s => s.id === showLocationMap);
-        if (!svc) return null;
-        const coordinates = getCoordinatesForLocation(svc.location || "Karachi");
-        const address = getServiceAddress(svc);
-        return { ...svc, coordinates, address } as any;
-      })()
+      const svc = hospitalServices.find(s => s.id === showLocationMap);
+      if (!svc) return null;
+      const coordinates = getCoordinatesForLocation(svc.location || "Karachi");
+      const address = getServiceAddress(svc);
+      return { ...svc, coordinates, address } as any;
+    })()
     : null;
 
   if (isLoading && hospitalServices.length === 0) {
@@ -440,7 +440,7 @@ const HospitalsPage = () => {
             >
               <CardContent className="p-5 flex flex-col h-full">
                 {/* Image */}
-                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
+                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4 relative">
                   {service.image ? (
                     <img
                       src={service.image}
@@ -459,25 +459,29 @@ const HospitalsPage = () => {
                   ) : (
                     <span className="text-gray-400 text-4xl">🏥</span>
                   )}
+                  
+                  {/* Top-right corner badges */}
+                  <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
+                    {(service as any)._providerVerified ? (
+                      <Badge className="text-[8px] px-1 py-0.5 bg-green-600 text-white border-0 shadow-lg">
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge className="text-[8px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
+                        Not Verified
+                      </Badge>
+                    )}
+                    <Badge className="text-[8px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
+                      Hospital
+                    </Badge>
+                  </div>
                 </div>
 
                 {/* Title and Provider */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">
                       {service.name}
-                      {(service as any)._providerVerified ? (
-                        <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">
-                          Verified
-                        </Badge>
-                      ) : (
-                        <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">
-                          Not Verified
-                        </Badge>
-                      )}
-                      <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">
-                        {service.type === "Surgery" ? "Hospital" : "Clinic"}
-                      </Badge>
                     </h3>
                     <button
                       className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
@@ -487,12 +491,20 @@ const HospitalsPage = () => {
                     </button>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-sm font-bold text-blue-600">
                       {service.price === 0
                         ? "Free"
-                        : `PKR ${service.price.toLocaleString()}`}
+                        : (
+                          <>
+                            <span className="text-xs">PKR </span>
+                            <span className="text-sm">{service.price.toLocaleString()}</span>
+                          </>
+                        )}
                     </div>
-                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-purple-50 text-purple-600 border-purple-100">
+                    <Badge
+                      variant="outline"
+                      className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
+                    >
                       {service.type}
                     </Badge>
                   </div>
@@ -519,21 +531,21 @@ const HospitalsPage = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="mt-auto flex flex-wrap gap-2">
-                  <Button className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400" onClick={() => handleBookNow(service)}>
-                    <Clock className="w-4 h-4 mr-1" /> Book Now
+                <div className="mt-auto flex flex-wrap gap-1.5">
+                  <Button size="sm" className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400" onClick={() => handleBookNow(service)}>
+                    <Clock className="w-3 h-3 mr-1" /> Book
                   </Button>
-                  <Button variant="outline" onClick={() => setShowLocationMap(service.id)} className="flex-1 min-w-[100px] bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800">
-                    <MapPin className="w-4 h-4 mr-1" /> Location
+                  <Button size="sm" variant="outline" onClick={() => setShowLocationMap(service.id)} className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800">
+                    <MapPin className="w-3 h-3 mr-1" /> Location
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => navigate(`/service/${service.id}`, { state: { service, fromHospitals: true } })} className="flex-1 min-w-[80px] h-8 text-xs">
+                    Details
                   </Button>
                   {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
-                    <Button variant="secondary" onClick={() => handleRateService(service)} className="flex-1 min-w-[100px]">
-                      Rate
+                    <Button size="sm" variant="outline" onClick={() => handleRateService(service)} className="flex-1 min-w-[80px] h-8 text-xs">
+                      <Star className="w-3 h-3 mr-1" /> Rate
                     </Button>
                   )}
-                  <Button variant="secondary" onClick={() => navigate(`/service/${service.id}`, { state: { service } })} className="flex-1 min-w-[100px]">
-                    View Details
-                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -4,6 +4,7 @@ import { SearchIcon, MapPin, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import ServiceManager, { Service } from "@/lib/serviceManager";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -35,6 +36,7 @@ interface SearchService {
   providerPhone?: string;
   googleMapLink?: string;
   detailAddress?: string;
+  _providerVerified?: boolean;
 }
 
 // No fallback or mock data. We will only show real services from backend.
@@ -131,6 +133,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       providerPhone: (s as any).providerPhone,
       googleMapLink: (s as any).googleMapLink,
       detailAddress: (s as any).detailAddress,
+      _providerVerified: (s as any)._providerVerified,
     }));
   };
 
@@ -399,6 +402,26 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                           {service.icon}
                         </div>
                       )}
+                      
+                      {/* Top-right corner badges */}
+                      <div className="absolute -top-1 -right-1 flex flex-col gap-0.5 items-end">
+                        {service._providerVerified ? (
+                          <Badge className="text-[7px] px-1 py-0.5 bg-green-600 text-white border-0 shadow-lg">
+                            Verified
+                          </Badge>
+                        ) : (
+                          <Badge className="text-[7px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
+                            Not Verified
+                          </Badge>
+                        )}
+                        <Badge className="text-[7px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
+                          {service.providerType === 'doctor' ? 'Doctor' : 
+                           service.providerType === 'laboratory' ? 'Lab' :
+                           service.providerType === 'pharmacy' ? 'Pharmacy' : 
+                           service.providerType === 'clinic' ? 'Hospital' : 'Service'}
+                        </Badge>
+                      </div>
+                      
                       {getSlides(service).length > 1 && (
                         <div className="absolute -bottom-1 right-0 flex items-center gap-0.5">
                           <button
@@ -433,11 +456,11 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                       <div className="mt-0.5 text-[11px] text-gray-600 truncate">
                         <button
                           className="text-gray-600 hover:text-primary hover:underline text-left"
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
+                          onClick={(e) => {
+                            e.stopPropagation();
                             console.log('Provider clicked:', service.providerId, service.providerName);
                             if (service.providerId) {
-                              navigate(`/provider/${service.providerId}`); 
+                              navigate(`/provider/${service.providerId}`);
                             }
                           }}
                         >

@@ -78,15 +78,15 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
   const your = normalizedYour ? getRatingBadge(safeRating, normalizedYour) : null;
   
   const sizeClasses = {
-    sm: "text-xs px-2 py-1",
-    md: "text-sm px-3 py-1",
-    lg: "text-base px-4 py-2"
+    sm: "text-[8px] px-1 py-0.5 h-5 min-h-[20px] flex items-center",
+    md: "text-[8px] px-1 py-0.5 h-5 min-h-[20px] flex items-center",
+    lg: "text-[8px] px-1 py-0.5 h-5 min-h-[20px] flex items-center"
   };
 
   const starSize = {
-    sm: "w-3 h-3",
-    md: "w-4 h-4", 
-    lg: "w-5 h-5"
+    sm: "w-2.5 h-2.5",
+    md: "w-2.5 h-2.5", 
+    lg: "w-2.5 h-2.5"
   };
 
   const starsFor = (kindLabel: string) => {

@@ -619,18 +619,40 @@ const ProviderProfilePage = () => {
                   <div className="p-6 pb-0">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-4 min-w-0">
-                        <Avatar className="w-24 h-24 md:w-28 md:h-28 ring-2 ring-white shadow-md border border-gray-200">
-                          <AvatarImage
-                            src={getServiceImage((service as any).image) || '/placeholder.svg'}
-                            alt={service.name}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.onerror = null;
-                              target.src = '/placeholder.svg';
-                            }}
-                          />
-                          <AvatarFallback className="text-sm">{service.name?.[0]?.toUpperCase?.() || 'S'}</AvatarFallback>
-                        </Avatar>
+                        <div className="relative">
+                          <Avatar className="w-24 h-24 md:w-28 md:h-28 ring-2 ring-white shadow-md border border-gray-200">
+                            <AvatarImage
+                              src={getServiceImage((service as any).image) || '/placeholder.svg'}
+                              alt={service.name}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.onerror = null;
+                                target.src = '/placeholder.svg';
+                              }}
+                            />
+                            <AvatarFallback className="text-sm">{service.name?.[0]?.toUpperCase?.() || 'S'}</AvatarFallback>
+                          </Avatar>
+                          
+                          {/* Top-left corner badges */}
+                          <div className="absolute -top-0.5 -left-0.5 flex flex-col gap-0.5">
+                            {(service as any).isVerified ? (
+                              <Badge className="text-[7px] px-0.5 py-0.5 bg-green-400/70 text-white border-0 shadow-md backdrop-blur-sm">
+                                Verified
+                              </Badge>
+                            ) : (
+                              <Badge className="text-[7px] px-0.5 py-0.5 bg-red-400/70 text-white border-0 shadow-md backdrop-blur-sm">
+                                Not Verified
+                              </Badge>
+                            )}
+                            <Badge className="text-[7px] px-0.5 py-0.5 bg-indigo-400/70 text-white border-0 shadow-md backdrop-blur-sm">
+                              {providerType === 'doctor' && 'Doctor'}
+                              {providerType === 'clinic' && 'Hospital'}
+                              {providerType === 'laboratory' && 'Lab'}
+                              {providerType === 'pharmacy' && 'Pharmacy'}
+                              {!providerType && 'Provider'}
+                            </Badge>
+                          </div>
+                        </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-[1.25rem] md:text-2xl font-semibold text-gray-900 mb-1 truncate">
                             {getDisplayServiceName(service.name)}
