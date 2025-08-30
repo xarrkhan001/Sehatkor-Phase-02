@@ -17,7 +17,9 @@ import {
   approveProviderPendingWithdrawals,
   deleteWithdrawal,
   bulkDeleteWithdrawals,
-  deleteAllWithdrawalsForProvider
+  deleteAllWithdrawalsForProvider,
+  hideProvider,
+  unhideProvider
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -50,5 +52,8 @@ router.delete('/withdrawals/provider/:providerId', deleteAllWithdrawalsForProvid
 // Admin provider management routes
 router.get('/providers-summary', getProvidersSummary);
 router.post('/bulk-release/:providerId', bulkReleasePayments);
+// Hide/unhide provider for providers summary (admin view only)
+router.post('/providers/:providerId/hide', hideProvider);
+router.delete('/providers/:providerId/hide', unhideProvider);
 
 export default router;

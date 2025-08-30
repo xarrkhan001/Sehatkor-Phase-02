@@ -5,6 +5,17 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
@@ -18,7 +29,8 @@ import {
   Calculator,
   Send,
   Eye,
-  Filter
+  Filter,
+  Trash2
 } from 'lucide-react';
 
 interface Payment {
@@ -65,14 +77,28 @@ const AdminProviderPayments: React.FC = () => {
     deductionAmount: 0,
     finalAmount: 0
   });
+  // Local-only hide state so global stats/components remain unaffected (no localStorage persistence)
+  const [hiddenProviders, setHiddenProviders] = useState<Set<string>>(new Set());
+  const [hiddenPayments, setHiddenPayments] = useState<Record<string, Set<string>>>({});
+  // Delete confirmation dialog state
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteTargetProviderId, setDeleteTargetProviderId] = useState<string | null>(null);
+  const [deleteTargetProviderName, setDeleteTargetProviderName] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProviderPayments();
+    // Clear any legacy localStorage keys to avoid perf impact
+    try {
+      localStorage.removeItem('sk_hidden_providers');
+      localStorage.removeItem('sk_hidden_payments');
+    } catch {}
   }, []);
 
   useEffect(() => {
     filterProviders();
-  }, [providers, searchTerm, filterType]);
+  }, [providers, searchTerm, filterType, hiddenProviders]);
+
+  // No localStorage syncing for hidden items
 
   const fetchProviderPayments = async () => {
     try {
@@ -118,7 +144,57 @@ const AdminProviderPayments: React.FC = () => {
       filtered = filtered.filter(provider => provider.providerType === filterType);
     }
 
+    // Hide providers locally if requested
+    filtered = filtered.filter(p => !hiddenProviders.has(p.providerId));
+
     setFilteredProviders(filtered);
+  };
+
+  const performHideProvider = async (providerId: string) => {
+    try {
+      const resp = await fetch(`http://localhost:4000/api/payments/providers/${providerId}/hide`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await resp.json();
+      if (!resp.ok || data?.success === false) {
+        throw new Error(data?.message || 'Failed to hide provider');
+      }
+      // Optimistically remove from current view and refetch
+      setHiddenProviders(prev => new Set(prev).add(providerId));
+      setProviders(prev => prev.filter(p => p.providerId !== providerId));
+      filterProviders();
+      fetchProviderPayments();
+      toast.success('Provider hidden from Admin view');
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Unable to hide provider');
+    } finally {
+      setConfirmDeleteOpen(false);
+      setDeleteTargetProviderId(null);
+      setDeleteTargetProviderName(null);
+    }
+  };
+
+  const openDeleteConfirm = (provider: ProviderData) => {
+    setDeleteTargetProviderId(provider.providerId);
+    setDeleteTargetProviderName(provider.providerName);
+    setConfirmDeleteOpen(true);
+  };
+
+  const hidePaymentFromView = (providerId: string, paymentId: string) => {
+    if (window.confirm('Remove this payment from the current view? This will not delete any data.')) {
+      setHiddenPayments(prev => {
+        const next = { ...prev };
+        const setForProvider = new Set(next[providerId] ?? []);
+        setForProvider.add(paymentId);
+        next[providerId] = setForProvider;
+        return next;
+      });
+    }
   };
 
   const calculateCommission = (provider: ProviderData) => {
@@ -277,6 +353,16 @@ const AdminProviderPayments: React.FC = () => {
                         Release Payments
                       </Button>
                     )}
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => openDeleteConfirm(provider)}
+                      className="sm:ml-2"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete (View)
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -313,7 +399,10 @@ const AdminProviderPayments: React.FC = () => {
                 <div>
                   <h4 className="font-medium mb-3">Recent Services</h4>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {provider.payments.slice(0, 5).map((payment) => (
+                    {provider.payments
+                      .filter((payment) => !hiddenPayments[provider.providerId]?.has(payment._id))
+                      .slice(0, 5)
+                      .map((payment) => (
                       <div key={payment._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex-1">
                           <div className="font-medium text-sm">{payment.serviceName}</div>
@@ -328,7 +417,7 @@ const AdminProviderPayments: React.FC = () => {
                           </div>
                         </div>
                         
-                        <div className="text-right">
+                        <div className="text-right flex items-center gap-2">
                           <div className="font-medium text-sm">
                             {payment.currency} {payment.amount.toLocaleString()}
                           </div>
@@ -342,6 +431,14 @@ const AdminProviderPayments: React.FC = () => {
                             {payment.releasedToProvider ? "Released" : 
                              payment.serviceCompleted ? "Pending" : "In Progress"}
                           </Badge>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            title="Remove from view"
+                            onClick={() => hidePaymentFromView(provider.providerId, payment._id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -429,6 +526,30 @@ const AdminProviderPayments: React.FC = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove provider card from Admin view?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will not delete any provider data or affect global statistics. You can remove this card now and it will reappear automatically if new payments need release.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-md bg-muted p-3 text-sm">
+            <span className="font-medium">Provider:</span> {deleteTargetProviderName}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteTargetProviderId && performHideProvider(deleteTargetProviderId)}
+            >
+              Remove from View
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Provider Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -470,7 +591,9 @@ const AdminProviderPayments: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-4">All Services ({selectedProviderDetails.payments.length})</h3>
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {selectedProviderDetails.payments.map((payment) => (
+                  {selectedProviderDetails.payments
+                    .filter((payment) => !hiddenPayments[selectedProviderDetails.providerId]?.has(payment._id))
+                    .map((payment) => (
                     <div key={payment._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                       <div className="flex-1">
                         <div className="font-medium">{payment.serviceName}</div>
@@ -497,7 +620,7 @@ const AdminProviderPayments: React.FC = () => {
                         </div>
                       </div>
                       
-                      <div className="text-right">
+                      <div className="text-right flex items-center gap-2">
                         <div className="font-medium text-lg">
                           {payment.currency} {payment.amount.toLocaleString()}
                         </div>
@@ -511,6 +634,14 @@ const AdminProviderPayments: React.FC = () => {
                           {payment.releasedToProvider ? "Released" : 
                            payment.serviceCompleted ? "Pending Release" : "Service Pending"}
                         </Badge>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          title="Remove from view"
+                          onClick={() => hidePaymentFromView(selectedProviderDetails.providerId, payment._id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
