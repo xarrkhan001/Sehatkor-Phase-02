@@ -50,6 +50,8 @@ const PharmacyDashboard = () => {
   const [medicines, setMedicines] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
+  const [walletData, setWalletData] = useState<any>(null);
+  const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [isScheduling, setIsScheduling] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [scheduleDetails, setScheduleDetails] = useState({
@@ -283,10 +285,34 @@ const PharmacyDashboard = () => {
     }
   };
 
+  // Fetch wallet data
+  const fetchWalletData = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:4000/api/payments/wallet/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setWalletData(data.wallet || data);
+      } else {
+        throw new Error(data.message || 'Failed to fetch wallet data');
+      }
+    } catch (error) {
+      console.error('Error fetching wallet data:', error);
+      toast.error('Failed to load wallet data');
+    } finally {
+      setIsLoadingWallet(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.id) {
       reloadMedicines();
       fetchBookings();
+      fetchWalletData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -460,50 +486,67 @@ const PharmacyDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="card-healthcare">
+          {/* Total Medicines Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Today's Orders</p>
-                  <p className="text-2xl font-bold">24</p>
+                  <p className="text-sm text-blue-100 opacity-90">Total Medicines</p>
+                  <p className="text-3xl font-bold text-white">{medicines.length}</p>
                 </div>
-                <ShoppingBag className="w-8 h-8 text-primary" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Pill className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            </CardContent>
+          </Card>
+
+          {/* Total Bookings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-100 opacity-90">Total Orders</p>
+                  <p className="text-3xl font-bold text-white">{bookings.length}</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <ShoppingBag className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Available Balance Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">18</p>
+                  <p className="text-sm text-purple-100 opacity-90">Available Balance</p>
+                  <p className="text-3xl font-bold text-white">
+                    {isLoadingWallet ? '...' : `PKR ${walletData?.availableBalance?.toLocaleString() || '0'}`}
+                  </p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-success" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Wallet className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Total Earnings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-warning">6</p>
+                  <p className="text-sm text-amber-100 opacity-90">Total Earnings</p>
+                  <p className="text-3xl font-bold text-white">
+                    {isLoadingWallet ? '...' : `PKR ${walletData?.totalEarnings?.toLocaleString() || '0'}`}
+                  </p>
                 </div>
-                <Clock className="w-8 h-8 text-warning" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-healthcare">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  <p className="text-2xl font-bold">PKR 32,000</p>
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <DollarSign className="w-6 h-6 text-white" />
                 </div>
-                <Activity className="w-8 h-8 text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -512,14 +555,31 @@ const PharmacyDashboard = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* Medicines Management */}
+            {/* Main Tabs */}
             <Tabs defaultValue="medicines">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="medicines">Medicines</TabsTrigger>
-                <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                <TabsTrigger value="wallet">Wallet</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
+                <TabsTrigger 
+                  value="medicines" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Medicines
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="bookings" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Bookings
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="wallet" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Wallet
+                </TabsTrigger>
               </TabsList>
-              <TabsContent value="medicines">
+              
+              {/* Medicines Tab */}
+              <TabsContent value="medicines" className="mt-6">
                 <Card className="card-healthcare">
                   <CardHeader>
                     <div className="flex justify-between items-center">
@@ -744,24 +804,26 @@ const PharmacyDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-              <TabsContent value="bookings">
-                <Card className="card-healthcare">
+              {/* Bookings Tab */}
+              <TabsContent value="bookings" className="mt-6">
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 shadow-xl">
+                  <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          <ShoppingBag className="w-5 h-5" />
+                          Medicine Orders
+                        </CardTitle>
+                        <CardDescription className="text-orange-100">Manage and track customer orders</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
                   <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <CardTitle>Patient Bookings</CardTitle>
                         <CardDescription>Bookings from patients for your services</CardDescription>
                       </div>
-                      {bookings.length > 0 && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={deleteAllBookings}
-                          className="shrink-0 self-start sm:self-auto w-full sm:w-auto"
-                        >
-                          Delete All
-                        </Button>
-                      )}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -828,8 +890,15 @@ const PharmacyDashboard = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="wallet">
-                <ProviderWallet />
+              {/* Wallet Tab */}
+              <TabsContent value="wallet" className="mt-6">
+                {isLoadingWallet ? (
+                  <div className="flex items-center justify-center p-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                  </div>
+                ) : (
+                  <ProviderWallet />
+                )}
               </TabsContent>
             </Tabs>
 
@@ -997,58 +1066,57 @@ const PharmacyDashboard = () => {
           </div>
 
           {/* Profile Sidebar */}
-          <div className="space-y-6">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Pharmacy Profile</CardTitle>
+          <div className="lg:col-span-1 space-y-4">
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white shadow-xl">
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Pharmacy Profile
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-center mb-6">
-                  <div className="mb-4">
+                  <div className="mb-4 relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
                     <ProfileImageUpload
                       currentImage={user?.avatar}
                       userName={user?.name || 'Pharmacy'}
                       size="lg"
                     />
                   </div>
-                  <h3 className="text-lg font-semibold">{user?.name}</h3>
-                  <Badge variant="outline" className="capitalize">{user?.role}</Badge>
+                  <h3 className="text-xl font-bold text-white mb-2">{user?.name}</h3>
+                  <Badge variant="outline" className="capitalize bg-white/20 text-white border-white/30 hover:bg-white/30">
+                    {user?.role}
+                  </Badge>
                   {user?.specialization && (
-                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
+                    <Badge variant="secondary" className="mt-2 bg-white/10 text-white border-white/20">
+                      {user?.specialization}
+                    </Badge>
                   )}
-                  <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
+                  <p className="text-sm text-gray-300 mt-3">{user?.email}</p>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Specialization now managed via Edit Profile dialog */}
-
-                  <div className="space-y-2">
-                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                    <Button
-                      className="w-full"
-                      variant="secondary"
-                      onClick={() => navigate(`/provider/${user?.id}`)}
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      See Public Profile
-                    </Button>
-                  </div>
+                <div className="space-y-3">
+                  <Button 
+                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300" 
+                    variant="outline" 
+                    onClick={() => setIsEditProfileOpen(true)}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white border-0 shadow-lg transition-all duration-300"
+                    onClick={() => navigate(`/provider/${user?.id}`)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    See Public Profile
+                  </Button>
                 </div>
               </CardContent>
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-20 translate-x-20"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
             </Card>
-
-            {/* Edit Profile Dialog */}
-            <EditProfileDialog
-              open={isEditProfileOpen}
-              onOpenChange={setIsEditProfileOpen}
-              role={(user?.role as any) || 'pharmacy'}
-              name={user?.name}
-              specialization={user?.specialization}
-              avatar={user?.avatar}
-            />
 
             <Card className="card-healthcare">
               <CardHeader>
@@ -1069,6 +1137,16 @@ const PharmacyDashboard = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Edit Profile Dialog */}
+            <EditProfileDialog
+              open={isEditProfileOpen}
+              onOpenChange={setIsEditProfileOpen}
+              role={(user?.role as any) || 'pharmacy'}
+              name={user?.name}
+              specialization={user?.specialization}
+              avatar={user?.avatar}
+            />
           </div>
         </div>
       </div>

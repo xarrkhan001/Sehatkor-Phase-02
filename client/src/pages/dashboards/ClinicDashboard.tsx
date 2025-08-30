@@ -50,6 +50,8 @@ const ClinicDashboard = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
   const [bookingPrices, setBookingPrices] = useState<Record<string, number>>({});
+  const [walletData, setWalletData] = useState<any>(null);
+  const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [isScheduling, setIsScheduling] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [scheduleDetails, setScheduleDetails] = useState({
@@ -135,6 +137,25 @@ const ClinicDashboard = () => {
       toast.error('An error occurred while fetching bookings.');
     } finally {
       setIsLoadingBookings(false);
+    }
+  };
+
+  const fetchWalletData = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:4000/api/payments/wallet/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWalletData(data.wallet);
+      }
+    } catch (error) {
+      console.error('Failed to fetch wallet data:', error);
+    } finally {
+      setIsLoadingWallet(false);
     }
   };
 
@@ -231,6 +252,7 @@ const ClinicDashboard = () => {
     if (user?.id) {
       reloadServices();
       fetchBookings();
+      fetchWalletData();
       const savedType = localStorage.getItem(`clinic_type_${user.id}`);
       if (savedType) setClinicType(savedType);
     }
@@ -376,6 +398,12 @@ const ClinicDashboard = () => {
     toast.success("Clinic type updated successfully");
   };
 
+  // Calculate statistics
+  const totalServices = services.length;
+  const totalBookings = bookings.length;
+  const availableBalance = walletData?.availableBalance || 0;
+  const totalEarnings = walletData?.totalEarnings || 0;
+
   return (
     <div className="min-h-screen  p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -410,51 +438,67 @@ const ClinicDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="card-healthcare">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Patients</p>
-                  <p className="text-2xl font-bold">156</p>
+                  <p className="text-sm text-blue-100 opacity-90">Total Services</p>
+                  <p className="text-3xl font-bold text-white">{totalServices}</p>
                 </div>
-                <Users className="w-8 h-8 text-primary" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Activity className="w-8 h-8 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Occupied Beds</p>
-                  <p className="text-2xl font-bold text-warning">24/30</p>
+                  <p className="text-sm text-orange-100 opacity-90">Total Bookings</p>
+                  <p className="text-3xl font-bold text-white">{totalBookings}</p>
                 </div>
-                <Bed className="w-8 h-8 text-warning" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Calendar className="w-8 h-8 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Active Doctors</p>
-                  <p className="text-2xl font-bold text-success">12</p>
+                  <p className="text-sm text-emerald-100 opacity-90">Available Balance</p>
+                  <p className="text-3xl font-bold text-white">
+                    {isLoadingWallet ? '...' : `PKR ${availableBalance.toLocaleString()}`}
+                  </p>
                 </div>
-                <Stethoscope className="w-8 h-8 text-success" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Wallet className="w-8 h-8 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-2xl font-bold">PKR 2.4M</p>
+                  <p className="text-sm text-purple-100 opacity-90">Total Earnings</p>
+                  <p className="text-3xl font-bold text-white">
+                    {isLoadingWallet ? '...' : `PKR ${totalEarnings.toLocaleString()}`}
+                  </p>
                 </div>
-                <DollarSign className="w-8 h-8 text-primary" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <DollarSign className="w-8 h-8 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             </CardContent>
           </Card>
         </div>
@@ -463,23 +507,41 @@ const ClinicDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="services">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="services">Services</TabsTrigger>
-                <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                <TabsTrigger value="wallet">Wallet</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
+                <TabsTrigger 
+                  value="services" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Services
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="bookings" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Bookings
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="wallet" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Wallet
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="services">
                 {/* Services Management */}
-                <Card className="card-healthcare">
-                  <CardHeader>
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl">
+                  <CardHeader className="bg-gradient-to-r from-blue-400 to-indigo-500 text-white rounded-t-lg">
                     <div className="flex justify-between items-center">
                       <div>
-                        <CardTitle>Clinic Services</CardTitle>
-                        <CardDescription>Manage your clinic services and pricing</CardDescription>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          <Activity className="w-5 h-5" />
+                          Clinic Services
+                        </CardTitle>
+                        <CardDescription className="text-blue-100">Manage your clinic services and pricing</CardDescription>
                       </div>
                       <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
                         <DialogTrigger asChild>
-                          <Button>
+                          <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300">
                             <Plus className="w-4 h-4 mr-2" />
                             Add Service
                           </Button>
@@ -720,19 +782,21 @@ const ClinicDashboard = () => {
                 </Card>
               </TabsContent>
               <TabsContent value="bookings">
-                <Card className="card-healthcare">
-                  <CardHeader>
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 shadow-xl">
+                  <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <CardTitle>Patient Bookings</CardTitle>
-                        <CardDescription>Bookings from patients for your services</CardDescription>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          <Calendar className="w-5 h-5" />
+                          Patient Bookings
+                        </CardTitle>
+                        <CardDescription className="text-orange-100">Bookings from patients for your services</CardDescription>
                       </div>
                       {bookings.length > 0 && (
                         <Button
-                          variant="destructive"
+                          className="bg-white text-red-600 hover:bg-red-50 shadow-lg transition-all duration-300 shrink-0 self-start sm:self-auto w-full sm:w-auto"
                           size="sm"
                           onClick={deleteAllBookings}
-                          className="shrink-0 self-start sm:self-auto w-full sm:w-auto"
                         >
                           Delete All
                         </Button>
@@ -754,7 +818,7 @@ const ClinicDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                             <div className="flex-1 min-w-0">
                               <h4 className="font-medium">{booking.patientName}</h4>
                               <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
@@ -779,22 +843,21 @@ const ClinicDashboard = () => {
                               </p>
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
-                                className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
+                                className={booking.status === "Completed" ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white" : booking.status === 'Scheduled' ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white' : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white'}
                               >
                                 {booking.status}
                               </Badge>
                               {booking.status === 'Confirmed' && (
-                                <Button size="sm" className="w-full sm:w-auto" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
+                                <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white shadow-md" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
                               )}
                               {booking.status === 'Scheduled' && (
-                                <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
+                                <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
                               )}
                               {booking.status === 'Completed' && (
                                 <Button
-                                  variant="ghost"
                                   size="sm"
                                   onClick={() => deleteBooking(booking._id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md"
                                 >
                                   Delete
                                 </Button>
@@ -859,44 +922,55 @@ const ClinicDashboard = () => {
 
           {/* Profile Sidebar */}
           <div className="lg:col-span-1 space-y-4">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Clinic Profile</CardTitle>
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white shadow-xl">
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Building className="w-5 h-5" />
+                  Clinic Profile
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-center mb-6">
-                  <div className="mb-4">
+                  <div className="mb-4 relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
                     <ProfileImageUpload
                       currentImage={user?.avatar}
                       userName={user?.name || 'Clinic'}
                       size="lg"
                     />
                   </div>
-                  <h3 className="text-lg font-semibold">{user?.name} Clinic</h3>
-                  <Badge variant="outline" className="capitalize">{user?.role}</Badge>
+                  <h3 className="text-xl font-bold text-white mb-2">{user?.name} Clinic</h3>
+                  <Badge variant="outline" className="capitalize bg-white/20 text-white border-white/30 hover:bg-white/30">
+                    {user?.role}
+                  </Badge>
                   {user?.specialization && (
-                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
+                    <Badge variant="secondary" className="mt-2 bg-white/10 text-white border-white/20">
+                      {user?.specialization}
+                    </Badge>
                   )}
-                  <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
+                  <p className="text-sm text-gray-300 mt-3">{user?.email}</p>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                    <Button
-                      className="w-full"
-                      variant="secondary"
-                      onClick={() => navigate(`/provider/${user?.id}`)}
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      See Public Profile
-                    </Button>
-                  </div>
+                <div className="space-y-3">
+                  <Button 
+                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300" 
+                    variant="outline" 
+                    onClick={() => setIsEditProfileOpen(true)}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white border-0 shadow-lg transition-all duration-300"
+                    onClick={() => navigate(`/provider/${user?.id}`)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    See Public Profile
+                  </Button>
                 </div>
               </CardContent>
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-20 translate-x-20"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
             </Card>
 
             {/* Edit Profile Dialog */}
