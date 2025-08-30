@@ -66,6 +66,7 @@ const PharmaciesPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
+            availability: (service as any).availability || 'Physical',
           } as Service;
           // Hydrate user's own badge from localStorage
           try {
@@ -229,6 +230,7 @@ const PharmaciesPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings,
           ratingBadge: (service as any).ratingBadge || null,
+          availability: (service as any).availability || 'Physical',
         } as Service;
         // Hydrate user's own badge from localStorage
         try {
@@ -444,7 +446,7 @@ const PharmaciesPage = () => {
                   ) : (
                     <span className="text-gray-400 text-4xl">💊</span>
                   )}
-                  
+
                   {/* Top-right corner badges */}
                   <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
                     {(service as any)._providerVerified ? (
@@ -500,7 +502,7 @@ const PharmaciesPage = () => {
                   {service.description}
                 </p>
 
-                {/* Rating, Location, WhatsApp */}
+                {/* Rating, Location, WhatsApp, Availability */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                   <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} ratingBadge={(service as any).ratingBadge} yourBadge={(service as any).myBadge || null} size="sm" />
                   <div className="flex items-center gap-1 text-gray-500">
@@ -515,10 +517,23 @@ const PharmaciesPage = () => {
                       providerId={(service as any)._providerId}
                     />
                   )}
+                  {(service as any).availability && (
+                    <Badge
+                      className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
+                        (service as any).availability === 'Online'
+                          ? 'bg-emerald-600'
+                          : (service as any).availability === 'Physical'
+                          ? 'bg-purple-600'
+                          : 'bg-teal-600'
+                      }`}
+                    >
+                      {(service as any).availability}
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Buttons */}
-                <div className="mt-auto flex flex-wrap gap-1.5">
+                <div className="mt-auto flex flex-wrap items-center gap-1.5">
                   <Button
                     size="sm"
                     className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
@@ -534,14 +549,16 @@ const PharmaciesPage = () => {
                   >
                     <MapPin className="w-3 h-3 mr-1" /> Location
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => navigate(`/service/${service.id}`, { state: { service, fromPharmacies: true } })}
-                    className="flex-1 min-w-[80px] h-8 text-xs"
-                  >
-                    Details
-                  </Button>
+                  <div className="flex items-center gap-1 ml-auto">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => navigate(`/service/${service.id}`, { state: { service, fromPharmacies: true } })}
+                      className="flex-1 min-w-[80px] h-8 text-xs"
+                    >
+                      Details
+                    </Button>
+                  </div>
                   {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
                     <Button
                       size="sm"

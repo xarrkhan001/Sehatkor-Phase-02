@@ -14,6 +14,7 @@ type Unified = {
   providerId?: string;
   provider: string;
   location: string;
+  availability?: 'Online' | 'Physical' | 'Online and Physical';
 };
 
 const HomeCompare = () => {
@@ -41,9 +42,10 @@ const HomeCompare = () => {
         providerId: pid,
         provider: resolvedProvider,
         location: (s as any).location || "Karachi",
+        availability: (s as any)?.availability as any,
       });
     });
-    const mocks = mockServices.map((s: MockService) => ({ id: s.id, name: s.name, provider: s.provider, location: s.location }));
+    const mocks = mockServices.map((s: MockService) => ({ id: s.id, name: s.name, provider: s.provider, location: s.location, availability: (s as any)?.availability as any }));
     return [...real, ...mocks];
   }, [user?.id, user?.name, profileTick, latestProviderNames]);
 
@@ -114,7 +116,9 @@ const HomeCompare = () => {
               </SelectTrigger>
               <SelectContent>
                 {optionsForSelected.map(o => (
-                  <SelectItem key={o.id} value={o.id}>{o.name} — {o.provider} ({o.location})</SelectItem>
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.name} — {o.provider} ({o.location}) {o.availability ? `· ${o.availability}` : ''}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -126,7 +130,9 @@ const HomeCompare = () => {
               </SelectTrigger>
               <SelectContent>
                 {optionsForSelected.map(o => (
-                  <SelectItem key={o.id} value={o.id}>{o.name} — {o.provider} ({o.location})</SelectItem>
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.name} — {o.provider} ({o.location}) {o.availability ? `· ${o.availability}` : ''}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

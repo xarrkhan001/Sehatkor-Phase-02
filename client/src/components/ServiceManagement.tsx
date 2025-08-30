@@ -67,7 +67,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     stock: '',
     googleMapLink: '',
     city: '',
-    detailAddress: ''
+    detailAddress: '',
+    availability: 'Physical'
   });
 
   const getServiceCategories = () => {
@@ -94,7 +95,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       stock: '',
       googleMapLink: '',
       city: '',
-      detailAddress: ''
+      detailAddress: '',
+      availability: 'Physical'
     });
     setServiceImage('');
     setEditingService(null);
@@ -130,6 +132,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       googleMapLink: serviceForm.googleMapLink,
       city: serviceForm.city,
       detailAddress: serviceForm.detailAddress,
+      availability: serviceForm.availability,
       ...(userRole === 'pharmacy' && { stock: parsedStock })
     };
 
@@ -202,6 +205,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             googleMapLink: serviceForm.googleMapLink,
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
+            availability: serviceForm.availability,
             diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
@@ -230,6 +234,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             googleMapLink: serviceForm.googleMapLink,
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
+            availability: serviceForm.availability,
             providerName: userName,
             diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
@@ -259,7 +264,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             ...serviceData,
             googleMapLink: serviceForm.googleMapLink,
             city: serviceForm.city,
-            detailAddress: serviceForm.detailAddress
+            detailAddress: serviceForm.detailAddress,
+            availability: serviceForm.availability
           };
           const updatedService = ServiceManager.updateService(editingService.id, updateData);
           if (updatedService) {
@@ -299,7 +305,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       stock: 'stock' in service ? service.stock?.toString() || '' : '',
       googleMapLink: (service as any).googleMapLink || '',
       city: (service as any).city || '',
-      detailAddress: (service as any).detailAddress || ''
+      detailAddress: (service as any).detailAddress || '',
+      availability: (service as any).availability || 'Physical'
     });
     setServiceImage(service.image || '');
     setDisease((((service as any).diseases as string[]) || [])[0] || '');
@@ -458,6 +465,49 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Availability Selection */}
+                <div className="space-y-3 border-t pt-3">
+                  <h4 className="font-medium text-sm">Service Availability</h4>
+                  <div className="space-y-2">
+                    <Label>How is this service available? *</Label>
+                    <div className="flex flex-col space-y-2">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="availability"
+                          value="Physical"
+                          checked={serviceForm.availability === 'Physical'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, availability: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">Physical - In-person service only</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="availability"
+                          value="Online"
+                          checked={serviceForm.availability === 'Online'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, availability: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">Online - Remote consultation/delivery available</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="availability"
+                          value="Online and Physical"
+                          checked={serviceForm.availability === 'Online and Physical'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, availability: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">Online and Physical - Both options available</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Location Fields */}

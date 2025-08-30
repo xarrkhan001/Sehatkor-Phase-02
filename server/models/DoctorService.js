@@ -62,6 +62,11 @@ const DoctorServiceSchema = new mongoose.Schema(
     },
     providerName: { type: String, required: true },
     providerType: { type: String, enum: ["doctor"], default: "doctor" },
+    availability: { 
+      type: String, 
+      enum: ["Online", "Physical", "Online and Physical"], 
+      default: "Physical" 
+    },
   },
   { timestamps: true }
 );

@@ -40,6 +40,8 @@ type Unified = {
   startTime?: string;
   endTime?: string;
   days?: string;
+  // availability of service
+  availability?: 'Online' | 'Physical' | 'Online and Physical';
   // variants array (doctor services primarily)
   variants?: Array<{
     imageUrl?: string;
@@ -119,6 +121,7 @@ const CompareExplorer = () => {
             startTime: (s as any)?.startTime,
             endTime: (s as any)?.endTime,
             days: (s as any)?.days,
+            availability: (s as any)?.availability as any,
             variants: (s as any)?.variants || [],
           } as Unified;
         });
@@ -598,6 +601,7 @@ const CompareExplorer = () => {
                         ) : (
                           <span className="text-gray-400 text-sm">No Image</span>
                         )}
+                        {/* Availability badge moved to action row below */}
                         {getSlides(item).length > 1 && (
                           <>
                             <button
@@ -652,7 +656,7 @@ const CompareExplorer = () => {
                       {/* Description */}
                       <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.description}</p>
 
-                      {/* Rating Badge, Location, Home Service, WhatsApp */}
+                      {/* Rating Badge, Location, WhatsApp */}
                       <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                         <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
                         <div className="flex items-center gap-1 text-gray-500">
@@ -662,10 +666,24 @@ const CompareExplorer = () => {
                         {item.providerPhone && (
                           <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} providerId={item._providerId} />
                         )}
+                        {item.availability && (
+                          <Badge
+                            className={
+                              `text-xs px-2 py-0.5 text-white border-0 rounded-md shadow ` +
+                              (item.availability === 'Online'
+                                ? 'bg-emerald-600'
+                                : item.availability === 'Physical'
+                                ? 'bg-purple-600'
+                                : 'bg-teal-600')
+                            }
+                          >
+                            {item.availability}
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Buttons */}
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button className="flex-1 min-w-[100px]" onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}>
                           <ArrowRight className="w-4 h-4 mr-1" /> Book Now
                         </Button>
@@ -699,6 +717,7 @@ const CompareExplorer = () => {
                                   address: item.detailAddress ?? undefined,
                                   providerPhone: item.providerPhone ?? undefined,
                                   googleMapLink: item.googleMapLink ?? undefined,
+                                  availability: item.availability ?? undefined,
                                 }
                               }
                             });
@@ -845,11 +864,26 @@ const CompareExplorer = () => {
                                     address: s.detailAddress ?? undefined,
                                     providerPhone: s.providerPhone ?? undefined,
                                     googleMapLink: s.googleMapLink ?? undefined,
+                                    availability: s.availability ?? undefined,
                                   }
                                 }
                               })}>
                                 View Details
                                 <ArrowRight className="w-4 h-4 ml-1" />
+                                {s.availability && (
+                                  <Badge
+                                    className={
+                                      `ml-2 text-xs px-2 py-0.5 text-white border-0 rounded-md shadow ` +
+                                      (s.availability === 'Online'
+                                        ? 'bg-emerald-600'
+                                        : s.availability === 'Physical'
+                                        ? 'bg-purple-600'
+                                        : 'bg-teal-600')
+                                    }
+                                  >
+                                    {s.availability}
+                                  </Badge>
+                                )}
                               </Button>
                             </td>
                           ))}

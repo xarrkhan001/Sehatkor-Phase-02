@@ -652,6 +652,23 @@ const ProviderProfilePage = () => {
                               {!providerType && 'Provider'}
                             </Badge>
                           </div>
+
+                          {/* Top-right corner availability badge */}
+                          {(service as any).availability && (service as any).providerType !== 'pharmacy' && (
+                            <div className="absolute -top-0.5 -right-0.5">
+                              <Badge
+                                className={`text-[7px] px-0.5 py-0.5 text-white border-0 shadow-md backdrop-blur-sm ${
+                                  (service as any).availability === 'Online'
+                                    ? 'bg-emerald-600'
+                                    : (service as any).availability === 'Physical'
+                                    ? 'bg-purple-600'
+                                    : 'bg-teal-600'
+                                }`}
+                              >
+                                {(service as any).availability}
+                              </Badge>
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-[1.25rem] md:text-2xl font-semibold text-gray-900 mb-1 truncate">
@@ -718,6 +735,21 @@ const ProviderProfilePage = () => {
                             providerName={service.providerName}
                             providerId={(service as any).providerId}
                           />
+                          {(service as any).providerType === 'pharmacy' && (service as any).availability && (
+                            <span className="inline-block ml-2 align-middle">
+                              <Badge
+                                className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
+                                  (service as any).availability === 'Online'
+                                    ? 'bg-emerald-600'
+                                    : (service as any).availability === 'Physical'
+                                    ? 'bg-purple-600'
+                                    : 'bg-teal-600'
+                                }`}
+                              >
+                                {(service as any).availability}
+                              </Badge>
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>

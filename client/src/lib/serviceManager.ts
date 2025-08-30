@@ -229,10 +229,12 @@ class ServiceManager {
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
       providerPhone: service.providerPhone,
+      availability: service.availability,
       totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
       ratingBadge: service.ratingBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
+
       ...(Array.isArray(service.diseases) ? { diseases: service.diseases } : {}),
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
@@ -295,11 +297,13 @@ class ServiceManager {
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
       providerPhone: service.providerPhone,
+      availability: service.availability,
       totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
       ratingBadge: service.ratingBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
       ratingCounts: service.ratingCounts ?? null,
+
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
         ? {
@@ -358,11 +362,14 @@ class ServiceManager {
         detailAddress: service.detailAddress,
         googleMapLink: service.googleMapLink,
         providerPhone: service.providerPhone,
+        availability: service.availability,
         totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
         ratingBadge: service.ratingBadge ?? null,
         rating: service.averageRating ?? service.rating ?? 0,
         averageRating: service.averageRating ?? service.rating ?? 0,
+
         ...(service.stock != null && { stock: service.stock }),
+
         ...(Array.isArray(service.variants) && service.variants.length > 0
           ? {
               variants: service.variants.map((v: any) => ({

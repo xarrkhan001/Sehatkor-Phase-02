@@ -20,6 +20,11 @@ const LaboratoryTestSchema = new mongoose.Schema(
     },
     providerName: { type: String, required: true },
     providerType: { type: String, enum: ["laboratory"], default: "laboratory" },
+    availability: { 
+      type: String, 
+      enum: ["Online", "Physical", "Online and Physical"], 
+      default: "Physical" 
+    },
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,

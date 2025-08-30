@@ -76,7 +76,8 @@ const PharmacyDashboard = () => {
     category: '',
     googleMapLink: '',
     city: '',
-    detailAddress: ''
+    detailAddress: '',
+    availability: 'Physical'
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -89,7 +90,8 @@ const PharmacyDashboard = () => {
     category: '',
     googleMapLink: '',
     city: '',
-    detailAddress: ''
+    detailAddress: '',
+    availability: 'Physical'
   });
 
   const medicineCategories = [
@@ -118,6 +120,7 @@ const PharmacyDashboard = () => {
         googleMapLink: d.googleMapLink,
         city: d.city,
         detailAddress: d.detailAddress,
+        availability: d.availability || 'Physical',
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
@@ -149,6 +152,7 @@ const PharmacyDashboard = () => {
         providerId: user.id,
         providerName: d.providerName || (user?.name || 'Pharmacy'),
         providerType: 'pharmacy' as const,
+        availability: d.availability || 'Physical',
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }));
@@ -357,6 +361,7 @@ const PharmacyDashboard = () => {
         googleMapLink: medicineForm.googleMapLink,
         city: medicineForm.city,
         detailAddress: medicineForm.detailAddress,
+        availability: medicineForm.availability,
         providerName: user?.name || 'Pharmacy',
       });
 
@@ -371,13 +376,14 @@ const PharmacyDashboard = () => {
         providerId: user.id,
         providerName: created.providerName,
         providerType: 'pharmacy' as const,
+        availability: created.availability,
       };
 
       // Add to local storage
       ServiceManager.addService(newMedicine);
 
       // Reset form
-      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '' });
+      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical' });
       setMedicineImagePreview('');
       setMedicineImageFile(null);
       setIsAddMedicineOpen(false);
@@ -420,7 +426,8 @@ const PharmacyDashboard = () => {
       category: m.category || '',
       googleMapLink: m.googleMapLink || '',
       city: m.city || '',
-      detailAddress: m.detailAddress || ''
+      detailAddress: m.detailAddress || '',
+      availability: m.availability || 'Physical'
     });
     setEditImagePreview(m.imageUrl || m.image || '');
     setEditImageFile(null);
@@ -454,6 +461,7 @@ const PharmacyDashboard = () => {
         googleMapLink: editForm.googleMapLink,
         city: editForm.city,
         detailAddress: editForm.detailAddress,
+        availability: editForm.availability,
       });
       // refresh from backend and sync ServiceManager
       await reloadMedicines();
@@ -670,15 +678,59 @@ const PharmacyDashboard = () => {
                                 placeholder="Brief description of the medicine"
                               />
                             </div>
+                            
+                            {/* Availability Selection */}
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Service Availability</h4>
+                              <div className="space-y-2">
+                                <Label>How is this medicine available? *</Label>
+                                <div className="flex flex-col space-y-2">
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="availability"
+                                      value="Physical"
+                                      checked={medicineForm.availability === 'Physical'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, availability: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Physical - In-person pickup only</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="availability"
+                                      value="Online"
+                                      checked={medicineForm.availability === 'Online'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, availability: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Online - Delivery/consultation available</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="availability"
+                                      value="Online and Physical"
+                                      checked={medicineForm.availability === 'Online and Physical'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, availability: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Online and Physical - Both options available</span>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                            
                             {/* Location Fields */}
                             <div className="space-y-3 border-t pt-3">
                               <h4 className="font-medium text-sm">Location Information</h4>
                               <div>
-                                <Label htmlFor="medicineCity">City</Label>
+                                <Label htmlFor="editMedicineCity">City</Label>
                                 <Input
-                                  id="medicineCity"
-                                  value={medicineForm.city}
-                                  onChange={(e) => setMedicineForm({ ...medicineForm, city: e.target.value })}
+                                  id="editMedicineCity"
+                                  value={editForm.city}
+                                  onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
                                   placeholder="e.g., Karachi"
                                 />
                               </div>
@@ -742,6 +794,19 @@ const PharmacyDashboard = () => {
                                   <Badge variant="outline">{m.category || '-'}</Badge>
                                   <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
                                   <span className="text-muted-foreground">Stock: {m.stock ?? '-'}</span>
+                                  {m.availability && (
+                                    <Badge
+                                      className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
+                                        m.availability === 'Online'
+                                          ? 'bg-emerald-600'
+                                          : m.availability === 'Physical'
+                                          ? 'bg-purple-600'
+                                          : 'bg-teal-600'
+                                      }`}
+                                    >
+                                      {m.availability}
+                                    </Badge>
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(m)}>
@@ -766,6 +831,7 @@ const PharmacyDashboard = () => {
                                 <TableHead>Category</TableHead>
                                 <TableHead>Price (PKR)</TableHead>
                                 <TableHead>Stock</TableHead>
+                                <TableHead>Availability</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -785,6 +851,23 @@ const PharmacyDashboard = () => {
                                     <TableCell>{m.category || '-'}</TableCell>
                                     <TableCell>{m.price ?? 0}</TableCell>
                                     <TableCell>{m.stock ?? '-'}</TableCell>
+                                    <TableCell>
+                                      {m.availability ? (
+                                        <Badge
+                                          className={`${
+                                            m.availability === 'Online'
+                                              ? 'bg-emerald-600'
+                                              : m.availability === 'Physical'
+                                              ? 'bg-purple-600'
+                                              : 'bg-teal-600'
+                                          } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                                        >
+                                          {m.availability === 'Online and Physical' ? 'Online & Physical' : m.availability}
+                                        </Badge>
+                                      ) : (
+                                        '-'
+                                      )}
+                                    </TableCell>
                                     <TableCell className="text-right space-x-2">
                                       <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
                                         <Edit className="w-4 h-4 mr-1" /> Edit
@@ -980,7 +1063,49 @@ const PharmacyDashboard = () => {
                       placeholder="Brief description of the medicine"
                     />
                   </div>
-                  {/* Location Fields */}
+                  {/* Availability Selection --> Newly Added Section */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Service Availability</h4>
+                    <div className="space-y-2">
+                      <Label>How is this medicine available? *</Label>
+                      <div className="flex flex-col space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editAvailability"
+                            value="Physical"
+                            checked={editForm.availability === 'Physical'}
+                            onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Physical - In-person pickup only</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editAvailability"
+                            value="Online"
+                            checked={editForm.availability === 'Online'}
+                            onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Online - Delivery/consultation available</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editAvailability"
+                            value="Online and Physical"
+                            checked={editForm.availability === 'Online and Physical'}
+                            onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Online and Physical - Both options available</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div className="space-y-3 border-t pt-3">
                     <h4 className="font-medium text-sm">Location Information</h4>
                     <div>
@@ -1012,13 +1137,14 @@ const PharmacyDashboard = () => {
                       />
                     </div>
                   </div>
+                  </div>
+                  
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                     <Button variant="outline" onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto">Cancel</Button>
                     <Button onClick={handleSaveEdit} className="w-full sm:w-auto" disabled={isUploadingImage}>
                       {isUploadingImage ? 'Updating...' : 'Update Medicine'}
                     </Button>
                   </div>
-                </div>
               </DialogContent>
             </Dialog>
 

@@ -39,6 +39,11 @@ const MedicineSchema = new mongoose.Schema(
     },
     providerName: { type: String, required: true },
     providerType: { type: String, enum: ["pharmacy"], default: "pharmacy" },
+    availability: { 
+      type: String, 
+      enum: ["Online", "Physical", "Online and Physical"], 
+      default: "Physical" 
+    },
   },
   { timestamps: true }
 );
