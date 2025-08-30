@@ -41,7 +41,8 @@ import {
   User,
   Phone,
   Download,
-  Wallet
+  Wallet,
+  Truck
 } from "lucide-react";
 
 const LaboratoryDashboard = () => {
@@ -611,10 +612,25 @@ const LaboratoryDashboard = () => {
             </Dialog>
 
             <Tabs defaultValue="tests">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="tests">Tests</TabsTrigger>
-                <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                <TabsTrigger value="wallet">Wallet</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
+                <TabsTrigger 
+                  value="tests"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Tests
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="bookings"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Bookings
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="wallet"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Wallet
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="tests">
                 <div className="space-y-6">
@@ -639,7 +655,7 @@ const LaboratoryDashboard = () => {
                             <div className="text-right">
                               <Badge
                                 variant={test.status === "Ready" ? "default" : "secondary"}
-                                className={test.status === "Ready" ? "bg-success" : ""}
+                                className={`${test.status === "Ready" ? "bg-success" : ""} rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
                               >
                                 {test.status}
                               </Badge>
@@ -823,7 +839,7 @@ const LaboratoryDashboard = () => {
                                       <div className="font-medium">{test.name}</div>
                                       <div className="text-sm text-muted-foreground line-clamp-2">{test.description}</div>
                                       <div className="mt-2 flex flex-wrap items-center gap-2">
-                                        <Badge variant="outline">{test.category}</Badge>
+                                        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">{test.category}</Badge>
                                         <span className="text-sm">PKR {test.price.toLocaleString()}</span>
                                         <span className="text-xs text-muted-foreground">{test.duration || 'N/A'}</span>
                                       </div>
@@ -842,14 +858,14 @@ const LaboratoryDashboard = () => {
                             </div>
 
                             {/* Desktop table */}
-                            <div className="hidden md:block">
+                            <div className="hidden md:block overflow-x-auto">
                               <Table>
                                 <TableHeader>
                                   <TableRow>
                                     <TableHead>Image</TableHead>
                                     <TableHead>Test Name</TableHead>
                                     <TableHead>Category</TableHead>
-                                    <TableHead>Price</TableHead>
+                                    <TableHead>Price (PKR)</TableHead>
                                     <TableHead>Duration</TableHead>
                                     <TableHead>Actions</TableHead>
                                   </TableRow>
@@ -858,6 +874,7 @@ const LaboratoryDashboard = () => {
                                   {tests.map((test) => (
                                     <TableRow key={test.id}>
                                       <TableCell>
+
                                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                                           {test.image ? (
                                             <img
@@ -876,7 +893,9 @@ const LaboratoryDashboard = () => {
                                       </TableCell>
                                       <TableCell className="font-medium">{test.name}</TableCell>
                                       <TableCell>
-                                        <Badge variant="outline">{test.category}</Badge>
+                                        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">
+                                          {test.category}
+                                        </Badge>
                                       </TableCell>
                                       <TableCell>PKR {test.price.toLocaleString()}</TableCell>
                                       <TableCell>{test.duration || 'N/A'}</TableCell>
@@ -895,6 +914,7 @@ const LaboratoryDashboard = () => {
                                 </TableBody>
                               </Table>
                             </div>
+
                           </>
                         ) : (
                           <div className="text-center text-muted-foreground py-8">
@@ -907,19 +927,21 @@ const LaboratoryDashboard = () => {
                 </div>
               </TabsContent>
               <TabsContent value="bookings">
-                <Card className="card-healthcare">
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 shadow-xl">
+                  <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <CardTitle>Patient Bookings</CardTitle>
-                        <CardDescription>Bookings from patients for your services</CardDescription>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          <Calendar className="w-5 h-5" />
+                          Patient Bookings
+                        </CardTitle>
+                        <CardDescription className="text-orange-100">Bookings from patients for your services</CardDescription>
                       </div>
                       {bookings.length > 0 && (
                         <Button
-                          variant="destructive"
+                          className="bg-white text-red-600 hover:bg-red-50 shadow-lg transition-all duration-300 shrink-0 self-start sm:self-auto w-full sm:w-auto"
                           size="sm"
                           onClick={deleteAllBookings}
-                          className="w-full sm:w-auto"
                         >
                           Delete All
                         </Button>
@@ -941,100 +963,41 @@ const LaboratoryDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
-                            <div className="flex-1">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                            <div className="flex-1 min-w-0">
                               <h4 className="font-medium">{booking.patientName}</h4>
                               <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-4 h-4" />
-                                  <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Phone className="w-4 h-4" />
-                                  <span>{booking.paymentMethod}: ***{booking.paymentNumber.slice(-4)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 sm:justify-end w-full sm:w-auto">
-                              <Badge
-                                variant={booking.status === "confirmed" ? "default" : "secondary"}
-                                className={booking.status === "confirmed" ? "bg-success" : ""}
-                              >
-                                {booking.status}
-                              </Badge>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteBooking(booking._id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="bookings">
-                <Card className="card-healthcare">
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <CardTitle>All Bookings</CardTitle>
-                      <Button variant="outline" size="sm" onClick={deleteAllBookings} disabled={bookings.length === 0} className="w-full sm:w-auto">
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete All
-                      </Button>
-                    </div>
-                    <CardDescription>Manage all patient bookings for your tests.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoadingBookings ? (
-                      <p>Loading bookings...</p>
-                    ) : bookings.length === 0 ? (
-                      <p>No bookings found.</p>
-                    ) : (
-                      <div className="space-y-4">
-                        {bookings.map((booking) => (
-                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
-                            <div className="flex-1">
-                              <h4 className="font-medium">{booking.patientName}</h4>
-                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-1">
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 {booking.status === 'Scheduled' && booking.scheduledTime && (
-                                  <div className="flex items-center gap-1 text-primary font-semibold">
+                                  <div className="flex items-center space-x-1 text-primary font-semibold">
                                     <Clock className="w-4 h-4" />
                                     <span>Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2 sm:justify-end w-full sm:w-auto">
+                            <div className="sm:text-right flex items-center gap-2 flex-wrap">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
-                                className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
+                                className={booking.status === "Completed" ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white" : booking.status === 'Scheduled' ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white' : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white'}
                               >
                                 {booking.status}
                               </Badge>
                               {booking.status === 'Confirmed' && (
-                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }} className="w-full sm:w-auto">Schedule</Button>
+                                <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white shadow-md" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
                               )}
                               {booking.status === 'Scheduled' && (
-                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)} className="w-full sm:w-auto">Mark as Complete</Button>
+                                <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
                               )}
                               {booking.status === 'Completed' && (
                                 <Button
-                                  variant="ghost"
                                   size="sm"
                                   onClick={() => deleteBooking(booking._id)}
-                                  className="w-full sm:w-auto text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md"
                                 >
                                   Delete
                                 </Button>
@@ -1047,6 +1010,7 @@ const LaboratoryDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+              
 
               <TabsContent value="wallet">
                 <ProviderWallet />
@@ -1097,47 +1061,56 @@ const LaboratoryDashboard = () => {
           </div>
 
           {/* Profile Sidebar */}
-          <div className="space-y-6">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Laboratory Profile</CardTitle>
+          <div className="lg:col-span-1 space-y-4">
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white shadow-xl">
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TestTube className="w-5 h-5" />
+                  Laboratory Profile
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-center mb-6">
-                  <div className="mb-4">
+                  <div className="mb-4 relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
                     <ProfileImageUpload
                       currentImage={user?.avatar}
                       userName={user?.name || 'Laboratory'}
                       size="lg"
                     />
                   </div>
-                  <h3 className="text-lg font-semibold">{user?.name}</h3>
-                  <Badge variant="outline" className="capitalize">{user?.role}</Badge>
+                  <h3 className="text-xl font-bold text-white mb-2">{user?.name}</h3>
+                  <Badge variant="outline" className="capitalize bg-white/20 text-white border-white/30 hover:bg-white/30">
+                    {user?.role}
+                  </Badge>
                   {user?.specialization && (
-                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
+                    <Badge variant="secondary" className="mt-2 bg-white/10 text-white border-white/20">
+                      {user?.specialization}
+                    </Badge>
                   )}
-                  <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
+                  <p className="text-sm text-gray-300 mt-3">{user?.email}</p>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Specialization now managed via Edit Profile dialog */}
-
-                  <div className="space-y-2">
-                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                    <Button
-                      className="w-full"
-                      variant="secondary"
-                      onClick={() => navigate(`/provider/${user?.id}`)}
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      See Public Profile
-                    </Button>
-                  </div>
+                <div className="space-y-3">
+                  <Button 
+                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300" 
+                    variant="outline" 
+                    onClick={() => setIsEditProfileOpen(true)}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white border-0 shadow-lg transition-all duration-300"
+                    onClick={() => navigate(`/provider/${user?.id}`)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    See Public Profile
+                  </Button>
                 </div>
               </CardContent>
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-20 translate-x-20"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
             </Card>
 
             {/* Edit Profile Dialog */}
@@ -1157,15 +1130,15 @@ const LaboratoryDashboard = () => {
               <CardContent className="space-y-3">
                 <Button className="w-full justify-start" variant="outline">
                   <FileText className="w-4 h-4 mr-2" />
-                  Generate Report
+                  Process Prescription
                 </Button>
                 <Button className="w-full justify-start" variant="outline">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Tests
+                  <Truck className="w-4 h-4 mr-2" />
+                  Delivery Schedule
                 </Button>
                 <Button className="w-full justify-start" variant="outline">
                   <Activity className="w-4 h-4 mr-2" />
-                  Lab Analytics
+                  Sales Report
                 </Button>
               </CardContent>
             </Card>
