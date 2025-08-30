@@ -453,11 +453,11 @@ const ClinicDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-100 opacity-90">Total Bookings</p>
+                  <p className="text-sm text-green-100 opacity-90">Total Bookings</p>
                   <p className="text-3xl font-bold text-white">{totalBookings}</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
@@ -468,11 +468,11 @@ const ClinicDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-emerald-100 opacity-90">Available Balance</p>
+                  <p className="text-sm text-purple-100 opacity-90">Available Balance</p>
                   <p className="text-3xl font-bold text-white">
                     {isLoadingWallet ? '...' : `PKR ${availableBalance.toLocaleString()}`}
                   </p>
@@ -485,11 +485,11 @@ const ClinicDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-100 opacity-90">Total Earnings</p>
+                  <p className="text-sm text-amber-100 opacity-90">Total Earnings</p>
                   <p className="text-3xl font-bold text-white">
                     {isLoadingWallet ? '...' : `PKR ${totalEarnings.toLocaleString()}`}
                   </p>

@@ -280,13 +280,13 @@ const DoctorDashboard = () => {
   // Note: Removed legacy handleSpecialtyChange; specialization is edited via EditProfileDialog now.
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Dr. {user?.name}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Dr. {user?.name}</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
               Welcome to your medical practice dashboard
             </p>
           </div>
@@ -312,8 +312,9 @@ const DoctorDashboard = () => {
           </Card>
         )}
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Pharmacy style gradients and overlays */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
           {/* Total Services Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
@@ -342,6 +343,7 @@ const DoctorDashboard = () => {
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
             </CardContent>
           </Card>
 
@@ -359,6 +361,7 @@ const DoctorDashboard = () => {
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
             </CardContent>
           </Card>
 
@@ -376,27 +379,45 @@ const DoctorDashboard = () => {
                   <DollarSign className="w-6 h-6 text-white" />
                 </div>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3 space-y-6">
-            <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="w-full -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto flex gap-2 sm:grid sm:grid-cols-3 snap-x snap-mandatory">
-                <TabsTrigger value="bookings" className="shrink-0 whitespace-nowrap snap-start">Bookings</TabsTrigger>
-                <TabsTrigger value="services" className="shrink-0 whitespace-nowrap snap-start">Services</TabsTrigger>
-                <TabsTrigger value="wallet" className="shrink-0 whitespace-nowrap snap-start">Wallet</TabsTrigger>
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <Tabs defaultValue="services" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
+                <TabsTrigger 
+                  value="services" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Services
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="bookings" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Bookings
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="wallet" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Wallet
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="bookings" className="space-y-4">
-                <Card className="card-healthcare">
-                  <CardHeader>
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 shadow-xl">
+                  <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <CardTitle>Patient Bookings</CardTitle>
-                        <CardDescription>Bookings from patients for your services</CardDescription>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          Patient Bookings
+                        </CardTitle>
+                        <CardDescription className="text-orange-100">Bookings from patients for your services</CardDescription>
                       </div>
                       {bookings.length > 0 && (
                         <Button
@@ -558,44 +579,55 @@ const DoctorDashboard = () => {
 
           {/* Profile Sidebar */}
           <div className="lg:col-span-1 space-y-4">
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Doctor Profile</CardTitle>
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white shadow-xl">
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Stethoscope className="w-5 h-5" />
+                  Doctor Profile
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-center mb-6">
-                  <div className="mb-4">
+                  <div className="mb-4 relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
                     <ProfileImageUpload
                       currentImage={user?.avatar}
                       userName={user?.name || 'Doctor'}
                       size="lg"
                     />
                   </div>
-                  <h3 className="text-lg font-semibold">Dr. {user?.name}</h3>
-                  <Badge variant="outline" className="capitalize">{user?.role}</Badge>
+                  <h3 className="text-xl font-bold text-white mb-2">Dr. {user?.name}</h3>
+                  <Badge variant="outline" className="capitalize bg-white/20 text-white border-white/30 hover:bg-white/30">
+                    {user?.role}
+                  </Badge>
                   {user?.specialization && (
-                    <Badge variant="secondary" className="mt-2">{user?.specialization}</Badge>
+                    <Badge variant="secondary" className="mt-2 bg-white/10 text-white border-white/20">
+                      {user?.specialization}
+                    </Badge>
                   )}
-                  <p className="text-sm text-muted-foreground mt-2">{user?.email}</p>
+                  <p className="text-sm text-gray-300 mt-3">{user?.email}</p>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Button className="w-full" variant="outline" onClick={() => setIsEditProfileOpen(true)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                    <Button
-                      className="w-full"
-                      variant="secondary"
-                      onClick={() => navigate(`/provider/${user?.id}`)}
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      See Public Profile
-                    </Button>
-                  </div>
+                <div className="space-y-3">
+                  <Button 
+                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300" 
+                    variant="outline" 
+                    onClick={() => setIsEditProfileOpen(true)}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white border-0 shadow-lg transition-all duration-300"
+                    onClick={() => navigate(`/provider/${user?.id}`)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    See Public Profile
+                  </Button>
                 </div>
               </CardContent>
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-20 translate-x-20"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
             </Card>
 
             {/* Edit Profile Dialog */}
