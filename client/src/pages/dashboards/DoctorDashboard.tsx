@@ -34,7 +34,8 @@ import {
   Trash2,
   Eye,
   User,
-  Wallet
+  Wallet,
+  DollarSign
 } from "lucide-react";
 
 const DoctorDashboard = () => {
@@ -51,6 +52,8 @@ const DoctorDashboard = () => {
     scheduledTime: '',
     communicationChannel: 'SehatKor Chat',
   });
+  const [walletData, setWalletData] = useState<any>(null);
+  const [isLoadingWallet, setIsLoadingWallet] = useState(true);
 
   // Normalize booking price with sensible fallbacks
   const getBookingPrice = (booking: any): number => {
@@ -58,8 +61,6 @@ const DoctorDashboard = () => {
     const num = Number(raw);
     return Number.isFinite(num) ? num : 0;
   };
-
-
 
   const syncLocalFromDocs = (docs: any[]) => {
     if (!user?.id) return;
@@ -251,13 +252,30 @@ const DoctorDashboard = () => {
     }
   };
 
-  useEffect(() => {
+  const fetchWalletData = async () => {
     if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:4000/api/payments/wallet/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWalletData(data.wallet);
+      }
+    } catch (error) {
+      console.error('Failed to fetch wallet data:', error);
+    } finally {
+      setIsLoadingWallet(false);
+    }
+  };
+
+  useEffect(() => {
     reloadServices();
     fetchBookings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchWalletData();
   }, [user?.id]);
-
 
   // Note: Removed legacy handleSpecialtyChange; specialization is edited via EditProfileDialog now.
 
@@ -296,50 +314,67 @@ const DoctorDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
+          {/* Total Services Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Today's Patients</p>
-                  <p className="text-2xl font-bold">8</p>
+                  <p className="text-sm text-blue-100 opacity-90">Total Services</p>
+                  <p className="text-3xl font-bold text-white">{services.length}</p>
                 </div>
-                <Users className="w-8 h-8 text-primary" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Stethoscope className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            </CardContent>
+          </Card>
+
+          {/* Total Bookings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-100 opacity-90">Total Bookings</p>
+                  <p className="text-3xl font-bold text-white">{bookings.length}</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
+          {/* Available Balance Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">5</p>
+                  <p className="text-sm text-purple-100 opacity-90">Available Balance</p>
+                  <p className="text-3xl font-bold text-white">
+                    {isLoadingWallet ? '...' : `PKR ${walletData?.availableBalance?.toLocaleString() || '0'}`}
+                  </p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-success" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Wallet className="w-6 h-6 text-white" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
+          {/* Total Earnings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Upcoming</p>
-                  <p className="text-2xl font-bold text-warning">3</p>
+                  <p className="text-sm text-amber-100 opacity-90">Total Earnings</p>
+                  <p className="text-3xl font-bold text-white">
+                    {isLoadingWallet ? '...' : `PKR ${walletData?.totalEarnings?.toLocaleString() || '0'}`}
+                  </p>
                 </div>
-                <Clock className="w-8 h-8 text-warning" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-healthcare">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Rating</p>
-                  <p className="text-2xl font-bold">4.8</p>
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <DollarSign className="w-6 h-6 text-white" />
                 </div>
-                <Star className="w-8 h-8 text-primary" />
               </div>
             </CardContent>
           </Card>

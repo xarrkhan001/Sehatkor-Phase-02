@@ -62,6 +62,8 @@ const LaboratoryDashboard = () => {
   const [testImageFile, setTestImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isAddingTest, setIsAddingTest] = useState(false);
+  const [walletData, setWalletData] = useState<any>(null);
+  const [isLoadingWallet, setIsLoadingWallet] = useState(true);
 
   const [testForm, setTestForm] = useState({
     name: '',
@@ -257,10 +259,30 @@ const LaboratoryDashboard = () => {
     }
   };
 
+  const fetchWalletData = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`http://localhost:4000/api/payments/wallet/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWalletData(data.wallet);
+      }
+    } catch (error) {
+      console.error('Failed to fetch wallet data:', error);
+    } finally {
+      setIsLoadingWallet(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.id) {
       reloadTests();
       fetchBookings();
+      fetchWalletData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -397,50 +419,68 @@ const LaboratoryDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="card-healthcare">
+          {/* Total Tests Card */}
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Today's Tests</p>
-                  <p className="text-2xl font-bold">42</p>
+                  <p className="text-sm font-medium text-blue-100">Total Tests</p>
+                  <p className="text-2xl font-bold">{tests.length}</p>
                 </div>
-                <TestTube className="w-8 h-8 text-primary" />
+                <div className="p-3 rounded-full bg-blue-400/20">
+                  <TestTube className="w-6 h-6" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Total Bookings Card */}
+          <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">28</p>
+                  <p className="text-sm font-medium text-emerald-100">Total Bookings</p>
+                  <p className="text-2xl font-bold">
+                    {isLoadingBookings ? '...' : bookings.length}
+                  </p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-success" />
+                <div className="p-3 rounded-full bg-emerald-400/20">
+                  <Calendar className="w-6 h-6" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Available Balance Card */}
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-warning">14</p>
+                  <p className="text-sm font-medium text-purple-100">Available Balance</p>
+                  <p className="text-2xl font-bold">
+                    {isLoadingWallet ? '...' : `PKR ${walletData?.availableBalance?.toLocaleString() || '0'}`}
+                  </p>
                 </div>
-                <Clock className="w-8 h-8 text-warning" />
+                <div className="p-3 rounded-full bg-purple-400/20">
+                  <Wallet className="w-6 h-6" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Total Earnings Card */}
+          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  <p className="text-2xl font-bold">PKR 45,000</p>
+                  <p className="text-sm font-medium text-amber-100">Total Earnings</p>
+                  <p className="text-2xl font-bold">
+                    {isLoadingWallet ? '...' : `PKR ${(walletData?.totalEarned || 0).toLocaleString()}`}
+                  </p>
                 </div>
-                <Activity className="w-8 h-8 text-primary" />
+                <div className="p-3 rounded-full bg-amber-400/20">
+                  <DollarSign className="w-6 h-6" />
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -17,6 +17,7 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
+  ClipboardList,
   CreditCard,
   ArrowUpRight,
   Calendar,
@@ -89,6 +90,8 @@ const ProviderWallet: React.FC = () => {
     accountNumber: '',
     accountName: ''
   });
+  // Payment list filter: all | pending | released
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'released'>('all');
   const [socket, setSocket] = useState<any>(null);
   // Use backend-provided availableBalance for withdrawal validations/UI
 
@@ -315,12 +318,12 @@ const ProviderWallet: React.FC = () => {
 
   const getStatusBadge = (payment: Payment) => {
     if (payment.releasedToProvider) {
-      return <Badge variant="default" className="bg-green-600">Released</Badge>;
+      return <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md">Released</Badge>;
     }
     if (payment.serviceCompleted) {
-      return <Badge variant="secondary">Pending Release</Badge>;
+      return <Badge variant="secondary" className="bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md">Pending Release</Badge>;
     }
-    return <Badge variant="outline">Service Pending</Badge>;
+    return <Badge variant="outline" className="bg-gradient-to-r from-gray-500 to-slate-600 text-white shadow-md">Service Pending</Badge>;
   };
 
   if (loading) {
@@ -349,58 +352,72 @@ const ProviderWallet: React.FC = () => {
 
   // Single list: show all withdrawals; no explicit "Pending" tag shown in UI
 
+  // Derived counts for payment filters
+  const releasedCount = wallet?.payments?.filter(p => p.releasedToProvider).length ?? 0;
+  const pendingCount = wallet?.payments?.filter(p => !p.releasedToProvider).length ?? 0;
+
   return (
     <div className="space-y-6">
       {/* Wallet Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 shadow-xl">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-400/20 to-green-500/20 rounded-full -translate-y-10 translate-x-10"></div>
+          <CardContent className="p-6 relative z-10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-green-600" />
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg">
+                  <DollarSign className="w-6 h-6 text-white" />
+                </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <div className="text-2xl font-bold">
+                    <div className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">
                       {balanceVisible ? `PKR ${wallet.availableBalance.toLocaleString()}` : '••••••'}
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setBalanceVisible(!balanceVisible)}
+                      className="hover:bg-emerald-100"
                     >
-                      {balanceVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {balanceVisible ? <EyeOff className="w-4 h-4 text-emerald-600" /> : <Eye className="w-4 h-4 text-emerald-600" />}
                     </Button>
                   </div>
-                  <div className="text-sm text-muted-foreground">Available Balance</div>
+                  <div className="text-sm font-medium text-emerald-700">Available Balance</div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-orange-600" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 shadow-xl">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-400/20 to-amber-500/20 rounded-full -translate-y-10 translate-x-10"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl shadow-lg">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-700 bg-clip-text text-transparent">
                   PKR {wallet.pendingBalance.toLocaleString()}
                 </div>
-                <div className="text-sm text-muted-foreground">Pending Release</div>
+                <div className="text-sm font-medium text-orange-700">Pending Release</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full -translate-y-10 translate-x-10"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
                   PKR {wallet.totalEarnings.toLocaleString()}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Earnings</div>
+                <div className="text-sm font-medium text-blue-700">Total Earnings</div>
               </div>
             </div>
           </CardContent>
@@ -415,7 +432,7 @@ const ProviderWallet: React.FC = () => {
         </div>
         <Dialog open={withdrawalOpen} onOpenChange={setWithdrawalOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2" disabled={!wallet || wallet.availableBalance <= 0}>
+            <Button className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg transition-all duration-300" disabled={!wallet || wallet.availableBalance <= 0}>
               <ArrowUpRight className="w-4 h-4" />
               Withdraw Funds
             </Button>
@@ -483,7 +500,7 @@ const ProviderWallet: React.FC = () => {
 
               <Button
                 onClick={handleWithdrawal}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg transition-all duration-300"
                 disabled={!withdrawalData.amount || parseFloat(withdrawalData.amount) <= 0 || parseFloat(withdrawalData.amount) > wallet.availableBalance}
               >
                 Submit Withdrawal Request
@@ -494,12 +511,25 @@ const ProviderWallet: React.FC = () => {
       </div>
 
       {/* Payment History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Payment History ({wallet.payments.length})
-          </CardTitle>
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 shadow-xl">
+        <CardHeader className="bg-gradient-to-r from-slate-600 to-gray-700 text-white">
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <CreditCard className="w-5 h-5" />
+              Payment History ({wallet.payments.length})
+            </CardTitle>
+            <div className="flex items-center gap-2 bg-white/10 p-1 rounded-lg">
+              <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 ${paymentFilter==='all' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('all')}>
+                All ({wallet.payments.length})
+              </Button>
+              <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 ${paymentFilter==='pending' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('pending')}>
+                Pending ({pendingCount})
+              </Button>
+              <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 ${paymentFilter==='released' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('released')}>
+                Released ({releasedCount})
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {wallet.payments.length === 0 ? (
@@ -510,11 +540,13 @@ const ProviderWallet: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {wallet.payments.map((payment) => (
-                <div key={payment._id} className="flex items-center justify-between p-4 border rounded-lg">
+              {wallet.payments
+                .filter(p => paymentFilter==='all' ? true : paymentFilter==='released' ? p.releasedToProvider : !p.releasedToProvider)
+                .map((payment) => (
+                <div key={payment._id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                   <div className="flex-1">
                     <div className="font-medium">{payment.serviceName}</div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-4">
+                    <div className="text-sm text-muted-foreground flex items-center gap-4 flex-wrap">
                       <div className="flex items-center gap-1">
                         <User className="w-3 h-3" />
                         <span 
@@ -523,6 +555,17 @@ const ProviderWallet: React.FC = () => {
                         >
                           {payment.patientName}
                         </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ClipboardList className="w-3 h-3" />
+                        <span className="text-slate-700">Service: {payment.serviceName}</span>
+                        <Badge
+                          className={`ml-2 h-5 px-2 text-[10px] font-semibold rounded-full shadow-sm ${payment.releasedToProvider
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                            : 'bg-gradient-to-r from-orange-500 to-amber-600 text-white'}`}
+                        >
+                          {payment.releasedToProvider ? 'Released' : (payment.serviceCompleted ? 'Pending Release' : 'Service Pending')}
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
@@ -534,14 +577,11 @@ const ProviderWallet: React.FC = () => {
                     <div className="font-medium text-lg">
                       {payment.currency} {payment.amount.toLocaleString()}
                     </div>
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge(payment)}
-                      {payment.releaseDate && (
-                        <div className="text-xs text-muted-foreground">
-                          Released: {new Date(payment.releaseDate).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
+                    {payment.releaseDate && (
+                      <div className="text-xs text-muted-foreground">
+                        Released: {new Date(payment.releaseDate).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -551,10 +591,10 @@ const ProviderWallet: React.FC = () => {
       </Card>
 
       {/* Withdrawal History */}
-      <Card>
-        <CardHeader>
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 shadow-xl">
+        <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white">
           <div className="flex items-center justify-between gap-4">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <ArrowUpRight className="w-5 h-5" />
               Withdrawal History ({withdrawals.length})
             </CardTitle>
@@ -568,7 +608,7 @@ const ProviderWallet: React.FC = () => {
                 aria-label="Select all"
               />
               <Button
-                variant="destructive"
+                className="bg-white text-red-600 hover:bg-red-50 shadow-lg transition-all duration-300"
                 size="sm"
                 disabled={!anySelected}
                 onClick={() => {
@@ -597,7 +637,7 @@ const ProviderWallet: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {withdrawals.map((w) => (
-                <div key={w._id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={w._id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                   <div className="flex-1">
                     <div className="mb-2">
                       <Checkbox
@@ -622,13 +662,13 @@ const ProviderWallet: React.FC = () => {
                     <div className="font-medium text-lg">PKR {w.amount.toLocaleString()}</div>
                     <div className="flex items-center justify-end gap-2">
                       {w.status === 'completed' && (
-                        <Badge variant="default" className="bg-green-600">Completed</Badge>
+                        <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md">Completed</Badge>
                       )}
                       {w.status === 'approved' && (
-                        <Badge variant="default" className="bg-blue-600">Approved</Badge>
+                        <Badge variant="default" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">Approved</Badge>
                       )}
                       {w.status === 'rejected' && (
-                        <Badge variant="destructive">Rejected</Badge>
+                        <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md">Rejected</Badge>
                       )}
                       <Button
                         variant="ghost"
@@ -686,9 +726,9 @@ const ProviderWallet: React.FC = () => {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Service Statistics</CardTitle>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-violet-500 to-purple-600 text-white">
+            <CardTitle className="text-white">Service Statistics</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -712,9 +752,9 @@ const ProviderWallet: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Methods</CardTitle>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-cyan-50 via-teal-50 to-emerald-50 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-cyan-500 to-teal-600 text-white">
+            <CardTitle className="text-white">Payment Methods</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
