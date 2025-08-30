@@ -3,6 +3,7 @@ import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 import Withdrawal from "../models/Withdrawal.js";
 import mongoose from "mongoose";
+import HiddenProvider from "../models/HiddenProvider.js";
 
 // Create payment record when booking is made
 export const createPayment = async (req, res) => {
@@ -502,7 +503,7 @@ export const getProviderWallet = async (req, res) => {
     // - releasedNet: funds already released to provider (after commission)
     // - pendingBalance: funds for completed services not yet released (before commission if stored)
     const releasedNet = releasedPayments.reduce((sum, payment) => sum + (payment.netReleaseAmount || payment.amount), 0);
-
+    // Subtract withdrawals exactly once from released amount
     const withdrawalsAgg = await Withdrawal.aggregate([
       { $match: { providerId: new mongoose.Types.ObjectId(providerId), status: { $ne: 'rejected' } } },
       { $group: { _id: null, total: { $sum: "$amount" } } }
@@ -657,8 +658,16 @@ export const getProvidersSummary = async (req, res) => {
   try {
     console.log('📊 Fetching providers summary...');
 
-    // Aggregate payments by provider
+    // Load hidden providers to exclude from the summary
+    const hiddenDocs = await HiddenProvider.find({}, 'providerId');
+    const hiddenIds = hiddenDocs.map(doc => doc.providerId instanceof mongoose.Types.ObjectId ? doc.providerId : new mongoose.Types.ObjectId(doc.providerId));
+
+    // Aggregate payments by provider (do not exclude hidden here);
+    // we'll conditionally include hidden providers later only if they have pending unreleased payments
+    const matchStage = { $match: {} };
+
     const providerStats = await Payment.aggregate([
+      matchStage,
       {
         $group: {
           _id: '$providerId',
@@ -688,6 +697,20 @@ export const getProvidersSummary = async (req, res) => {
     const providersData = [];
     
     for (const stat of providerStats) {
+      const isHidden = hiddenIds.some(id => id?.toString() === stat._id?.toString());
+      // If provider is hidden AND has no pending unreleased services, skip it
+      if (isHidden && (stat.pendingServices === 0)) {
+        continue;
+      }
+      // If provider is hidden BUT has pending services, auto-unhide so it stays visible
+      if (isHidden && stat.pendingServices > 0) {
+        try {
+          await HiddenProvider.findOneAndDelete({ providerId: stat._id });
+          console.log(`🔓 Auto-unhid provider ${stat._id} due to new pending payments`);
+        } catch (e) {
+          console.warn('Failed to auto-unhide provider', stat._id, e?.message);
+        }
+      }
       const payments = await Payment.find({ providerId: stat._id })
         .populate('patientId', 'name email')
         .sort({ createdAt: -1 });
@@ -741,6 +764,43 @@ export const getProvidersSummary = async (req, res) => {
       message: 'Failed to fetch providers summary',
       error: error.message
     });
+  }
+};
+
+// Hide a provider from providers summary (soft delete for admin view)
+export const hideProvider = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    if (!providerId) {
+      return res.status(400).json({ success: false, message: 'providerId is required' });
+    }
+    const pid = mongoose.Types.ObjectId.isValid(providerId) ? new mongoose.Types.ObjectId(providerId) : providerId;
+    const existing = await HiddenProvider.findOne({ providerId: pid });
+    if (existing) {
+      return res.json({ success: true, message: 'Provider already hidden' });
+    }
+    await HiddenProvider.create({ providerId: pid, createdBy: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : undefined });
+    return res.json({ success: true, message: 'Provider hidden successfully' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to hide provider', error: error.message });
+  }
+};
+
+// Unhide a provider (make it visible again in providers summary)
+export const unhideProvider = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    if (!providerId) {
+      return res.status(400).json({ success: false, message: 'providerId is required' });
+    }
+    const pid = mongoose.Types.ObjectId.isValid(providerId) ? new mongoose.Types.ObjectId(providerId) : providerId;
+    const result = await HiddenProvider.findOneAndDelete({ providerId: pid });
+    if (!result) {
+      return res.status(404).json({ success: false, message: 'Provider was not hidden' });
+    }
+    return res.json({ success: true, message: 'Provider unhidden successfully' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to unhide provider', error: error.message });
   }
 };
 
