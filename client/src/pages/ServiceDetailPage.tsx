@@ -33,6 +33,7 @@ type Unified = {
   ratingBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   myBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   homeService?: boolean;
+  availability?: 'Online' | 'Physical' | 'Online and Physical' | string;
 };
 
 const ServiceDetailPage = () => {
@@ -58,6 +59,7 @@ const ServiceDetailPage = () => {
       // Normalize common optional fields
       providerId: rawStateService.providerId ?? rawStateService._providerId,
       address: rawStateService.detailAddress ?? rawStateService.address ?? null,
+      availability: rawStateService.availability,
     };
     return normalized;
   }, [rawStateService]);
@@ -101,6 +103,7 @@ const ServiceDetailPage = () => {
       ratingBadge: (s as any).ratingBadge ?? null,
       myBadge: null,
       homeService: s.providerType === 'doctor',
+      availability: (s as any).availability,
     } as Unified));
     const mockMapped = mockServices.map((m: MockService) => ({
       id: m.id,
@@ -301,6 +304,19 @@ const ServiceDetailPage = () => {
                         providerName={item.provider}
                         providerId={item.providerId}
                       />
+                      {item.availability && (
+                        <Badge
+                          className={`ml-2 inline-block text-[10px] px-1.5 py-0.5 text-white border-0 rounded-md shadow ${
+                            item.availability === 'Online'
+                              ? 'bg-emerald-600'
+                              : item.availability === 'Physical'
+                              ? 'bg-purple-600'
+                              : 'bg-teal-600'
+                          }`}
+                        >
+                          {item.availability}
+                        </Badge>
+                      )}
                     </div>
                   )}
                 </div>

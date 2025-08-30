@@ -348,6 +348,30 @@ const ComparePage = () => {
                       ))}
                     </tr>
                     <tr className="border-b">
+                      <td className="p-4 font-medium">Availability</td>
+                      {sorted.map(item => (
+                        <td key={item.id} className="p-4">
+                          {((item as any).availability) ? (
+                            <Badge
+                              variant="outline"
+                              className={
+                                `text-xs px-2 py-0.5 ` +
+                                (((item as any).availability) === 'Online'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : ((item as any).availability) === 'Physical'
+                                  ? 'bg-violet-50 text-violet-700 border-violet-200'
+                                  : 'bg-indigo-50 text-indigo-700 border-indigo-200')
+                              }
+                            >
+                              {(item as any).availability}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b">
                       <td className="p-4 font-medium">Location</td>
                       {sorted.map(item => (
                         <td key={item.id} className="p-4">
@@ -391,95 +415,6 @@ const ComparePage = () => {
             )}
           </CardContent>
         </Card>
-
-        {currentDetail && (
-          <Card className="mt-6">
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <span>Service Details</span>
-                  <Badge variant="outline">{(currentDetail as any).type}</Badge>
-                </CardTitle>
-                <CardDescription>Viewing details for {(currentDetail as any).name} — {getDisplayProvider(currentDetail)}</CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                {getSlides(currentDetail).length > 1 && (
-                  <div className="inline-flex items-center gap-1">
-                    <Button variant="outline" size="sm" onClick={() => prevVariant((currentDetail as any).id)}>‹</Button>
-                    <Button variant="outline" size="sm" onClick={() => nextVariant((currentDetail as any).id)}>›</Button>
-                  </div>
-                )}
-                <Button variant="ghost" size="sm" onClick={() => setDetailId(null)}>Close</Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="w-full h-44 bg-muted rounded-md overflow-hidden flex items-center justify-center relative">
-                  {getDisplayImage(currentDetail) ? (
-                    <img src={getDisplayImage(currentDetail)!} alt={(currentDetail as any).name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-muted-foreground text-sm">No Image</span>
-                  )}
-                  
-                  {/* Top-right corner badges */}
-                  <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
-                    {(currentDetail as any)._providerVerified ? (
-                      <Badge className="text-[7px] px-1 py-0.5 bg-green-600 text-white border-0 shadow-lg">
-                        Verified
-                      </Badge>
-                    ) : (
-                      <Badge className="text-[7px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
-                        Not Verified
-                      </Badge>
-                    )}
-                    <Badge className="text-[7px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
-                      {(currentDetail as any)._providerType === 'doctor' && 'Doctor'}
-                      {(currentDetail as any)._providerType === 'clinic' && 'Hospital'}
-                      {(currentDetail as any)._providerType === 'laboratory' && 'Lab'}
-                      {(currentDetail as any)._providerType === 'pharmacy' && 'Pharmacy'}
-                      {!(currentDetail as any)._providerType && 'Provider'}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="md:col-span-2 grid gap-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <div className="text-lg font-semibold">{(currentDetail as any).name}</div>
-                      <div className="text-sm text-muted-foreground">{getDisplayProvider(currentDetail)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-blue-600">
-                        {getDisplayPrice(currentDetail) === 0 ? 'Free' : (
-                          <>
-                            <span className="text-sm">PKR </span>
-                            <span className="text-lg">{getDisplayPrice(currentDetail).toLocaleString()}</span>
-                          </>
-                        )}
-                      </div>
-                      {getDisplayTimeInfo(currentDetail) && (
-                        <div className="text-xs text-muted-foreground">{getDisplayTimeInfo(currentDetail)}</div>
-                      )}
-                    </div>
-                  </div>
-                  {(currentDetail as any).description && (
-                    <p className="text-sm text-muted-foreground">{(currentDetail as any).description}</p>
-                  )}
-                  <div className="flex flex-wrap items-center gap-3 text-sm">
-                    <div className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />{(currentDetail as any).rating}</div>
-                    <div className="flex items-center gap-1"><MapPin className="w-4 h-4" />{getDisplayLocation(currentDetail)}</div>
-                    {getDisplayMapLink(currentDetail) && (
-                      <Button size="sm" variant="outline" onClick={() => window.open(getDisplayMapLink(currentDetail)!, '_blank', 'noopener,noreferrer')}>Open Map</Button>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button size="sm" className="h-7 text-xs" onClick={() => handleBookNow(currentDetail)}>Book</Button>
-                    <Button size="sm" variant="secondary" onClick={() => setDetailId(sorted.find(s => s.id !== (currentDetail as any).id)?.id || (sorted[0]?.id ?? null)!)}>Next Item</Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
       {showLocationMap && currentMapService && (
         <div

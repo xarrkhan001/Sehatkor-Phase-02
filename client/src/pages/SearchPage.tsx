@@ -33,6 +33,7 @@ interface SearchService extends Service {
   totalRatings?: number;
   myBadge?: 'excellent' | 'good' | 'fair' | 'poor';
   diseases?: string[];
+  availability?: "Online" | "Physical" | "Online and Physical";
 }
 
 const SearchPage = () => {
@@ -262,45 +263,48 @@ const SearchPage = () => {
   // Load real services directly from database
   const loadServices = async () => {
     try {
-      // Fetch directly from server without saving to local storage
-      const serverData = await ServiceManager.fetchPublicServices();
-      const realServices = serverData.services;
+      setIsLoading(true);
+      const { services: realServices } = await ServiceManager.fetchPublicServices({ limit: 500 });
 
-      // Convert real services to search format with proper filtering
-      const formattedRealServices: SearchService[] = realServices.map((service: any) => {
-        const s: SearchService = {
+      const formattedRealServices: SearchService[] = realServices.map((service: RealService) => {
+        const s: any = {
           id: service.id,
           name: service.name,
-          description: service.description,
-          price: service.price,
-          rating: service.averageRating || service.rating || 0,
-          ratingBadge: (service as any).ratingBadge || null,
-          provider: (user && String((service as any).providerId) === String(user.id)) ? (user.name || service.providerName) : service.providerName,
-          location: service.city || "Karachi",
+          description: (service as any).description || "",
+          price: Number((service as any).price) || 0,
           type: mapServiceTypeToSearch(service),
-          homeService: service.providerType === 'doctor',
+          provider: (service as any).providerName || "Provider",
+          image: (service as any).image,
+          location: (service as any).location || (service as any).city || "Karachi",
+          rating: Number((service as any).rating) || 0,
+          ratingBadge: (service as any).ratingBadge ?? null,
+          totalRatings: (service as any).totalRatings ?? 0,
           isReal: true,
-          image: service.image,
-          coordinates: service?.coordinates ?? getCoordinatesForLocation(service?.location ?? "Karachi"),
-          address: service.detailAddress || `${service.providerName}, ${service.city || 'Karachi'}`,
-          googleMapLink: service.googleMapLink,
-          detailAddress: service.detailAddress,
-          createdAt: (service as any).createdAt,
+          // meta
           _providerId: (service as any).providerId,
-          _providerType: service.providerType,
-          providerPhone: service.providerPhone,
-          totalRatings: service.totalRatings || 0,
-          ...(Array.isArray(service.diseases) && service.diseases.length > 0 ? { diseases: service.diseases } : {}),
-        } as any;
-        // Preserve variants if provided by backend (doctor services)
-        (s as any).variants = (service as any)?.variants || [];
-        // Hydrate user's own badge from localStorage
+          _providerType: (service as any).providerType,
+          _providerVerified: Boolean((service as any).providerVerified),
+          providerPhone: (service as any).providerPhone,
+          address: (service as any).detailAddress,
+          googleMapLink: (service as any).googleMapLink,
+          diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : undefined,
+          availability: (service as any).availability as any,
+          createdAt: (service as any).createdAt,
+        };
+
+        // coordinates based on location
+        if (s.location) s.coordinates = getCoordinatesForLocation(String(s.location));
+        // variants passthrough if present (used by doctors)
+        if (Array.isArray((service as any).variants)) s.variants = (service as any).variants;
+
+        // restore my rating badge from localStorage
         try {
-          const uid = (user as any)?.id || (user as any)?._id || 'anon';
-          const key = `myRating:${uid}:${service.providerType}:${service.id}`;
+          const uid = user?.id ? String(user.id) : 'guest';
+          const key = `myRating:${uid}:${(service as any).providerType}:${service.id}`;
           const my = localStorage.getItem(key);
-          if (my) (s as any).myBadge = my as any;
+          if (my) s.myBadge = my as any;
         } catch { }
+
         return s as SearchService;
       });
 
@@ -933,7 +937,7 @@ const SearchPage = () => {
                           <span className="text-gray-400 text-4xl">{getServiceEmoji(service.type)}</span>
                         )}
                         
-                        {/* Top-right corner badges */}
+                        {/* Top-right corner badges (availability moved to action row) */}
                         <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
                           {(service as any)._providerVerified ? (
                             <Badge className="text-[9px] px-1.5 py-0.5 bg-green-600 text-white border-0 shadow-lg">
@@ -951,6 +955,7 @@ const SearchPage = () => {
                             {(service as any)._providerType === 'pharmacy' && 'Pharmacy'}
                             {!(service as any)._providerType && 'Provider'}
                           </Badge>
+                          {/* Availability removed from image overlay */}
                         </div>
 
                         {getSlides(service).length > 1 && (
@@ -1033,7 +1038,7 @@ const SearchPage = () => {
                         </div>
                       </div>
 
-                      {/* Rating Badge, Location, Home Service, WhatsApp */}
+                      {/* Rating Badge, Location, Availability, Home Service, WhatsApp */}
                       <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                         <RatingBadge
                           rating={service.rating}
@@ -1060,6 +1065,19 @@ const SearchPage = () => {
                             providerId={(service as any)._providerId}
                           />
                         )}
+                        {(service as any).availability && (
+                          <Badge
+                            className={`text-[10px] px-2 py-0.5 text-white border-0 rounded-md shadow ${
+                              (service as any).availability === 'Online'
+                                ? 'bg-emerald-600'
+                                : (service as any).availability === 'Physical'
+                                ? 'bg-purple-600'
+                                : 'bg-teal-600'
+                            }`}
+                          >
+                            {(service as any).availability}
+                          </Badge>
+                        )}
                       </div>
                       {/* Address + Single Disease Badge */}
                       <div className="flex items-center justify-between mb-4 text-sm">
@@ -1080,7 +1098,7 @@ const SearchPage = () => {
                         )}
                       </div>
                       {/* Buttons */}
-                      <div className="mt-auto flex flex-wrap gap-1.5">
+                      <div className="mt-auto flex flex-wrap items-center gap-1.5">
                         <Button
                           size="sm"
                           className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"

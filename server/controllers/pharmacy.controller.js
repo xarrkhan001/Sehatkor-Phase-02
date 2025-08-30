@@ -16,7 +16,7 @@ export const listMedicines = async (req, res) => {
 export const createMedicine = async (req, res) => {
   try {
     const providerId = req.userId;
-    const { name, description, price, category, stock, imageUrl, imagePublicId, googleMapLink, city, detailAddress } = req.body || {};
+    const { name, description, price, category, stock, imageUrl, imagePublicId, googleMapLink, city, detailAddress, availability } = req.body || {};
     if (!name) return res.status(400).json({ message: 'Name is required' });
     const doc = await Medicine.create({
       name,
@@ -32,6 +32,7 @@ export const createMedicine = async (req, res) => {
       providerId,
       providerName: req.body.providerName || 'Pharmacy',
       providerType: 'pharmacy',
+      availability: availability || 'Physical',
     });
     res.status(201).json({ medicine: doc });
   } catch (error) {
@@ -58,6 +59,7 @@ export const updateMedicine = async (req, res) => {
           ...(updates.googleMapLink != null && { googleMapLink: updates.googleMapLink }),
           ...(updates.city != null && { city: updates.city }),
           ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
+          ...(updates.availability != null && { availability: updates.availability }),
         }
       },
       { new: true }

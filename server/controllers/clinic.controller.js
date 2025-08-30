@@ -30,6 +30,7 @@ export const createClinicService = async (req, res) => {
       googleMapLink,
       city,
       detailAddress,
+      availability,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
     const doc = await ClinicService.create({
@@ -47,6 +48,7 @@ export const createClinicService = async (req, res) => {
       providerId: req.userId,
       providerName: providerName || "Clinic",
       providerType: "clinic",
+      availability: availability || "Physical",
     });
     res.status(201).json({ service: doc });
   } catch (error) {
@@ -84,6 +86,7 @@ export const updateClinicService = async (req, res) => {
           ...(updates.googleMapLink != null && { googleMapLink: updates.googleMapLink }),
           ...(updates.city != null && { city: updates.city }),
           ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
+          ...(updates.availability != null && { availability: updates.availability }),
         },
       },
       { new: true }

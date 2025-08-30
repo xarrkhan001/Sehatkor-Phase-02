@@ -37,6 +37,7 @@ interface SearchService {
   googleMapLink?: string;
   detailAddress?: string;
   _providerVerified?: boolean;
+  availability?: "Online" | "Physical" | "Online and Physical";
 }
 
 // No fallback or mock data. We will only show real services from backend.
@@ -134,6 +135,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       googleMapLink: (s as any).googleMapLink,
       detailAddress: (s as any).detailAddress,
       _providerVerified: (s as any)._providerVerified,
+      availability: (s as any).availability || "Physical",
     }));
   };
 
@@ -262,6 +264,32 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     }
   };
 
+  const getAvailabilityBadgeStyles = (availability?: SearchService['availability']) => {
+    switch (availability) {
+      case 'Online':
+        return 'bg-blue-50 text-blue-700 border-blue-100';
+      case 'Physical':
+        return 'bg-green-50 text-green-700 border-green-100';
+      case 'Online and Physical':
+        return 'bg-purple-50 text-purple-700 border-purple-100';
+      default:
+        return 'bg-gray-50 text-gray-600 border-gray-100';
+    }
+  };
+
+  const getAvailabilityIcon = (availability?: SearchService['availability']) => {
+    switch (availability) {
+      case 'Online':
+        return '💻';
+      case 'Physical':
+        return '🏥';
+      case 'Online and Physical':
+        return '🌐';
+      default:
+        return '🏥';
+    }
+  };
+
   const formatPrice = (price?: number) => {
     if (price == null) return '';
     try {
@@ -307,6 +335,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           providerType: service.providerType,
           isReal: true,
           ratingBadge: service.ratingBadge ?? null,
+          availability: service.availability,
           location: getDisplayCity(service) ?? service.city ?? undefined,
           address: service.detailAddress ?? undefined,
           providerPhone: service.providerPhone ?? undefined,
@@ -447,6 +476,17 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
                           {service.category}
                         </span>
+                        {service.availability && (
+                          <Badge
+                            className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
+                              service.availability === 'Online' ? 'bg-emerald-600' :
+                              service.availability === 'Physical' ? 'bg-purple-600' :
+                              'bg-teal-600'
+                            }`}
+                          >
+                            {service.availability}
+                          </Badge>
+                        )}
                         {service.ratingBadge && (
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full border whitespace-nowrap ${getBadgeStyles(service.ratingBadge)}`}>
                             {service.ratingBadge}
