@@ -37,12 +37,6 @@ const PatientDashboard = () => {
   const [bookingPrices, setBookingPrices] = useState<Record<string, number>>({});
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   
-  const [stats] = useState({
-    totalBookings: 8,
-    completedBookings: 5,
-    pendingBookings: 3,
-    totalSpent: 15500
-  });
 
   const fetchBookings = async () => {
     if (!user?.id) return;
@@ -147,6 +141,25 @@ const PatientDashboard = () => {
     return p > 0 ? p : (bookingPrices[booking._id] ?? 0);
   };
 
+  // Calculate real stats from bookings data
+  const calculateStats = () => {
+    const totalBookings = bookings.length;
+    const completedBookings = bookings.filter(b => b.status === 'Completed').length;
+    const pendingBookings = bookings.filter(b => b.status !== 'Completed').length;
+    const totalSpent = bookings.reduce((sum, booking) => {
+      return sum + resolveBookingPrice(booking);
+    }, 0);
+
+    return {
+      totalBookings,
+      completedBookings,
+      pendingBookings,
+      totalSpent
+    };
+  };
+
+  const stats = calculateStats();
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -197,7 +210,7 @@ const PatientDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Bookings</p>
-                  <p className="text-2xl font-bold">{stats.totalBookings}</p>
+                  <p className="text-2xl font-bold">{isLoading ? "..." : stats.totalBookings}</p>
                 </div>
                 <Calendar className="w-8 h-8 text-primary" />
               </div>
@@ -209,7 +222,7 @@ const PatientDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">{stats.completedBookings}</p>
+                  <p className="text-2xl font-bold text-success">{isLoading ? "..." : stats.completedBookings}</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
@@ -221,7 +234,7 @@ const PatientDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-warning">{stats.pendingBookings}</p>
+                  <p className="text-2xl font-bold text-warning">{isLoading ? "..." : stats.pendingBookings}</p>
                 </div>
                 <Clock className="w-8 h-8 text-warning" />
               </div>
@@ -233,7 +246,7 @@ const PatientDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Spent</p>
-                  <p className="text-2xl font-bold">PKR {stats.totalSpent.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{isLoading ? "..." : `PKR ${stats.totalSpent.toLocaleString()}`}</p>
                 </div>
                 <CreditCard className="w-8 h-8 text-primary" />
               </div>
