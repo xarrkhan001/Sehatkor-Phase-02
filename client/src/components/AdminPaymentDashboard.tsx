@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, TrendingUp, Users, Clock, DollarSign } from 'lucide-react';
 import AdminPaymentRecords from './AdminPaymentRecords';
 import AdminProviderPayments from './AdminProviderPayments';
+import AdminInvoices from './AdminInvoices';
 
 const AdminPaymentDashboard: React.FC = () => {
   const [analytics, setAnalytics] = useState({
@@ -120,10 +121,11 @@ const AdminPaymentDashboard: React.FC = () => {
       </div>
 
       <Tabs defaultValue="records" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="providers">Provider Payments</TabsTrigger>
           <TabsTrigger value="records">Payment Records</TabsTrigger>
           <TabsTrigger value="pending">Pending Release</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -175,6 +177,10 @@ const AdminPaymentDashboard: React.FC = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="invoices">
+          <AdminInvoices />
         </TabsContent>
 
         <TabsContent value="analytics">

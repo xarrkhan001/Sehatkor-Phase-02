@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +23,9 @@ import {
   ArrowUpRight,
   Calendar,
   User,
-  Trash2
+  Trash2,
+  Download,
+  FileText
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -36,6 +39,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import io from 'socket.io-client';
+import { generateInvoicePDF, downloadInvoiceHTML } from '@/utils/pdfGenerator';
+import InvoicePreviewModal from './InvoicePreviewModal';
 
 interface Payment {
   _id: string;
@@ -50,6 +55,39 @@ interface Payment {
   releaseDate?: string;
   createdAt: string;
   completionDate?: string;
+}
+
+interface InvoiceItem {
+  paymentId: string;
+  serviceId?: string;
+  serviceName?: string;
+  patientName?: string;
+  originalAmount: number;
+  adminCommissionAmount: number;
+  netAmount: number;
+  completionDate?: string;
+  releaseDate?: string;
+}
+
+interface InvoiceTotals {
+  subtotal: number;
+  commissionPercentage: number;
+  commissionAmount: number;
+  netTotal: number;
+}
+
+interface Invoice {
+  _id: string;
+  invoiceNumber: string;
+  providerId: string;
+  providerName?: string;
+  providerType?: string;
+  items: InvoiceItem[];
+  totals: InvoiceTotals;
+  paymentIds: string[];
+  notes?: string;
+  issuedAt?: string;
+  createdAt?: string;
 }
 
 interface Withdrawal {
@@ -72,8 +110,9 @@ interface WalletData {
   payments: Payment[];
 }
 
-const ProviderWallet: React.FC = () => {
+const ProviderWallet = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
@@ -90,10 +129,39 @@ const ProviderWallet: React.FC = () => {
     accountNumber: '',
     accountName: ''
   });
+  // Invoices
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState<boolean>(false);
+  const [invoiceOpen, setInvoiceOpen] = useState<boolean>(false);
+  const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewInvoiceData, setPreviewInvoiceData] = useState<Invoice | null>(null);
   // Payment list filter: all | pending | released
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'released'>('all');
   const [socket, setSocket] = useState<any>(null);
   // Use backend-provided availableBalance for withdrawal validations/UI
+
+  const fetchInvoices = async () => {
+    if (!user?.id) return;
+    setLoadingInvoices(true);
+    try {
+      const res = await fetch(`http://localhost:4000/api/payments/invoices/provider/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInvoices(Array.isArray(data.invoices) ? data.invoices : []);
+      } else {
+        console.error('❌ Failed to fetch invoices:', res.status);
+      }
+    } catch (e) {
+      console.error('💥 Invoices fetch error:', e);
+    } finally {
+      setLoadingInvoices(false);
+    }
+  };
 
   useEffect(() => {
     if (!user?.id) return;
@@ -116,6 +184,14 @@ const ProviderWallet: React.FC = () => {
       }
     });
 
+    socketConnection.on('invoice_issued', (data) => {
+      console.log('🧾 Invoice issued notification:', data);
+      if (data.providerId === user.id) {
+        toast.success(`Invoice Issued: ${data.invoiceNumber} • Net PKR ${data.totals?.netTotal?.toLocaleString?.() ?? ''}`);
+        fetchInvoices();
+      }
+    });
+
     setSocket(socketConnection);
 
     return () => {
@@ -127,6 +203,7 @@ const ProviderWallet: React.FC = () => {
     if (user?.id) {
       fetchWallet();
       fetchWithdrawals();
+      fetchInvoices();
     }
   }, [user?.id]);
 
@@ -590,6 +667,144 @@ const ProviderWallet: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Invoices */}
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 shadow-xl">
+        <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <ClipboardList className="w-5 h-5" />
+              Invoices ({invoices.length})
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loadingInvoices ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground mt-2">Loading invoices...</p>
+            </div>
+          ) : invoices.length === 0 ? (
+            <div className="text-center py-8">
+              <ClipboardList className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No invoices yet</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Invoice #</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Subtotal (PKR)</TableHead>
+                    <TableHead className="text-right">Commission</TableHead>
+                    <TableHead className="text-right">Net Total (PKR)</TableHead>
+                    <TableHead className="text-right">Items</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map(inv => (
+                    <TableRow key={inv._id}>
+                      <TableCell className="font-medium">{inv.invoiceNumber}</TableCell>
+                      <TableCell>{new Date(inv.issuedAt || inv.createdAt || '').toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{inv.totals?.subtotal?.toLocaleString?.()}</TableCell>
+                      <TableCell className="text-right">{inv.totals?.commissionPercentage ?? 0}% ({inv.totals?.commissionAmount?.toLocaleString?.()})</TableCell>
+                      <TableCell className="text-right font-semibold text-emerald-700">{inv.totals?.netTotal?.toLocaleString?.()}</TableCell>
+                      <TableCell className="text-right">{inv.items?.length ?? 0}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="secondary" onClick={() => navigate(`/invoice/${inv._id}`)}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => { setPreviewInvoiceData(inv); setPreviewOpen(true); }} title="Preview Invoice">
+                            <FileText className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => generateInvoicePDF(inv)} title="Download PDF">
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Invoice Detail Dialog */}
+      <Dialog open={invoiceOpen} onOpenChange={setInvoiceOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Invoice {activeInvoice?.invoiceNumber}</DialogTitle>
+          </DialogHeader>
+          {activeInvoice ? (
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="grid grid-cols-2 gap-4 text-sm flex-1">
+                  <div>
+                    <div className="text-muted-foreground">Issued</div>
+                    <div>{new Date(activeInvoice.issuedAt || activeInvoice.createdAt || '').toLocaleString()}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-muted-foreground">Totals</div>
+                    <div>Subtotal: PKR {activeInvoice.totals.subtotal.toLocaleString()}</div>
+                    <div>Commission: {activeInvoice.totals.commissionPercentage}% (PKR {activeInvoice.totals.commissionAmount.toLocaleString()})</div>
+                    <div className="font-semibold text-emerald-700">Net: PKR {activeInvoice.totals.netTotal.toLocaleString()}</div>
+                  </div>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => { setPreviewInvoiceData(activeInvoice); setPreviewOpen(true); }}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Preview
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => generateInvoicePDF(activeInvoice)}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </Button>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Patient</TableHead>
+                      <TableHead className="text-right">Original</TableHead>
+                      <TableHead className="text-right">Commission</TableHead>
+                      <TableHead className="text-right">Net</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activeInvoice.items.map((it, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell>{it.serviceName || '-'}</TableCell>
+                        <TableCell>{it.patientName || '-'}</TableCell>
+                        <TableCell className="text-right">{it.originalAmount.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{it.adminCommissionAmount.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{it.netAmount.toLocaleString()}</TableCell>
+                        <TableCell>{it.releaseDate ? new Date(it.releaseDate).toLocaleDateString() : '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
       {/* Withdrawal History */}
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white">
@@ -776,6 +991,13 @@ const ProviderWallet: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Invoice Preview Modal */}
+      <InvoicePreviewModal 
+        invoice={previewInvoiceData}
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+      />
     </div>
   );
 };

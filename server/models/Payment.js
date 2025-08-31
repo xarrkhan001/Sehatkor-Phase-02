@@ -42,6 +42,11 @@ const PaymentSchema = new mongoose.Schema(
     releaseDate: { type: Date },
     releasedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Admin who released
     releaseNotes: { type: String },
+    // Commission and net settlement fields (optional; filled on release)
+    originalAmount: { type: Number }, // original gross amount before commission
+    adminCommission: { type: Number }, // percentage e.g., 10 for 10%
+    adminCommissionAmount: { type: Number }, // absolute amount deducted
+    netReleaseAmount: { type: Number }, // net amount sent to provider after commission
     
     // Service completion
     serviceCompleted: { type: Boolean, default: false },
