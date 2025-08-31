@@ -10,6 +10,11 @@ export type LaboratoryTestDoc = {
   providerId: string;
   providerName: string;
   providerType: 'laboratory';
+  // Availability and location details
+  availability?: 'Physical' | 'Online' | 'Online and Physical' | string;
+  city?: string;
+  detailAddress?: string;
+  googleMapLink?: string;
   createdAt: string;
   updatedAt: string;
 };

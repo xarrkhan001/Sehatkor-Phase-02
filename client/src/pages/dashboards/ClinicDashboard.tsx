@@ -75,7 +75,8 @@ const ClinicDashboard = () => {
     department: '',
     googleMapLink: '',
     city: '',
-    detailAddress: ''
+    detailAddress: '',
+    availability: 'Physical'
   });
 
   const clinicTypes = [
@@ -343,6 +344,7 @@ const ClinicDashboard = () => {
           googleMapLink: serviceForm.googleMapLink,
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
+          availability: serviceForm.availability,
           providerName: user?.name || 'Clinic',
         });
         toast.success("Service updated successfully");
@@ -359,6 +361,7 @@ const ClinicDashboard = () => {
           googleMapLink: serviceForm.googleMapLink,
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
+          availability: serviceForm.availability,
           providerName: user?.name || 'Clinic',
         });
         toast.success("Service added successfully");
@@ -373,7 +376,8 @@ const ClinicDashboard = () => {
         department: '',
         googleMapLink: '',
         city: '',
-        detailAddress: ''
+        detailAddress: '',
+        availability: 'Physical'
       });
       setServiceImage('');
       setServiceImageFile(null);
@@ -650,6 +654,50 @@ const ClinicDashboard = () => {
                                 />
                               </div>
                             </div>
+
+                            {/* Availability */}
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Service Availability</h4>
+                              <div className="space-y-2">
+                                <Label>How is this service available? *</Label>
+                                <div className="flex flex-col space-y-2">
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="availability"
+                                      value="Physical"
+                                      checked={serviceForm.availability === 'Physical'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, availability: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Physical - In-person consultation only</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="availability"
+                                      value="Online"
+                                      checked={serviceForm.availability === 'Online'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, availability: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Online - Telemedicine/consultation available</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="availability"
+                                      value="Online and Physical"
+                                      checked={serviceForm.availability === 'Online and Physical'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, availability: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Online and Physical - Both options available</span>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+
                             <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
                               {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
                             </Button>
@@ -685,6 +733,19 @@ const ClinicDashboard = () => {
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2 text-sm">
                                   <Badge variant="outline">{m.department || m.category || '-'}</Badge>
+                                  {m.availability && (
+                                    <Badge
+                                      className={`${
+                                        m.availability === 'Online'
+                                          ? 'bg-emerald-600'
+                                          : m.availability === 'Physical'
+                                          ? 'bg-purple-600'
+                                          : 'bg-teal-600'
+                                      } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                                    >
+                                      {m.availability === 'Online and Physical' ? 'Online & Physical' : m.availability}
+                                    </Badge>
+                                  )}
                                   <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
                                   <span className="text-muted-foreground">{m.duration ? `${m.duration} min` : '-'}</span>
                                 </div>
@@ -699,7 +760,8 @@ const ClinicDashboard = () => {
                                       department: m.department || m.category || '',
                                       googleMapLink: m.googleMapLink || '',
                                       city: m.city || '',
-                                      detailAddress: m.detailAddress || ''
+                                      detailAddress: m.detailAddress || '',
+                                      availability: m.availability || 'Physical'
                                     });
                                     setServiceImage(m.imageUrl || m.image || '');
                                     setIsAddServiceOpen(true);
@@ -727,6 +789,7 @@ const ClinicDashboard = () => {
                                 <TableHead>Department</TableHead>
                                 <TableHead>Price (PKR)</TableHead>
                                 <TableHead>Duration</TableHead>
+                                <TableHead>Availability</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -746,6 +809,23 @@ const ClinicDashboard = () => {
                                     <TableCell>{m.department || m.category || '-'}</TableCell>
                                     <TableCell>{m.price ?? 0}</TableCell>
                                     <TableCell>{m.duration ?? '-'}</TableCell>
+                                    <TableCell>
+                                      {m.availability ? (
+                                        <Badge
+                                          className={`${
+                                            m.availability === 'Online'
+                                              ? 'bg-emerald-600'
+                                              : m.availability === 'Physical'
+                                              ? 'bg-purple-600'
+                                              : 'bg-teal-600'
+                                          } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                                        >
+                                          {m.availability === 'Online and Physical' ? 'Online & Physical' : m.availability}
+                                        </Badge>
+                                      ) : (
+                                        '-'
+                                      )}
+                                    </TableCell>
                                     <TableCell className="text-right space-x-2">
                                       <Button size="sm" variant="outline" onClick={() => {
                                         setEditingService(m);
@@ -757,7 +837,8 @@ const ClinicDashboard = () => {
                                           department: m.department || m.category || '',
                                           googleMapLink: m.googleMapLink || '',
                                           city: m.city || '',
-                                          detailAddress: m.detailAddress || ''
+                                          detailAddress: m.detailAddress || '',
+                                          availability: m.availability || 'Physical'
                                         });
                                         setServiceImage(m.imageUrl || m.image || '');
                                         setIsAddServiceOpen(true);

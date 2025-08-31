@@ -77,6 +77,7 @@ const DoctorsPage = () => {
             ...(Array.isArray((service as any).variants) && (service as any).variants.length > 0
               ? { variants: (service as any).variants }
               : {}),
+            ...(service.availability ? { availability: service.availability } : {}),
           }) as Service;
         });
         setDoctorServices(prev => {
@@ -660,6 +661,19 @@ const DoctorsPage = () => {
                     >
                       Treatment
                     </Badge>
+                    {(service as any).availability && (
+                      <Badge
+                        className={`${
+                          (service as any).availability === 'Online'
+                            ? 'bg-emerald-600'
+                            : (service as any).availability === 'Physical'
+                            ? 'bg-purple-600'
+                            : 'bg-teal-600'
+                        } text-white border-0 rounded-full px-2 py-0.5 text-[10px] leading-none whitespace-nowrap`}
+                      >
+                        {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
+                      </Badge>
+                    )}
                   </div>
                 </div>
 

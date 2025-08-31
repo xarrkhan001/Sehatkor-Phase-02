@@ -81,6 +81,7 @@ const DoctorDashboard = () => {
       ...(d.city ? { city: d.city } : {}),
       ...(d.detailAddress ? { detailAddress: d.detailAddress } : {}),
       ...(d.googleMapLink ? { googleMapLink: d.googleMapLink } : {}),
+      ...(d.availability ? { availability: d.availability } : {}),
       createdAt: d.createdAt || new Date().toISOString(),
       updatedAt: d.updatedAt || d.createdAt || new Date().toISOString(),
     }));
@@ -113,6 +114,7 @@ const DoctorDashboard = () => {
         ...(d.city ? { city: d.city } : {}),
         ...(d.detailAddress ? { detailAddress: d.detailAddress } : {}),
         ...(d.googleMapLink ? { googleMapLink: d.googleMapLink } : {}),
+        ...(d.availability ? { availability: d.availability } : {}),
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }) as any);
@@ -562,6 +564,7 @@ const DoctorDashboard = () => {
                       city: (s as any).city,
                       detailAddress: (s as any).detailAddress,
                       googleMapLink: (s as any).googleMapLink,
+                      availability: (s as any).availability,
                       createdAt: (s as any).createdAt,
                       updatedAt: (s as any).updatedAt,
                     }));

@@ -67,6 +67,7 @@ const HospitalsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
+            availability: (service as any).availability,
             ...(function () {
               try {
                 const uid = user?.id || (user as any)?._id || 'anon';
@@ -501,12 +502,27 @@ const HospitalsPage = () => {
                           </>
                         )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
-                    >
-                      {service.type}
-                    </Badge>
+                    <div className="flex gap-1 justify-end mt-1">
+                      <Badge
+                        variant="outline"
+                        className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
+                      >
+                        {service.type}
+                      </Badge>
+                      {(service as any).availability && (
+                        <Badge
+                          className={`${
+                            (service as any).availability === 'Online'
+                              ? 'bg-emerald-600'
+                              : (service as any).availability === 'Physical'
+                              ? 'bg-purple-600'
+                              : 'bg-teal-600'
+                          } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                        >
+                          {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
 
