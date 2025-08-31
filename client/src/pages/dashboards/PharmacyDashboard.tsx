@@ -1244,26 +1244,6 @@ const PharmacyDashboard = () => {
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
             </Card>
 
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Process Prescription
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Truck className="w-4 h-4 mr-2" />
-                  Delivery Schedule
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Sales Report
-                </Button>
-              </CardContent>
-            </Card>
-
             {/* Edit Profile Dialog */}
             <EditProfileDialog
               open={isEditProfileOpen}

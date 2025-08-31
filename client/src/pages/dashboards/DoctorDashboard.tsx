@@ -642,26 +642,6 @@ const DoctorDashboard = () => {
               specialization={user?.specialization}
               avatar={user?.avatar}
             />
-
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Set Availability
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Write Prescription
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Users className="w-4 h-4 mr-2" />
-                  Patient History
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
