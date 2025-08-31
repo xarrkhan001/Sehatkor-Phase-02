@@ -939,50 +939,9 @@ const LaboratoryDashboard = () => {
                   Wallet
                 </TabsTrigger>
               </TabsList>
+              
               <TabsContent value="tests">
                 <div className="space-y-6">
-                  {/* Test Queue */}
-                  <Card className="card-healthcare">
-                    <CardHeader>
-                      <CardTitle>Test Queue</CardTitle>
-                      <CardDescription>Pending and active diagnostic tests</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {pendingTests.map((test) => (
-                          <div key={test.id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div className="flex-1">
-                              <h4 className="font-medium">{test.patient}</h4>
-                              <p className="text-sm text-muted-foreground">{test.test}</p>
-                              <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
-                                <Clock className="w-4 h-4" />
-                                <span>{test.time}</span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <Badge
-                                variant={test.status === "Ready" ? "default" : "secondary"}
-                                className={`${test.status === "Ready" ? "bg-success" : ""} rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                              >
-                                {test.status}
-                              </Badge>
-                              <div className="mt-2 space-x-2">
-                                <Button size="sm" variant="outline">
-                                  View
-                                </Button>
-                                {test.status === "Ready" && (
-                                  <Button size="sm">
-                                    <Download className="w-4 h-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-
                   {/* Lab Tests Management */}
                   <Card className="card-healthcare">
                     <CardHeader>
@@ -1504,25 +1463,7 @@ const LaboratoryDashboard = () => {
               avatar={user?.avatar}
             />
 
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Process Prescription
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Truck className="w-4 h-4 mr-2" />
-                  Delivery Schedule
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Sales Report
-                </Button>
-              </CardContent>
-            </Card>
+            
           </div>
         </div>
       </div>
