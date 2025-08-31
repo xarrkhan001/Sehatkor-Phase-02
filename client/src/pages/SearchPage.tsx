@@ -1065,19 +1065,27 @@ const SearchPage = () => {
                             providerId={(service as any)._providerId}
                           />
                         )}
-                        {(service as any).availability && (
-                          <Badge
-                            className={`text-[10px] px-2 py-0.5 text-white border-0 rounded-md shadow ${
-                              (service as any).availability === 'Online'
-                                ? 'bg-emerald-600'
-                                : (service as any).availability === 'Physical'
-                                ? 'bg-purple-600'
-                                : 'bg-teal-600'
-                            }`}
-                          >
-                            {(service as any).availability}
-                          </Badge>
-                        )}
+                        {(() => {
+                          // Get variant-aware availability
+                          const activeSlide = getActiveSlide(service);
+                          const availability = activeSlide?.availability || (service as any).availability;
+                          
+                          if (!availability) return null;
+                          
+                          return (
+                            <Badge
+                              className={`text-[10px] px-2 py-0.5 text-white border-0 rounded-md shadow ${
+                                availability === 'Online'
+                                  ? 'bg-emerald-600'
+                                  : availability === 'Physical'
+                                  ? 'bg-purple-600'
+                                  : 'bg-teal-600'
+                              }`}
+                            >
+                              {availability}
+                            </Badge>
+                          );
+                        })()}
                       </div>
                       {/* Address + Single Disease Badge */}
                       <div className="flex items-center justify-between mb-4 text-sm">
@@ -1123,15 +1131,23 @@ const SearchPage = () => {
                           variant="secondary"
                           onClick={() => {
                             const timeInfo = getDisplayTimeInfo(service);
+                            const currentVariantIndex = activeVariantIndexByService[service.id] ?? 0;
+                            console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
+                            console.log('Service data being passed:', service);
                             navigate(`/service/${service.id}`, {
                               state: {
                                 from: `${routerLocation.pathname}${routerLocation.search}`,
                                 fromSearch: true,
+                                activeVariantIndex: currentVariantIndex,
                                 service: {
-                                  ...service,
+                                  id: service.id,
+                                  name: service.name,
+                                  description: service.description,
+                                  price: getDisplayPrice(service) ?? service.price,
+                                  rating: service.rating ?? 0,
+                                  provider: service.providerName,
                                   // active slide overrides
                                   image: getDisplayImage(service) || service.image,
-                                  price: getDisplayPrice(service) ?? service.price,
                                   location: getDisplayLocation(service) || service.location,
                                   address: getDisplayAddress(service) || (service as any).address,
                                   googleMapLink: getDisplayMapLink(service) || (service as any).googleMapLink,
@@ -1144,6 +1160,10 @@ const SearchPage = () => {
                                   ratingBadge: (service as any).ratingBadge,
                                   myBadge: (service as any).myBadge,
                                   timeInfo,
+                                  variants: (service as any).variants || [],
+                                  isReal: true,
+                                  type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
+                                  availability: (service as any).availability,
                                 }
                               }
                             });

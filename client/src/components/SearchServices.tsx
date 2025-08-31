@@ -25,6 +25,7 @@ interface SearchService {
     startTime?: string;
     endTime?: string;
     days?: string;
+    availability?: "Online" | "Physical" | "Online and Physical";
   }>;
   providerName: string;
   providerId: string;
@@ -213,6 +214,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       startTime: undefined as string | undefined,
       endTime: undefined as string | undefined,
       days: undefined as string | undefined,
+      availability: svc.availability,
     };
     const variants = Array.isArray(svc.variants) ? svc.variants : [];
     return [base, ...variants];
@@ -322,6 +324,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       state: {
         from: locationHook.pathname + locationHook.search,
         fromSearch: true,
+        activeVariantIndex: activeIdx,
         service: {
           id: service.id,
           name: service.name,
@@ -340,6 +343,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           address: service.detailAddress ?? undefined,
           providerPhone: service.providerPhone ?? undefined,
           googleMapLink: service.googleMapLink ?? undefined,
+          variants: service.variants || [],
           variantIndex: activeIdx,
           variantLabel: timeLabel ?? undefined,
           variantTimeRange: timeRange ?? undefined,
@@ -476,17 +480,25 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
                           {service.category}
                         </span>
-                        {service.availability && (
-                          <Badge
-                            className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
-                              service.availability === 'Online' ? 'bg-emerald-600' :
-                              service.availability === 'Physical' ? 'bg-purple-600' :
-                              'bg-teal-600'
-                            }`}
-                          >
-                            {service.availability}
-                          </Badge>
-                        )}
+                        {(() => {
+                          // Get variant-aware availability
+                          const activeSlide = getActiveSlide(service);
+                          const availability = activeSlide?.availability || service.availability;
+                          
+                          if (!availability) return null;
+                          
+                          return (
+                            <Badge
+                              className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
+                                availability === 'Online' ? 'bg-emerald-600' :
+                                availability === 'Physical' ? 'bg-purple-600' :
+                                'bg-teal-600'
+                              }`}
+                            >
+                              {availability}
+                            </Badge>
+                          );
+                        })()}
                         {service.ratingBadge && (
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full border whitespace-nowrap ${getBadgeStyles(service.ratingBadge)}`}>
                             {service.ratingBadge}

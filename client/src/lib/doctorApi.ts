@@ -10,6 +10,7 @@ export interface VariantDoc {
   googleMapLink?: string;
   city?: string;
   detailAddress?: string;
+  availability?: string;
   notes?: string;
   isActive?: boolean;
 }
@@ -96,12 +97,14 @@ export async function createService(payload: Partial<DoctorServiceDoc> & { name:
 }
 
 export async function updateService(id: string, updates: Partial<DoctorServiceDoc>): Promise<DoctorServiceDoc> {
+  console.log('Updating service with ID:', id, 'Updates:', JSON.stringify(updates, null, 2));
   const res = await fetch(`${BASE}/services/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(updates),
   });
   const data = await res.json();
+  console.log('Update service response:', JSON.stringify(data, null, 2));
   if (!res.ok) throw new Error(data?.message || 'Failed to update service');
   return data.service as DoctorServiceDoc;
 }

@@ -53,6 +53,7 @@ type Unified = {
     startTime?: string;
     endTime?: string;
     days?: string;
+    availability?: "Online" | "Physical" | "Online and Physical";
   }>;
 };
 
@@ -288,6 +289,7 @@ const CompareExplorer = () => {
       startTime: svc.startTime,
       endTime: svc.endTime,
       days: svc.days,
+      availability: svc.availability,
     };
     return [base, ...getVariants(svc)];
   };
@@ -666,20 +668,28 @@ const CompareExplorer = () => {
                         {item.providerPhone && (
                           <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} providerId={item._providerId} />
                         )}
-                        {item.availability && (
-                          <Badge
-                            className={
-                              `text-xs px-2 py-0.5 text-white border-0 rounded-md shadow ` +
-                              (item.availability === 'Online'
-                                ? 'bg-emerald-600'
-                                : item.availability === 'Physical'
-                                ? 'bg-purple-600'
-                                : 'bg-teal-600')
-                            }
-                          >
-                            {item.availability}
-                          </Badge>
-                        )}
+                        {(() => {
+                          // Get variant-aware availability
+                          const activeSlide = getActiveSlide(item);
+                          const availability = activeSlide?.availability || item.availability;
+                          
+                          if (!availability) return null;
+                          
+                          return (
+                            <Badge
+                              className={
+                                `text-xs px-2 py-0.5 text-white border-0 rounded-md shadow ` +
+                                (availability === 'Online'
+                                  ? 'bg-emerald-600'
+                                  : availability === 'Physical'
+                                  ? 'bg-purple-600'
+                                  : 'bg-teal-600')
+                              }
+                            >
+                              {availability}
+                            </Badge>
+                          );
+                        })()}
                       </div>
 
                       {/* Buttons */}
@@ -697,10 +707,12 @@ const CompareExplorer = () => {
                           variant="secondary"
                           onClick={(e) => {
                             e.stopPropagation();
+                            const currentVariantIndex = activeVariantIndex[item.id] ?? 0;
                             navigate(`/service/${item.id}`, {
                               state: {
                                 from: window.location.pathname + window.location.search,
                                 fromCompare: true,
+                                activeVariantIndex: currentVariantIndex,
                                 service: {
                                   id: item.id,
                                   name: item.name,
@@ -718,6 +730,7 @@ const CompareExplorer = () => {
                                   providerPhone: item.providerPhone ?? undefined,
                                   googleMapLink: item.googleMapLink ?? undefined,
                                   availability: item.availability ?? undefined,
+                                  variants: item.variants || [],
                                 }
                               }
                             });
@@ -844,10 +857,13 @@ const CompareExplorer = () => {
                           <td className="p-4 font-medium">Action</td>
                           {selected.map(s => (
                             <td key={s.id} className="p-4">
-                              <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => navigate(`/service/${s.id}`, {
+                              <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => {
+                                const currentVariantIndex = activeVariantIndex[s.id] ?? 0;
+                                navigate(`/service/${s.id}`, {
                                 state: {
                                   from: window.location.pathname + window.location.search,
                                   fromCompare: true,
+                                  activeVariantIndex: currentVariantIndex,
                                   service: {
                                     id: s.id,
                                     name: s.name,
@@ -865,25 +881,13 @@ const CompareExplorer = () => {
                                     providerPhone: s.providerPhone ?? undefined,
                                     googleMapLink: s.googleMapLink ?? undefined,
                                     availability: s.availability ?? undefined,
+                                    variants: s.variants || [],
                                   }
                                 }
-                              })}>
+                              });
+                              }}>
                                 View Details
                                 <ArrowRight className="w-4 h-4 ml-1" />
-                                {s.availability && (
-                                  <Badge
-                                    className={
-                                      `ml-2 text-xs px-2 py-0.5 text-white border-0 rounded-md shadow ` +
-                                      (s.availability === 'Online'
-                                        ? 'bg-emerald-600'
-                                        : s.availability === 'Physical'
-                                        ? 'bg-purple-600'
-                                        : 'bg-teal-600')
-                                    }
-                                  >
-                                    {s.availability}
-                                  </Badge>
-                                )}
                               </Button>
                             </td>
                           ))}

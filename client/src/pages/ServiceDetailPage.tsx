@@ -12,6 +12,18 @@ import RatingBadge from "@/components/RatingBadge";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import { toast } from "sonner";
 
+type ServiceVariant = {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  imageUrl?: string;
+  city?: string;
+  detailAddress?: string;
+  googleMapLink?: string;
+  availability: 'Online' | 'Physical' | 'Online and Physical';
+};
+
 type Unified = {
   id: string;
   name: string;
@@ -34,6 +46,7 @@ type Unified = {
   myBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   homeService?: boolean;
   availability?: 'Online' | 'Physical' | 'Online and Physical' | string;
+  variants?: ServiceVariant[];
 };
 
 const ServiceDetailPage = () => {
@@ -45,6 +58,43 @@ const ServiceDetailPage = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [yourBadge, setYourBadge] = useState<Unified['myBadge']>((locationHook.state as any)?.service?.myBadge ?? null);
   const [freshCounts, setFreshCounts] = useState<{ excellent: number; good: number; fair: number } | null>(null);
+  const [activeVariantIndex, setActiveVariantIndex] = useState((locationHook.state as any)?.activeVariantIndex ?? 0);
+
+  // Helper functions for variant display
+  const getSlides = (service: Unified) => {
+    const slides = [{
+      name: service.name,
+      price: service.price,
+      image: service.image,
+      location: service.location,
+      availability: service.availability,
+      description: service.description,
+      googleMapLink: service.googleMapLink,
+      address: service.address
+    }];
+    
+    if (service.variants && Array.isArray(service.variants)) {
+      service.variants.forEach(variant => {
+        slides.push({
+          name: variant.name || service.name,
+          price: variant.price ?? service.price,
+          image: variant.imageUrl || service.image,
+          location: variant.city || service.location,
+          availability: variant.availability,
+          description: variant.description || service.description,
+          googleMapLink: variant.googleMapLink || service.googleMapLink,
+          address: variant.detailAddress || service.address
+        });
+      });
+    }
+    
+    return slides;
+  };
+
+  const getActiveSlide = (service: Unified) => {
+    const slides = getSlides(service);
+    return slides[activeVariantIndex] || slides[0];
+  };
 
   // Prefer service passed in via navigation state for full fidelity
   const rawStateService = (locationHook.state as any)?.service as any | undefined;
@@ -60,6 +110,7 @@ const ServiceDetailPage = () => {
       providerId: rawStateService.providerId ?? rawStateService._providerId,
       address: rawStateService.detailAddress ?? rawStateService.address ?? null,
       availability: rawStateService.availability,
+      variants: rawStateService.variants || [],
     };
     return normalized;
   }, [rawStateService]);
@@ -78,7 +129,13 @@ const ServiceDetailPage = () => {
   };
 
   const item: Unified | undefined = useMemo(() => {
-    if (stateService && stateService.id === id) return stateService;
+    // Always prefer service from navigation state if available
+    if (stateService && stateService.id === id) {
+      console.log('Using service from navigation state:', stateService);
+      return stateService;
+    }
+    
+    console.log('Service not found in navigation state, falling back to ServiceManager');
     const source = (ServiceManager as any).getAllServicesWithVariants
       ? (ServiceManager as any).getAllServicesWithVariants()
       : ServiceManager.getAllServices();
@@ -104,6 +161,7 @@ const ServiceDetailPage = () => {
       myBadge: null,
       homeService: s.providerType === 'doctor',
       availability: (s as any).availability,
+      variants: (s as any).variants || [],
     } as Unified));
     const mockMapped = mockServices.map((m: MockService) => ({
       id: m.id,
@@ -117,10 +175,13 @@ const ServiceDetailPage = () => {
       type: m.type,
       isReal: false,
       homeService: m.homeService,
+      variants: [],
     }));
     const combined = [...realMapped, ...mockMapped];
-    return combined.find(x => x.id === id);
-  }, [id]);
+    const foundItem = combined.find(x => x.id === id);
+    console.log('Found item from ServiceManager:', foundItem);
+    return foundItem;
+  }, [id, stateService]);
 
   // Hydrate user's own badge for this item from localStorage on mount/item change
   useEffect(() => {
@@ -189,6 +250,8 @@ const ServiceDetailPage = () => {
   };
 
   if (!item) {
+    console.log('No item found, navigation state:', locationHook.state);
+    console.log('Service ID from URL:', id);
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12">
@@ -197,6 +260,10 @@ const ServiceDetailPage = () => {
       </div>
     );
   }
+
+  const activeSlide = getActiveSlide(item);
+  const slides = getSlides(item);
+  const hasVariants = slides.length > 1;
 
   const canRate = item.isReal && user && (user.role === 'patient' || mode === 'patient') && (item.providerId !== (user as any)?.id);
 
@@ -210,18 +277,35 @@ const ServiceDetailPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           <Card className="md:col-span-1">
             <CardContent className="p-3 sm:p-4">
-              <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 rounded-xl bg-muted overflow-hidden flex items-center justify-center">
-                {item.image ? (
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+              <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 rounded-xl bg-muted overflow-hidden flex items-center justify-center relative">
+                {activeSlide.image ? (
+                  <img src={activeSlide.image} alt={activeSlide.name} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-muted-foreground">No Image</span>
+                )}
+                
+                {/* Variant slider controls */}
+                {hasVariants && (
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                    {slides.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setActiveVariantIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          activeVariantIndex === index
+                            ? 'bg-white shadow-lg'
+                            : 'bg-white/50 hover:bg-white/70'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
               {/* Footer info under image */}
               <div className="mt-8 hidden md:block">
   <div className="flex items-center gap-2">
-    <h2 className="text-3xl font-semibold text-gray-600 truncate" title={item.name}>
-      {item.name}
+    <h2 className="text-3xl font-semibold text-gray-600 truncate" title={activeSlide.name}>
+      {activeSlide.name}
     </h2>
     {item.isReal && (
       <Badge className="px-1.5 py-0.5 text-[10px] bg-green-50 text-green-600 border border-green-100">
@@ -242,7 +326,7 @@ const ServiceDetailPage = () => {
           <Card className="md:col-span-2">
             <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2 min-w-0">
-                <CardTitle className="text-xl sm:text-2xl md:text-3xl leading-tight break-words">{item.name}</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl md:text-3xl leading-tight break-words">{activeSlide.name}</CardTitle>
                 {item.isReal ? (
                   <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
                 ) : (
@@ -255,7 +339,7 @@ const ServiceDetailPage = () => {
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 sm:gap-5">
                 <div className="space-y-2 min-w-0">
                   <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="text-primary font-bold text-xl">{item.price === 0 ? "Free" : `PKR ${Number(item.price || 0).toLocaleString()}`}</div>
+                    <div className="text-primary font-bold text-xl">{activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price || 0).toLocaleString()}`}</div>
                     <RatingBadge
                       rating={item.rating}
                       ratingBadge={item.ratingBadge as any}
@@ -266,7 +350,7 @@ const ServiceDetailPage = () => {
                     />
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <MapPin className="w-4 h-4" />
-                      {item.location}
+                      {activeSlide.location}
                     </div>
                     <Badge variant="outline">{item.type}</Badge>
                     {freshCounts && (
@@ -283,15 +367,15 @@ const ServiceDetailPage = () => {
                       </div>
                     )}
                   </div>
-                  {item.address && (
-                    <div className="text-sm text-muted-foreground">{item.address}</div>
+                  {activeSlide.address && (
+                    <div className="text-sm text-muted-foreground">{activeSlide.address}</div>
                   )}
-                  {item.googleMapLink && (
+                  {activeSlide.googleMapLink && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-1 w-full sm:w-auto bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
-                      onClick={() => window.open(item.googleMapLink!, '_blank')}
+                      onClick={() => window.open(activeSlide.googleMapLink!, '_blank')}
                     >
                       <MapPin className="w-4 h-4 mr-1" /> Open in Google Maps
                     </Button>
@@ -304,17 +388,17 @@ const ServiceDetailPage = () => {
                         providerName={item.provider}
                         providerId={item.providerId}
                       />
-                      {item.availability && (
+                      {activeSlide.availability && (
                         <Badge
                           className={`ml-2 inline-block text-[10px] px-1.5 py-0.5 text-white border-0 rounded-md shadow ${
-                            item.availability === 'Online'
+                            activeSlide.availability === 'Online'
                               ? 'bg-emerald-600'
-                              : item.availability === 'Physical'
+                              : activeSlide.availability === 'Physical'
                               ? 'bg-purple-600'
                               : 'bg-teal-600'
                           }`}
                         >
-                          {item.availability}
+                          {activeSlide.availability}
                         </Badge>
                       )}
                     </div>
@@ -338,12 +422,12 @@ const ServiceDetailPage = () => {
                   )}
                 </div>
               </div>
-              <p className="mt-3 sm:mt-4 text-muted-foreground leading-relaxed break-words">{item.description}</p>
+              <p className="mt-3 sm:mt-4 text-muted-foreground leading-relaxed break-words">{activeSlide.description}</p>
               <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Card>
                   <CardContent className="p-3 sm:p-4">
                     <div className="text-sm text-muted-foreground">Best Price Nearby</div>
-                    <div className="text-lg font-semibold mt-1">PKR {Math.max(0, Math.round((Number(item.price || 0)) * 0.85)).toLocaleString()}</div>
+                    <div className="text-lg font-semibold mt-1">PKR {Math.max(0, Math.round((Number(activeSlide.price || 0)) * 0.85)).toLocaleString()}</div>
                   </CardContent>
                 </Card>
                 <Card>

@@ -22,6 +22,7 @@ interface ServiceManagementProps {
   userName: string;
   services: Service[];
   onServicesUpdate: (services: Service[]) => void;
+  onReloadServices?: () => Promise<void>;
 }
 
 const ServiceManagement: React.FC<ServiceManagementProps> = ({
@@ -29,7 +30,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   userRole,
   userName,
   services,
-  onServicesUpdate
+  onServicesUpdate,
+  onReloadServices
 }) => {
   const { toast } = useToast();
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
@@ -220,11 +222,15 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             duration: updated.duration,
             availability: updated.availability,
             diseases: Array.isArray(updated.diseases) ? updated.diseases : (disease ? [disease] : []),
-            // variants kept in sync on next fetch, optional local update skipped for brevity
+            variants: updated.variants || [],
           } as any);
           const list = services.map(s => s.id === editingService.id ? (updatedLocal as any) : s);
           onServicesUpdate(list);
           toast({ title: 'Success', description: 'Service updated successfully' });
+          // Reload services to get latest data from server
+          if (onReloadServices) {
+            await onReloadServices();
+          }
         } else {
           const created = await doctorCreate({
             name: serviceForm.name,
@@ -293,8 +299,16 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       setIsSaving(false);
     }
 
-    resetForm();
-    setIsAddServiceOpen(false);
+    if (!editingService) {
+      resetForm();
+      setIsAddServiceOpen(false);
+    } else {
+      // For edits, close dialog but don't reset form immediately to allow reload
+      setIsAddServiceOpen(false);
+      setTimeout(() => {
+        resetForm();
+      }, 500);
+    }
   };
 
   const handleEditService = (service: Service) => {
@@ -886,7 +900,39 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
                         {userRole === 'doctor' && (
                           <TableCell>
-                            {(service as any).variants?.length ? (service as any).variants.length : (editingService && editingService.id === service.id ? variants.length : 0)}
+                            <div className="space-y-1">
+                              <div className="text-sm font-medium">
+                                {(service as any).variants?.length ? `${(service as any).variants.length} variants` : (editingService && editingService.id === service.id ? `${variants.length} variants` : '0 variants')}
+                              </div>
+                              {(service as any).variants?.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {(service as any).variants.slice(0, 3).map((variant: any, idx: number) => {
+                                    console.log('Full variant object:', JSON.stringify(variant, null, 2));
+                                    const variantAvailability = variant.availability || 'Physical';
+                                    console.log('Variant availability:', variantAvailability);
+                                    return (
+                                      <Badge
+                                        key={idx}
+                                        className={`${
+                                          variantAvailability === 'Online'
+                                            ? 'bg-emerald-500'
+                                            : variantAvailability === 'Physical'
+                                            ? 'bg-purple-500'
+                                            : 'bg-teal-500'
+                                        } text-white border-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none whitespace-nowrap`}
+                                      >
+                                        {variantAvailability === 'Online and Physical' ? 'Online & Physical' : variantAvailability}
+                                      </Badge>
+                                    );
+                                  })}
+                                  {(service as any).variants.length > 3 && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                                      +{(service as any).variants.length - 3}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </TableCell>
                         )}
                         <TableCell>
