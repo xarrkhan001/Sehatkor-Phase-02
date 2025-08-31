@@ -52,6 +52,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     city?: string;
     detailAddress?: string;
     googleMapLink?: string;
+    availability?: string;
     isActive?: boolean;
     imageUrl?: string;
     imagePublicId?: string;
@@ -182,6 +183,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 city: v.city,
                 detailAddress: v.detailAddress,
                 googleMapLink: v.googleMapLink,
+                availability: v.availability || 'Physical',
                 isActive: v.isActive ?? true,
                 imageUrl: vImageUrl,
                 imagePublicId: vImagePublicId,
@@ -216,6 +218,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             category: updated.category,
             image: updated.imageUrl,
             duration: updated.duration,
+            availability: updated.availability,
             diseases: Array.isArray(updated.diseases) ? updated.diseases : (disease ? [disease] : []),
             // variants kept in sync on next fetch, optional local update skipped for brevity
           } as any);
@@ -324,6 +327,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           city: v.city,
           detailAddress: v.detailAddress,
           googleMapLink: v.googleMapLink,
+          availability: v.availability || 'Physical',
           isActive: v.isActive,
           imageUrl: v.imageUrl,
           imagePublicId: v.imagePublicId,
@@ -630,6 +634,66 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               }} placeholder="https://maps.google.com/..." />
                             </div>
                             <div className="sm:col-span-2">
+                              <Label>Service Availability</Label>
+                              <p className="text-sm text-muted-foreground mb-3">How is this variant available? *</p>
+                              <div className="space-y-3">
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="radio"
+                                    id={`variant-physical-${idx}`}
+                                    name={`variant-availability-${idx}`}
+                                    value="Physical"
+                                    checked={(v.availability || 'Physical') === 'Physical'}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        const nv = [...variants]; nv[idx] = { ...v, availability: 'Physical' }; setVariants(nv);
+                                      }
+                                    }}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                  />
+                                  <label htmlFor={`variant-physical-${idx}`} className="text-sm font-medium text-gray-900">
+                                    Physical - In-person service only
+                                  </label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="radio"
+                                    id={`variant-online-${idx}`}
+                                    name={`variant-availability-${idx}`}
+                                    value="Online"
+                                    checked={(v.availability || 'Physical') === 'Online'}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        const nv = [...variants]; nv[idx] = { ...v, availability: 'Online' }; setVariants(nv);
+                                      }
+                                    }}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                  />
+                                  <label htmlFor={`variant-online-${idx}`} className="text-sm font-medium text-gray-900">
+                                    Online - Remote consultation/delivery available
+                                  </label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="radio"
+                                    id={`variant-both-${idx}`}
+                                    name={`variant-availability-${idx}`}
+                                    value="Online and Physical"
+                                    checked={(v.availability || 'Physical') === 'Online and Physical'}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        const nv = [...variants]; nv[idx] = { ...v, availability: 'Online and Physical' }; setVariants(nv);
+                                      }
+                                    }}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                  />
+                                  <label htmlFor={`variant-both-${idx}`} className="text-sm font-medium text-gray-900">
+                                    Online and Physical - Both options available
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="sm:col-span-2">
                               <Label>Variant Image</Label>
                               <ImageUpload
                                 onImageSelect={(file, preview) => {
@@ -652,7 +716,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
                     <Button type="button" variant="outline" onClick={() => setVariants([
                       ...variants,
-                      { id: Math.random().toString(36).slice(2), isActive: true, imageFile: null }
+                      { id: Math.random().toString(36).slice(2), availability: 'Physical', isActive: true, imageFile: null }
                     ])}>
                       <Plus className="w-4 h-4 mr-2" /> Add Variant
                     </Button>
@@ -712,6 +776,19 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline">{service.category}</Badge>
+                    {(service as any).availability && (
+                      <Badge
+                        className={`${
+                          (service as any).availability === 'Online'
+                            ? 'bg-emerald-600'
+                            : (service as any).availability === 'Physical'
+                            ? 'bg-purple-600'
+                            : 'bg-teal-600'
+                        } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                      >
+                        {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
+                      </Badge>
+                    )}
                     <span className="text-sm font-medium">PKR {service.price?.toLocaleString() || 0}</span>
                     <span className="text-sm text-muted-foreground">
                       {userRole === 'pharmacy' && 'stock' in service ? (
@@ -741,6 +818,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     <TableRow>
                       <TableHead>Service</TableHead>
                       <TableHead>Category</TableHead>
+                      <TableHead>Availability</TableHead>
                       <TableHead>Price</TableHead>
                       {userRole === 'doctor' && (<TableHead>Variants</TableHead>)}
                       {userRole === 'pharmacy' ? (
@@ -787,6 +865,23 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{service.category}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {(service as any).availability ? (
+                            <Badge
+                              className={`${
+                                (service as any).availability === 'Online'
+                                  ? 'bg-emerald-600'
+                                  : (service as any).availability === 'Physical'
+                                  ? 'bg-purple-600'
+                                  : 'bg-teal-600'
+                              } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                            >
+                              {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
+                            </Badge>
+                          ) : (
+                            '-'
+                          )}
                         </TableCell>
                         <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
                         {userRole === 'doctor' && (

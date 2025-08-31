@@ -34,6 +34,20 @@ const LabsPage = () => {
   const { user, mode } = useAuth();
   const { socket } = useSocket();
 
+  const getAvailabilityBadgeStyles = (availability?: string) => {
+    // Match Pharmacy style: solid color backgrounds with white text
+    switch (availability) {
+      case 'Online':
+        return 'bg-emerald-600';
+      case 'Physical':
+        return 'bg-purple-600';
+      case 'Online and Physical':
+        return 'bg-teal-600';
+      default:
+        return 'bg-gray-400';
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
     const loadPage = async (nextPage: number) => {
@@ -67,6 +81,7 @@ const LabsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
+            availability: (service as any).availability,
           } as unknown as Service;
           // Hydrate user's own badge from localStorage
           try {
@@ -252,6 +267,7 @@ const LabsPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings,
           ratingBadge: (service as any).ratingBadge || null,
+          availability: (service as any).availability,
         } as unknown as Service;
         // Hydrate user's own badge from localStorage
         try {
@@ -510,12 +526,21 @@ const LabsPage = () => {
                           </>
                         )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
-                    >
-                      {service.type}
-                    </Badge>
+                    <div className="flex gap-1 justify-end mt-1">
+                      <Badge
+                        className="text-[11px] px-2 py-0.5 rounded-full bg-rose-600 text-white border-0 leading-none whitespace-nowrap"
+                      >
+                        {service.type}
+                      </Badge>
+                      {(service as any).availability && (
+                        <Badge
+                          className={`${getAvailabilityBadgeStyles((service as any).availability)} text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                          title={`Availability: ${(service as any).availability}`}
+                        >
+                          {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
 

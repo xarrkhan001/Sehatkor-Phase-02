@@ -66,6 +66,25 @@ const LaboratoryDashboard = () => {
   const [walletData, setWalletData] = useState<any>(null);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
 
+  // Edit Test state
+  const [isEditTestOpen, setIsEditTestOpen] = useState(false);
+  const [editTestId, setEditTestId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    price: '',
+    duration: '',
+    description: '',
+    category: '',
+    googleMapLink: '',
+    city: '',
+    detailAddress: '',
+    availability: 'Physical' as 'Physical' | 'Online' | 'Online and Physical',
+    imageUrl: ''
+  });
+  const [editImagePreview, setEditImagePreview] = useState('');
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [isUpdatingTest, setIsUpdatingTest] = useState(false);
+
   const [testForm, setTestForm] = useState({
     name: '',
     price: '',
@@ -74,7 +93,8 @@ const LaboratoryDashboard = () => {
     category: '',
     googleMapLink: '',
     city: '',
-    detailAddress: ''
+    detailAddress: '',
+    availability: 'Physical'
   });
 
   const testCategories = [
@@ -103,6 +123,7 @@ const LaboratoryDashboard = () => {
         googleMapLink: d.googleMapLink,
         city: d.city,
         detailAddress: d.detailAddress,
+        availability: d.availability,
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
@@ -112,6 +133,88 @@ const LaboratoryDashboard = () => {
       window.dispatchEvent(new StorageEvent('storage', { key: 'sehatkor_services' }));
     } catch (error) {
       console.error('Error syncing services from backend:', error);
+    }
+  };
+
+  const handleDeleteTest = async (id: string) => {
+    try {
+      await apiDelete(id);
+      ServiceManager.deleteService(id);
+      await reloadTests();
+      toast.success('Test deleted');
+    } catch (e: any) {
+      console.error('Failed to delete test:', e);
+      toast.error(e?.message || 'Failed to delete test');
+    }
+  };
+
+  const openEditDialog = (t: any) => {
+    setEditTestId(t.id);
+    setEditForm({
+      name: t.name || '',
+      price: String(t.price ?? ''),
+      duration: t.duration || '',
+      description: t.description || '',
+      category: t.category || '',
+      googleMapLink: t.googleMapLink || '',
+      city: t.city || '',
+      detailAddress: t.detailAddress || '',
+      availability: (t.availability as any) || 'Physical',
+      imageUrl: t.image || ''
+    });
+    setEditImagePreview(t.image || '');
+    setEditImageFile(null);
+    setIsEditTestOpen(true);
+  };
+
+  const handleUpdateTest = async () => {
+    if (!editTestId) return;
+    if (!editForm.name) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+    setIsUpdatingTest(true);
+    const parsedPrice = editForm.price ? parseFloat(editForm.price) : 0;
+    try {
+      let imageUrl: string | undefined = editForm.imageUrl || undefined;
+      let imagePublicId: string | undefined = undefined;
+      if (editImageFile) {
+        setIsUploadingImage(true);
+        try {
+          const result = await uploadFile(editImageFile);
+          imageUrl = result?.url;
+          imagePublicId = result?.public_id;
+        } catch (e) {
+          console.error('Image upload failed:', e);
+          toast.warning('Image upload failed, keeping previous image');
+        } finally {
+          setIsUploadingImage(false);
+        }
+      }
+
+      await apiUpdate(editTestId, {
+        name: editForm.name,
+        description: editForm.description,
+        price: parsedPrice,
+        category: editForm.category || 'Test',
+        duration: editForm.duration,
+        imageUrl,
+        imagePublicId,
+        googleMapLink: editForm.googleMapLink,
+        city: editForm.city,
+        detailAddress: editForm.detailAddress,
+        availability: editForm.availability as any,
+      } as any);
+
+      setIsEditTestOpen(false);
+      setEditTestId(null);
+      await reloadTests();
+      toast.success('Test updated');
+    } catch (e: any) {
+      console.error('Error updating test:', e);
+      toast.error(e?.message || 'Failed to update test');
+    } finally {
+      setIsUpdatingTest(false);
     }
   };
 
@@ -134,6 +237,7 @@ const LaboratoryDashboard = () => {
         providerId: user.id,
         providerName: d.providerName || (user?.name || 'Laboratory'),
         providerType: 'laboratory' as const,
+        availability: d.availability,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }));
@@ -327,6 +431,7 @@ const LaboratoryDashboard = () => {
         googleMapLink: testForm.googleMapLink,
         city: testForm.city,
         detailAddress: testForm.detailAddress,
+        availability: testForm.availability as any,
         providerName: user?.name || 'Laboratory',
       });
 
@@ -340,13 +445,15 @@ const LaboratoryDashboard = () => {
         providerId: user.id,
         providerName: created.providerName,
         providerType: 'laboratory' as const,
+        availability: (created as any)?.availability,
       };
 
       // Add to local storage
       ServiceManager.addService(newTest);
 
       // Reset form
-      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '' });
+      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical' });
+
       setTestImagePreview('');
       setTestImageFile(null);
       setIsAddTestOpen(false);
@@ -363,16 +470,7 @@ const LaboratoryDashboard = () => {
     }
   };
 
-  const handleDeleteTest = async (testId: string) => {
-    try {
-      await apiDelete(testId);
-      ServiceManager.deleteService(testId);
-      reloadTests();
-      toast.success("Test deleted successfully");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to delete test");
-    }
-  };
+  
 
   const handleTypeChange = (type: string) => {
     // Deprecated: specialization is edited via Edit Profile dialog now
@@ -604,8 +702,217 @@ const LaboratoryDashboard = () => {
                     </div>
                   </div>
 
+                  {/* Availability */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Service Availability</h4>
+                    <div className="space-y-2">
+                      <Label>How is this test available? *</Label>
+                      <div className="flex flex-col space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="availability"
+                            value="Physical"
+                            checked={testForm.availability === 'Physical'}
+                            onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Physical - In-person sample collection only</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="availability"
+                            value="Online"
+                            checked={testForm.availability === 'Online'}
+                            onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Online - Report review/booking online</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="availability"
+                            value="Online and Physical"
+                            checked={testForm.availability === 'Online and Physical'}
+                            onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Online and Physical - Both options available</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
                   <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
                     {isAddingTest ? 'Adding Test...' : 'Add Test'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            {/* Edit Test Dialog */}
+            <Dialog open={isEditTestOpen} onOpenChange={setIsEditTestOpen}>
+              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Edit Test</DialogTitle>
+                  <DialogDescription>
+                    Update details for this diagnostic test
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="editTestName">Test Name *</Label>
+                    <Input
+                      id="editTestName"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      placeholder="e.g., Complete Blood Count"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Test Image</Label>
+                    <ImageUpload
+                      onImageSelect={(file, preview) => {
+                        setEditImageFile(file);
+                        setEditImagePreview(preview);
+                      }}
+                      onImageRemove={() => {
+                        setEditImageFile(null);
+                        setEditImagePreview('');
+                        setEditForm({ ...editForm, imageUrl: '' });
+                      }}
+                      currentImage={editImagePreview || editForm.imageUrl}
+                      placeholder="Upload test image"
+                      className="max-w-xs"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="editTestPrice">Price (PKR) *</Label>
+                      <Input
+                        id="editTestPrice"
+                        type="number"
+                        value={editForm.price}
+                        onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                        placeholder="e.g., 1500"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editTestDuration">Duration (hours)</Label>
+                      <Input
+                        id="editTestDuration"
+                        value={editForm.duration}
+                        onChange={(e) => setEditForm({ ...editForm, duration: e.target.value })}
+                        placeholder="e.g., 2"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="editTestCategory">Category</Label>
+                    <Select value={editForm.category} onValueChange={(value) => setEditForm({ ...editForm, category: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select test category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {testCategories.map((category) => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="editTestDescription">Description</Label>
+                    <Textarea
+                      id="editTestDescription"
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      placeholder="Brief description of the test"
+                    />
+                  </div>
+
+                  {/* Location Fields */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Location Information</h4>
+                    <div>
+                      <Label htmlFor="editTestCity">City</Label>
+                      <Input
+                        id="editTestCity"
+                        value={editForm.city}
+                        onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                        placeholder="e.g., Karachi"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editTestAddress">Detailed Address</Label>
+                      <Textarea
+                        id="editTestAddress"
+                        value={editForm.detailAddress}
+                        onChange={(e) => setEditForm({ ...editForm, detailAddress: e.target.value })}
+                        placeholder="e.g., Floor 2, Medical Plaza, Main Road"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editTestMapLink">Google Maps Link (Optional)</Label>
+                      <Input
+                        id="editTestMapLink"
+                        value={editForm.googleMapLink}
+                        onChange={(e) => setEditForm({ ...editForm, googleMapLink: e.target.value })}
+                        placeholder="https://maps.google.com/..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Availability */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Service Availability</h4>
+                    <div className="space-y-2">
+                      <Label>How is this test available? *</Label>
+                      <div className="flex flex-col space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editAvailability"
+                            value="Physical"
+                            checked={editForm.availability === 'Physical'}
+                            onChange={(e) => setEditForm({ ...editForm, availability: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Physical - In-person sample collection only</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editAvailability"
+                            value="Online"
+                            checked={editForm.availability === 'Online'}
+                            onChange={(e) => setEditForm({ ...editForm, availability: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Online - Report review/booking online</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editAvailability"
+                            value="Online and Physical"
+                            checked={editForm.availability === 'Online and Physical'}
+                            onChange={(e) => setEditForm({ ...editForm, availability: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Online and Physical - Both options available</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button onClick={handleUpdateTest} className="w-full" disabled={isUploadingImage || isUpdatingTest}>
+                    {isUpdatingTest ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               </DialogContent>
@@ -803,6 +1110,49 @@ const LaboratoryDashboard = () => {
                                 </div>
                               </div>
 
+                              {/* Availability */}
+                              <div className="space-y-3 border-t pt-3">
+                                <h4 className="font-medium text-sm">Service Availability</h4>
+                                <div className="space-y-2">
+                                  <Label>How is this test available? *</Label>
+                                  <div className="flex flex-col space-y-2">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="availability"
+                                        value="Physical"
+                                        checked={testForm.availability === 'Physical'}
+                                        onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">Physical - In-person sample collection only</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="availability"
+                                        value="Online"
+                                        checked={testForm.availability === 'Online'}
+                                        onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">Online - Report review/booking online</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="availability"
+                                        value="Online and Physical"
+                                        checked={testForm.availability === 'Online and Physical'}
+                                        onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">Online and Physical - Both options available</span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+
                               <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
                                 {isAddingTest ? 'Adding Test...' : 'Add Test'}
                               </Button>
@@ -833,7 +1183,7 @@ const LaboratoryDashboard = () => {
                                           }}
                                         />
                                       ) : null}
-                                      <span className={`${test.image ? 'hidden' : ''} text-gray-400 text-lg`}>🔬</span>
+                                      <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
                                     </div>
                                     <div className="flex-1">
                                       <div className="font-medium">{test.name}</div>
@@ -842,14 +1192,27 @@ const LaboratoryDashboard = () => {
                                         <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">{test.category}</Badge>
                                         <span className="text-sm">PKR {test.price.toLocaleString()}</span>
                                         <span className="text-xs text-muted-foreground">{test.duration || 'N/A'}</span>
+                                        {test.availability && (
+                                          <Badge
+                                            className={`${
+                                              test.availability === 'Online'
+                                                ? 'bg-emerald-600'
+                                                : test.availability === 'Physical'
+                                                ? 'bg-purple-600'
+                                                : 'bg-teal-600'
+                                            } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                                          >
+                                            {test.availability === 'Online and Physical' ? 'Online & Physical' : test.availability}
+                                          </Badge>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
                                   <div className="mt-3 grid grid-cols-2 gap-2">
-                                    <Button size="sm" variant="outline" className="w-full">
+                                    <Button size="sm" variant="outline" className="w-full" onClick={() => openEditDialog(test)}>
                                       <Edit className="w-4 h-4 mr-1" /> Edit
                                     </Button>
-                                    <Button size="sm" variant="destructive" className="w-full">
+                                    <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteTest(test.id)}>
                                       <Trash2 className="w-4 h-4 mr-1" /> Delete
                                     </Button>
                                   </div>
@@ -867,6 +1230,7 @@ const LaboratoryDashboard = () => {
                                     <TableHead>Category</TableHead>
                                     <TableHead>Price (PKR)</TableHead>
                                     <TableHead>Duration</TableHead>
+                                    <TableHead>Availability</TableHead>
                                     <TableHead>Actions</TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -900,11 +1264,28 @@ const LaboratoryDashboard = () => {
                                       <TableCell>PKR {test.price.toLocaleString()}</TableCell>
                                       <TableCell>{test.duration || 'N/A'}</TableCell>
                                       <TableCell>
+                                        {test.availability ? (
+                                          <Badge
+                                            className={`${
+                                              test.availability === 'Online'
+                                                ? 'bg-emerald-600'
+                                                : test.availability === 'Physical'
+                                                ? 'bg-purple-600'
+                                                : 'bg-teal-600'
+                                            } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
+                                          >
+                                            {test.availability === 'Online and Physical' ? 'Online & Physical' : test.availability}
+                                          </Badge>
+                                        ) : (
+                                          '-'
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
                                         <div className="flex space-x-2">
-                                          <Button size="sm" variant="outline">
+                                          <Button size="sm" variant="outline" onClick={() => openEditDialog(test)}>
                                             <Edit className="w-4 h-4 mr-1" /> Edit
                                           </Button>
-                                          <Button size="sm" variant="destructive">
+                                          <Button size="sm" variant="destructive" onClick={() => handleDeleteTest(test.id)}>
                                             <Trash2 className="w-4 h-4 mr-1" /> Delete
                                           </Button>
                                         </div>
