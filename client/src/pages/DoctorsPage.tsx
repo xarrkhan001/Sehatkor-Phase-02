@@ -37,6 +37,11 @@ const DoctorsPage = () => {
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
   const [activeVariantIndex, setActiveVariantIndex] = useState<Record<string, number>>({});
+  
+  // Debug log when variant index changes
+  useEffect(() => {
+    console.log('🔄 DoctorsPage: Active variant index changed:', activeVariantIndex);
+  }, [activeVariantIndex]);
   useEffect(() => {
     let isMounted = true;
     const loadPage = async (nextPage: number) => {
@@ -223,8 +228,27 @@ const DoctorsPage = () => {
           ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
             ? { diseases: (service as any).diseases }
             : {}),
+          // Preserve variants from backend if available
+          ...(Array.isArray((service as any).variants) && (service as any).variants.length > 0
+            ? { variants: (service as any).variants }
+            : {}),
+          ...(service.availability ? { availability: service.availability } : {}),
         }) as Service;
       });
+
+      console.log('🔍 DoctorsPage: Raw services from API:', services.slice(0, 2).map(s => ({
+        id: s.id,
+        name: s.name,
+        availability: s.availability,
+        variants: s.variants
+      })));
+      
+      console.log('🔍 DoctorsPage: Mapped services with variants:', mapped.slice(0, 2).map(s => ({ 
+        id: s.id, 
+        name: s.name,
+        availability: (s as any).availability,
+        variants: (s as any).variants?.map((v: any) => ({ name: v.name, availability: v.availability, imageUrl: v.imageUrl })) 
+      })));
 
       setDoctorServices(prev => {
         const byId = new Map(prev.map(s => [s.id, s] as const));
@@ -371,8 +395,8 @@ const DoctorsPage = () => {
     return {
       name: variant.name || service.name,
       price: variant.price ?? service.price,
-      image: variant.image || service.image,
-      location: variant.location || service.location,
+      image: variant.imageUrl || service.image,
+      location: variant.city || service.location,
       detailAddress: variant.detailAddress || (service as any).detailAddress,
       description: variant.description || service.description,
       googleMapLink: variant.googleMapLink || (service as any).googleMapLink
@@ -607,7 +631,16 @@ const DoctorsPage = () => {
                           const v = (service as any).variants as any[] | undefined;
                           const total = 1 + (Array.isArray(v) ? v.length : 0);
                           const curr = activeVariantIndex[service.id] ?? 0;
-                          setActiveVariantIndex(prev => ({ ...prev, [service.id]: (curr + 1) % total }));
+                          const newIndex = (curr + 1) % total;
+                          console.log('➡️ DoctorsPage: Next variant clicked:', {
+                            serviceId: service.id,
+                            serviceName: service.name,
+                            currentIndex: curr,
+                            newIndex,
+                            totalSlides: total,
+                            variants: v?.map(variant => ({ name: variant.name, availability: variant.availability }))
+                          });
+                          setActiveVariantIndex(prev => ({ ...prev, [service.id]: newIndex }));
                         }}
                         className="h-8 w-8 rounded-full bg-white/90 border border-gray-200 shadow hover:bg-white"
                         aria-label="Next variant"
@@ -661,19 +694,55 @@ const DoctorsPage = () => {
                     >
                       Treatment
                     </Badge>
-                    {(service as any).availability && (
-                      <Badge
-                        className={`${
-                          (service as any).availability === 'Online'
-                            ? 'bg-emerald-600'
-                            : (service as any).availability === 'Physical'
-                            ? 'bg-purple-600'
-                            : 'bg-teal-600'
-                        } text-white border-0 rounded-full px-2 py-0.5 text-[10px] leading-none whitespace-nowrap`}
-                      >
-                        {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
-                      </Badge>
-                    )}
+                    {(() => {
+                      const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
+                      const variants = (service as any).variants as any[] | undefined;
+                      const hasVariants = Array.isArray(variants) && variants.length > 0;
+                      
+                      if (hasVariants && currentVariantIndex > 0) {
+                        // Show variant availability
+                        const variant = variants[currentVariantIndex - 1];
+                        const variantAvailability = variant?.availability || 'Physical';
+                        console.log('🎯 DoctorsPage: Displaying variant availability:', {
+                          serviceId: service.id,
+                          serviceName: service.name,
+                          currentVariantIndex,
+                          totalVariants: variants?.length,
+                          allVariants: variants?.map(v => ({ name: v.name, availability: v.availability })),
+                          selectedVariant: variant ? { name: variant.name, availability: variant.availability } : null,
+                          finalAvailability: variantAvailability
+                        });
+                        return (
+                          <Badge
+                            className={`${
+                              variantAvailability === 'Online'
+                                ? 'bg-emerald-600'
+                                : variantAvailability === 'Physical'
+                                ? 'bg-purple-600'
+                                : 'bg-teal-600'
+                            } text-white border-0 rounded-full px-2 py-0.5 text-[10px] leading-none whitespace-nowrap`}
+                          >
+                            {variantAvailability === 'Online and Physical' ? 'Online & Physical' : variantAvailability}
+                          </Badge>
+                        );
+                      } else if ((service as any).availability) {
+                        // Show main service availability
+                        return (
+                          <Badge
+                            className={`${
+                              (service as any).availability === 'Online'
+                                ? 'bg-emerald-600'
+                                : (service as any).availability === 'Physical'
+                                ? 'bg-purple-600'
+                                : 'bg-teal-600'
+                            } text-white border-0 rounded-full px-2 py-0.5 text-[10px] leading-none whitespace-nowrap`}
+                          >
+                            {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
+                          </Badge>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
 
@@ -778,13 +847,17 @@ const DoctorsPage = () => {
                     variant="secondary"
                     onClick={() => {
                       const timeInfo = getDisplayTimeInfo(service);
+                      const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
+                      const displayData = getDisplayForService(service);
+                      
                       navigate(`/service/${service.id}`, {
                         state: {
                           from: `${location.pathname}${location.search}`,
                           fromDoctors: true,
+                          activeVariantIndex: currentVariantIndex,
                           service: {
                             ...service,
-                            ...getDisplayForService(service),
+                            ...displayData,
                             providerType: 'doctor',
                             providerId: (service as any)._providerId,
                             totalRatings: (service as any).totalRatings,
@@ -793,6 +866,7 @@ const DoctorsPage = () => {
                             ratingBadge: (service as any).ratingBadge,
                             myBadge: (service as any).myBadge,
                             timeInfo,
+                            variants: (service as any).variants || [],
                           }
                         }
                       });

@@ -81,6 +81,56 @@ const ProviderProfilePage = () => {
     try { return apiUrl(src); } catch { return src; }
   };
 
+  // Variant helpers for this page
+  const [activeVariantIndexByService, setActiveVariantIndexByService] = useState<Record<string, number>>({});
+  const getSlides = (svc: Service) => {
+    const base = {
+      imageUrl: (svc as any).image as string | undefined,
+      price: (svc as any).price as number | undefined,
+      city: (svc as any).city as string | undefined,
+      detailAddress: (svc as any).detailAddress as string | undefined,
+      googleMapLink: (svc as any).googleMapLink as string | undefined,
+      timeLabel: (svc as any).timeLabel as string | undefined,
+      startTime: (svc as any).startTime as string | undefined,
+      endTime: (svc as any).endTime as string | undefined,
+      days: (svc as any).days as string | undefined,
+      availability: (svc as any).availability as ("Online" | "Physical" | "Online and Physical" | undefined),
+    };
+    const variants = Array.isArray((svc as any).variants) ? (svc as any).variants : [];
+    return [base, ...variants];
+  };
+  const getActiveSlide = (svc: Service) => {
+    const slides = getSlides(svc);
+    if (!slides.length) return undefined as any;
+    const raw = activeVariantIndexByService[svc.id] ?? 0;
+    const idx = ((raw % slides.length) + slides.length) % slides.length;
+    return slides[idx] as any;
+  };
+  const getDisplayImage = (svc: Service) => {
+    const v: any = getActiveSlide(svc);
+    return getServiceImage(v?.imageUrl) || getServiceImage((svc as any).image);
+  };
+  const getDisplayPrice = (svc: Service) => {
+    const v: any = getActiveSlide(svc);
+    const p = v?.price;
+    return p != null && !Number.isNaN(Number(p)) ? Number(p) : (svc as any).price;
+  };
+  const getDisplayCity = (svc: Service) => {
+    const v: any = getActiveSlide(svc);
+    return v?.city || (svc as any).city;
+  };
+  const getDisplayTimeInfo = (svc: Service): string | null => {
+    const v: any = getActiveSlide(svc);
+    if (!v) return null;
+    const formatTime = (t?: string) => (t ? String(t) : "");
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const days = v.days ? String(v.days) : "";
+    const parts = [label, days].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
+  };
+  const nextVariant = (id: string) => setActiveVariantIndexByService(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+  const prevVariant = (id: string) => setActiveVariantIndexByService(prev => ({ ...prev, [id]: (prev[id] ?? 0) - 1 }));
+
   // Filter services based on search and price filters
   const filteredServices = useMemo(() => {
     let filtered = services;
@@ -622,7 +672,7 @@ const ProviderProfilePage = () => {
                         <div className="relative">
                           <Avatar className="w-24 h-24 md:w-28 md:h-28 ring-2 ring-white shadow-md border border-gray-200">
                             <AvatarImage
-                              src={getServiceImage((service as any).image) || '/placeholder.svg'}
+                              src={getDisplayImage(service) || '/placeholder.svg'}
                               alt={service.name}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
@@ -632,6 +682,24 @@ const ProviderProfilePage = () => {
                             />
                             <AvatarFallback className="text-sm">{service.name?.[0]?.toUpperCase?.() || 'S'}</AvatarFallback>
                           </Avatar>
+                          {getSlides(service).length > 1 && (
+                            <div className="absolute -bottom-1 right-0 flex items-center gap-0.5">
+                              <button
+                                className="px-1 py-0.5 text-[10px] rounded bg-white/90 border border-gray-200 shadow"
+                                onClick={(e) => { e.stopPropagation(); prevVariant(service.id); }}
+                                aria-label="Prev"
+                              >
+                                ‹
+                              </button>
+                              <button
+                                className="px-1 py-0.5 text-[10px] rounded bg-white/90 border border-gray-200 shadow"
+                                onClick={(e) => { e.stopPropagation(); nextVariant(service.id); }}
+                                aria-label="Next"
+                              >
+                                ›
+                              </button>
+                            </div>
+                          )}
                           
                           {/* Top-left corner badges */}
                           <div className="absolute -top-0.5 -left-0.5 flex flex-col gap-0.5">
@@ -653,19 +721,24 @@ const ProviderProfilePage = () => {
                             </Badge>
                           </div>
 
-                          {/* Top-right corner availability badge */}
-                          {(service as any).availability && (service as any).providerType !== 'pharmacy' && (
+                          {/* Top-right corner availability badge (pharmacy, laboratory, clinic, and doctor) */}
+                          {(() => {
+                            const availability = (getActiveSlide(service) as any)?.availability || (service as any).availability;
+                            const type = (service as any).providerType;
+                            const showOnImage = type === 'pharmacy' || type === 'laboratory' || type === 'clinic' || type === 'doctor';
+                            return !!availability && showOnImage; // Show on image for pharmacy, lab, clinic and doctor
+                          })() && (
                             <div className="absolute -top-0.5 -right-0.5">
                               <Badge
                                 className={`text-[7px] px-0.5 py-0.5 text-white border-0 shadow-md backdrop-blur-sm ${
-                                  (service as any).availability === 'Online'
+                                  (((getActiveSlide(service) as any)?.availability || (service as any).availability) === 'Online')
                                     ? 'bg-emerald-600'
-                                    : (service as any).availability === 'Physical'
+                                    : (((getActiveSlide(service) as any)?.availability || (service as any).availability) === 'Physical')
                                     ? 'bg-purple-600'
                                     : 'bg-teal-600'
                                 }`}
                               >
-                                {(service as any).availability}
+                                {((getActiveSlide(service) as any)?.availability) || (service as any).availability}
                               </Badge>
                             </div>
                           )}
@@ -735,19 +808,9 @@ const ProviderProfilePage = () => {
                             providerName={service.providerName}
                             providerId={(service as any).providerId}
                           />
-                          {(service as any).providerType === 'pharmacy' && (service as any).availability && (
+                          {(service as any).providerType === 'pharmacy' && false && (((getActiveSlide(service) as any)?.availability) || (service as any).availability) && (
                             <span className="inline-block ml-2 align-middle">
-                              <Badge
-                                className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
-                                  (service as any).availability === 'Online'
-                                    ? 'bg-emerald-600'
-                                    : (service as any).availability === 'Physical'
-                                    ? 'bg-purple-600'
-                                    : 'bg-teal-600'
-                                }`}
-                              >
-                                {(service as any).availability}
-                              </Badge>
+                              <Badge className="text-[10px] px-1.5 py-0.5 text-white border-0">Hidden</Badge>
                             </span>
                           )}
                         </div>
@@ -789,7 +852,21 @@ const ProviderProfilePage = () => {
                       </div>
                       <Button
                         variant="secondary"
-                        onClick={() => navigate(`/service/${service.id}`, { state: { service } })}
+                        onClick={() => {
+                          const slides = getSlides(service);
+                          const rawIdx = activeVariantIndexByService[service.id] ?? 0;
+                          const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
+                          navigate(`/service/${service.id}`, {
+                            state: {
+                              service: {
+                                ...service,
+                                variants: (service as any).variants || [],
+                              },
+                              activeVariantIndex: activeIdx,
+                              from: window.location.pathname + window.location.search,
+                            }
+                          });
+                        }}
                         className="w-full rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 py-3 text-[15px]"
                       >
                         View Details

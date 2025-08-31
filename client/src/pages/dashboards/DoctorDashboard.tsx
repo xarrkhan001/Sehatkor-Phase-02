@@ -82,6 +82,7 @@ const DoctorDashboard = () => {
       ...(d.detailAddress ? { detailAddress: d.detailAddress } : {}),
       ...(d.googleMapLink ? { googleMapLink: d.googleMapLink } : {}),
       ...(d.availability ? { availability: d.availability } : {}),
+      ...(Array.isArray(d.variants) ? { variants: d.variants } : {}),
       createdAt: d.createdAt || new Date().toISOString(),
       updatedAt: d.updatedAt || d.createdAt || new Date().toISOString(),
     }));
@@ -115,6 +116,7 @@ const DoctorDashboard = () => {
         ...(d.detailAddress ? { detailAddress: d.detailAddress } : {}),
         ...(d.googleMapLink ? { googleMapLink: d.googleMapLink } : {}),
         ...(d.availability ? { availability: d.availability } : {}),
+        ...(Array.isArray(d.variants) ? { variants: d.variants } : {}),
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }) as any);
@@ -571,6 +573,7 @@ const DoctorDashboard = () => {
 
                     syncLocalFromDocs(docs);
                   }}
+                  onReloadServices={reloadServices}
                 />
               </TabsContent>
 

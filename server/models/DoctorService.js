@@ -14,6 +14,11 @@ const ServiceVariantSchema = new mongoose.Schema(
     city: { type: String },
     detailAddress: { type: String },
     notes: { type: String },
+    availability: { 
+      type: String, 
+      enum: ["Online", "Physical", "Online and Physical"], 
+      default: "Physical" 
+    },
     isActive: { type: Boolean, default: true },
   },
   { _id: true, timestamps: true }
