@@ -19,7 +19,10 @@ import {
   bulkDeleteWithdrawals,
   deleteAllWithdrawalsForProvider,
   hideProvider,
-  unhideProvider
+  unhideProvider,
+  getInvoicesByProvider,
+  getInvoiceById,
+  getAllInvoices,
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -40,6 +43,12 @@ router.put('/:paymentId/release', releasePaymentToProvider);
 router.get('/wallet/:providerId', getProviderWallet);
 router.post('/withdraw/:providerId', requestWithdrawal);
 router.get('/withdrawals/:providerId', getWithdrawalsByProvider);
+
+// Invoice routes
+router.get('/invoices/provider/:providerId', getInvoicesByProvider);
+router.get('/invoices/:invoiceId', getInvoiceById);
+router.get('/invoices', getAllInvoices); // Admin: Get all invoices
+
 // Admin utilities to remove 'pending' from DB
 router.put('/withdrawals/approve-all', approveAllPendingWithdrawals);
 router.put('/withdrawals/:providerId/approve-pending', approveProviderPendingWithdrawals);
