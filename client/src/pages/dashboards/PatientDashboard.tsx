@@ -205,51 +205,67 @@ const PatientDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="card-healthcare">
+          {/* Total Bookings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Bookings</p>
-                  <p className="text-2xl font-bold">{isLoading ? "..." : stats.totalBookings}</p>
+                  <p className="text-sm text-blue-100 opacity-90">Total Bookings</p>
+                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : stats.totalBookings}</p>
                 </div>
-                <Calendar className="w-8 h-8 text-primary" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Completed Bookings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">{isLoading ? "..." : stats.completedBookings}</p>
+                  <p className="text-sm text-green-100 opacity-90">Completed</p>
+                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : stats.completedBookings}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-success" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Pending Bookings Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-warning">{isLoading ? "..." : stats.pendingBookings}</p>
+                  <p className="text-sm text-purple-100 opacity-90">Pending</p>
+                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : stats.pendingBookings}</p>
                 </div>
-                <Clock className="w-8 h-8 text-warning" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
             </CardContent>
           </Card>
 
-          <Card className="card-healthcare">
+          {/* Total Spent Card */}
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Spent</p>
-                  <p className="text-2xl font-bold">{isLoading ? "..." : `PKR ${stats.totalSpent.toLocaleString()}`}</p>
+                  <p className="text-sm text-amber-100 opacity-90">Total Spent</p>
+                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : `PKR ${stats.totalSpent.toLocaleString()}`}</p>
                 </div>
-                <CreditCard className="w-8 h-8 text-primary" />
+                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                  <CreditCard className="w-6 h-6 text-white" />
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
             </CardContent>
           </Card>
         </div>
@@ -259,9 +275,19 @@ const PatientDashboard = () => {
           {/* Tabs Section */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="bookings">My Bookings</TabsTrigger>
-                <TabsTrigger value="history">Booking History</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
+                <TabsTrigger 
+                  value="bookings" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  My Bookings
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="history" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                >
+                  Booking History
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="bookings" className="space-y-4">
@@ -428,38 +454,42 @@ const PatientDashboard = () => {
           {/* Profile Sidebar */}
           <div className="space-y-6">
             {/* Profile Card */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white shadow-xl">
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Profile Information
+                </CardTitle>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-4 mb-6">
+              <CardContent className="relative z-10 pb-4">
+                <div className="flex flex-col items-center text-center mb-4">
                   <ProfileImageUpload
                     currentImage={user?.avatar}
                     userName={user?.name}
                     size="lg"
                     showEditButton={true}
                   />
-                  <div>
-                    <h3 className="text-lg font-semibold">{user?.name}</h3>
-                    <Badge variant="outline" className="capitalize">{user?.role}</Badge>
+                  <div className="mt-3">
+                    <h3 className="text-lg font-semibold text-white">{user?.name}</h3>
+                    <Badge variant="secondary" className="capitalize bg-white/20 text-white border-white/30 mt-1">{user?.role}</Badge>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 text-sm">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
+                <div className="space-y-2 text-center">
+                  <div className="flex items-center justify-center space-x-3 text-sm text-gray-300">
+                    <Mail className="w-4 h-4 text-gray-400" />
                     <span>{user?.email}</span>
                   </div>
-                  <div className="flex items-center space-x-3 text-sm">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
+                  <div className="flex items-center justify-center space-x-3 text-sm text-gray-300">
+                    <Phone className="w-4 h-4 text-gray-400" />
                     <span>{(user as any)?.phone || 'Not provided'}</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 mt-6">
+                <div className="space-y-2 mt-4">
                   <Button 
-                    className="w-full" 
+                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm" 
                     variant="outline"
                     onClick={() => setEditDialogOpen(true)}
                   >
@@ -467,8 +497,8 @@ const PatientDashboard = () => {
                     Edit Profile
                   </Button>
                   <Button 
-                    className="w-full" 
-                    variant="secondary"
+                    className="w-full bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    variant="outline"
                     onClick={() => navigate(`/patient/${user?.id}`)}
                   >
                     <User className="w-4 h-4 mr-2" />
@@ -478,26 +508,6 @@ const PatientDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Actions Card */}
-            <Card className="card-healthcare">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Book Appointment
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Health Checkup
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Account Settings
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
