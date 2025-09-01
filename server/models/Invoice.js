@@ -32,6 +32,10 @@ const InvoiceSchema = new mongoose.Schema(
     paymentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
     notes: { type: String },
     issuedAt: { type: Date, default: Date.now },
+    // Admin-only soft delete: if true, hidden from admin lists but still available to providers
+    deletedForAdmin: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
 );

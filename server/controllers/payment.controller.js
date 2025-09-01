@@ -59,6 +59,37 @@ export const createPayment = async (req, res) => {
   }
 };
 
+// Bulk delete invoices (admin) -> soft delete for admin only
+export const bulkDeleteInvoices = async (req, res) => {
+  try {
+    const { invoiceIds } = req.body || {};
+    if (!Array.isArray(invoiceIds) || invoiceIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'invoiceIds (array) is required' });
+    }
+
+    const validIds = invoiceIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+    if (validIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid invoiceIds provided' });
+    }
+
+    const resUpdate = await Invoice.updateMany(
+      { _id: { $in: validIds } },
+      {
+        $set: {
+          deletedForAdmin: true,
+          deletedAt: new Date(),
+          deletedBy: req.user?.id ? (mongoose.Types.ObjectId.isValid(req.user.id) ? new mongoose.Types.ObjectId(req.user.id) : undefined) : undefined,
+        }
+      }
+    );
+
+    return res.json({ success: true, message: 'Invoices deleted for admin', matched: resUpdate.matchedCount ?? resUpdate.nMatched, modified: resUpdate.modifiedCount ?? resUpdate.nModified, invoiceIds: validIds });
+  } catch (error) {
+    console.error(' Bulk delete invoices error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to bulk delete invoices', error: error.message });
+  }
+};
+
 // Fetch invoices
 export const getInvoicesByProvider = async (req, res) => {
   try {
@@ -107,6 +138,8 @@ export const getAllInvoices = async (req, res) => {
     if (provider) {
       filter.providerId = provider;
     }
+    // Exclude invoices soft-deleted for admin
+    filter.deletedForAdmin = { $ne: true };
     
     // Filter by date range if specified
     if (startDate || endDate) {
@@ -139,6 +172,34 @@ export const getAllInvoices = async (req, res) => {
       message: 'Failed to fetch invoices',
       error: error.message
     });
+  }
+};
+
+// Delete an invoice by ID (admin) -> soft delete for admin only
+export const deleteInvoice = async (req, res) => {
+  try {
+    const { invoiceId } = req.params;
+    if (!invoiceId) {
+      return res.status(400).json({ success: false, message: 'invoiceId is required' });
+    }
+    const deleted = await Invoice.findByIdAndUpdate(
+      invoiceId,
+      {
+        $set: {
+          deletedForAdmin: true,
+          deletedAt: new Date(),
+          deletedBy: req.user?.id ? (mongoose.Types.ObjectId.isValid(req.user.id) ? new mongoose.Types.ObjectId(req.user.id) : undefined) : undefined,
+        }
+      },
+      { new: true }
+    );
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+    return res.json({ success: true, message: 'Invoice deleted for admin', invoiceId });
+  } catch (error) {
+    console.error(' Delete invoice error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to delete invoice', error: error.message });
   }
 };
 
