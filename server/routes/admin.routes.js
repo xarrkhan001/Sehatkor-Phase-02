@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAdminStats, getVerifiedUsersCount, verifyEntity, getPendingVerifications, getAllUsers } from '../controllers/admin.controller.js';
+import { getAdminStats, getVerifiedUsersCount, verifyEntity, getPendingVerifications, getAllUsers, getVerifiedUsers, deleteUser } from '../controllers/admin.controller.js';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -11,6 +11,10 @@ const router = express.Router();
 router.get('/users', getAllUsers);
 // Get all pending verifications (unverified providers)
 router.get('/pending', getPendingVerifications);
+// Get verified users with pagination
+router.get('/verified-users', getVerifiedUsers);
+// Delete a user permanently
+router.delete('/users/:userId', deleteUser);
 // Approve/reject a user/provider
 router.patch('/verify/:userId', verifyEntity);
 // Get platform stats
