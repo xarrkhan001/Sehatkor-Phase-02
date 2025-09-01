@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/use-toast';
 
 interface ISocketContext {
   socket: Socket | null;
@@ -20,7 +21,8 @@ export const useSocket = () => {
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -35,6 +37,25 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setOnlineUsers(users);
       });
 
+      // Listen for account termination events
+      newSocket.on('account_terminated', (data: { userId: string; message: string; timestamp: string }) => {
+        if (data.userId === user.id) {
+          // Show termination message
+          toast({
+            title: "Account Terminated",
+            description: data.message,
+            variant: "destructive",
+            duration: 10000, // Show for 10 seconds
+          });
+          
+          // Force logout after a short delay
+          setTimeout(() => {
+            logout();
+            window.location.href = '/login?terminated=true';
+          }, 3000);
+        }
+      });
+
       return () => {
         newSocket.close();
       };
@@ -46,7 +67,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     return () => {};
-  }, [user]);
+  }, [user, logout, toast]);
 
   return (
     <SocketContext.Provider value={{ socket, onlineUsers }}>

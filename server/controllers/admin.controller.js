@@ -149,6 +149,17 @@ export const deleteUser = async (req, res) => {
 
     await User.findByIdAndDelete(userId);
     
+    // Get Socket.IO instance from app
+    const io = req.app.get('io');
+    if (io) {
+      // Emit account termination event to the specific user
+      io.emit('account_terminated', {
+        userId: userId,
+        message: 'Your account has been terminated by an administrator for policy violations.',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     res.status(200).json({ 
       message: 'User deleted successfully',
       deletedUser: {
