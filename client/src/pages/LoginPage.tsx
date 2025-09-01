@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,19 @@ const LoginPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [searchParams] = useSearchParams();
+
+  // Check if user was terminated and show message
+  useEffect(() => {
+    if (searchParams.get('terminated') === 'true') {
+      toast({
+        title: "Account Terminated",
+        description: "Your account has been terminated by an administrator. Please contact support if you believe this is an error.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    }
+  }, [searchParams, toast]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
