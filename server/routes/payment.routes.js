@@ -23,6 +23,8 @@ import {
   getInvoicesByProvider,
   getInvoiceById,
   getAllInvoices,
+  deleteInvoice,
+  bulkDeleteInvoices,
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -48,6 +50,8 @@ router.get('/withdrawals/:providerId', getWithdrawalsByProvider);
 router.get('/invoices/provider/:providerId', getInvoicesByProvider);
 router.get('/invoices/:invoiceId', getInvoiceById);
 router.get('/invoices', getAllInvoices); // Admin: Get all invoices
+router.delete('/invoices/:invoiceId', deleteInvoice); // Admin: Delete invoice
+router.post('/invoices/bulk-delete', bulkDeleteInvoices); // Admin: Bulk delete invoices
 
 // Admin utilities to remove 'pending' from DB
 router.put('/withdrawals/approve-all', approveAllPendingWithdrawals);
