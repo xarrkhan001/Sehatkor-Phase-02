@@ -16,6 +16,7 @@ import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 
 const PharmaciesPage = () => {
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ const PharmaciesPage = () => {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<any>(null);
 
   const { user, mode } = useAuth();
   const { socket } = useSocket();
@@ -298,7 +301,6 @@ const PharmaciesPage = () => {
     setRatingModalOpen(true);
   };
 
-
   const handleBookNow = (service: Service) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
@@ -312,19 +314,21 @@ const PharmaciesPage = () => {
       return;
     }
 
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: (service as any)._providerId || service.id,
-        providerName: service.provider,
-        providerType: 'pharmacy',
-        price: Number((service as any).price ?? 0),
-        image: service.image,
-        location: (service as any).location,
-        phone: (service as any).providerPhone
-      }
-    });
+    // Prepare service data for booking modal
+    const bookingService = {
+      id: service.id,
+      name: service.name,
+      provider: service.provider,
+      price: Number((service as any).price ?? 0),
+      image: service.image,
+      location: service.location,
+      _providerId: (service as any)._providerId || service.id,
+      _providerType: 'pharmacy',
+      providerPhone: (service as any).providerPhone,
+    };
+
+    setSelectedBookingService(bookingService);
+    setIsBookingModalOpen(true);
   };
 
   const getCoordinatesForLocation = (location: string) => {
@@ -637,6 +641,7 @@ const PharmaciesPage = () => {
           </div>
         </div>
       )}
+
       {/* Rating Modal */}
       {selectedRatingService && (
         <RatingModal
@@ -648,6 +653,18 @@ const PharmaciesPage = () => {
           serviceId={selectedRatingService.id}
           serviceType="pharmacy"
           serviceName={selectedRatingService.name}
+        />
+      )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={selectedBookingService}
         />
       )}
     </div>

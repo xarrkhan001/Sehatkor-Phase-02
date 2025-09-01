@@ -12,6 +12,7 @@ import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "@/context/SocketContext";
@@ -48,6 +49,8 @@ const ProviderProfilePage = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [priceFilter, setPriceFilter] = useState("");
   const [minPrice, setMinPrice] = useState("");
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<any>(null);
   const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState<boolean | undefined>(true);
@@ -305,7 +308,7 @@ const ProviderProfilePage = () => {
     }
   };
 
-  const handleBookNow = (service: Service) => {
+  const handleBookNow = (service: any) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
         description: 'Click your profile icon and use the toggle to switch modes.',
@@ -313,24 +316,22 @@ const ProviderProfilePage = () => {
       return;
     }
 
-    if (user && (service as any).providerId === user.id) {
+    if (user && (service as any)._providerId === user.id) {
       toast.error("You cannot book your own service.");
       return;
     }
 
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: (service as any).providerId || service.id,
-        providerName: service.providerName,
-        providerType: service.providerType,
-        price: Number((service as any).price ?? 0),
-        image: service.image,
-        location: (service as any).city,
-        phone: (service as any).providerPhone
-      }
-    });
+    // Prepare service data with required fields
+    const serviceWithProviderInfo = {
+      ...service,
+      provider: service.providerName || providerUser?.name || providerName || 'Unknown Provider',
+      _providerType: providerType || service.providerType || 'doctor',
+      _providerId: providerId || service._providerId,
+      providerPhone: providerUser?.phone || service.providerPhone
+    };
+
+    setSelectedBookingService(serviceWithProviderInfo);
+    setIsBookingModalOpen(true);
   };
 
   const handleRateService = (service: Service) => {
@@ -955,6 +956,18 @@ const ProviderProfilePage = () => {
           serviceId={selectedRatingService.id}
           serviceName={selectedRatingService.name}
           serviceType={selectedRatingService.providerType}
+        />
+      )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={selectedBookingService}
         />
       )}
     </div>

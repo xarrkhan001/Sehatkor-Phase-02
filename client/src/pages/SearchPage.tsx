@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import { useSocket } from "@/context/SocketContext";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 
 interface SearchService extends Service {
   isReal?: boolean;
@@ -55,6 +56,8 @@ const SearchPage = () => {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<any>(null);
   const { socket } = useSocket();
   const { user, mode } = useAuth();
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
@@ -529,24 +532,25 @@ const SearchPage = () => {
     const timeLabel = getDisplayTimeInfo(service);
     const timeRange = getDisplayTimeRange(service);
 
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: (service as any)._providerId || service.id,
-        providerName: service.provider,
-        providerType: (service as any)._providerType,
-        price: Number(getDisplayPrice(service) ?? (service as any).price ?? 0),
-        currency: 'PKR',
-        image: getDisplayImage(service) || service.image,
-        location: getDisplayLocation(service) || service.location,
-        phone: (service as any).providerPhone,
-        // variant context
-        variantIndex: activeIdx,
-        variantLabel: timeLabel,
-        variantTimeRange: timeRange,
-      }
-    });
+    // Prepare service data for booking modal
+    const bookingService = {
+      id: service.id,
+      name: service.name,
+      provider: service.provider,
+      price: Number(getDisplayPrice(service) ?? (service as any).price ?? 0),
+      image: getDisplayImage(service) || service.image,
+      location: getDisplayLocation(service) || service.location,
+      _providerId: (service as any)._providerId || service.id,
+      _providerType: (service as any)._providerType,
+      providerPhone: (service as any).providerPhone,
+      // variant context
+      variantIndex: activeIdx,
+      variantLabel: timeLabel,
+      variantTimeRange: timeRange,
+    } as any;
+
+    setSelectedBookingService(bookingService);
+    setIsBookingModalOpen(true);
   };
 
   const { toggle: toggleGlobalCompare } = useCompare();
@@ -1145,7 +1149,7 @@ const SearchPage = () => {
                                   description: service.description,
                                   price: getDisplayPrice(service) ?? service.price,
                                   rating: service.rating ?? 0,
-                                  provider: service.providerName,
+                                  provider: service.provider,
                                   // active slide overrides
                                   image: getDisplayImage(service) || service.image,
                                   location: getDisplayLocation(service) || service.location,
@@ -1383,6 +1387,19 @@ const SearchPage = () => {
           serviceName={selectedService.name}
         />
       )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={selectedBookingService}
+        />
+      )}
+
       <CompareTray />
     </div>
   );

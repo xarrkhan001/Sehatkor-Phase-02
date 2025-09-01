@@ -745,7 +745,7 @@ const FloatingChat = () => {
         setTimeout(() => {
           try { connectionsSearchInputRef.current?.focus(); } catch {}
         }, 0);
-        toast({ title: 'Not connected', description: 'Connection section khula hai. Pehle request karo add hone ke liye.' });
+        toast({ title: 'Not connected', description: 'Connection section opened. Please send a request to connect first.' });
       } finally {
         setLoadingUsers(false);
       }

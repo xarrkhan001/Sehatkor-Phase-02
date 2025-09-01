@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 
 const DoctorsPage = () => {
   const navigate = useNavigate();
@@ -37,6 +38,8 @@ const DoctorsPage = () => {
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
   const [activeVariantIndex, setActiveVariantIndex] = useState<Record<string, number>>({});
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<any>(null);
   
   // Debug log when variant index changes
   useEffect(() => {
@@ -311,19 +314,17 @@ const DoctorsPage = () => {
       return;
     }
 
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: (service as any)._providerId || service.id,
-        providerName: service.provider,
-        providerType: 'doctor',
-        price: Number((service as any).price ?? 0),
-        image: service.image,
-        location: (service as any).location,
-        phone: (service as any).providerPhone
-      }
-    });
+    // Prepare service data with required fields
+    const serviceWithProviderInfo = {
+      ...service,
+      provider: service.provider || (service as any).providerName || 'Unknown Provider',
+      _providerType: 'doctor',
+      _providerId: (service as any)._providerId || service.id,
+      providerPhone: (service as any).providerPhone
+    };
+
+    setSelectedBookingService(serviceWithProviderInfo);
+    setIsBookingModalOpen(true);
   };
 
   const handleRateService = (service: Service) => {
@@ -791,44 +792,7 @@ const DoctorsPage = () => {
                   <Button
                     size="sm"
                     className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-                    onClick={() => {
-                      if (user && user.role !== 'patient' && mode !== 'patient') {
-                        toast.error('Providers must switch to Patient Mode to book services.', {
-                          description: 'Click your profile icon and use the toggle to switch modes.',
-                        });
-                        return;
-                      }
-
-                      if (user && (service as any)._providerId === user.id) {
-                        toast.error("You cannot book your own service.");
-                        return;
-                      }
-
-                      const disp = getDisplayForService(service);
-                      const slides = getSlides(service);
-                      const rawIdx = activeVariantIndex[service.id] ?? 0;
-                      const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
-                      const timeLabel = getDisplayTimeInfo(service);
-                      const timeRange = getDisplayTimeRange(service);
-
-                      navigate('/payment', {
-                        state: {
-                          serviceId: service.id,
-                          serviceName: service.name,
-                          providerId: (service as any)._providerId || service.id,
-                          providerName: service.provider,
-                          providerType: 'doctor',
-                          price: Number(disp.price ?? 0),
-                          currency: 'PKR',
-                          image: disp.image,
-                          location: disp.location,
-                          phone: (service as any).providerPhone,
-                          variantIndex: activeIdx,
-                          variantLabel: timeLabel,
-                          variantTimeRange: timeRange,
-                        }
-                      });
-                    }}
+                    onClick={() => handleBookNow(service)}
                   >
                     <Clock className="w-3 h-3 mr-1" /> Book
                   </Button>
@@ -969,6 +933,18 @@ const DoctorsPage = () => {
           serviceId={selectedRatingService.id}
           serviceName={selectedRatingService.name}
           serviceType="doctor"
+        />
+      )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={selectedBookingService}
         />
       )}
     </div>
