@@ -410,7 +410,7 @@ const AdminPanel = () => {
         {/* Stylish Navigation Header */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 w-full max-w-6xl">
               
               {/* Verify Entities Card */}
               <div 
@@ -460,6 +460,22 @@ const AdminPanel = () => {
                 </div>
               </div>
 
+              {/* User Management Card - DANGER */}
+              <div 
+                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-red-200 hover:border-red-300"
+                onClick={() => window.location.href = '/admin/user-management'}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <AlertTriangle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-red-600 transition-colors">User Management</h3>
+                    <p className="text-sm text-gray-500 mt-1">Remove verified users</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -473,7 +489,7 @@ const AdminPanel = () => {
               <p className="text-gray-600 mb-6">
                 Use the navigation cards above to access different admin sections
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                 <div className="flex items-center justify-center gap-2 text-green-600">
                   <UserCheck className="w-4 h-4" />
                   <span>Entity Verifications</span>
@@ -485,6 +501,10 @@ const AdminPanel = () => {
                 <div className="flex items-center justify-center gap-2 text-blue-600">
                   <CreditCard className="w-4 h-4" />
                   <span>Payment Management</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-red-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>User Management</span>
                 </div>
               </div>
             </div>

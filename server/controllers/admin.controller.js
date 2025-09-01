@@ -96,3 +96,69 @@ export const getPendingVerifications = async (req, res) => {
     res.status(500).json({ message: 'Error fetching pending verifications', error: error.message });
   }
 };
+
+// 👥 Get all verified users with pagination (including patients)
+export const getVerifiedUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const users = await User.find({
+      isVerified: true,
+      role: { $in: ['doctor', 'pharmacy', 'laboratory', 'clinic/hospital', 'patient'] }
+    })
+    .select('-password')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+    const totalUsers = await User.countDocuments({
+      isVerified: true,
+      role: { $in: ['doctor', 'pharmacy', 'laboratory', 'clinic/hospital', 'patient'] }
+    });
+
+    res.status(200).json({
+      users,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalUsers / limit),
+        totalUsers,
+        hasMore: skip + users.length < totalUsers
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching verified users', error: error.message });
+  }
+};
+
+// 🗑️ Delete a user permanently
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent deletion of admin users
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Cannot delete admin users' });
+    }
+
+    await User.findByIdAndDelete(userId);
+    
+    res.status(200).json({ 
+      message: 'User deleted successfully',
+      deletedUser: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting user', error: error.message });
+  }
+};

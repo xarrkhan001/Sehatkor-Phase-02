@@ -37,6 +37,7 @@ const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const AdminVerifications = lazy(() => import("./pages/AdminVerifications"));
 const AdminDocuments = lazy(() => import("./pages/AdminDocuments"));
 const AdminPayments = lazy(() => import("./pages/AdminPayments"));
+const AdminUserManagement = lazy(() => import("./pages/AdminUserManagement"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OAuthCallbackPage = lazy(() => import("./pages/auth/OAuthCallbackPage"));
 const DiseaseListPage = lazy(() => import("./pages/DiseaseListPage"));
@@ -98,6 +99,7 @@ const AppShell = () => {
             <Route path="/admin/verifications" element={<Suspense fallback={<AdminSkeleton />}><AdminVerifications /></Suspense>} />
             <Route path="/admin/documents" element={<Suspense fallback={<AdminSkeleton />}><AdminDocuments /></Suspense>} />
             <Route path="/admin/payments" element={<Suspense fallback={<AdminSkeleton />}><AdminPayments /></Suspense>} />
+            <Route path="/admin/user-management" element={<Suspense fallback={<AdminSkeleton />}><AdminUserManagement /></Suspense>} />
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
         </Suspense>
