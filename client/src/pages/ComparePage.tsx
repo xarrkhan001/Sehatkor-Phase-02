@@ -7,6 +7,7 @@ import { useCompare } from "@/contexts/CompareContext";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 
 type SortKey = "price" | "rating" | "location";
 
@@ -23,6 +24,8 @@ const ComparePage = () => {
   const [profileTick, setProfileTick] = useState(0);
   // Cache latest provider names from live updates (keyed by providerId)
   const [latestProviderNames, setLatestProviderNames] = useState<Record<string, string>>({});
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<any>(null);
 
   // Variant slider state per item
   const [activeIdxById, setActiveIdxById] = useState<Record<string, number>>({});
@@ -217,28 +220,18 @@ const ComparePage = () => {
       toast.error('You cannot book your own service.');
       return;
     }
-    const slides = getSlides(item);
-    const rawIdx = activeIdxById[item.id] ?? 0;
-    const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
-    const timeLabel = getDisplayTimeInfo(item);
-    const timeRange = getDisplayTimeRange(item);
-    navigate('/payment', {
-      state: {
-        serviceId: item.id,
-        serviceName: item.name,
-        providerId: (item as any)._providerId || item.id,
-        providerName: getDisplayProvider(item),
-        providerType: (item as any)._providerType,
-        price: Number(getDisplayPrice(item) ?? (item as any).price ?? 0),
-        currency: 'PKR',
-        image: getDisplayImage(item) || (item as any).image,
-        location: getDisplayLocation(item) || (item as any).location,
-        phone: (item as any).providerPhone,
-        variantIndex: activeIdx,
-        variantLabel: timeLabel,
-        variantTimeRange: timeRange,
-      }
-    });
+    
+    // Prepare service data with required fields
+    const serviceWithProviderInfo = {
+      ...item,
+      provider: getDisplayProvider(item) || item.provider || 'Unknown Provider',
+      _providerType: (item as any)._providerType || 'unknown',
+      _providerId: (item as any)._providerId || item.id,
+      providerPhone: (item as any).providerPhone
+    };
+
+    setSelectedBookingService(serviceWithProviderInfo);
+    setIsBookingModalOpen(true);
   };
 
   // Listen for provider profile update events; store latest names and trigger re-render
@@ -460,6 +453,18 @@ const ComparePage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={selectedBookingService}
+        />
       )}
     </div>
   );

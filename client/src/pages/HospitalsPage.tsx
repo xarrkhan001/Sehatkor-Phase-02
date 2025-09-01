@@ -16,6 +16,7 @@ import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 
 const HospitalsPage = () => {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ const HospitalsPage = () => {
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
   const [priceCache, setPriceCache] = useState<Record<string, number>>({});
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<any>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -325,19 +328,17 @@ const HospitalsPage = () => {
       return;
     }
 
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: (service as any)._providerId || service.id,
-        providerName: service.provider,
-        providerType: 'hospital',
-        price: Number((service as any).price ?? 0),
-        image: service.image,
-        location: (service as any).location,
-        phone: (service as any).providerPhone
-      }
-    });
+    // Prepare service data with required fields
+    const serviceWithProviderInfo = {
+      ...service,
+      provider: service.provider || (service as any).providerName || 'Unknown Provider',
+      _providerType: 'clinic',
+      _providerId: (service as any)._providerId || service.id,
+      providerPhone: (service as any).providerPhone
+    };
+
+    setSelectedBookingService(serviceWithProviderInfo);
+    setIsBookingModalOpen(true);
   };
 
   const getCoordinatesForLocation = (location: string) => {
@@ -624,10 +625,25 @@ const HospitalsPage = () => {
       {selectedRatingService && (
         <RatingModal
           isOpen={ratingModalOpen}
-          onClose={() => setRatingModalOpen(false)}
+          onClose={() => {
+            setRatingModalOpen(false);
+            setSelectedRatingService(null);
+          }}
           serviceId={selectedRatingService.id}
           serviceType="clinic"
           serviceName={selectedRatingService.name}
+        />
+      )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={selectedBookingService}
         />
       )}
     </div>

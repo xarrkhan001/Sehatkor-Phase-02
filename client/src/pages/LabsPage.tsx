@@ -16,6 +16,7 @@ import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 
 const LabsPage = () => {
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ const LabsPage = () => {
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Service | null>(null);
   const [priceCache, setPriceCache] = useState<Record<string, number>>({});
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<any>(null);
 
   const { user, mode } = useAuth();
   const { socket } = useSocket();
@@ -336,7 +339,6 @@ const LabsPage = () => {
     setRatingModalOpen(true);
   };
 
-
   const handleBookNow = (service: Service) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
@@ -350,19 +352,17 @@ const LabsPage = () => {
       return;
     }
 
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: (service as any)._providerId || service.id,
-        providerName: service.provider,
-        providerType: 'lab',
-        price: Number((service as any).price ?? 0),
-        image: service.image,
-        location: (service as any).location,
-        phone: (service as any).providerPhone
-      }
-    });
+    // Prepare service data with required fields
+    const serviceWithProviderInfo = {
+      ...service,
+      provider: service.provider || (service as any).providerName || 'Unknown Provider',
+      _providerType: 'laboratory',
+      _providerId: (service as any)._providerId || service.id,
+      providerPhone: (service as any).providerPhone
+    };
+
+    setSelectedBookingService(serviceWithProviderInfo);
+    setIsBookingModalOpen(true);
   };
 
   const getCoordinatesForLocation = (location: string) => {
@@ -680,6 +680,18 @@ const LabsPage = () => {
           serviceId={selectedRatingService.id}
           serviceType="laboratory"
           serviceName={selectedRatingService.name}
+        />
+      )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={selectedBookingService}
         />
       )}
     </div>
