@@ -18,6 +18,7 @@ import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
 
 const HospitalsPage = () => {
   const navigate = useNavigate();
@@ -514,22 +515,6 @@ const HospitalsPage = () => {
                       >
                         {service.type}
                       </Badge>
-                      {(service as any).availability && (
-                        <Badge
-                          className={`${
-                            (service as any).availability === 'Online'
-                              ? 'bg-emerald-600'
-                              : (service as any).availability === 'Physical'
-                              ? 'bg-purple-600'
-                              : 'bg-teal-600'
-                          } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                        >
-                          {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
-                        </Badge>
-                      )}
-                      {(service as any).serviceType && (
-                        <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
-                      )}
                     </div>
                   </div>
                 </div>
@@ -537,7 +522,7 @@ const HospitalsPage = () => {
                 {/* Description */}
                 <p className="text-sm text-gray-600 mb-4 line-clamp-2">{service.description}</p>
 
-                {/* Rating, Location, WhatsApp */}
+                {/* Rating, Location, WhatsApp, Availability, Service Type */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                   <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} ratingBadge={(service as any).ratingBadge} yourBadge={(service as any).myBadge || null} size="sm" />
                   <div className="flex items-center gap-1 text-gray-500">
@@ -551,6 +536,12 @@ const HospitalsPage = () => {
                       providerName={service.provider}
                       providerId={(service as any)._providerId}
                     />
+                  )}
+                  {(service as any).availability && (
+                    <AvailabilityBadge availability={(service as any).availability} size="sm" />
+                  )}
+                  {(service as any).serviceType && (
+                    <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                   )}
                 </div>
 

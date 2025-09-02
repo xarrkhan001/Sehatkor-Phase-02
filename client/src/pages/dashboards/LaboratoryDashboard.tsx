@@ -868,16 +868,16 @@ const LaboratoryDashboard = () => {
               <TabsContent value="tests">
                 <div className="space-y-6">
                   {/* Lab Tests Management */}
-                  <Card className="card-healthcare">
-                    <CardHeader>
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl">
+                    <CardHeader className="bg-gradient-to-r from-blue-400 to-indigo-500 text-white rounded-t-lg">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
-                          <CardTitle>Lab Tests</CardTitle>
-                          <CardDescription>Manage your diagnostic tests and pricing</CardDescription>
+                          <CardTitle className="text-white flex items-center gap-2">Lab Tests</CardTitle>
+                          <CardDescription className="text-blue-100">Manage your diagnostic tests and pricing</CardDescription>
                         </div>
                         <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
                           <DialogTrigger asChild>
-                            <Button className="w-full sm:w-auto">
+                            <Button className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300">
                               <Plus className="w-4 h-4 mr-2" />
                               Add Test
                             </Button>

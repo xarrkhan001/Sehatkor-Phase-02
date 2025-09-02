@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock, Star } from "lucide-react";
+
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +19,7 @@ import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
 
 const LabsPage = () => {
   const navigate = useNavigate();
@@ -37,20 +39,6 @@ const LabsPage = () => {
 
   const { user, mode } = useAuth();
   const { socket } = useSocket();
-
-  const getAvailabilityBadgeStyles = (availability?: string) => {
-    // Match Pharmacy style: solid color backgrounds with white text
-    switch (availability) {
-      case 'Online':
-        return 'bg-emerald-600';
-      case 'Physical':
-        return 'bg-purple-600';
-      case 'Online and Physical':
-        return 'bg-teal-600';
-      default:
-        return 'bg-gray-400';
-    }
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -535,17 +523,6 @@ const LabsPage = () => {
                       >
                         {service.type}
                       </Badge>
-                      {(service as any).availability && (
-                        <Badge
-                          className={`${getAvailabilityBadgeStyles((service as any).availability)} text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                          title={`Availability: ${(service as any).availability}`}
-                        >
-                          {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
-                        </Badge>
-                      )}
-                      {(service as any).serviceType && (
-                        <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
-                      )}
                     </div>
                   </div>
                 </div>
@@ -555,7 +532,7 @@ const LabsPage = () => {
                   {service.description}
                 </p>
 
-                {/* Rating, Location, WhatsApp */}
+                {/* Rating, Location, WhatsApp, Availability, Service Type */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                   <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} ratingBadge={(service as any).ratingBadge} yourBadge={(service as any).myBadge || null} size="sm" />
                   <div className="flex items-center gap-1 text-gray-500">
@@ -569,6 +546,12 @@ const LabsPage = () => {
                       providerName={service.provider}
                       providerId={(service as any)._providerId}
                     />
+                  )}
+                  {(service as any).availability && (
+                    <AvailabilityBadge availability={(service as any).availability} size="sm" />
+                  )}
+                  {(service as any).serviceType && (
+                    <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                   )}
                 </div>
 

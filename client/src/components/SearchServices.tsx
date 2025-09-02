@@ -503,7 +503,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                             serviceType: service.serviceType,
                             shouldShow: (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic') && service.serviceType
                           });
-                          return (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic') && service.serviceType;
+                          return (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic' || service.providerType === 'doctor') && service.serviceType;
                         })() && (
                           <ServiceTypeBadge serviceType={service.serviceType} size="sm" />
                         )}
