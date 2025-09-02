@@ -417,12 +417,13 @@ const CompareExplorer = () => {
   const bestRated = useMemo(() => (selected.length ? [...selected].sort((a, b) => b.rating - a.rating)[0] : undefined), [selected]);
 
   return (
-    <section className="mt-12 bg-gradient-to-br from-rose-50 via-sky-50 to-emerald-50 bg-fixed py-8 mx-[calc(50%-50vw)]">
-      {/* Fixed top and bottom gradient bands */}
-      <div className="pointer-events-none fixed inset-x-0 top-0 h-40 bg-gradient-to-b from-rose-50 via-sky-50 to-transparent -z-10" />
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-50 via-sky-50 to-transparent -z-10" />
-      <Card className="border-0 shadow-none bg-transparent">
-        <CardContent>
+    <div 
+      className="py-8 px-4 sm:px-6 lg:px-8 rounded-2xl"
+      style={{
+        backgroundColor: 'rgba(225, 236, 255, 0.9)'
+      }}
+    >
+      <div className="container mx-auto max-w-7xl">
           {/* Centered Search Section */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-xl">
@@ -920,8 +921,7 @@ const CompareExplorer = () => {
               </Card>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </div>
       {showLocationMap && currentMapService && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
@@ -974,7 +974,7 @@ const CompareExplorer = () => {
           serviceName={selectedRatingService.name}
         />
       )}
-    </section>
+    </div>
   );
 };
 
