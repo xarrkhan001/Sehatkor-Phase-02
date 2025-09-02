@@ -21,6 +21,7 @@ import paymentRoutes from "./routes/payment.routes.js";
 import ratingRoutes from "./routes/rating.routes.js";
 import documentRoutes from "./routes/document.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
+import partnerRoutes from "./routes/partner.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import {
   registerUserSocket,
@@ -76,6 +77,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api", contactRoutes);
+app.use("/api", partnerRoutes);
 
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
 app.get("/auth/facebook/callback", facebookCallback);
@@ -249,7 +251,7 @@ io.on("connection", (socket) => {
 
   socket.on("submit_rating", async (payload, callback) => {
     try {
-      console.log('Received rating payload:', payload); // Debug log
+      console.log("Received rating payload:", payload); // Debug log
       const { serviceId, serviceType, rating, stars } = payload || {};
       if (!serviceId || !serviceType || !rating) {
         return callback?.({ success: false, error: "Missing required fields" });
@@ -272,14 +274,24 @@ io.on("connection", (socket) => {
           for (const r of service.ratings) {
             if (!r) continue;
             const raw = (r.rating || "").toString().trim().toLowerCase();
-            if (raw === "very good") { r.rating = "Good"; didChange = true; }
-            else if (raw === "normal") { r.rating = "Fair"; didChange = true; }
-            else if (raw === "excellent") { r.rating = "Excellent"; }
-            else if (raw === "good") { r.rating = "Good"; }
-            else if (raw === "fair") { r.rating = "Fair"; }
+            if (raw === "very good") {
+              r.rating = "Good";
+              didChange = true;
+            } else if (raw === "normal") {
+              r.rating = "Fair";
+              didChange = true;
+            } else if (raw === "excellent") {
+              r.rating = "Excellent";
+            } else if (raw === "good") {
+              r.rating = "Good";
+            } else if (raw === "fair") {
+              r.rating = "Fair";
+            }
           }
           if (didChange) {
-            try { service.markModified && service.markModified("ratings"); } catch {}
+            try {
+              service.markModified && service.markModified("ratings");
+            } catch {}
             await service.save();
           }
         }
@@ -311,11 +323,12 @@ io.on("connection", (socket) => {
 
       const valueToBadge = (valueOrTitle, maybeStars) => {
         // prefer explicit stars if provided; otherwise derive from title
-        const n = typeof valueOrTitle === 'number' && valueOrTitle > 0
-          ? valueOrTitle
-          : (typeof maybeStars === 'number' && maybeStars > 0
+        const n =
+          typeof valueOrTitle === "number" && valueOrTitle > 0
+            ? valueOrTitle
+            : typeof maybeStars === "number" && maybeStars > 0
             ? maybeStars
-            : titleToNumeric(valueOrTitle));
+            : titleToNumeric(valueOrTitle);
         if (n >= 4.5) return "excellent";
         if (n >= 3.5) return "good";
         if (n > 0) return "fair";
@@ -323,7 +336,7 @@ io.on("connection", (socket) => {
       };
 
       const titleInput = toTitle(rating);
-      console.log('Rating input:', rating, 'Title output:', titleInput); // Debug log
+      console.log("Rating input:", rating, "Title output:", titleInput); // Debug log
 
       // Upsert the user's rating (update if exists, otherwise push)
       if (!Array.isArray(service.ratings)) service.ratings = [];
@@ -343,7 +356,11 @@ io.on("connection", (socket) => {
           if (!isNaN(s) && s >= 1 && s <= 5) doc.stars = s;
         } catch {}
         // Ensure doc conforms to enum before push (defensive)
-        if (doc.rating !== "Excellent" && doc.rating !== "Good" && doc.rating !== "Fair") {
+        if (
+          doc.rating !== "Excellent" &&
+          doc.rating !== "Good" &&
+          doc.rating !== "Fair"
+        ) {
           doc.rating = "Fair";
         }
         service.ratings.push(doc);
@@ -389,9 +406,15 @@ io.on("connection", (socket) => {
       if (!ratingBadge) ratingBadge = toCategory(averageRating) || null;
 
       // Persist if model contains these fields (safe assigns)
-      try { service.rating = averageRating; } catch {}
-      try { service.totalRatings = totalRatings; } catch {}
-      try { service.ratingBadge = ratingBadge; } catch {}
+      try {
+        service.rating = averageRating;
+      } catch {}
+      try {
+        service.totalRatings = totalRatings;
+      } catch {}
+      try {
+        service.ratingBadge = ratingBadge;
+      } catch {}
       await service.save();
 
       // Broadcast the updated rating to all clients

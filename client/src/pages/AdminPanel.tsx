@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,74 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminPaymentDashboard from "@/components/AdminPaymentDashboard";
+import { apiUrl } from "@/config/api";
+import { Input as UiInput } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
+type AddPartnerPayload = { name: string; logo: File };
+
+const AddPartnerDialog = memo(function AddPartnerDialog({
+  open,
+  onOpenChange,
+  onSave
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onSave: (payload: AddPartnerPayload) => Promise<void> | void;
+}) {
+  const [name, setName] = useState("");
+  const [logo, setLogo] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  const handleFile = useCallback((file: File | null) => {
+    setLogo(file);
+    setPreviewUrl(file ? URL.createObjectURL(file) : "");
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!name.trim() || !logo) return;
+    await onSave({ name: name.trim(), logo });
+    // reset after successful save
+    setName("");
+    setLogo(null);
+    setPreviewUrl("");
+    onOpenChange(false);
+  }, [name, logo, onSave, onOpenChange]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button>Add Partner</Button>
+      </DialogTrigger>
+      <DialogContent onOpenAutoFocus={(e)=>e.preventDefault()} onPointerDownOutside={(e)=>e.preventDefault()} onInteractOutside={(e)=>e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>Add Partner</DialogTitle>
+          <DialogDescription>Provide company name and PNG logo.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Company Name</label>
+            <UiInput autoComplete="off" value={name} onChange={(e:any)=>setName(e.target.value)} placeholder="e.g., TCS" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">PNG Logo</label>
+            <input type="file" accept="image/png" onChange={(e:any)=> handleFile(e.target.files?.[0]||null)} />
+            {previewUrl && (
+              <div className="mt-2 flex items-center gap-3">
+                <img src={previewUrl} className="h-16 w-16 rounded-full object-contain ring-1 ring-gray-200" />
+                <span className="text-sm text-gray-600">Preview</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={handleSave}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+});
 
 const AdminPanel = () => {
   // Simple in-page gate for /admin route
@@ -85,6 +153,8 @@ const AdminPanel = () => {
     totalHospitals: 0
   });
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
+  const [partners, setPartners] = useState<any[]>([]);
+  const [openAddModal, setOpenAddModal] = useState(false);
 
   // Fetch pending users from backend
   const fetchPendingUsers = async () => {
@@ -146,6 +216,7 @@ const AdminPanel = () => {
     fetchPendingUsers(); 
     fetchAdminStats();
     fetchPendingDocuments();
+    fetchPartners();
   }, []);
 
   const statsData = [
@@ -166,6 +237,87 @@ const AdminPanel = () => {
     if (!url) return '#';
     // Add fl_attachment flag to Cloudinary URL to force download
     return url.replace('/upload/', '/upload/fl_attachment/');
+  };
+
+  const PartnerManager = () => (
+    <Card className="shadow-sm">
+      <CardHeader>
+        <CardTitle>Marquee Partners</CardTitle>
+        <CardDescription>Upload PNG logos with company names. Stored on Cloudinary.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex justify-between items-center" id="partners-section">
+          <h3 className="font-semibold">Add New Partner</h3>
+          <AddPartnerDialog open={openAddModal} onOpenChange={setOpenAddModal} onSave={({name, logo})=>handleCreatePartner(name, logo)} />
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Logo</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {(partners||[]).map((p:any)=> (
+              <TableRow key={p._id}>
+                <TableCell>
+                  <img src={p.logoUrl} alt={p.name} className="h-12 w-12 rounded-full object-contain" />
+                </TableCell>
+                <TableCell>
+                  <UiInput defaultValue={p.name} onBlur={(e:any)=>handleReplaceLogo(p._id, null, e.target.value)} />
+                </TableCell>
+                <TableCell className="space-x-2">
+                  <input type="file" accept="image/png" onChange={(e:any)=>handleReplaceLogo(p._id, e.target.files?.[0]||null)} />
+                  <Button variant="destructive" onClick={()=>handleDeletePartner(p._id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+
+  const fetchPartners = async () => {
+    try {
+      const res = await fetch(apiUrl('/api/partners'));
+      const data = await res.json();
+      if (res.ok && data?.success) setPartners(data.partners || []);
+    } catch {}
+  };
+
+  const handleCreatePartner = async (name: string, logo: File) => {
+    if (!name || !logo) return toast({ title: 'Missing', description: 'Name and PNG logo required', variant: 'destructive' });
+    const fd = new FormData();
+    fd.append('name', name);
+    fd.append('logo', logo);
+    const res = await fetch(apiUrl('/api/partners'), { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) return toast({ title: 'Error', description: data?.message || 'Failed', variant: 'destructive' });
+    toast({ title: 'Added', description: 'Partner created' });
+    fetchPartners();
+  };
+
+  const handleReplaceLogo = async (id: string, file: File | null, name?: string) => {
+    if (!file && !name) return;
+    const fd = new FormData();
+    if (name) fd.append('name', name);
+    if (file) fd.append('logo', file);
+    const res = await fetch(apiUrl(`/api/partners/${id}`), { method: 'PUT', body: fd });
+    const data = await res.json();
+    if (!res.ok) return toast({ title: 'Update failed', description: data?.message || 'Try again', variant: 'destructive' });
+    toast({ title: 'Updated', description: 'Partner updated' });
+    fetchPartners();
+  };
+
+  const handleDeletePartner = async (id: string) => {
+    const res = await fetch(apiUrl(`/api/partners/${id}`), { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) return toast({ title: 'Delete failed', description: data?.message || 'Try again', variant: 'destructive' });
+    toast({ title: 'Deleted', description: 'Partner removed' });
+    fetchPartners();
   };
 
   // Documents: fetch pending
@@ -476,9 +628,27 @@ const AdminPanel = () => {
                 </div>
               </div>
 
+              {/* Partners Manager Card */}
+              <div 
+                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200"
+                onClick={() => { window.location.href = '/admin/partners'; }}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">Partners Marquee</h3>
+                    <p className="text-sm text-gray-500 mt-1">Add logos and names</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
+
+        {/* Partner Manager moved to separate page: /admin/partners */}
 
         {/* Welcome Message */}
         <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200">

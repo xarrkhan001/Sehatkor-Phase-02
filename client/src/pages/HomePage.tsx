@@ -96,25 +96,33 @@ const HomePage = () => {
       icon: Stethoscope,
       title: "Medical Treatments",
       description: "Find doctors and clinics for all types of medical treatments",
-      color: "text-blue-500"
+      color: "text-blue-700",
+      bgGradient: "bg-gradient-to-br from-blue-100 via-blue-200 to-indigo-200",
+      hoverGradient: "hover:from-blue-200 hover:via-blue-250 hover:to-indigo-250"
     },
     {
       icon: TestTube,
       title: "Lab Tests",
       description: "Book lab tests and get results delivered to your home",
-      color: "text-green-500"
+      color: "text-emerald-700",
+      bgGradient: "bg-gradient-to-br from-emerald-100 via-green-200 to-teal-200",
+      hoverGradient: "hover:from-emerald-200 hover:via-green-250 hover:to-teal-250"
     },
     {
       icon: Pill,
       title: "Medicines",
       description: "Order medicines online with home delivery options",
-      color: "text-purple-500"
+      color: "text-purple-700",
+      bgGradient: "bg-gradient-to-br from-purple-100 via-violet-200 to-indigo-200",
+      hoverGradient: "hover:from-purple-200 hover:via-violet-250 hover:to-indigo-250"
     },
     {
       icon: Scissors,
       title: "Surgeries",
       description: "Find qualified surgeons and surgical facilities",
-      color: "text-red-500"
+      color: "text-orange-700",
+      bgGradient: "bg-gradient-to-br from-orange-100 via-amber-200 to-yellow-200",
+      hoverGradient: "hover:from-orange-200 hover:via-amber-250 hover:to-yellow-250"
     }
   ];
 
@@ -300,18 +308,24 @@ const HomePage = () => {
             {services.map((service, index) => {
               const Icon = service.icon;
               return (
-                <Card key={index} className="card-healthcare hover:shadow-medium transition-all duration-300 border-0">
-                  <CardHeader className="text-center pb-3 sm:pb-4">
-                    <div className="mx-auto mb-3 sm:mb-4 w-12 h-12 sm:w-16 sm:h-16 bg-accent rounded-full flex items-center justify-center">
-                      <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${service.color}`} />
+                <Card key={index} className={`group relative overflow-hidden border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 ${service.bgGradient} ${service.hoverGradient}`}>
+                  {/* Subtle overlay for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-gray-50/20 pointer-events-none"></div>
+                  
+                  <CardHeader className="relative text-center pb-3 sm:pb-4 pt-6">
+                    <div className="mx-auto mb-4 w-16 h-16 sm:w-20 sm:h-20 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm border border-white/60 group-hover:scale-105 transition-transform duration-300">
+                      <Icon className={`w-8 h-8 sm:w-10 sm:h-10 ${service.color}`} />
                     </div>
-                    <CardTitle className="text-lg sm:text-xl">{service.title}</CardTitle>
+                    <CardTitle className="text-xl sm:text-2xl font-semibold text-gray-800">{service.title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-center">
-                    <CardDescription className="text-sm sm:text-base leading-relaxed">
+                  <CardContent className="relative text-center pb-6">
+                    <CardDescription className="text-sm sm:text-base leading-relaxed text-gray-600 font-normal">
                       {service.description}
                     </CardDescription>
                   </CardContent>
+                  
+                  {/* Subtle shine effect on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none"></div>
                 </Card>
               );
             })}
@@ -320,22 +334,52 @@ const HomePage = () => {
       </section>
 
       {/* Comparison Explorer (styled section) */}
-      <section className="py-16 bg-gradient-to-br from-rose-50 via-sky-50 to-emerald-50 bg-fixed mx-[calc(50%-50vw)]">
-        {/* Fixed top/bottom gradient bands to blend into viewport edges */}
-        <div className="pointer-events-none fixed inset-x-0 top-0 h-40 bg-gradient-to-b from-rose-50 via-sky-50 to-transparent -z-10" />
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-50 via-sky-50 to-transparent -z-10" />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 text-center">
-            <Badge variant="secondary" className="mb-2">Smart Compare</Badge>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Compare Providers for the Same Service</h2>
-            <p className="text-muted-foreground mt-2">Pick the same product across providers and see price, location, and rating differences</p>
+      <section 
+        className="relative py-20 sm:py-24 overflow-hidden animate-gradient-x"
+        style={{
+          backgroundColor: '#e1ecff'
+        }}
+      >
+        {/* Subtle overlay */}
+        <div className="absolute inset-0 bg-blue-100/10"></div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl animate-bounce"></div>
+        <div className="absolute bottom-10 right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-white/8 rounded-full blur-lg animate-ping"></div>
+        
+        {/* Glass morphism container */}
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="mb-8 text-center">
+            <Badge 
+              variant="secondary" 
+              className="mb-4 bg-white/40 backdrop-blur-sm border-white/50 text-gray-800 hover:bg-white/60 transition-all duration-300"
+            >
+              Smart Compare
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 mb-4 drop-shadow-lg">
+              Compare Providers for the Same Service
+            </h2>
+            <p className="text-gray-700 text-lg sm:text-xl mt-4 max-w-3xl mx-auto drop-shadow-md">
+              Pick the same product across providers and see price, location, and rating differences
+            </p>
           </div>
-          <CompareExplorer />
+          
+          {/* Content wrapper with gradient glass effect */}
+          <div 
+            className="backdrop-blur-md rounded-2xl border border-white/40 shadow-xl p-6 sm:p-8"
+            style={{
+              backgroundColor: 'rgba(225, 236, 255, 0.8)'
+            }}
+          >
+            <CompareExplorer />
+          </div>
         </div>
+
       </section>
 
       {/* Partners Marquee below the compare section */}
-      <PartnersMarquee />
+      <PartnersMarquee speed="normal" />
 
       {/* Features Section */}
       <section className="py-16 sm:py-20 bg-white">

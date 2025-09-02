@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 import {
   ShieldCheck,
   Building2,
@@ -49,14 +50,49 @@ const normalizePartners = (items?: Array<string | Partner>): Partner[] => {
   return base;
 };
 
-const PartnersMarquee = ({ title = "Our Partners", partners, speed = "normal" }: PartnersMarqueeProps) => {
-  const normalized = normalizePartners(partners);
+const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: PartnersMarqueeProps) => {
+  const [remotePartners, setRemotePartners] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { apiUrl } = await import("@/config/api");
+        const res = await fetch(apiUrl('/api/partners'));
+        const data = await res.json();
+        if (!cancelled && data?.success && Array.isArray(data.partners)) {
+          setRemotePartners(data.partners);
+        }
+      } catch {}
+      finally { if (!cancelled) setLoaded(true); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Remote partners first, then presets as fallback to fill space
+  const gradients = [
+    ["from-emerald-500","to-teal-500"],
+    ["from-green-500","to-lime-500"],
+    ["from-sky-500","to-blue-500"],
+    ["from-indigo-500","to-sky-500"],
+    ["from-violet-500","to-fuchsia-500"],
+    ["from-amber-500","to-yellow-500"],
+    ["from-rose-500","to-orange-500"],
+  ];
+  const priorityList: Partner[] = (remotePartners || []).map((p, i) => ({
+    name: p.name,
+    logoUrl: p.logoUrl,
+    gradientFrom: gradients[i % gradients.length][0],
+    gradientTo: gradients[i % gradients.length][1]
+  }));
+  const normalized = normalizePartners(priorityList.length > 0 ? priorityList : partners);
   
   // Animation duration based on speed prop
   const animationDuration = {
-    slow: "60s",
-    normal: "40s",
-    fast: "20s"
+    slow: "50s",
+    normal: "30s",
+    fast: "18s"
   }[speed];
 
   return (
@@ -75,20 +111,36 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "normal" }:
           <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-gray-50 to-transparent z-10" />
 
           <div 
-            className="flex items-center py-9 sm:py-11 w-max"
-            style={{
-              animation: `marquee ${animationDuration} linear infinite`,
-            }}
+            className="flex items-center py-9 sm:py-11 w-max will-change-transform"
+            style={{ animation: `marquee ${animationDuration} linear infinite` }}
           >
+            {/* First copy */}
             <div className="flex items-center gap-8 sm:gap-10">
               {normalized.map((p, idx) => (
                 <div key={`${p.name}-${idx}`} className="shrink-0 flex items-center gap-5 sm:gap-6 px-4 sm:px-5 py-2 sm:py-3">
                   <div className={`relative overflow-hidden h-16 w-16 sm:h-20 sm:w-20 rounded-full grid place-items-center ring-2 ring-white/70 shadow-lg bg-gradient-to-tr ${p.gradientFrom ?? "from-sky-500"} ${p.gradientTo ?? "to-blue-500"}`}>
                     <div className="pointer-events-none absolute inset-0 opacity-25 bg-[radial-gradient(60%_60%_at_30%_30%,white,transparent)]" />
-                    {p.logoUrl && (
-                      <img src={p.logoUrl} alt={p.name} className="absolute inset-0 h-full w-full object-contain p-2 opacity-20" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    {p.logoUrl ? (
+                      <img src={p.logoUrl} alt={p.name} className="absolute inset-0 h-full w-full object-contain p-2" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    ) : (
+                      <div className="relative z-10 drop-shadow-md">{getIconFor(p.name)}</div>
                     )}
-                    <div className="relative z-10 drop-shadow-md">{getIconFor(p.name)}</div>
+                  </div>
+                  <span className="whitespace-nowrap text-base sm:text-2xl font-semibold tracking-wide text-foreground/90">{p.name}</span>
+                </div>
+              ))}
+            </div>
+            {/* Second copy for seamless loop */}
+            <div className="flex items-center gap-8 sm:gap-10" aria-hidden="true">
+              {normalized.map((p, idx) => (
+                <div key={`dup-${p.name}-${idx}`} className="shrink-0 flex items-center gap-5 sm:gap-6 px-4 sm:px-5 py-2 sm:py-3">
+                  <div className={`relative overflow-hidden h-16 w-16 sm:h-20 sm:w-20 rounded-full grid place-items-center ring-2 ring-white/70 shadow-lg bg-gradient-to-tr ${p.gradientFrom ?? "from-sky-500"} ${p.gradientTo ?? "to-blue-500"}`}>
+                    <div className="pointer-events-none absolute inset-0 opacity-25 bg-[radial-gradient(60%_60%_at_30%_30%,white,transparent)]" />
+                    {p.logoUrl ? (
+                      <img src={p.logoUrl} alt="" className="absolute inset-0 h-full w-full object-contain p-2" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    ) : (
+                      <div className="relative z-10 drop-shadow-md">{getIconFor(p.name)}</div>
+                    )}
                   </div>
                   <span className="whitespace-nowrap text-base sm:text-2xl font-semibold tracking-wide text-foreground/90">{p.name}</span>
                 </div>
