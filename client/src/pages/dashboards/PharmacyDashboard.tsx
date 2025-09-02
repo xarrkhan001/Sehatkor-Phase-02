@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -77,7 +79,8 @@ const PharmacyDashboard = () => {
     googleMapLink: '',
     city: '',
     detailAddress: '',
-    availability: 'Physical'
+    availability: 'Physical',
+    serviceType: 'Private'
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -91,7 +94,8 @@ const PharmacyDashboard = () => {
     googleMapLink: '',
     city: '',
     detailAddress: '',
-    availability: 'Physical'
+    availability: 'Physical',
+    serviceType: 'Private'
   });
 
   const medicineCategories = [
@@ -121,6 +125,7 @@ const PharmacyDashboard = () => {
         city: d.city,
         detailAddress: d.detailAddress,
         availability: d.availability || 'Physical',
+        serviceType: d.serviceType || 'Private',
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
@@ -153,6 +158,7 @@ const PharmacyDashboard = () => {
         providerName: d.providerName || (user?.name || 'Pharmacy'),
         providerType: 'pharmacy' as const,
         availability: d.availability || 'Physical',
+        serviceType: d.serviceType || 'Private',
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }));
@@ -362,6 +368,7 @@ const PharmacyDashboard = () => {
         city: medicineForm.city,
         detailAddress: medicineForm.detailAddress,
         availability: medicineForm.availability,
+        serviceType: medicineForm.serviceType,
         providerName: user?.name || 'Pharmacy',
       });
 
@@ -383,7 +390,7 @@ const PharmacyDashboard = () => {
       ServiceManager.addService(newMedicine);
 
       // Reset form
-      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical' });
+      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private' });
       setMedicineImagePreview('');
       setMedicineImageFile(null);
       setIsAddMedicineOpen(false);
@@ -427,7 +434,8 @@ const PharmacyDashboard = () => {
       googleMapLink: m.googleMapLink || '',
       city: m.city || '',
       detailAddress: m.detailAddress || '',
-      availability: m.availability || 'Physical'
+      availability: m.availability || 'Physical',
+      serviceType: m.serviceType || 'Private'
     });
     setEditImagePreview(m.imageUrl || m.image || '');
     setEditImageFile(null);
@@ -462,6 +470,7 @@ const PharmacyDashboard = () => {
         city: editForm.city,
         detailAddress: editForm.detailAddress,
         availability: editForm.availability,
+        serviceType: editForm.serviceType,
       });
       // refresh from backend and sync ServiceManager
       await reloadMedicines();
@@ -722,15 +731,91 @@ const PharmacyDashboard = () => {
                               </div>
                             </div>
                             
+                            {/* Service Type Selection */}
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Service Type</h4>
+                              <div className="space-y-2">
+                                <Label>What type of service is this? *</Label>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Private"
+                                      checked={medicineForm.serviceType === 'Private'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, serviceType: e.target.value })}
+                                      className="text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm font-medium">Private</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Public"
+                                      checked={medicineForm.serviceType === 'Public'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, serviceType: e.target.value })}
+                                      className="text-green-600 focus:ring-green-500"
+                                    />
+                                    <span className="text-sm font-medium">Public</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Charity"
+                                      checked={medicineForm.serviceType === 'Charity'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, serviceType: e.target.value })}
+                                      className="text-orange-600 focus:ring-orange-500"
+                                    />
+                                    <span className="text-sm font-medium">Charity</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="NGO"
+                                      checked={medicineForm.serviceType === 'NGO'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, serviceType: e.target.value })}
+                                      className="text-pink-600 focus:ring-pink-500"
+                                    />
+                                    <span className="text-sm font-medium">NGO</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Sehat Card"
+                                      checked={medicineForm.serviceType === 'Sehat Card'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, serviceType: e.target.value })}
+                                      className="text-purple-600 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm font-medium">Sehat Card</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="NPO"
+                                      checked={medicineForm.serviceType === 'NPO'}
+                                      onChange={(e) => setMedicineForm({ ...medicineForm, serviceType: e.target.value })}
+                                      className="text-teal-600 focus:ring-teal-500"
+                                    />
+                                    <span className="text-sm font-medium">NPO</span>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                            
                             {/* Location Fields */}
                             <div className="space-y-3 border-t pt-3">
                               <h4 className="font-medium text-sm">Location Information</h4>
                               <div>
-                                <Label htmlFor="editMedicineCity">City</Label>
+                                <Label htmlFor="medicineCity">City</Label>
                                 <Input
-                                  id="editMedicineCity"
-                                  value={editForm.city}
-                                  onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                                  id="medicineCity"
+                                  value={medicineForm.city}
+                                  onChange={(e) => setMedicineForm({ ...medicineForm, city: e.target.value })}
                                   placeholder="e.g., Karachi"
                                 />
                               </div>
@@ -795,17 +880,10 @@ const PharmacyDashboard = () => {
                                   <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
                                   <span className="text-muted-foreground">Stock: {m.stock ?? '-'}</span>
                                   {m.availability && (
-                                    <Badge
-                                      className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
-                                        m.availability === 'Online'
-                                          ? 'bg-emerald-600'
-                                          : m.availability === 'Physical'
-                                          ? 'bg-purple-600'
-                                          : 'bg-teal-600'
-                                      }`}
-                                    >
-                                      {m.availability}
-                                    </Badge>
+                                    <AvailabilityBadge availability={m.availability} size="sm" />
+                                  )}
+                                  {m.serviceType && (
+                                    <ServiceTypeBadge serviceType={m.serviceType} size="sm" />
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -832,6 +910,7 @@ const PharmacyDashboard = () => {
                                 <TableHead>Price (PKR)</TableHead>
                                 <TableHead>Stock</TableHead>
                                 <TableHead>Availability</TableHead>
+                                <TableHead>Service Type</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -853,17 +932,14 @@ const PharmacyDashboard = () => {
                                     <TableCell>{m.stock ?? '-'}</TableCell>
                                     <TableCell>
                                       {m.availability ? (
-                                        <Badge
-                                          className={`${
-                                            m.availability === 'Online'
-                                              ? 'bg-emerald-600'
-                                              : m.availability === 'Physical'
-                                              ? 'bg-purple-600'
-                                              : 'bg-teal-600'
-                                          } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                                        >
-                                          {m.availability === 'Online and Physical' ? 'Online & Physical' : m.availability}
-                                        </Badge>
+                                        <AvailabilityBadge availability={m.availability} size="md" />
+                                      ) : (
+                                        '-'
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      {m.serviceType ? (
+                                        <ServiceTypeBadge serviceType={m.serviceType} size="md" />
                                       ) : (
                                         '-'
                                       )}
@@ -1101,6 +1177,82 @@ const PharmacyDashboard = () => {
                             className="text-primary focus:ring-primary"
                           />
                           <span className="text-sm">Online and Physical - Both options available</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Service Type Selection */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Service Type</h4>
+                    <div className="space-y-2">
+                      <Label>What type of service is this? *</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Private"
+                            checked={editForm.serviceType === 'Private'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value })}
+                            className="text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm font-medium">Private</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Public"
+                            checked={editForm.serviceType === 'Public'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value })}
+                            className="text-green-600 focus:ring-green-500"
+                          />
+                          <span className="text-sm font-medium">Public</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Charity"
+                            checked={editForm.serviceType === 'Charity'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value })}
+                            className="text-orange-600 focus:ring-orange-500"
+                          />
+                          <span className="text-sm font-medium">Charity</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="NGO"
+                            checked={editForm.serviceType === 'NGO'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value })}
+                            className="text-pink-600 focus:ring-pink-500"
+                          />
+                          <span className="text-sm font-medium">NGO</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Sehat Card"
+                            checked={editForm.serviceType === 'Sehat Card'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value })}
+                            className="text-purple-600 focus:ring-purple-500"
+                          />
+                          <span className="text-sm font-medium">Sehat Card</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="NPO"
+                            checked={editForm.serviceType === 'NPO'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value })}
+                            className="text-teal-600 focus:ring-teal-500"
+                          />
+                          <span className="text-sm font-medium">NPO</span>
                         </label>
                       </div>
                     </div>

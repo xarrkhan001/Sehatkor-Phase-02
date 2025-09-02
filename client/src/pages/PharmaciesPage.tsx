@@ -15,6 +15,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingBadge from "@/components/RatingBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import RatingModal from "@/components/RatingModal";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 
@@ -70,6 +72,7 @@ const PharmaciesPage = () => {
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
             availability: (service as any).availability || 'Physical',
+            serviceType: (service as any).serviceType || 'Private',
           } as Service;
           // Hydrate user's own badge from localStorage
           try {
@@ -234,6 +237,7 @@ const PharmaciesPage = () => {
           totalRatings: (service as any).totalRatings,
           ratingBadge: (service as any).ratingBadge || null,
           availability: (service as any).availability || 'Physical',
+          serviceType: (service as any).serviceType || 'Private',
         } as Service;
         // Hydrate user's own badge from localStorage
         try {
@@ -522,17 +526,10 @@ const PharmaciesPage = () => {
                     />
                   )}
                   {(service as any).availability && (
-                    <Badge
-                      className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
-                        (service as any).availability === 'Online'
-                          ? 'bg-emerald-600'
-                          : (service as any).availability === 'Physical'
-                          ? 'bg-purple-600'
-                          : 'bg-teal-600'
-                      }`}
-                    >
-                      {(service as any).availability}
-                    </Badge>
+                    <AvailabilityBadge availability={(service as any).availability} size="sm" />
+                  )}
+                  {(service as any).serviceType && (
+                    <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                   )}
                 </div>
 
