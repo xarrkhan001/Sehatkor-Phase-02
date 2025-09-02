@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -80,6 +82,7 @@ const LaboratoryDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical' as 'Physical' | 'Online' | 'Online and Physical',
+    serviceType: 'Private' as 'Private' | 'Public' | 'Charity' | 'NGO' | 'NPO' | 'Sehat Card',
     imageUrl: ''
   });
   const [editImagePreview, setEditImagePreview] = useState('');
@@ -95,7 +98,8 @@ const LaboratoryDashboard = () => {
     googleMapLink: '',
     city: '',
     detailAddress: '',
-    availability: 'Physical'
+    availability: 'Physical',
+    serviceType: 'Private'
   });
 
   const testCategories = [
@@ -125,6 +129,7 @@ const LaboratoryDashboard = () => {
         city: d.city,
         detailAddress: d.detailAddress,
         availability: d.availability,
+        serviceType: d.serviceType,
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
@@ -161,6 +166,7 @@ const LaboratoryDashboard = () => {
       city: t.city || '',
       detailAddress: t.detailAddress || '',
       availability: (t.availability as any) || 'Physical',
+      serviceType: (t.serviceType as any) || 'Private',
       imageUrl: t.image || ''
     });
     setEditImagePreview(t.image || '');
@@ -205,6 +211,7 @@ const LaboratoryDashboard = () => {
         city: editForm.city,
         detailAddress: editForm.detailAddress,
         availability: editForm.availability as any,
+        serviceType: editForm.serviceType as any,
       } as any);
 
       setIsEditTestOpen(false);
@@ -239,6 +246,7 @@ const LaboratoryDashboard = () => {
         providerName: d.providerName || (user?.name || 'Laboratory'),
         providerType: 'laboratory' as const,
         availability: d.availability,
+        serviceType: d.serviceType,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }));
@@ -433,6 +441,7 @@ const LaboratoryDashboard = () => {
         city: testForm.city,
         detailAddress: testForm.detailAddress,
         availability: testForm.availability as any,
+        serviceType: testForm.serviceType as any,
         providerName: user?.name || 'Laboratory',
       });
 
@@ -453,7 +462,7 @@ const LaboratoryDashboard = () => {
       ServiceManager.addService(newTest);
 
       // Reset form
-      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical' });
+      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private' });
 
       setTestImagePreview('');
       setTestImageFile(null);
@@ -591,169 +600,6 @@ const LaboratoryDashboard = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* Edit Test Dialog */}
-            <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
-              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Test</DialogTitle>
-                  <DialogDescription>
-                    Add a new diagnostic test to your lab
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="testName">Test Name *</Label>
-                    <Input
-                      id="testName"
-                      value={testForm.name}
-                      onChange={(e) => setTestForm({ ...testForm, name: e.target.value })}
-                      placeholder="e.g., Complete Blood Count"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Test Image</Label>
-                    <ImageUpload
-                      onImageSelect={(file, preview) => {
-                        setTestImageFile(file);
-                        setTestImagePreview(preview);
-                      }}
-                      onImageRemove={() => {
-                        setTestImageFile(null);
-                        setTestImagePreview('');
-                      }}
-                      currentImage={testImagePreview}
-                      placeholder="Upload test image"
-                      className="max-w-xs"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="testPrice">Price (PKR) *</Label>
-                      <Input
-                        id="testPrice"
-                        type="number"
-                        value={testForm.price}
-                        onChange={(e) => setTestForm({ ...testForm, price: e.target.value })}
-                        placeholder="e.g., 1500"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="testDuration">Duration (hours)</Label>
-                      <Input
-                        id="testDuration"
-                        value={testForm.duration}
-                        onChange={(e) => setTestForm({ ...testForm, duration: e.target.value })}
-                        placeholder="e.g., 2"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="testCategory">Category</Label>
-                    <Select value={testForm.category} onValueChange={(value) => setTestForm({ ...testForm, category: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select test category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {testCategories.map((category) => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="testDescription">Description</Label>
-                    <Textarea
-                      id="testDescription"
-                      value={testForm.description}
-                      onChange={(e) => setTestForm({ ...testForm, description: e.target.value })}
-                      placeholder="Brief description of the test"
-                    />
-                  </div>
-
-                  {/* Location Fields */}
-                  <div className="space-y-3 border-t pt-3">
-                    <h4 className="font-medium text-sm">Location Information</h4>
-                    <div>
-                      <Label htmlFor="testCity">City</Label>
-                      <Input
-                        id="testCity"
-                        value={testForm.city}
-                        onChange={(e) => setTestForm({ ...testForm, city: e.target.value })}
-                        placeholder="e.g., Karachi"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="testAddress">Detailed Address</Label>
-                      <Textarea
-                        id="testAddress"
-                        value={testForm.detailAddress}
-                        onChange={(e) => setTestForm({ ...testForm, detailAddress: e.target.value })}
-                        placeholder="e.g., Floor 2, Medical Plaza, Main Road"
-                        rows={2}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="testMapLink">Google Maps Link (Optional)</Label>
-                      <Input
-                        id="testMapLink"
-                        value={testForm.googleMapLink}
-                        onChange={(e) => setTestForm({ ...testForm, googleMapLink: e.target.value })}
-                        placeholder="https://maps.google.com/..."
-                      />
-                    </div>
-                  </div>
-
-                  {/* Availability */}
-                  <div className="space-y-3 border-t pt-3">
-                    <h4 className="font-medium text-sm">Service Availability</h4>
-                    <div className="space-y-2">
-                      <Label>How is this test available? *</Label>
-                      <div className="flex flex-col space-y-2">
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="availability"
-                            value="Physical"
-                            checked={testForm.availability === 'Physical'}
-                            onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm">Physical - In-person sample collection only</span>
-                        </label>
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="availability"
-                            value="Online"
-                            checked={testForm.availability === 'Online'}
-                            onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm">Online - Report review/booking online</span>
-                        </label>
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="availability"
-                            value="Online and Physical"
-                            checked={testForm.availability === 'Online and Physical'}
-                            onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm">Online and Physical - Both options available</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
-                    {isAddingTest ? 'Adding Test...' : 'Add Test'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
             {/* Edit Test Dialog */}
             <Dialog open={isEditTestOpen} onOpenChange={setIsEditTestOpen}>
               <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -909,6 +755,82 @@ const LaboratoryDashboard = () => {
                             className="text-primary focus:ring-primary"
                           />
                           <span className="text-sm">Online and Physical - Both options available</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Service Type */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Service Type</h4>
+                    <div className="space-y-2">
+                      <Label>What type of service is this? *</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Private"
+                            checked={editForm.serviceType === 'Private'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Private</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Public"
+                            checked={editForm.serviceType === 'Public'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Public</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Charity"
+                            checked={editForm.serviceType === 'Charity'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Charity</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="NGO"
+                            checked={editForm.serviceType === 'NGO'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">NGO</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="Sehat Card"
+                            checked={editForm.serviceType === 'Sehat Card'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">Sehat Card</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="editServiceType"
+                            value="NPO"
+                            checked={editForm.serviceType === 'NPO'}
+                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
+                            className="text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">NPO</span>
                         </label>
                       </div>
                     </div>
@@ -1115,6 +1037,82 @@ const LaboratoryDashboard = () => {
                                 </div>
                               </div>
 
+                              {/* Service Type */}
+                              <div className="space-y-3 border-t pt-3">
+                                <h4 className="font-medium text-sm">Service Type</h4>
+                                <div className="space-y-2">
+                                  <Label>What type of service is this? *</Label>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="serviceType"
+                                        value="Private"
+                                        checked={testForm.serviceType === 'Private'}
+                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">Private</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="serviceType"
+                                        value="Public"
+                                        checked={testForm.serviceType === 'Public'}
+                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">Public</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="serviceType"
+                                        value="Charity"
+                                        checked={testForm.serviceType === 'Charity'}
+                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">Charity</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="serviceType"
+                                        value="NGO"
+                                        checked={testForm.serviceType === 'NGO'}
+                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">NGO</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="serviceType"
+                                        value="Sehat Card"
+                                        checked={testForm.serviceType === 'Sehat Card'}
+                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">Sehat Card</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="serviceType"
+                                        value="NPO"
+                                        checked={testForm.serviceType === 'NPO'}
+                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-sm">NPO</span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+
                               <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
                                 {isAddingTest ? 'Adding Test...' : 'Add Test'}
                               </Button>
@@ -1154,19 +1152,8 @@ const LaboratoryDashboard = () => {
                                         <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">{test.category}</Badge>
                                         <span className="text-sm">PKR {test.price.toLocaleString()}</span>
                                         <span className="text-xs text-muted-foreground">{test.duration || 'N/A'}</span>
-                                        {test.availability && (
-                                          <Badge
-                                            className={`${
-                                              test.availability === 'Online'
-                                                ? 'bg-emerald-600'
-                                                : test.availability === 'Physical'
-                                                ? 'bg-purple-600'
-                                                : 'bg-teal-600'
-                                            } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                                          >
-                                            {test.availability === 'Online and Physical' ? 'Online & Physical' : test.availability}
-                                          </Badge>
-                                        )}
+                                        <AvailabilityBadge availability={test.availability || 'Physical'} size="sm" />
+                                        <ServiceTypeBadge serviceType={test.serviceType || 'Private'} size="sm" />
                                       </div>
                                     </div>
                                   </div>
@@ -1193,6 +1180,7 @@ const LaboratoryDashboard = () => {
                                     <TableHead>Price (PKR)</TableHead>
                                     <TableHead>Duration</TableHead>
                                     <TableHead>Availability</TableHead>
+                                    <TableHead>Service Type</TableHead>
                                     <TableHead>Actions</TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -1226,21 +1214,10 @@ const LaboratoryDashboard = () => {
                                       <TableCell>PKR {test.price.toLocaleString()}</TableCell>
                                       <TableCell>{test.duration || 'N/A'}</TableCell>
                                       <TableCell>
-                                        {test.availability ? (
-                                          <Badge
-                                            className={`${
-                                              test.availability === 'Online'
-                                                ? 'bg-emerald-600'
-                                                : test.availability === 'Physical'
-                                                ? 'bg-purple-600'
-                                                : 'bg-teal-600'
-                                            } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                                          >
-                                            {test.availability === 'Online and Physical' ? 'Online & Physical' : test.availability}
-                                          </Badge>
-                                        ) : (
-                                          '-'
-                                        )}
+                                        <AvailabilityBadge availability={test.availability || 'Physical'} size="md" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <ServiceTypeBadge serviceType={test.serviceType || 'Private'} size="md" />
                                       </TableCell>
                                       <TableCell>
                                         <div className="flex space-x-2">

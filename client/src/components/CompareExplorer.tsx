@@ -684,7 +684,7 @@ const CompareExplorer = () => {
                             <AvailabilityBadge availability={availability} size="sm" />
                           );
                         })()}
-                        {item._providerType === 'pharmacy' && item.serviceType && (
+                        {(item._providerType === 'pharmacy' || item._providerType === 'laboratory') && item.serviceType && (
                           <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
                         )}
                       </div>

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 
 type SortKey = "price" | "rating" | "location";
 
@@ -358,6 +359,18 @@ const ComparePage = () => {
                             >
                               {(item as any).availability}
                             </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b">
+                      <td className="p-4 font-medium">Service Type</td>
+                      {sorted.map(item => (
+                        <td key={item.id} className="p-4">
+                          {((item as any)._providerType === 'pharmacy' || (item as any)._providerType === 'laboratory') && (item as any).serviceType ? (
+                            <ServiceTypeBadge serviceType={(item as any).serviceType} size="sm" />
                           ) : (
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
