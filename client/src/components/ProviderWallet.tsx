@@ -147,6 +147,12 @@ const ProviderWallet = () => {
   // Bulk-select payments
   const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
   const [confirmBulkPaymentsOpen, setConfirmBulkPaymentsOpen] = useState<boolean>(false);
+  // Invoice delete confirm dialog
+  const [confirmInvoiceOpen, setConfirmInvoiceOpen] = useState<boolean>(false);
+  const [pendingInvoiceId, setPendingInvoiceId] = useState<string | null>(null);
+  // Bulk-select invoices
+  const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
+  const [confirmBulkInvoicesOpen, setConfirmBulkInvoicesOpen] = useState<boolean>(false);
 
   const fetchInvoices = async () => {
     if (!user?.id) return;
@@ -799,6 +805,81 @@ const ProviderWallet = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Confirm bulk delete invoices */}
+      <AlertDialog open={confirmBulkInvoicesOpen} onOpenChange={setConfirmBulkInvoicesOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete selected invoices from your view?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the selected invoices from your list. Admin views and balances remain unaffected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmBulkInvoicesOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (!user?.id) return;
+              if (selectedInvoices.length === 0) { toast.error('No invoices selected'); return; }
+              try {
+                const res = await fetch(`http://localhost:4000/api/payments/invoices/provider/${user.id}/bulk-delete`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+                  },
+                  body: JSON.stringify({ ids: selectedInvoices }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Bulk delete failed');
+                toast.success(`Deleted ${data.modified ?? selectedInvoices.length} invoice(s) from your list`);
+                setSelectedInvoices([]);
+                setConfirmBulkInvoicesOpen(false);
+                fetchInvoices();
+              } catch (e: any) {
+                toast.error(e?.message || 'Failed to bulk delete invoices');
+              }
+            }} className="bg-red-600 hover:bg-red-700">
+              Delete Selected
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm delete invoice */}
+      <AlertDialog open={confirmInvoiceOpen} onOpenChange={setConfirmInvoiceOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this invoice from your view?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the selected invoice from your Invoices list. It will not affect payments, balances, or admin views.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setConfirmInvoiceOpen(false); setPendingInvoiceId(null); }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (!user?.id || !pendingInvoiceId) return;
+              try {
+                const res = await fetch(`http://localhost:4000/api/payments/invoices/provider/${user.id}/${pendingInvoiceId}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+                  },
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Failed to delete invoice');
+                toast.success('Invoice removed from your list');
+                setConfirmInvoiceOpen(false);
+                setPendingInvoiceId(null);
+                fetchInvoices();
+              } catch (e: any) {
+                toast.error(e?.message || 'Failed to delete invoice');
+              }
+            }} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Confirm delete payment */}
       <AlertDialog open={confirmPaymentOpen} onOpenChange={setConfirmPaymentOpen}>
         <AlertDialogContent>
@@ -825,6 +906,31 @@ const ProviderWallet = () => {
               <ClipboardList className="w-5 h-5" />
               Invoices ({invoices.length})
             </CardTitle>
+            <div className="flex items-center gap-2 bg-white/10 p-1 rounded-lg">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-white hover:bg-white/20"
+                onClick={() => {
+                  if (invoices.length === 0) return;
+                  const allSelected = selectedInvoices.length === invoices.length;
+                  setSelectedInvoices(allSelected ? [] : invoices.map(i => i._id));
+                }}
+              >
+                {selectedInvoices.length === invoices.length && invoices.length > 0 ? 'Clear all' : 'Select all'}
+              </Button>
+              <Button
+                size="sm"
+                variant={selectedInvoices.length > 0 ? 'destructive' : 'ghost'}
+                className={`${selectedInvoices.length > 0 ? 'bg-red-600 text-white hover:bg-red-700' : 'text-white hover:bg-white/20'}`}
+                disabled={selectedInvoices.length === 0}
+                onClick={() => setConfirmBulkInvoicesOpen(true)}
+                title="Delete selected invoices from your list"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Bulk Delete
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -843,6 +949,7 @@ const ProviderWallet = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10"></TableHead>
                     <TableHead>Invoice #</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead className="text-right">Subtotal (PKR)</TableHead>
@@ -853,16 +960,31 @@ const ProviderWallet = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoices.map(inv => (
+                  {invoices.map((inv) => (
                     <TableRow key={inv._id}>
-                      <TableCell className="font-medium">{inv.invoiceNumber}</TableCell>
-                      <TableCell>{new Date(inv.issuedAt || inv.createdAt || '').toLocaleString()}</TableCell>
-                      <TableCell className="text-right">{inv.totals?.subtotal?.toLocaleString?.()}</TableCell>
-                      <TableCell className="text-right">{inv.totals?.commissionPercentage ?? 0}% ({inv.totals?.commissionAmount?.toLocaleString?.()})</TableCell>
-                      <TableCell className="text-right font-semibold text-emerald-700">{inv.totals?.netTotal?.toLocaleString?.()}</TableCell>
+                      <TableCell className="w-10">
+                        <Checkbox
+                          checked={selectedInvoices.includes(inv._id)}
+                          onCheckedChange={(v) => {
+                            setSelectedInvoices((prev) => {
+                              const set = new Set(prev);
+                              if (v) set.add(inv._id); else set.delete(inv._id);
+                              return Array.from(set);
+                            });
+                          }}
+                          aria-label={`Select invoice ${inv.invoiceNumber}`}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{inv.invoiceNumber}</div>
+                        <div className="text-sm text-muted-foreground">{new Date(inv.issuedAt || inv.createdAt || Date.now()).toLocaleDateString()}</div>
+                      </TableCell>
+                      <TableCell className="text-right">{inv.totals?.subtotal?.toLocaleString?.() ?? '-'}</TableCell>
+                      <TableCell className="text-right">{inv.totals?.commissionAmount?.toLocaleString?.() ?? '-'}</TableCell>
+                      <TableCell className="text-right">{inv.totals?.netTotal?.toLocaleString?.() ?? '-'}</TableCell>
                       <TableCell className="text-right">{inv.items?.length ?? 0}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-1">
+                        <div className="flex items-center justify-end gap-2">
                           <Button size="sm" variant="secondary" onClick={() => navigate(`/invoice/${inv._id}`)}>
                             <Eye className="w-4 h-4 mr-1" />
                             View Details
@@ -872,6 +994,16 @@ const ProviderWallet = () => {
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => generateInvoicePDF(inv)} title="Download PDF">
                             <Download className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => { setPendingInvoiceId(inv._id); setConfirmInvoiceOpen(true); }}
+                            title="Delete invoice from your list"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
                           </Button>
                         </div>
                       </TableCell>

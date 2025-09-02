@@ -34,6 +34,8 @@ const InvoiceSchema = new mongoose.Schema(
     issuedAt: { type: Date, default: Date.now },
     // Admin-only soft delete: if true, hidden from admin lists but still available to providers
     deletedForAdmin: { type: Boolean, default: false, index: true },
+    // Provider soft delete: if true, hidden from provider lists but still available to admin
+    deletedForProvider: { type: Boolean, default: false, index: true },
     deletedAt: { type: Date },
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
