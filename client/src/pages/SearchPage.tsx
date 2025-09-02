@@ -1084,7 +1084,7 @@ const SearchPage = () => {
                             <AvailabilityBadge availability={availability} size="sm" />
                           );
                         })()}
-                        {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory') && (service as any).serviceType && (
+                        {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic') && (service as any).serviceType && (
                           <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                         )}
                       </div>

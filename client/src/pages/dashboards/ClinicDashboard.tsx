@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import ProviderWallet from "@/components/ProviderWallet";
+import ServiceTypeBadge from '@/components/ServiceTypeBadge';
 
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
@@ -76,7 +77,8 @@ const ClinicDashboard = () => {
     googleMapLink: '',
     city: '',
     detailAddress: '',
-    availability: 'Physical'
+    availability: 'Physical',
+    serviceType: 'Private'
   });
 
   const clinicTypes = [
@@ -345,6 +347,7 @@ const ClinicDashboard = () => {
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
+          serviceType: serviceForm.serviceType,
           providerName: user?.name || 'Clinic',
         });
         toast.success("Service updated successfully");
@@ -362,6 +365,7 @@ const ClinicDashboard = () => {
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
+          serviceType: serviceForm.serviceType,
           providerName: user?.name || 'Clinic',
         });
         toast.success("Service added successfully");
@@ -377,7 +381,8 @@ const ClinicDashboard = () => {
         googleMapLink: '',
         city: '',
         detailAddress: '',
-        availability: 'Physical'
+        availability: 'Physical',
+        serviceType: 'Private'
       });
       setServiceImage('');
       setServiceImageFile(null);
@@ -698,6 +703,81 @@ const ClinicDashboard = () => {
                               </div>
                             </div>
 
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Service Type</h4>
+                              <div className="space-y-2">
+                                <Label>What type of service is this? *</Label>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Private"
+                                      checked={serviceForm.serviceType === 'Private'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Private</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Public"
+                                      checked={serviceForm.serviceType === 'Public'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Public</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Charity"
+                                      checked={serviceForm.serviceType === 'Charity'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Charity</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="NGO"
+                                      checked={serviceForm.serviceType === 'NGO'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">NGO</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Sehat Card"
+                                      checked={serviceForm.serviceType === 'Sehat Card'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">Sehat Card</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="NPO"
+                                      checked={serviceForm.serviceType === 'NPO'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                                      className="text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-sm">NPO</span>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+
                             <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
                               {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
                             </Button>
@@ -746,6 +826,9 @@ const ClinicDashboard = () => {
                                       {m.availability === 'Online and Physical' ? 'Online & Physical' : m.availability}
                                     </Badge>
                                   )}
+                                  {m.serviceType && (
+                                    <ServiceTypeBadge serviceType={m.serviceType} />
+                                  )}
                                   <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
                                   <span className="text-muted-foreground">{m.duration ? `${m.duration} min` : '-'}</span>
                                 </div>
@@ -761,7 +844,8 @@ const ClinicDashboard = () => {
                                       googleMapLink: m.googleMapLink || '',
                                       city: m.city || '',
                                       detailAddress: m.detailAddress || '',
-                                      availability: m.availability || 'Physical'
+                                      availability: m.availability || 'Physical',
+                                      serviceType: m.serviceType || 'Private'
                                     });
                                     setServiceImage(m.imageUrl || m.image || '');
                                     setIsAddServiceOpen(true);
@@ -790,6 +874,7 @@ const ClinicDashboard = () => {
                                 <TableHead>Price (PKR)</TableHead>
                                 <TableHead>Duration</TableHead>
                                 <TableHead>Availability</TableHead>
+                                <TableHead>Service Type</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -826,6 +911,13 @@ const ClinicDashboard = () => {
                                         '-'
                                       )}
                                     </TableCell>
+                                    <TableCell>
+                                      {m.serviceType ? (
+                                        <ServiceTypeBadge serviceType={m.serviceType} />
+                                      ) : (
+                                        '-'
+                                      )}
+                                    </TableCell>
                                     <TableCell className="text-right space-x-2">
                                       <Button size="sm" variant="outline" onClick={() => {
                                         setEditingService(m);
@@ -838,7 +930,8 @@ const ClinicDashboard = () => {
                                           googleMapLink: m.googleMapLink || '',
                                           city: m.city || '',
                                           detailAddress: m.detailAddress || '',
-                                          availability: m.availability || 'Physical'
+                                          availability: m.availability || 'Physical',
+                                          serviceType: m.serviceType || 'Private'
                                         });
                                         setServiceImage(m.imageUrl || m.image || '');
                                         setIsAddServiceOpen(true);

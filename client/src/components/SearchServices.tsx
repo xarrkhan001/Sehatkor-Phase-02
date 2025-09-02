@@ -501,9 +501,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                             name: service.name,
                             providerType: service.providerType,
                             serviceType: service.serviceType,
-                            shouldShow: (service.providerType === 'pharmacy' || service.providerType === 'laboratory') && service.serviceType
+                            shouldShow: (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic') && service.serviceType
                           });
-                          return (service.providerType === 'pharmacy' || service.providerType === 'laboratory') && service.serviceType;
+                          return (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic') && service.serviceType;
                         })() && (
                           <ServiceTypeBadge serviceType={service.serviceType} size="sm" />
                         )}

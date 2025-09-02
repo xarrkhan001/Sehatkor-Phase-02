@@ -26,6 +26,11 @@ const ClinicServiceSchema = new mongoose.Schema(
       enum: ["Online", "Physical", "Online and Physical"], 
       default: "Physical" 
     },
+    serviceType: {
+      type: String,
+      enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
+      default: "Private"
+    },
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,
