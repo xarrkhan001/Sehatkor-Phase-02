@@ -27,6 +27,8 @@ import {
   bulkDeleteInvoices,
   deleteProviderPayment,
   bulkDeleteProviderPayments,
+  deleteProviderInvoice,
+  bulkDeleteProviderInvoices,
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -58,6 +60,10 @@ router.get('/invoices/:invoiceId', getInvoiceById);
 router.get('/invoices', getAllInvoices); // Admin: Get all invoices
 router.delete('/invoices/:invoiceId', deleteInvoice); // Admin: Delete invoice
 router.post('/invoices/bulk-delete', bulkDeleteInvoices); // Admin: Bulk delete invoices
+// Provider: soft delete invoice from own view
+router.delete('/invoices/provider/:providerId/:invoiceId', deleteProviderInvoice);
+// Provider: bulk soft delete invoices from own view
+router.post('/invoices/provider/:providerId/bulk-delete', bulkDeleteProviderInvoices);
 
 // Admin utilities to remove 'pending' from DB
 router.put('/withdrawals/approve-all', approveAllPendingWithdrawals);

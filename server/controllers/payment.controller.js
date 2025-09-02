@@ -59,6 +59,53 @@ export const createPayment = async (req, res) => {
   }
 };
 
+// Bulk soft delete invoices for a specific provider (hide from provider view only)
+export const bulkDeleteProviderInvoices = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const { ids } = req.body || {};
+    if (!providerId || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'providerId and non-empty ids array are required' });
+    }
+
+    const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+    if (validIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid ids provided' });
+    }
+
+    const filter = {
+      _id: { $in: validIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      providerId: mongoose.Types.ObjectId.isValid(providerId)
+        ? new mongoose.Types.ObjectId(providerId)
+        : providerId,
+      deletedForProvider: { $ne: true },
+    };
+
+    const update = {
+      $set: {
+        deletedForProvider: true,
+        deletedAt: new Date(),
+        deletedBy: req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)
+          ? new mongoose.Types.ObjectId(req.user.id)
+          : undefined,
+      }
+    };
+
+    const result = await Invoice.updateMany(filter, update);
+
+    return res.json({
+      success: true,
+      message: 'Invoices deleted from provider view',
+      matched: result.matchedCount ?? result.nMatched ?? 0,
+      modified: result.modifiedCount ?? result.nModified ?? 0,
+      ids: validIds,
+    });
+  } catch (error) {
+    console.error(' Bulk delete provider invoices error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to bulk delete provider invoices', error: error.message });
+  }
+};
+
 // Bulk soft delete payments from a provider's view (hide in provider wallet)
 export const bulkDeleteProviderPayments = async (req, res) => {
   try {
@@ -179,11 +226,52 @@ export const bulkDeleteInvoices = async (req, res) => {
   }
 };
 
+// Soft delete an invoice for a specific provider (hide from provider view only)
+export const deleteProviderInvoice = async (req, res) => {
+  try {
+    const { providerId, invoiceId } = req.params;
+    if (!providerId || !invoiceId) {
+      return res.status(400).json({ success: false, message: 'providerId and invoiceId are required' });
+    }
+
+    const filter = {
+      _id: invoiceId,
+      providerId: mongoose.Types.ObjectId.isValid(providerId)
+        ? new mongoose.Types.ObjectId(providerId)
+        : providerId,
+      deletedForProvider: { $ne: true },
+    };
+
+    const updated = await Invoice.findOneAndUpdate(
+      filter,
+      {
+        $set: {
+          deletedForProvider: true,
+          deletedAt: new Date(),
+          deletedBy: req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)
+            ? new mongoose.Types.ObjectId(req.user.id)
+            : undefined,
+        }
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Invoice not found for this provider' });
+    }
+
+    return res.json({ success: true, message: 'Invoice deleted for provider', invoiceId });
+  } catch (error) {
+    console.error(' Delete provider invoice error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to delete invoice for provider', error: error.message });
+  }
+};
+
 // Fetch invoices
 export const getInvoicesByProvider = async (req, res) => {
   try {
     const { providerId } = req.params;
-    const invoices = await Invoice.find({ providerId }).sort({ createdAt: -1 });
+    const invoices = await Invoice.find({ providerId, deletedForProvider: { $ne: true } }).sort({ createdAt: -1 });
     res.json({ success: true, invoices });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch invoices', error: error.message });
