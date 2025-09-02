@@ -15,6 +15,8 @@ import { uploadFile } from "@/lib/chatApi";
 import { createService as doctorCreate, updateService as doctorUpdate, deleteService as doctorDelete } from "@/lib/doctorApi";
 import { Plus, Edit, Trash2, Stethoscope } from "lucide-react";
 import { DISEASE_OPTIONS } from "@/config/diseasesData";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
 
 interface ServiceManagementProps {
   userId: string;
@@ -71,7 +73,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     googleMapLink: '',
     city: '',
     detailAddress: '',
-    availability: 'Physical'
+    availability: 'Physical',
+    serviceType: 'Private'
   });
 
   const getServiceCategories = () => {
@@ -99,7 +102,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       googleMapLink: '',
       city: '',
       detailAddress: '',
-      availability: 'Physical'
+      availability: 'Physical',
+      serviceType: 'Private'
     });
     setServiceImage('');
     setEditingService(null);
@@ -136,6 +140,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       city: serviceForm.city,
       detailAddress: serviceForm.detailAddress,
       availability: serviceForm.availability,
+      serviceType: serviceForm.serviceType,
       ...(userRole === 'pharmacy' && { stock: parsedStock })
     };
 
@@ -151,18 +156,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       }
 
       if (userRole === 'doctor') {
-        console.log('Creating doctor service with payload:', {
-          name: serviceForm.name,
-          description: serviceForm.description,
-          price: parsedPrice,
-          category: serviceForm.category || 'Treatment',
-          duration: serviceForm.duration || undefined,
-          imageUrl,
-          imagePublicId,
-          providerName: userName,
-        });
-        
-        // Upload variant images if any and build payload variants
+        // Upload variant images if any and build payload variants FIRST
         let payloadVariants: any[] | undefined = undefined;
         if (variants.length > 0) {
           setIsUploadingImage(true);
@@ -197,6 +191,24 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           }
         }
 
+        // Now safe to log with payloadVariants
+        console.log('Creating doctor service with payload:', {
+          name: serviceForm.name,
+          description: serviceForm.description,
+          price: parsedPrice,
+          category: serviceForm.category || 'Treatment',
+          duration: serviceForm.duration || undefined,
+          imageUrl,
+          imagePublicId,
+          googleMapLink: serviceForm.googleMapLink,
+          city: serviceForm.city,
+          detailAddress: serviceForm.detailAddress,
+          availability: serviceForm.availability,
+          serviceType: serviceForm.serviceType,
+          diseases: disease ? [disease] : [],
+          ...(payloadVariants ? { variants: payloadVariants } : {}),
+        });
+
         if (editingService) {
           const updated = await doctorUpdate(editingService.id, {
             name: serviceForm.name,
@@ -210,6 +222,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
             availability: serviceForm.availability,
+            serviceType: serviceForm.serviceType,
             diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
@@ -221,6 +234,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             image: updated.imageUrl,
             duration: updated.duration,
             availability: updated.availability,
+            serviceType: updated.serviceType,
             diseases: Array.isArray(updated.diseases) ? updated.diseases : (disease ? [disease] : []),
             variants: updated.variants || [],
           } as any);
@@ -244,6 +258,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
             availability: serviceForm.availability,
+            serviceType: serviceForm.serviceType,
             providerName: userName,
             diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
@@ -261,7 +276,16 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             providerName: created.providerName,
             image: created.imageUrl,
             duration: created.duration,
+            // Ensure badges render immediately in dashboard list
+            availability: created.availability || serviceForm.availability,
+            serviceType: created.serviceType || serviceForm.serviceType,
+            // Preserve optional location fields for immediate UI
+            city: created.city ?? serviceForm.city,
+            detailAddress: created.detailAddress ?? serviceForm.detailAddress,
+            googleMapLink: created.googleMapLink ?? serviceForm.googleMapLink,
             diseases: created.diseases || (disease ? [disease] : []),
+            // Include variants array if API returned it
+            variants: Array.isArray((created as any).variants) ? (created as any).variants : [],
           } as any);
           onServicesUpdate([...services, added]);
           toast({ title: 'Success', description: 'Service added successfully' });
@@ -323,7 +347,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       googleMapLink: (service as any).googleMapLink || '',
       city: (service as any).city || '',
       detailAddress: (service as any).detailAddress || '',
-      availability: (service as any).availability || 'Physical'
+      availability: (service as any).availability || 'Physical',
+      serviceType: (service as any).serviceType || 'Private'
     });
     setServiceImage(service.image || '');
     setDisease((((service as any).diseases as string[]) || [])[0] || '');
@@ -390,16 +415,19 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   };
 
   return (
-    <Card className="card-healthcare">
-      <CardHeader>
+    <Card className={userRole === 'doctor' ? "relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl" : "card-healthcare"}>
+      <CardHeader className={userRole === 'doctor' ? "bg-gradient-to-r from-blue-400 to-indigo-500 text-white rounded-t-lg" : undefined}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <CardTitle>My Services</CardTitle>
-            <CardDescription>Manage your services and pricing</CardDescription>
+            <CardTitle className={userRole === 'doctor' ? "text-white flex items-center gap-2" : undefined}>
+              {userRole === 'doctor' && <Stethoscope className="w-5 h-5" />}
+              My Services
+            </CardTitle>
+            <CardDescription className={userRole === 'doctor' ? "text-blue-100" : undefined}>Manage your services and pricing</CardDescription>
           </div>
           <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm} className="shrink-0 self-start sm:self-auto w-full sm:w-auto">
+              <Button onClick={resetForm} className={userRole === 'doctor' ? "shrink-0 self-start sm:self-auto w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300" : "shrink-0 self-start sm:self-auto w-full sm:w-auto"}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Service
               </Button>
@@ -561,6 +589,82 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       onChange={(e) => setServiceForm({...serviceForm, googleMapLink: e.target.value})}
                       placeholder="https://maps.google.com/..."
                     />
+                  </div>
+                </div>
+
+                {/* Service Type Selection */}
+                <div className="space-y-3 border-t pt-3">
+                  <h4 className="font-medium text-sm">Service Type</h4>
+                  <div className="space-y-2">
+                    <Label>What type of service is this? *</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="Sehat Card"
+                          checked={serviceForm.serviceType === 'Sehat Card'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">Sehat Card</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="Private"
+                          checked={serviceForm.serviceType === 'Private'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">Private</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="Charity"
+                          checked={serviceForm.serviceType === 'Charity'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">Charity</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="Public"
+                          checked={serviceForm.serviceType === 'Public'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">Public</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="NPO"
+                          checked={serviceForm.serviceType === 'NPO'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">NPO</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="NGO"
+                          checked={serviceForm.serviceType === 'NGO'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm">NGO</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -791,17 +895,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline">{service.category}</Badge>
                     {(service as any).availability && (
-                      <Badge
-                        className={`${
-                          (service as any).availability === 'Online'
-                            ? 'bg-emerald-600'
-                            : (service as any).availability === 'Physical'
-                            ? 'bg-purple-600'
-                            : 'bg-teal-600'
-                        } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                      >
-                        {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
-                      </Badge>
+                      <AvailabilityBadge availability={(service as any).availability} size="sm" />
+                    )}
+                    {(service as any).serviceType && (
+                      <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                     )}
                     <span className="text-sm font-medium">PKR {service.price?.toLocaleString() || 0}</span>
                     <span className="text-sm text-muted-foreground">
@@ -833,6 +930,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       <TableHead>Service</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Availability</TableHead>
+                      <TableHead>Service Type</TableHead>
                       <TableHead>Price</TableHead>
                       {userRole === 'doctor' && (<TableHead>Variants</TableHead>)}
                       {userRole === 'pharmacy' ? (
@@ -882,17 +980,14 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         </TableCell>
                         <TableCell>
                           {(service as any).availability ? (
-                            <Badge
-                              className={`${
-                                (service as any).availability === 'Online'
-                                  ? 'bg-emerald-600'
-                                  : (service as any).availability === 'Physical'
-                                  ? 'bg-purple-600'
-                                  : 'bg-teal-600'
-                              } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                            >
-                              {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
-                            </Badge>
+                            <AvailabilityBadge availability={(service as any).availability} size="sm" />
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {(service as any).serviceType ? (
+                            <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                           ) : (
                             '-'
                           )}
@@ -907,22 +1002,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               {(service as any).variants?.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
                                   {(service as any).variants.slice(0, 3).map((variant: any, idx: number) => {
-                                    console.log('Full variant object:', JSON.stringify(variant, null, 2));
                                     const variantAvailability = variant.availability || 'Physical';
-                                    console.log('Variant availability:', variantAvailability);
                                     return (
-                                      <Badge
-                                        key={idx}
-                                        className={`${
-                                          variantAvailability === 'Online'
-                                            ? 'bg-emerald-500'
-                                            : variantAvailability === 'Physical'
-                                            ? 'bg-purple-500'
-                                            : 'bg-teal-500'
-                                        } text-white border-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none whitespace-nowrap`}
-                                      >
-                                        {variantAvailability === 'Online and Physical' ? 'Online & Physical' : variantAvailability}
-                                      </Badge>
+                                      <AvailabilityBadge key={idx} availability={variantAvailability} size="sm" />
                                     );
                                   })}
                                   {(service as any).variants.length > 3 && (

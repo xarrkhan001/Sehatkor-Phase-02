@@ -1084,18 +1084,16 @@ const SearchPage = () => {
                             <AvailabilityBadge availability={availability} size="sm" />
                           );
                         })()}
-                        {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic') && (service as any).serviceType && (
+                        {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic' || (service as any)._providerType === 'doctor') && (service as any).serviceType && (
                           <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                         )}
                       </div>
                       {/* Address + Single Disease Badge */}
-                      <div className="flex items-center justify-between mb-4 text-sm">
-                        <div className="flex items-center gap-1 text-gray-600 min-w-0">
-                          <MapPin className="w-4 h-4" />
-                          <span className="truncate" title={getDisplayAddress(service) || getDisplayLocation(service)}>
-                            {getDisplayAddress(service) || getDisplayLocation(service)}
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-1 text-gray-500 mb-2">
+                        <MapPin className="w-4 h-4" />
+                        <span className="truncate" title={getDisplayAddress(service) || getDisplayLocation(service)}>
+                          {getDisplayAddress(service) || getDisplayLocation(service)}
+                        </span>
                         {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
                           <Badge
                             variant="outline"

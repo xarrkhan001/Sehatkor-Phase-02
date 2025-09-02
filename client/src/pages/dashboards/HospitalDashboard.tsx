@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ImageUpload from "@/components/ui/image-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -536,6 +538,8 @@ const HospitalDashboard = () => {
                               <TableHead>Department</TableHead>
                               <TableHead>Price (PKR)</TableHead>
                               <TableHead>Duration</TableHead>
+                              <TableHead>Availability</TableHead>
+                              <TableHead>Service Type</TableHead>
                               <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -555,6 +559,16 @@ const HospitalDashboard = () => {
                                 <TableCell>{m.department || m.category || '-'}</TableCell>
                                 <TableCell>{m.price ?? 0}</TableCell>
                                 <TableCell>{m.duration ?? '-'}</TableCell>
+                                <TableCell>
+                                  {m.availability && (
+                                    <AvailabilityBadge availability={m.availability} size="sm" />
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {m.serviceType && (
+                                    <ServiceTypeBadge serviceType={m.serviceType} size="sm" />
+                                  )}
+                                </TableCell>
                                 <TableCell className="text-right space-x-2">
                                   <Button size="sm" variant="outline">
                                     <Edit className="w-4 h-4 mr-1" /> Edit

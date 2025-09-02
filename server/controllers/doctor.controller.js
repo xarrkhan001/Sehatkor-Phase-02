@@ -135,6 +135,7 @@ export const createDoctorService = async (req, res) => {
       variants,
       diseases,
       availability,
+      serviceType,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
     const doc = await DoctorService.create({
@@ -155,6 +156,7 @@ export const createDoctorService = async (req, res) => {
       providerName: providerName || "Doctor",
       providerType: "doctor",
       availability: availability || "Physical",
+      serviceType: serviceType || "Private",
     });
     res.status(201).json({ service: doc });
   } catch (error) {
@@ -200,6 +202,7 @@ export const updateDoctorService = async (req, res) => {
           // Allow diseases replacement when provided
           ...(Array.isArray(updates.diseases) && { diseases: updates.diseases }),
           ...(updates.availability != null && { availability: updates.availability }),
+          ...(updates.serviceType != null && { serviceType: updates.serviceType }),
         },
       },
       { new: true }

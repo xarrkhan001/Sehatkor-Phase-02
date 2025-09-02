@@ -12,6 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import RatingModal from "@/components/RatingModal";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -78,6 +80,7 @@ const DoctorsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings || 0,
             ratingBadge: (service as any).ratingBadge || null,
+            ...(service.serviceType ? { serviceType: service.serviceType } : {}),
             ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
               ? { diseases: (service as any).diseases }
               : {}),
@@ -228,6 +231,7 @@ const DoctorsPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings || 0,
           ratingBadge: (service as any).ratingBadge || null,
+          ...(service.serviceType ? { serviceType: service.serviceType } : {}),
           ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
             ? { diseases: (service as any).diseases }
             : {}),
@@ -695,55 +699,6 @@ const DoctorsPage = () => {
                     >
                       Treatment
                     </Badge>
-                    {(() => {
-                      const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
-                      const variants = (service as any).variants as any[] | undefined;
-                      const hasVariants = Array.isArray(variants) && variants.length > 0;
-                      
-                      if (hasVariants && currentVariantIndex > 0) {
-                        // Show variant availability
-                        const variant = variants[currentVariantIndex - 1];
-                        const variantAvailability = variant?.availability || 'Physical';
-                        console.log('🎯 DoctorsPage: Displaying variant availability:', {
-                          serviceId: service.id,
-                          serviceName: service.name,
-                          currentVariantIndex,
-                          totalVariants: variants?.length,
-                          allVariants: variants?.map(v => ({ name: v.name, availability: v.availability })),
-                          selectedVariant: variant ? { name: variant.name, availability: variant.availability } : null,
-                          finalAvailability: variantAvailability
-                        });
-                        return (
-                          <Badge
-                            className={`${
-                              variantAvailability === 'Online'
-                                ? 'bg-emerald-600'
-                                : variantAvailability === 'Physical'
-                                ? 'bg-purple-600'
-                                : 'bg-teal-600'
-                            } text-white border-0 rounded-full px-2 py-0.5 text-[10px] leading-none whitespace-nowrap`}
-                          >
-                            {variantAvailability === 'Online and Physical' ? 'Online & Physical' : variantAvailability}
-                          </Badge>
-                        );
-                      } else if ((service as any).availability) {
-                        // Show main service availability
-                        return (
-                          <Badge
-                            className={`${
-                              (service as any).availability === 'Online'
-                                ? 'bg-emerald-600'
-                                : (service as any).availability === 'Physical'
-                                ? 'bg-purple-600'
-                                : 'bg-teal-600'
-                            } text-white border-0 rounded-full px-2 py-0.5 text-[10px] leading-none whitespace-nowrap`}
-                          >
-                            {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
-                          </Badge>
-                        );
-                      }
-                      return null;
-                    })()}
                   </div>
                 </div>
 
@@ -759,7 +714,7 @@ const DoctorsPage = () => {
                   )}
                 </div>
 
-                {/* Rating, Location, Home Service, WhatsApp */}
+                {/* Rating, Location, Home Service, WhatsApp, Availability, Service Type */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                   <RatingBadge
                     rating={service.rating}
@@ -784,6 +739,22 @@ const DoctorsPage = () => {
                       providerName={service.provider}
                       providerId={(service as any)._providerId}
                     />
+                  )}
+                  {(() => {
+                    const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
+                    const variants = (service as any).variants as any[] | undefined;
+                    const hasVariants = Array.isArray(variants) && variants.length > 0;
+                    let label: string | undefined;
+                    if (hasVariants && currentVariantIndex > 0) {
+                      const variant = variants[currentVariantIndex - 1];
+                      label = variant?.availability;
+                    } else {
+                      label = (service as any).availability;
+                    }
+                    return label ? (<AvailabilityBadge availability={label} size="sm" />) : null;
+                  })()}
+                  {(service as any).serviceType && (
+                    <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                   )}
                 </div>
 

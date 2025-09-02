@@ -597,16 +597,16 @@ const PharmacyDashboard = () => {
               
               {/* Medicines Tab */}
               <TabsContent value="medicines" className="mt-6">
-                <Card className="card-healthcare">
-                  <CardHeader>
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl">
+                  <CardHeader className="bg-gradient-to-r from-blue-400 to-indigo-500 text-white rounded-t-lg">
                     <div className="flex justify-between items-center">
                       <div>
-                        <CardTitle>Medicine Inventory</CardTitle>
-                        <CardDescription>Manage your pharmacy inventory</CardDescription>
+                        <CardTitle className="text-white">Medicine Inventory</CardTitle>
+                        <CardDescription className="text-blue-100">Manage your pharmacy inventory</CardDescription>
                       </div>
                       <Dialog open={isAddMedicineOpen} onOpenChange={setIsAddMedicineOpen}>
                         <DialogTrigger asChild>
-                          <Button>
+                          <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300">
                             <Plus className="w-4 h-4 mr-2" />
                             Add Medicine
                           </Button>
