@@ -9,6 +9,8 @@ import { MapPin, ArrowLeft, Home, Clock } from "lucide-react";
 import RatingModal from "@/components/RatingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import RatingBadge from "@/components/RatingBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import { toast } from "sonner";
 
@@ -46,6 +48,7 @@ type Unified = {
   myBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   homeService?: boolean;
   availability?: 'Online' | 'Physical' | 'Online and Physical' | string;
+  serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
   variants?: ServiceVariant[];
 };
 
@@ -59,6 +62,7 @@ const ServiceDetailPage = () => {
   const [yourBadge, setYourBadge] = useState<Unified['myBadge']>((locationHook.state as any)?.service?.myBadge ?? null);
   const [freshCounts, setFreshCounts] = useState<{ excellent: number; good: number; fair: number } | null>(null);
   const [activeVariantIndex, setActiveVariantIndex] = useState((locationHook.state as any)?.activeVariantIndex ?? 0);
+  const [resolvedServiceType, setResolvedServiceType] = useState<Unified['serviceType'] | undefined>(undefined);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -110,6 +114,7 @@ const ServiceDetailPage = () => {
       providerId: rawStateService.providerId ?? rawStateService._providerId,
       address: rawStateService.detailAddress ?? rawStateService.address ?? null,
       availability: rawStateService.availability,
+      serviceType: rawStateService.serviceType,
       variants: rawStateService.variants || [],
     };
     return normalized;
@@ -132,6 +137,10 @@ const ServiceDetailPage = () => {
     // Always prefer service from navigation state if available
     if (stateService && stateService.id === id) {
       console.log('Using service from navigation state:', stateService);
+      console.log('Debug serviceType/providerType from state:', {
+        providerType: (stateService as any)?.providerType ?? (stateService as any)?._providerType,
+        serviceType: (stateService as any)?.serviceType,
+      });
       return stateService;
     }
     
@@ -161,6 +170,7 @@ const ServiceDetailPage = () => {
       myBadge: null,
       homeService: s.providerType === 'doctor',
       availability: (s as any).availability,
+      serviceType: (s as any).serviceType,
       variants: (s as any).variants || [],
     } as Unified));
     const mockMapped = mockServices.map((m: MockService) => ({
@@ -180,6 +190,12 @@ const ServiceDetailPage = () => {
     const combined = [...realMapped, ...mockMapped];
     const foundItem = combined.find(x => x.id === id);
     console.log('Found item from ServiceManager:', foundItem);
+    if (foundItem) {
+      console.log('Debug serviceType/providerType from fallback:', {
+        providerType: (foundItem as any)?.providerType,
+        serviceType: (foundItem as any)?.serviceType,
+      });
+    }
     return foundItem;
   }, [id, stateService]);
 
@@ -218,10 +234,36 @@ const ServiceDetailPage = () => {
       try {
         const svc = await ServiceManager.fetchServiceById(String(item.id), item.providerType);
         setFreshCounts(((svc as any).ratingCounts) ?? null);
+        if (!item.serviceType && (svc as any)?.serviceType) {
+          console.log('Hydrated missing serviceType from fetch:', (svc as any).serviceType);
+          setResolvedServiceType((svc as any).serviceType as any);
+        }
       } catch {}
     };
     fetchCounts();
   }, [item?.id, item?.providerType]);
+
+  // Fallback: if serviceType is missing entirely (e.g., state lacked it), try to fetch by inferring type
+  useEffect(() => {
+    const hydrateServiceType = async () => {
+      if (!item?.isReal || item?.serviceType) return;
+      try {
+        let inferredType = item?.providerType;
+        if (!inferredType) {
+          inferredType = item?.type === 'Medicine' ? 'pharmacy' : item?.type === 'Test' ? 'laboratory' : 'doctor';
+        }
+        if (!inferredType) return;
+        const svc = await ServiceManager.fetchServiceById(String(item.id), inferredType as any);
+        if ((svc as any)?.serviceType) {
+          console.log('Hydrated missing serviceType via inferred type:', (svc as any).serviceType, inferredType);
+          setResolvedServiceType((svc as any).serviceType as any);
+        }
+      } catch (e) {
+        console.warn('Failed to hydrate missing serviceType', e);
+      }
+    };
+    hydrateServiceType();
+  }, [item?.id, item?.isReal, item?.serviceType, item?.providerType, item?.type]);
 
   const handleBookNow = (svc: Unified) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
@@ -353,6 +395,12 @@ const ServiceDetailPage = () => {
                       {activeSlide.location}
                     </div>
                     <Badge variant="outline">{item.type}</Badge>
+                    {activeSlide.availability && (
+                      <AvailabilityBadge availability={activeSlide.availability} size="sm" />
+                    )}
+                    {(item.serviceType ?? resolvedServiceType) && (
+                      <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
+                    )}
                     {freshCounts && (
                       <div className="flex items-center gap-2 text-xs text-gray-600">
                         <span>Excellent: {freshCounts.excellent}</span>
@@ -388,19 +436,6 @@ const ServiceDetailPage = () => {
                         providerName={item.provider}
                         providerId={item.providerId}
                       />
-                      {activeSlide.availability && (
-                        <Badge
-                          className={`ml-2 inline-block text-[10px] px-1.5 py-0.5 text-white border-0 rounded-md shadow ${
-                            activeSlide.availability === 'Online'
-                              ? 'bg-emerald-600'
-                              : activeSlide.availability === 'Physical'
-                              ? 'bg-purple-600'
-                              : 'bg-teal-600'
-                          }`}
-                        >
-                          {activeSlide.availability}
-                        </Badge>
-                      )}
                     </div>
                   )}
                 </div>

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ServiceManager, { Service } from "@/lib/serviceManager";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -39,6 +41,7 @@ interface SearchService {
   detailAddress?: string;
   _providerVerified?: boolean;
   availability?: "Online" | "Physical" | "Online and Physical";
+  serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
 }
 
 // No fallback or mock data. We will only show real services from backend.
@@ -137,6 +140,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       detailAddress: (s as any).detailAddress,
       _providerVerified: (s as any)._providerVerified,
       availability: (s as any).availability || "Physical",
+      serviceType: (s as any).serviceType || "Private",
     }));
   };
 
@@ -347,6 +351,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           variantIndex: activeIdx,
           variantLabel: timeLabel ?? undefined,
           variantTimeRange: timeRange ?? undefined,
+          serviceType: service.serviceType,
         }
       }
     });
@@ -488,17 +493,12 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                           if (!availability) return null;
                           
                           return (
-                            <Badge
-                              className={`text-[10px] px-1.5 py-0.5 text-white border-0 ${
-                                availability === 'Online' ? 'bg-emerald-600' :
-                                availability === 'Physical' ? 'bg-purple-600' :
-                                'bg-teal-600'
-                              }`}
-                            >
-                              {availability}
-                            </Badge>
+                            <AvailabilityBadge availability={availability} size="sm" />
                           );
                         })()}
+                        {service.providerType === 'pharmacy' && service.serviceType && (
+                          <ServiceTypeBadge serviceType={service.serviceType} size="sm" />
+                        )}
                         {service.ratingBadge && (
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full border whitespace-nowrap ${getBadgeStyles(service.ratingBadge)}`}>
                             {service.ratingBadge}

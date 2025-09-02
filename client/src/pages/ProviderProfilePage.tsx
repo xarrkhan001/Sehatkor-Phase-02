@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Clock, Home, Star, Minimize2, Maximize2, X, User, Award, Calendar, Phone, Search, Filter } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import RatingModal from "@/components/RatingModal";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
@@ -722,27 +724,7 @@ const ProviderProfilePage = () => {
                             </Badge>
                           </div>
 
-                          {/* Top-right corner availability badge (pharmacy, laboratory, clinic, and doctor) */}
-                          {(() => {
-                            const availability = (getActiveSlide(service) as any)?.availability || (service as any).availability;
-                            const type = (service as any).providerType;
-                            const showOnImage = type === 'pharmacy' || type === 'laboratory' || type === 'clinic' || type === 'doctor';
-                            return !!availability && showOnImage; // Show on image for pharmacy, lab, clinic and doctor
-                          })() && (
-                            <div className="absolute -top-0.5 -right-0.5">
-                              <Badge
-                                className={`text-[7px] px-0.5 py-0.5 text-white border-0 shadow-md backdrop-blur-sm ${
-                                  (((getActiveSlide(service) as any)?.availability || (service as any).availability) === 'Online')
-                                    ? 'bg-emerald-600'
-                                    : (((getActiveSlide(service) as any)?.availability || (service as any).availability) === 'Physical')
-                                    ? 'bg-purple-600'
-                                    : 'bg-teal-600'
-                                }`}
-                              >
-                                {((getActiveSlide(service) as any)?.availability) || (service as any).availability}
-                              </Badge>
-                            </div>
-                          )}
+                          {/* Badges moved to card body below */}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-[1.25rem] md:text-2xl font-semibold text-gray-900 mb-1 truncate">
@@ -809,12 +791,18 @@ const ProviderProfilePage = () => {
                             providerName={service.providerName}
                             providerId={(service as any).providerId}
                           />
-                          {(service as any).providerType === 'pharmacy' && false && (((getActiveSlide(service) as any)?.availability) || (service as any).availability) && (
-                            <span className="inline-block ml-2 align-middle">
-                              <Badge className="text-[10px] px-1.5 py-0.5 text-white border-0">Hidden</Badge>
-                            </span>
-                          )}
                         </div>
+                      )}
+                      {/* Availability badge (moved from image) */}
+                      {(() => {
+                        const availability = (getActiveSlide(service) as any)?.availability || (service as any).availability;
+                        return availability ? (
+                          <AvailabilityBadge availability={availability} size="md" />
+                        ) : null;
+                      })()}
+                      {/* Pharmacy serviceType badge (moved from image) */}
+                      {(service as any).providerType === 'pharmacy' && (service as any).serviceType && (
+                        <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
                       )}
                     </div>
 

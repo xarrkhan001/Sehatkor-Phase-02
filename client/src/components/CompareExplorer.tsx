@@ -10,6 +10,8 @@ import { Button as UIButton } from "@/components/ui/button";
 import ServiceManager from "@/lib/serviceManager";
 import { useNavigate } from "react-router-dom";
 import RatingBadge from "@/components/RatingBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingModal from "@/components/RatingModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +44,8 @@ type Unified = {
   days?: string;
   // availability of service
   availability?: 'Online' | 'Physical' | 'Online and Physical';
+  // service type for pharmacy services
+  serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
   // variants array (doctor services primarily)
   variants?: Array<{
     imageUrl?: string;
@@ -123,6 +127,7 @@ const CompareExplorer = () => {
             endTime: (s as any)?.endTime,
             days: (s as any)?.days,
             availability: (s as any)?.availability as any,
+            serviceType: (s as any)?.serviceType,
             variants: (s as any)?.variants || [],
           } as Unified;
         });
@@ -676,20 +681,12 @@ const CompareExplorer = () => {
                           if (!availability) return null;
                           
                           return (
-                            <Badge
-                              className={
-                                `text-xs px-2 py-0.5 text-white border-0 rounded-md shadow ` +
-                                (availability === 'Online'
-                                  ? 'bg-emerald-600'
-                                  : availability === 'Physical'
-                                  ? 'bg-purple-600'
-                                  : 'bg-teal-600')
-                              }
-                            >
-                              {availability}
-                            </Badge>
+                            <AvailabilityBadge availability={availability} size="sm" />
                           );
                         })()}
+                        {item._providerType === 'pharmacy' && item.serviceType && (
+                          <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
+                        )}
                       </div>
 
                       {/* Buttons */}
@@ -707,7 +704,7 @@ const CompareExplorer = () => {
                           variant="secondary"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const currentVariantIndex = activeVariantIndex[item.id] ?? 0;
+                            const currentVariantIndex = activeIdxById[item.id] ?? 0;
                             navigate(`/service/${item.id}`, {
                               state: {
                                 from: window.location.pathname + window.location.search,
@@ -730,6 +727,7 @@ const CompareExplorer = () => {
                                   providerPhone: item.providerPhone ?? undefined,
                                   googleMapLink: item.googleMapLink ?? undefined,
                                   availability: item.availability ?? undefined,
+                                  serviceType: item.serviceType,
                                   variants: item.variants || [],
                                 }
                               }
@@ -858,7 +856,7 @@ const CompareExplorer = () => {
                           {selected.map(s => (
                             <td key={s.id} className="p-4">
                               <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => {
-                                const currentVariantIndex = activeVariantIndex[s.id] ?? 0;
+                                const currentVariantIndex = activeIdxById[s.id] ?? 0;
                                 navigate(`/service/${s.id}`, {
                                 state: {
                                   from: window.location.pathname + window.location.search,
@@ -881,6 +879,7 @@ const CompareExplorer = () => {
                                     providerPhone: s.providerPhone ?? undefined,
                                     googleMapLink: s.googleMapLink ?? undefined,
                                     availability: s.availability ?? undefined,
+                                    serviceType: s.serviceType,
                                     variants: s.variants || [],
                                   }
                                 }

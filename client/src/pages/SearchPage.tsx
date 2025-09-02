@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import RatingBadge from "@/components/RatingBadge";
+import AvailabilityBadge from "@/components/AvailabilityBadge";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import RatingModal from "@/components/RatingModal";
 import { Service } from "@/data/mockData";
 import ServiceManager, { Service as RealService } from "@/lib/serviceManager";
@@ -293,6 +295,8 @@ const SearchPage = () => {
           diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : undefined,
           availability: (service as any).availability as any,
           createdAt: (service as any).createdAt,
+          // include pharmacy service type (and pass-through if present on others)
+          serviceType: (service as any).serviceType || undefined,
         };
 
         // coordinates based on location
@@ -1077,19 +1081,12 @@ const SearchPage = () => {
                           if (!availability) return null;
                           
                           return (
-                            <Badge
-                              className={`text-[10px] px-2 py-0.5 text-white border-0 rounded-md shadow ${
-                                availability === 'Online'
-                                  ? 'bg-emerald-600'
-                                  : availability === 'Physical'
-                                  ? 'bg-purple-600'
-                                  : 'bg-teal-600'
-                              }`}
-                            >
-                              {availability}
-                            </Badge>
+                            <AvailabilityBadge availability={availability} size="sm" />
                           );
                         })()}
+                        {(service as any)._providerType === 'pharmacy' && (service as any).serviceType && (
+                          <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
+                        )}
                       </div>
                       {/* Address + Single Disease Badge */}
                       <div className="flex items-center justify-between mb-4 text-sm">
