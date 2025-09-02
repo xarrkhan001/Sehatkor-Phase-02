@@ -59,6 +59,95 @@ export const createPayment = async (req, res) => {
   }
 };
 
+// Bulk soft delete payments from a provider's view (hide in provider wallet)
+export const bulkDeleteProviderPayments = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const { ids } = req.body || {};
+    if (!providerId || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'providerId and non-empty ids array are required' });
+    }
+
+    const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+    if (validIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid ids provided' });
+    }
+
+    const filter = {
+      _id: { $in: validIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      providerId: mongoose.Types.ObjectId.isValid(providerId)
+        ? new mongoose.Types.ObjectId(providerId)
+        : providerId,
+      deletedForProvider: { $ne: true },
+    };
+
+    const update = {
+      $set: {
+        deletedForProvider: true,
+        deletedAt: new Date(),
+        deletedBy: req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)
+          ? new mongoose.Types.ObjectId(req.user.id)
+          : undefined,
+      }
+    };
+
+    const result = await Payment.updateMany(filter, update);
+
+    return res.json({
+      success: true,
+      message: 'Payments deleted from provider history',
+      matched: result.matchedCount ?? result.nMatched ?? 0,
+      modified: result.modifiedCount ?? result.nModified ?? 0,
+      ids: validIds,
+    });
+  } catch (error) {
+    console.error(' Bulk delete provider payments error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to bulk delete provider payments', error: error.message });
+  }
+};
+
+// Soft delete a payment from a provider's view (hide in provider wallet)
+export const deleteProviderPayment = async (req, res) => {
+  try {
+    const { providerId, paymentId } = req.params;
+    if (!providerId || !paymentId) {
+      return res.status(400).json({ success: false, message: 'providerId and paymentId are required' });
+    }
+
+    // Build filter ensuring the payment belongs to this provider
+    const filter = {
+      _id: paymentId,
+      providerId: mongoose.Types.ObjectId.isValid(providerId)
+        ? new mongoose.Types.ObjectId(providerId)
+        : providerId,
+      deletedForProvider: { $ne: true },
+    };
+
+    const updated = await Payment.findOneAndUpdate(
+      filter,
+      {
+        $set: {
+          deletedForProvider: true,
+          deletedAt: new Date(),
+          deletedBy: req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)
+            ? new mongoose.Types.ObjectId(req.user.id)
+            : undefined,
+        }
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Payment not found for this provider' });
+    }
+
+    return res.json({ success: true, message: 'Payment deleted for provider', paymentId });
+  } catch (error) {
+    console.error(' Delete provider payment error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to delete payment for provider', error: error.message });
+  }
+};
+
 // Bulk delete invoices (admin) -> soft delete for admin only
 export const bulkDeleteInvoices = async (req, res) => {
   try {
@@ -464,27 +553,27 @@ export const markServiceCompleted = async (req, res) => {
 // Admin: Release payment to provider
 export const releasePaymentToProvider = async (req, res) => {
   try {
-    console.log('💰 Processing payment release request...');
+    console.log(' Processing payment release request...');
     const { paymentId } = req.params;
     const { adminId, releaseNotes = "", adminCommission } = req.body;
     
-    console.log('📋 Payment ID:', paymentId);
-    console.log('👤 Admin ID:', adminId);
+    console.log(' Payment ID:', paymentId);
+    console.log(' Admin ID:', adminId);
 
     const payment = await Payment.findById(paymentId);
     
     if (!payment) {
-      console.log('❌ Payment not found:', paymentId);
+      console.log(' Payment not found:', paymentId);
       return res.status(404).json({
         success: false,
         message: "Payment record not found"
       });
     }
 
-    console.log('📄 Payment found:', payment._id, 'Service completed:', payment.serviceCompleted);
+    console.log(' Payment found:', payment._id, 'Service completed:', payment.serviceCompleted);
 
     if (!payment.serviceCompleted) {
-      console.log('⚠️ Service not completed yet');
+      console.log(' Service not completed yet');
       return res.status(400).json({
         success: false,
         message: "Cannot release payment - service not completed yet"
@@ -492,7 +581,7 @@ export const releasePaymentToProvider = async (req, res) => {
     }
 
     if (payment.releasedToProvider) {
-      console.log('⚠️ Payment already released');
+      console.log(' Payment already released');
       return res.status(400).json({
         success: false,
         message: "Payment already released to provider"
@@ -505,12 +594,12 @@ export const releasePaymentToProvider = async (req, res) => {
       try {
         validAdminId = new mongoose.Types.ObjectId(adminId);
       } catch (err) {
-        console.log('⚠️ Invalid adminId, setting to null:', adminId);
+        console.log(' Invalid adminId, setting to null:', adminId);
         validAdminId = null;
       }
     }
 
-    console.log('🔄 Updating payment with valid adminId:', validAdminId);
+    console.log(' Updating payment with valid adminId:', validAdminId);
 
     // Compute commission and net amounts (optional)
     const commissionPct = !isNaN(Number(adminCommission)) ? Number(adminCommission) : (payment.adminCommission ?? 0);
@@ -538,7 +627,7 @@ export const releasePaymentToProvider = async (req, res) => {
     ).populate('patientId', 'name email phone');
 
 
-    console.log('✅ Payment released successfully:', updatedPayment._id);
+    console.log(' Payment released successfully:', updatedPayment._id);
 
     // Create invoice document for this single release
     let invoiceDoc = null;
@@ -571,7 +660,7 @@ export const releasePaymentToProvider = async (req, res) => {
         notes: releaseNotes,
       });
     } catch (e) {
-      console.warn('⚠️ Failed to create invoice for single release:', e?.message);
+      console.warn(' Failed to create invoice for single release:', e?.message);
     }
 
     // Emit WebSocket notification to provider
@@ -585,7 +674,7 @@ export const releasePaymentToProvider = async (req, res) => {
         patientName: updatedPayment.patientName,
         releaseDate: updatedPayment.releaseDate
       });
-      console.log('📡 WebSocket notification sent for payment release');
+      console.log(' WebSocket notification sent for payment release');
       // Emit invoice event as well
       if (invoiceDoc) {
         io.emit('invoice_issued', {
@@ -596,7 +685,7 @@ export const releasePaymentToProvider = async (req, res) => {
           itemsCount: (invoiceDoc.items || []).length,
           issuedAt: invoiceDoc.issuedAt,
         });
-        console.log('🧾 Invoice websocket event emitted');
+        console.log(' Invoice websocket event emitted');
       }
     }
 
@@ -691,20 +780,25 @@ export const getProviderWallet = async (req, res) => {
     const { providerId } = req.params;
     console.log(' Fetching wallet for provider:', providerId);
 
-    // Get all payments for this provider
-    const payments = await Payment.find({ providerId })
+    // Fetch two sets:
+    // 1) paymentsForList: exclude provider-soft-deleted entries (for UI history)
+    // 2) paymentsAll: include ALL provider payments for accurate totals/balances
+    const paymentsForList = await Payment.find({ providerId, deletedForProvider: { $ne: true } })
       .populate('patientId', 'name email phone')
       .populate('bookingId')
       .sort({ createdAt: -1 });
 
-    // Calculate wallet statistics
-    const totalEarnings = payments.reduce((sum, payment) => {
+    const paymentsAll = await Payment.find({ providerId })
+      .sort({ createdAt: -1 });
+
+    // Calculate wallet statistics from ALL payments (independent of history deletions)
+    const totalEarnings = paymentsAll.reduce((sum, payment) => {
       // Use original amount if available, otherwise use current amount
       return sum + (payment.originalAmount || payment.amount);
     }, 0);
 
-    const releasedPayments = payments.filter(p => p.releasedToProvider);
-    const pendingPayments = payments.filter(p => p.serviceCompleted && !p.releasedToProvider);
+    const releasedPayments = paymentsAll.filter(p => p.releasedToProvider);
+    const pendingPayments = paymentsAll.filter(p => p.serviceCompleted && !p.releasedToProvider);
 
     // For clarity:
     // - releasedNet: funds already released to provider (after commission)
@@ -726,10 +820,11 @@ export const getProviderWallet = async (req, res) => {
       totalEarnings,
       availableBalance,
       pendingBalance,
-      totalServices: payments.length,
-      completedServices: payments.filter(p => p.serviceCompleted).length,
-      payments: payments.map(payment => ({
+      totalServices: paymentsAll.length,
+      completedServices: paymentsAll.filter(p => p.serviceCompleted).length,
+      payments: paymentsForList.map(payment => ({
         _id: payment._id,
+        patientId: payment.patientId?._id || payment.patientId,
         serviceName: payment.serviceName,
         patientName: payment.patientName,
         amount: payment.amount,
@@ -748,7 +843,7 @@ export const getProviderWallet = async (req, res) => {
       availableBalance,
       pendingBalance,
       releasedNet,
-      totalServices: payments.length
+      totalServices: paymentsAll.length
     });
 
     res.json({

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import ServiceManagement from "@/components/ServiceManagement";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import ProviderWallet from "@/components/ProviderWallet";
+import CurrencyAmount from "@/components/CurrencyAmount";
 import {
   Stethoscope,
   Calendar,
@@ -358,7 +360,11 @@ const DoctorDashboard = () => {
                 <div>
                   <p className="text-sm text-purple-100 opacity-90">Available Balance</p>
                   <p className="text-3xl font-bold text-white">
-                    {isLoadingWallet ? '...' : `PKR ${walletData?.availableBalance?.toLocaleString() || '0'}`}
+                    <CurrencyAmount
+                      amount={walletData?.availableBalance}
+                      loading={isLoadingWallet}
+                      currency="PKR"
+                    />
                   </p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
@@ -376,7 +382,11 @@ const DoctorDashboard = () => {
                 <div>
                   <p className="text-sm text-amber-100 opacity-90">Total Earnings</p>
                   <p className="text-3xl font-bold text-white">
-                    {isLoadingWallet ? '...' : `PKR ${walletData?.totalEarnings?.toLocaleString() || '0'}`}
+                    <CurrencyAmount
+                      amount={walletData?.totalEarnings}
+                      loading={isLoadingWallet}
+                      currency="PKR"
+                    />
                   </p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">

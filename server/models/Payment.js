@@ -60,7 +60,12 @@ const PaymentSchema = new mongoose.Schema(
       image: { type: String },
       location: { type: String },
       phone: { type: String }
-    }
+    },
+
+    // Soft delete for provider wallet (hide from provider's Payment History list)
+    deletedForProvider: { type: Boolean, default: false },
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
   },
   { timestamps: true }
 );
