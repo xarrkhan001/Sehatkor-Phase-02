@@ -369,7 +369,7 @@ const ComparePage = () => {
                       <td className="p-4 font-medium">Service Type</td>
                       {sorted.map(item => (
                         <td key={item.id} className="p-4">
-                          {((item as any)._providerType === 'pharmacy' || (item as any)._providerType === 'laboratory') && (item as any).serviceType ? (
+                          {((item as any)._providerType === 'pharmacy' || (item as any)._providerType === 'laboratory' || (item as any)._providerType === 'clinic') && (item as any).serviceType ? (
                             <ServiceTypeBadge serviceType={(item as any).serviceType} size="sm" />
                           ) : (
                             <span className="text-xs text-muted-foreground">—</span>

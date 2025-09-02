@@ -17,6 +17,7 @@ import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingBadge from "@/components/RatingBadge";
 import RatingModal from "@/components/RatingModal";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
+import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 
 const HospitalsPage = () => {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ const HospitalsPage = () => {
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
             availability: (service as any).availability,
+            serviceType: (service as any).serviceType,
             ...(function () {
               try {
                 const uid = user?.id || (user as any)?._id || 'anon';
@@ -256,6 +258,8 @@ const HospitalsPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings,
           ratingBadge: (service as any).ratingBadge || null,
+          availability: (service as any).availability,
+          serviceType: (service as any).serviceType,
         }) as unknown as Service;
       });
       setHospitalServices(prev => {
@@ -522,6 +526,9 @@ const HospitalsPage = () => {
                         >
                           {(service as any).availability === 'Online and Physical' ? 'Online & Physical' : (service as any).availability}
                         </Badge>
+                      )}
+                      {(service as any).serviceType && (
+                        <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                       )}
                     </div>
                   </div>
