@@ -496,7 +496,15 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                             <AvailabilityBadge availability={availability} size="sm" />
                           );
                         })()}
-                        {service.providerType === 'pharmacy' && service.serviceType && (
+                        {(() => {
+                          console.log('Service debug:', {
+                            name: service.name,
+                            providerType: service.providerType,
+                            serviceType: service.serviceType,
+                            shouldShow: (service.providerType === 'pharmacy' || service.providerType === 'laboratory') && service.serviceType
+                          });
+                          return (service.providerType === 'pharmacy' || service.providerType === 'laboratory') && service.serviceType;
+                        })() && (
                           <ServiceTypeBadge serviceType={service.serviceType} size="sm" />
                         )}
                         {service.ratingBadge && (

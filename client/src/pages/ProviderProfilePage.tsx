@@ -801,7 +801,7 @@ const ProviderProfilePage = () => {
                         ) : null;
                       })()}
                       {/* Pharmacy serviceType badge (moved from image) */}
-                      {(service as any).providerType === 'pharmacy' && (service as any).serviceType && (
+                      {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory') && (service as any).serviceType && (
                         <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
                       )}
                     </div>

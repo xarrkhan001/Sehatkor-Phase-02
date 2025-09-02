@@ -138,6 +138,8 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
+        serviceType: service.serviceType || "Private",
+        availability: service.availability || "Physical",
       })),
     ];
 
