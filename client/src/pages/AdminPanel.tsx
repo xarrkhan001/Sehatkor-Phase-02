@@ -562,7 +562,7 @@ const AdminPanel = () => {
         {/* Stylish Navigation Header */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 w-full max-w-6xl">
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 w-full">
               
               {/* Verify Entities Card */}
               <div 
