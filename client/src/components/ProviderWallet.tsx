@@ -41,6 +41,7 @@ import {
 import io from 'socket.io-client';
 import { generateInvoicePDF, downloadInvoiceHTML } from '@/utils/pdfGenerator';
 import InvoicePreviewModal from './InvoicePreviewModal';
+import CurrencyAmount from '@/components/CurrencyAmount';
 
 interface Payment {
   _id: string;
@@ -140,6 +141,12 @@ const ProviderWallet = () => {
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'released'>('all');
   const [socket, setSocket] = useState<any>(null);
   // Use backend-provided availableBalance for withdrawal validations/UI
+  // Payment delete confirm dialog
+  const [confirmPaymentOpen, setConfirmPaymentOpen] = useState<boolean>(false);
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+  // Bulk-select payments
+  const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
+  const [confirmBulkPaymentsOpen, setConfirmBulkPaymentsOpen] = useState<boolean>(false);
 
   const fetchInvoices = async () => {
     if (!user?.id) return;
@@ -160,6 +167,52 @@ const ProviderWallet = () => {
       console.error('💥 Invoices fetch error:', e);
     } finally {
       setLoadingInvoices(false);
+    }
+  };
+
+  const handleBulkDeletePayments = async () => {
+    if (!user?.id) return;
+    if (selectedPayments.length === 0) {
+      toast.error('No payments selected');
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:4000/api/payments/provider/${user.id}/payments/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+        body: JSON.stringify({ ids: selectedPayments }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Bulk delete failed');
+      toast.success(`Deleted ${data.modified ?? selectedPayments.length} payment(s) from history`);
+      setSelectedPayments([]);
+      setConfirmBulkPaymentsOpen(false);
+      fetchWallet();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to bulk delete payments');
+    }
+  };
+
+  const handleDeletePayment = async () => {
+    if (!user?.id || !pendingPaymentId) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/payments/provider/${user.id}/payment/${pendingPaymentId}` , {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Failed to delete payment');
+      toast.success('Payment deleted from your history');
+      setConfirmPaymentOpen(false);
+      setPendingPaymentId(null);
+      fetchWallet();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to delete payment');
     }
   };
 
@@ -432,6 +485,26 @@ const ProviderWallet = () => {
   // Derived counts for payment filters
   const releasedCount = wallet?.payments?.filter(p => p.releasedToProvider).length ?? 0;
   const pendingCount = wallet?.payments?.filter(p => !p.releasedToProvider).length ?? 0;
+  const filteredPayments = wallet.payments.filter(p => paymentFilter==='all' ? true : paymentFilter==='released' ? p.releasedToProvider : !p.releasedToProvider);
+  const togglePaymentSelected = (id: string, checked: boolean | 'indeterminate') => {
+    setSelectedPayments(prev => {
+      const set = new Set(prev);
+      if (checked) set.add(id); else set.delete(id);
+      return Array.from(set);
+    });
+  };
+  const allPaymentsSelected = filteredPayments.length > 0 && selectedPayments.filter(id => filteredPayments.some(p => p._id === id)).length === filteredPayments.length;
+  const anyPaymentsSelected = selectedPayments.length > 0 && filteredPayments.some(p => selectedPayments.includes(p._id));
+  const selectAllVisiblePayments = () => {
+    if (allPaymentsSelected) {
+      // clear only those currently visible
+      const visibleIds = new Set(filteredPayments.map(p => p._id));
+      setSelectedPayments(prev => prev.filter(id => !visibleIds.has(id)));
+    } else {
+      const ids = filteredPayments.map(p => p._id);
+      setSelectedPayments(prev => Array.from(new Set([...prev, ...ids])));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -447,9 +520,11 @@ const ProviderWallet = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <div className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">
-                      {balanceVisible ? `PKR ${wallet.availableBalance.toLocaleString()}` : '••••••'}
-                    </div>
+                    <CurrencyAmount
+                      amount={wallet.availableBalance}
+                      masked={!balanceVisible}
+                      className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent"
+                    />
                     <Button
                       variant="ghost"
                       size="sm"
@@ -474,9 +549,10 @@ const ProviderWallet = () => {
                 <Clock className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-700 bg-clip-text text-transparent">
-                  PKR {wallet.pendingBalance.toLocaleString()}
-                </div>
+                <CurrencyAmount
+                  amount={wallet.pendingBalance}
+                  className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-700 bg-clip-text text-transparent"
+                />
                 <div className="text-sm font-medium text-orange-700">Pending Release</div>
               </div>
             </div>
@@ -491,9 +567,10 @@ const ProviderWallet = () => {
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-                  PKR {wallet.totalEarnings.toLocaleString()}
-                </div>
+                <CurrencyAmount
+                  amount={wallet.totalEarnings}
+                  className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent"
+                />
                 <div className="text-sm font-medium text-blue-700">Total Earnings</div>
               </div>
             </div>
@@ -606,6 +683,22 @@ const ProviderWallet = () => {
                 Released ({releasedCount})
               </Button>
             </div>
+            <div className="flex items-center gap-2 bg-white/10 p-1 rounded-lg">
+              <Button size="sm" variant="ghost" className="text-white hover:bg-white/20" onClick={selectAllVisiblePayments}>
+                {allPaymentsSelected ? 'Clear visible' : 'Select visible'}
+              </Button>
+              <Button
+                size="sm"
+                variant={anyPaymentsSelected ? 'destructive' : 'ghost'}
+                className={`${anyPaymentsSelected ? 'bg-red-600 text-white hover:bg-red-700' : 'text-white hover:bg-white/20'}`}
+                disabled={!anyPaymentsSelected}
+                onClick={() => setConfirmBulkPaymentsOpen(true)}
+                title="Delete selected from history"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Bulk Delete
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -617,12 +710,21 @@ const ProviderWallet = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {wallet.payments
-                .filter(p => paymentFilter==='all' ? true : paymentFilter==='released' ? p.releasedToProvider : !p.releasedToProvider)
-                .map((payment) => (
+              {filteredPayments.map((payment) => (
                 <div key={payment._id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="flex-1">
+                  <div className="flex items-start gap-3 flex-1">
+                    <Checkbox
+                      checked={selectedPayments.includes(payment._id)}
+                      onCheckedChange={(v) => togglePaymentSelected(payment._id, v)}
+                      className="mt-1"
+                      aria-label="Select payment"
+                    />
                     <div className="font-medium">{payment.serviceName}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium text-lg">
+                      {payment.currency} {payment.amount.toLocaleString()}
+                    </div>
                     <div className="text-sm text-muted-foreground flex items-center gap-4 flex-wrap">
                       <div className="flex items-center gap-1">
                         <User className="w-3 h-3" />
@@ -659,6 +761,18 @@ const ProviderWallet = () => {
                         Released: {new Date(payment.releaseDate).toLocaleDateString()}
                       </div>
                     )}
+                    <div className="mt-2 flex justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => { setPendingPaymentId(payment._id); setConfirmPaymentOpen(true); }}
+                        title="Delete from history"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -666,6 +780,42 @@ const ProviderWallet = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirm bulk delete payments */}
+      <AlertDialog open={confirmBulkPaymentsOpen} onOpenChange={setConfirmBulkPaymentsOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete selected payments from your history?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the selected payments from your Payment History. It will not affect invoices or balances.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmBulkPaymentsOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDeletePayments} className="bg-red-600 hover:bg-red-700">
+              Delete Selected
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm delete payment */}
+      <AlertDialog open={confirmPaymentOpen} onOpenChange={setConfirmPaymentOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete payment from your history?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the selected payment from your Payment History. It will not affect invoices or balances.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setConfirmPaymentOpen(false); setPendingPaymentId(null); }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePayment} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Invoices */}
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 shadow-xl">

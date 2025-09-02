@@ -44,6 +44,7 @@ import {
   Wallet,
   Truck
 } from "lucide-react";
+import CurrencyAmount from "@/components/CurrencyAmount";
 
 const LaboratoryDashboard = () => {
   const { user, logout } = useAuth();
@@ -470,8 +471,6 @@ const LaboratoryDashboard = () => {
     }
   };
 
-  
-
   const handleTypeChange = (type: string) => {
     // Deprecated: specialization is edited via Edit Profile dialog now
     // setLabType(type);
@@ -556,9 +555,11 @@ const LaboratoryDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-purple-100">Available Balance</p>
-                  <p className="text-2xl font-bold">
-                    {isLoadingWallet ? '...' : `PKR ${walletData?.availableBalance?.toLocaleString() || '0'}`}
-                  </p>
+                  <CurrencyAmount
+                    amount={walletData?.availableBalance ?? null}
+                    loading={isLoadingWallet}
+                    className="text-2xl font-bold"
+                  />
                 </div>
                 <div className="p-3 rounded-full bg-purple-400/20">
                   <Wallet className="w-6 h-6" />
@@ -573,9 +574,11 @@ const LaboratoryDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-amber-100">Total Earnings</p>
-                  <p className="text-2xl font-bold">
-                    {isLoadingWallet ? '...' : `PKR ${(walletData?.totalEarned || 0).toLocaleString()}`}
-                  </p>
+                  <CurrencyAmount
+                    amount={walletData?.totalEarnings ?? null}
+                    loading={isLoadingWallet}
+                    className="text-2xl font-bold"
+                  />
                 </div>
                 <div className="p-3 rounded-full bg-amber-400/20">
                   <DollarSign className="w-6 h-6" />

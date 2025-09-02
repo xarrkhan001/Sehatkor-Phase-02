@@ -25,6 +25,8 @@ import {
   getAllInvoices,
   deleteInvoice,
   bulkDeleteInvoices,
+  deleteProviderPayment,
+  bulkDeleteProviderPayments,
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -45,6 +47,10 @@ router.put('/:paymentId/release', releasePaymentToProvider);
 router.get('/wallet/:providerId', getProviderWallet);
 router.post('/withdraw/:providerId', requestWithdrawal);
 router.get('/withdrawals/:providerId', getWithdrawalsByProvider);
+// Soft delete a payment for a provider (hide in provider wallet)
+router.delete('/provider/:providerId/payment/:paymentId', deleteProviderPayment);
+// Bulk soft delete payments for a provider (hide in provider wallet)
+router.post('/provider/:providerId/payments/bulk-delete', bulkDeleteProviderPayments);
 
 // Invoice routes
 router.get('/invoices/provider/:providerId', getInvoicesByProvider);
