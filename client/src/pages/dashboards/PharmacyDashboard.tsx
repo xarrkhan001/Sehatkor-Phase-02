@@ -80,7 +80,8 @@ const PharmacyDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private'
+    serviceType: 'Private',
+    homeDelivery: false
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -95,7 +96,8 @@ const PharmacyDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private'
+    serviceType: 'Private',
+    homeDelivery: false
   });
 
   const medicineCategories = [
@@ -126,6 +128,7 @@ const PharmacyDashboard = () => {
         detailAddress: d.detailAddress,
         availability: d.availability || 'Physical',
         serviceType: d.serviceType || 'Private',
+        homeDelivery: d.homeDelivery || false,
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
@@ -159,6 +162,7 @@ const PharmacyDashboard = () => {
         providerType: 'pharmacy' as const,
         availability: d.availability || 'Physical',
         serviceType: d.serviceType || 'Private',
+        homeDelivery: d.homeDelivery || false,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }));
@@ -369,6 +373,7 @@ const PharmacyDashboard = () => {
         detailAddress: medicineForm.detailAddress,
         availability: medicineForm.availability,
         serviceType: medicineForm.serviceType,
+        homeDelivery: medicineForm.homeDelivery,
         providerName: user?.name || 'Pharmacy',
       });
 
@@ -390,7 +395,7 @@ const PharmacyDashboard = () => {
       ServiceManager.addService(newMedicine);
 
       // Reset form
-      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private' });
+      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private', homeDelivery: false });
       setMedicineImagePreview('');
       setMedicineImageFile(null);
       setIsAddMedicineOpen(false);
@@ -435,7 +440,8 @@ const PharmacyDashboard = () => {
       city: m.city || '',
       detailAddress: m.detailAddress || '',
       availability: m.availability || 'Physical',
-      serviceType: m.serviceType || 'Private'
+      serviceType: m.serviceType || 'Private',
+      homeDelivery: m.homeDelivery || false
     });
     setEditImagePreview(m.imageUrl || m.image || '');
     setEditImageFile(null);
@@ -471,6 +477,7 @@ const PharmacyDashboard = () => {
         detailAddress: editForm.detailAddress,
         availability: editForm.availability,
         serviceType: editForm.serviceType,
+        homeDelivery: editForm.homeDelivery,
       });
       // refresh from backend and sync ServiceManager
       await reloadMedicines();
@@ -807,6 +814,27 @@ const PharmacyDashboard = () => {
                               </div>
                             </div>
                             
+                            {/* Home Delivery Option */}
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Delivery Options</h4>
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id="homeDelivery"
+                                  checked={medicineForm.homeDelivery}
+                                  onChange={(e) => setMedicineForm({ ...medicineForm, homeDelivery: e.target.checked })}
+                                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                                />
+                                <Label htmlFor="homeDelivery" className="flex items-center space-x-2 cursor-pointer">
+                                  <span>🏠</span>
+                                  <span>Home Delivery Available</span>
+                                </Label>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Check this if you offer home delivery for this medicine
+                              </p>
+                            </div>
+                            
                             {/* Location Fields */}
                             <div className="space-y-3 border-t pt-3">
                               <h4 className="font-medium text-sm">Location Information</h4>
@@ -885,6 +913,12 @@ const PharmacyDashboard = () => {
                                   {m.serviceType && (
                                     <ServiceTypeBadge serviceType={m.serviceType} size="sm" />
                                   )}
+                                  {m.homeDelivery && (
+                                    <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs px-2.5 py-0.5 rounded-full">
+                                      <span className="leading-none">🏠</span>
+                                      <span className="leading-none">Home Delivery</span>
+                                    </Badge>
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(m)}>
@@ -911,6 +945,7 @@ const PharmacyDashboard = () => {
                                 <TableHead>Stock</TableHead>
                                 <TableHead>Availability</TableHead>
                                 <TableHead>Service Type</TableHead>
+                                <TableHead>Home Delivery</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -942,6 +977,18 @@ const PharmacyDashboard = () => {
                                         <ServiceTypeBadge serviceType={m.serviceType} size="md" />
                                       ) : (
                                         '-'
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      {m.homeDelivery ? (
+                                        <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-3 py-1 rounded-full">
+                                          <span className="leading-none">🏠</span>
+                                          <span className="leading-none">Available</span>
+                                        </Badge>
+                                      ) : (
+                                        <Badge variant="secondary" className="text-gray-600">
+                                          Not Available
+                                        </Badge>
                                       )}
                                     </TableCell>
                                     <TableCell className="text-right space-x-2">
@@ -1256,6 +1303,27 @@ const PharmacyDashboard = () => {
                         </label>
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* Home Delivery Option */}
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Delivery Options</h4>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="editHomeDelivery"
+                        checked={editForm.homeDelivery}
+                        onChange={(e) => setEditForm({ ...editForm, homeDelivery: e.target.checked })}
+                        className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                      />
+                      <Label htmlFor="editHomeDelivery" className="flex items-center space-x-2 cursor-pointer">
+                        <span>🏠</span>
+                        <span>Home Delivery Available</span>
+                      </Label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Check this if you offer home delivery for this medicine
+                    </p>
                   </div>
                   
                   <div className="space-y-3 border-t pt-3">

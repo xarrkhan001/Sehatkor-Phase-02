@@ -47,6 +47,7 @@ type Unified = {
   ratingBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   myBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   homeService?: boolean;
+  homeDelivery?: boolean;
   availability?: 'Online' | 'Physical' | 'Online and Physical' | string;
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
   variants?: ServiceVariant[];
@@ -116,6 +117,8 @@ const ServiceDetailPage = () => {
       availability: rawStateService.availability,
       serviceType: rawStateService.serviceType,
       variants: rawStateService.variants || [],
+      // Ensure boolean coercion for homeDelivery in case it comes as string/undefined
+      homeDelivery: typeof rawStateService.homeDelivery !== 'undefined' ? Boolean(rawStateService.homeDelivery) : undefined,
     };
     return normalized;
   }, [rawStateService]);
@@ -169,6 +172,7 @@ const ServiceDetailPage = () => {
       ratingBadge: (s as any).ratingBadge ?? null,
       myBadge: null,
       homeService: s.providerType === 'doctor',
+      homeDelivery: s.providerType === 'pharmacy' ? Boolean((s as any).homeDelivery) : undefined,
       availability: (s as any).availability,
       serviceType: (s as any).serviceType,
       variants: (s as any).variants || [],
@@ -400,6 +404,12 @@ const ServiceDetailPage = () => {
                     )}
                     {(item.serviceType ?? resolvedServiceType) && (
                       <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
+                    )}
+                    {(item.homeDelivery === true) && ((item.providerType === 'pharmacy') || (item.type === 'Medicine')) && (
+                      <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                        <span className="leading-none">🏠</span>
+                        <span className="leading-none">Home Delivery</span>
+                      </Badge>
                     )}
                     {freshCounts && (
                       <div className="flex items-center gap-2 text-xs text-gray-600">

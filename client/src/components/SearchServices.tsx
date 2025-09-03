@@ -42,6 +42,7 @@ interface SearchService {
   _providerVerified?: boolean;
   availability?: "Online" | "Physical" | "Online and Physical";
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
+  homeDelivery?: boolean;
 }
 
 // No fallback or mock data. We will only show real services from backend.
@@ -141,6 +142,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       _providerVerified: (s as any)._providerVerified,
       availability: (s as any).availability || "Physical",
       serviceType: (s as any).serviceType || "Private",
+      homeDelivery: s.providerType === 'pharmacy' ? Boolean((s as any).homeDelivery) : undefined,
     }));
   };
 
@@ -347,6 +349,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           address: service.detailAddress ?? undefined,
           providerPhone: service.providerPhone ?? undefined,
           googleMapLink: service.googleMapLink ?? undefined,
+          homeDelivery: service.providerType === 'pharmacy' ? Boolean(service.homeDelivery) : undefined,
           variants: service.variants || [],
           variantIndex: activeIdx,
           variantLabel: timeLabel ?? undefined,
@@ -506,6 +509,11 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                           return (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic' || service.providerType === 'doctor') && service.serviceType;
                         })() && (
                           <ServiceTypeBadge serviceType={service.serviceType} size="sm" />
+                        )}
+                        {service.providerType === 'pharmacy' && service.homeDelivery && (
+                          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white border border-white whitespace-nowrap shadow-sm">
+                            🏠 Home Delivery
+                          </span>
                         )}
                         {service.ratingBadge && (
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full border whitespace-nowrap ${getBadgeStyles(service.ratingBadge)}`}>

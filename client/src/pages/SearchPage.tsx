@@ -37,6 +37,7 @@ interface SearchService extends Service {
   myBadge?: 'excellent' | 'good' | 'fair' | 'poor';
   diseases?: string[];
   availability?: "Online" | "Physical" | "Online and Physical";
+  homeDelivery?: boolean;
 }
 
 const SearchPage = () => {
@@ -297,6 +298,8 @@ const SearchPage = () => {
           createdAt: (service as any).createdAt,
           // include pharmacy service type (and pass-through if present on others)
           serviceType: (service as any).serviceType || undefined,
+          // include homeDelivery from backend
+          homeDelivery: Boolean((service as any).homeDelivery),
         };
 
         // coordinates based on location
@@ -1087,6 +1090,12 @@ const SearchPage = () => {
                         {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic' || (service as any)._providerType === 'doctor') && (service as any).serviceType && (
                           <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                         )}
+                        {(service as any)._providerType === 'pharmacy' && (service as any).homeDelivery && (
+                          <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                            <span className="leading-none">🏠</span>
+                            <span className="leading-none">Home Delivery</span>
+                          </Badge>
+                        )}
                       </div>
                       {/* Address + Single Disease Badge */}
                       <div className="flex items-center gap-1 text-gray-500 mb-2">
@@ -1163,6 +1172,7 @@ const SearchPage = () => {
                                   isReal: true,
                                   type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
                                   availability: (service as any).availability,
+                                  homeDelivery: Boolean((service as any).homeDelivery),
                                 }
                               }
                             });

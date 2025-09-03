@@ -73,6 +73,7 @@ const PharmaciesPage = () => {
             ratingBadge: (service as any).ratingBadge || null,
             availability: (service as any).availability || 'Physical',
             serviceType: (service as any).serviceType || 'Private',
+            homeDelivery: Boolean((service as any).homeDelivery) === true,
           } as Service;
           // Hydrate user's own badge from localStorage
           try {
@@ -238,6 +239,7 @@ const PharmaciesPage = () => {
           ratingBadge: (service as any).ratingBadge || null,
           availability: (service as any).availability || 'Physical',
           serviceType: (service as any).serviceType || 'Private',
+          homeDelivery: Boolean((service as any).homeDelivery) === true,
         } as Service;
         // Hydrate user's own badge from localStorage
         try {
@@ -530,6 +532,12 @@ const PharmaciesPage = () => {
                   )}
                   {(service as any).serviceType && (
                     <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
+                  )}
+                  {(service as any)._providerType === 'pharmacy' && (service as any).homeDelivery && (
+                    <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">
+                      <span className="leading-none">🏠</span>
+                      <span className="leading-none">Home Delivery</span>
+                    </Badge>
                   )}
                 </div>
 

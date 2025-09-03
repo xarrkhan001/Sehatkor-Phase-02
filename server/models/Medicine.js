@@ -49,6 +49,10 @@ const MedicineSchema = new mongoose.Schema(
       enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
       default: "Private"
     },
+    homeDelivery: {
+      type: Boolean,
+      default: false
+    },
   },
   { timestamps: true }
 );
