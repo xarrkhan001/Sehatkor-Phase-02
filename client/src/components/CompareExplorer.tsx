@@ -46,6 +46,8 @@ type Unified = {
   availability?: 'Online' | 'Physical' | 'Online and Physical';
   // service type for pharmacy services
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
+  // pharmacy flag
+  homeDelivery?: boolean;
   // variants array (doctor services primarily)
   variants?: Array<{
     imageUrl?: string;
@@ -128,6 +130,7 @@ const CompareExplorer = () => {
             days: (s as any)?.days,
             availability: (s as any)?.availability as any,
             serviceType: (s as any)?.serviceType,
+            homeDelivery: (s as any)?.providerType === 'pharmacy' ? Boolean((s as any)?.homeDelivery) : undefined,
             variants: (s as any)?.variants || [],
           } as Unified;
         });
@@ -688,6 +691,12 @@ const CompareExplorer = () => {
                         {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.serviceType && (
                           <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
                         )}
+                        {item._providerType === 'pharmacy' && item.homeDelivery && (
+                          <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                            <span className="leading-none">🏠</span>
+                            <span className="leading-none">Home Delivery</span>
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Buttons */}
@@ -729,6 +738,7 @@ const CompareExplorer = () => {
                                   googleMapLink: item.googleMapLink ?? undefined,
                                   availability: item.availability ?? undefined,
                                   serviceType: item.serviceType,
+                                  homeDelivery: item.homeDelivery,
                                   variants: item.variants || [],
                                 }
                               }
@@ -881,6 +891,7 @@ const CompareExplorer = () => {
                                     googleMapLink: s.googleMapLink ?? undefined,
                                     availability: s.availability ?? undefined,
                                     serviceType: s.serviceType,
+                                    homeDelivery: s.homeDelivery,
                                     variants: s.variants || [],
                                   }
                                 }

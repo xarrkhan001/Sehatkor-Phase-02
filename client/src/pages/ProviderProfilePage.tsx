@@ -804,6 +804,12 @@ const ProviderProfilePage = () => {
                       {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).serviceType && (
                         <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
                       )}
+                      {/* Home Delivery badge for pharmacy services */}
+                      {(service as any).providerType === 'pharmacy' && (service as any).homeDelivery && (
+                        <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">
+                          🏠 Home Delivery
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="mt-auto space-y-2">
