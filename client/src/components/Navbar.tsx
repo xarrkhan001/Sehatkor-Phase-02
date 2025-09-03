@@ -191,89 +191,114 @@ const Navbar = () => {
                     <User className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-60 bg-white border shadow-xl rounded-2xl mt-2 p-0 overflow-hidden" sideOffset={5} alignOffset={-10}>
-                  <DropdownMenuLabel className="font-normal px-4 pt-4 pb-3 bg-white">
-                    <div className="flex items-center gap-3">
-                      <Avatar 
-                        className="h-10 w-10 ring-2 ring-white shadow-sm cursor-pointer hover:ring-red-300 transition-all duration-200 hover:scale-105"
-                        onClick={() => {
-                          if (user) {
-                            if (user.role === 'patient') {
-                              navigate(`/patient/${user.id}`);
-                            } else {
-                              navigate(`/provider/${user.id}`);
-                            }
-                          }
-                        }}
-                      >
-                        <AvatarImage src={user.avatar || (user as any).avatar} alt={user.name} />
-                        <AvatarFallback className="bg-red-100 text-red-700 font-semibold">
-                          {user.name?.charAt(0) ?? 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 space-y-2">
-                        <p className="text-sm font-semibold leading-none text-gray-900 truncate">{user.name}</p>
-                        <p className="text-xs leading-none text-gray-500 truncate">{user.email}</p>
-                        <div className="mt-2 flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <UserBadge role={(user as any).role} />
-                            {user.isVerified ? (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                                <BadgeCheck className="h-3 w-3" /> Verified
-                              </span>
-                            ) : user.role !== 'patient' && (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                                <X className="h-3 w-3" /> Not Verified
-                              </span>
+                <DropdownMenuContent align="end" className="w-72 bg-white/95 backdrop-blur-xl border border-gray-200/30 shadow-xl rounded-2xl mt-3 p-0 overflow-hidden animate-in slide-in-from-top-2 duration-300" sideOffset={8} alignOffset={-15}>
+                  {/* Header Section with Enhanced Gray Gradient */}
+                  <div className="relative bg-gradient-to-br from-gray-200 via-blue-200 to-blue-300 px-6 py-5 border-b border-blue-300/50">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/30 to-transparent"></div>
+                    <DropdownMenuLabel className="font-normal relative z-10">
+                      <div className="flex items-start gap-4">
+                        <div className="relative p-1 bg-gradient-to-r from-green-400 via-cyan-400 to-blue-500 rounded-full shadow-lg shadow-cyan-400/50 mt-1">
+                          <Avatar 
+                            className="h-16 w-16 shadow-xl cursor-pointer transition-all duration-300 hover:scale-105"
+                            onClick={() => {
+                              if (user) {
+                                if (user.role === 'patient') {
+                                  navigate(`/patient/${user.id}`);
+                                } else {
+                                  navigate(`/provider/${user.id}`);
+                                }
+                              }
+                            }}
+                          >
+                          <AvatarImage src={user.avatar || (user as any).avatar} alt={user.name} className="object-cover" />
+                          <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold text-xl">
+                            {user.name?.charAt(0) ?? 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="space-y-1">
+                            <p className="text-base font-bold leading-tight text-gray-900 truncate">{user.name}</p>
+                            <p className="text-sm leading-tight text-gray-600 truncate">{user.email}</p>
+                          </div>
+                          
+                          {/* Provider Type & Verification Section */}
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center justify-start gap-1.5">
+                              <div className="rounded-full px-1.5 py-0.5 h-5 flex items-center min-w-fit">
+                                <UserBadge role={(user as any).role} />
+                              </div>
+                              {user.isVerified ? (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-green-200 to-green-300 border border-green-400/50 px-1.5 py-0.5 text-xs font-medium text-green-900 h-5 min-w-fit">
+                                  <BadgeCheck className="h-2.5 w-2.5" /> Verified
+                                </span>
+                              ) : user.role !== 'patient' && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-orange-200 to-orange-300 border border-orange-400/50 px-1.5 py-0.5 text-xs font-medium text-orange-900 h-5 min-w-fit">
+                                  <X className="h-2.5 w-2.5" /> Pending
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Specialization Section */}
+                            {user?.specialization && (
+                              <div className="pt-1">
+                                <div className="bg-gradient-to-r from-blue-100 to-indigo-200 border border-blue-300/50 rounded-lg px-2 py-1.5 overflow-hidden">
+                                  <p className="text-xs font-medium text-blue-900 whitespace-nowrap truncate">
+                                    {user.specialization} Specialist
+                                  </p>
+                                </div>
+                              </div>
                             )}
                           </div>
-                          {user?.specialization && (
-                            <div className="flex items-center gap-2 mt-1.5">
-                              <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-[9px] font-normal">
-                                {user.specialization} Specialist
+                        </div>
+                      </div>
+                    </DropdownMenuLabel>
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="px-3 py-3 bg-white">
+                    {user && user.role !== 'patient' && (
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent px-4 py-4 rounded-xl mx-0 my-1 cursor-pointer hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 border border-transparent hover:border-blue-200/60 hover:shadow-md">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            <div className={`p-2.5 rounded-xl mr-4 transition-all duration-300 shadow-sm ${
+                              mode === 'patient' 
+                                ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border border-blue-200' 
+                                : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border border-gray-200'
+                            }`}>
+                              <Repeat className="h-4 w-4" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-gray-900">
+                                {mode === 'patient' ? 'Patient Mode' : 'Provider Mode'}
+                              </span>
+                              <span className="text-xs text-gray-500 font-medium">
+                                {mode === 'patient' ? 'Switch to Provider' : 'Switch to Patient'}
                               </span>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-gray-100" />
-                  {user && user.role !== 'patient' && (
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent px-4 py-3 rounded-xl mx-2 my-2 cursor-pointer hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center">
-                          <div className={`p-1.5 rounded-lg mr-3 transition-all duration-300 ${
-                            mode === 'patient' 
-                              ? 'bg-blue-100 text-blue-600' 
-                              : 'bg-red-100 text-red-600'
-                          }`}>
-                            <Repeat className="h-4 w-4" />
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-gray-900">
-                              {mode === 'patient' ? 'Patient Mode' : 'Provider Mode'}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {mode === 'patient' ? 'Switch to Provider' : 'Switch to Patient'}
-                            </span>
+                          <div className="flex items-center">
+                            <Switch
+                              checked={mode === 'patient'}
+                              onCheckedChange={handleModeToggle}
+                              aria-label="Toggle mode"
+                              className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-gray-400"
+                            />
                           </div>
                         </div>
-                        <div className="flex items-center">
-                          <Switch
-                            checked={mode === 'patient'}
-                            onCheckedChange={handleModeToggle}
-                            aria-label="Toggle mode"
-                            className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-red-500"
-                          />
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {/* Logout Button */}
+                    <DropdownMenuItem onClick={handleLogout} className="text-gray-700 focus:text-red-600 focus:bg-red-50 hover:bg-red-50 px-4 py-3 rounded-xl mx-0 my-1 transition-all duration-300 border border-transparent hover:border-red-200/60 hover:shadow-md group">
+                      <div className="flex items-center w-full">
+                        <div className="p-2.5 rounded-xl mr-4 bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-600 transition-all duration-300 shadow-sm border border-gray-200 group-hover:border-red-200">
+                          <LogOut className="h-4 w-4" />
                         </div>
+                        <span className="font-semibold">Logout</span>
                       </div>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50 px-4 py-2 rounded-lg mx-2 my-2">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : null}

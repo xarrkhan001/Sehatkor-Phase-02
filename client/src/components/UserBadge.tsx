@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 const roleLabelMap: Record<string, string> = {
   patient: 'Patient',
   doctor: 'Doctor',
-  'clinic/hospital': 'Clinic/Hospital',
+  'clinic/hospital': 'Hospital',
   laboratory: 'Lab',
   pharmacy: 'Pharmacy',
 };
