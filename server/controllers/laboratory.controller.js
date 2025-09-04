@@ -13,7 +13,7 @@ export const listLaboratoryTests = async (req, res) => {
 
 export const createLaboratoryTest = async (req, res) => {
   try {
-    const { name, description, price, category, duration, imageUrl, imagePublicId, providerName, googleMapLink, city, detailAddress, availability, serviceType } = req.body || {};
+    const { name, description, price, category, duration, imageUrl, imagePublicId, providerName, googleMapLink, city, detailAddress, availability, serviceType, homeDelivery } = req.body || {};
     if (!name) return res.status(400).json({ message: 'Name is required' });
     
     const test = await LaboratoryTest.create({
@@ -32,6 +32,7 @@ export const createLaboratoryTest = async (req, res) => {
       providerType: 'laboratory',
       availability: availability || 'Physical',
       serviceType: serviceType || 'Private',
+      homeDelivery: Boolean(homeDelivery) || false,
     });
     
     res.status(201).json({ test });
@@ -61,6 +62,7 @@ export const updateLaboratoryTest = async (req, res) => {
           ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
           ...(updates.availability != null && { availability: updates.availability }),
           ...(updates.serviceType != null && { serviceType: updates.serviceType }),
+          ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
         }
       },
       { new: true }

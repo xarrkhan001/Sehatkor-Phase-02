@@ -74,6 +74,7 @@ const HospitalsPage = () => {
             ratingBadge: (service as any).ratingBadge || null,
             availability: (service as any).availability,
             serviceType: (service as any).serviceType,
+            homeDelivery: Boolean((service as any).homeDelivery) || false,
             ...(function () {
               try {
                 const uid = user?.id || (user as any)?._id || 'anon';
@@ -261,6 +262,7 @@ const HospitalsPage = () => {
           ratingBadge: (service as any).ratingBadge || null,
           availability: (service as any).availability,
           serviceType: (service as any).serviceType,
+          homeDelivery: Boolean((service as any).homeDelivery) || false,
         }) as unknown as Service;
       });
       setHospitalServices(prev => {
@@ -542,6 +544,11 @@ const HospitalsPage = () => {
                   )}
                   {(service as any).serviceType && (
                     <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
+                  )}
+                  {(service as any).homeDelivery && (
+                    <Badge className="bg-emerald-600 text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">
+                      🏠 Home Delivery
+                    </Badge>
                   )}
                 </div>
 

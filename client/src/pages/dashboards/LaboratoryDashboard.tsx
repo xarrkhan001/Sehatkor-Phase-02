@@ -83,7 +83,8 @@ const LaboratoryDashboard = () => {
     detailAddress: '',
     availability: 'Physical' as 'Physical' | 'Online' | 'Online and Physical',
     serviceType: 'Private' as 'Private' | 'Public' | 'Charity' | 'NGO' | 'NPO' | 'Sehat Card',
-    imageUrl: ''
+    imageUrl: '',
+    homeDelivery: false
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -99,7 +100,8 @@ const LaboratoryDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private'
+    serviceType: 'Private',
+    homeDelivery: false
   });
 
   const testCategories = [
@@ -130,6 +132,7 @@ const LaboratoryDashboard = () => {
         detailAddress: d.detailAddress,
         availability: d.availability,
         serviceType: d.serviceType,
+        homeDelivery: Boolean(d.homeDelivery) || false,
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
       }));
@@ -167,7 +170,8 @@ const LaboratoryDashboard = () => {
       detailAddress: t.detailAddress || '',
       availability: (t.availability as any) || 'Physical',
       serviceType: (t.serviceType as any) || 'Private',
-      imageUrl: t.image || ''
+      imageUrl: t.image || '',
+      homeDelivery: Boolean(t.homeDelivery) || false
     });
     setEditImagePreview(t.image || '');
     setEditImageFile(null);
@@ -212,6 +216,7 @@ const LaboratoryDashboard = () => {
         detailAddress: editForm.detailAddress,
         availability: editForm.availability as any,
         serviceType: editForm.serviceType as any,
+        homeDelivery: editForm.homeDelivery as any,
       } as any);
 
       setIsEditTestOpen(false);
@@ -247,6 +252,7 @@ const LaboratoryDashboard = () => {
         providerType: 'laboratory' as const,
         availability: d.availability,
         serviceType: d.serviceType,
+        homeDelivery: Boolean(d.homeDelivery) || false,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       }));
@@ -442,6 +448,7 @@ const LaboratoryDashboard = () => {
         detailAddress: testForm.detailAddress,
         availability: testForm.availability as any,
         serviceType: testForm.serviceType as any,
+        homeDelivery: testForm.homeDelivery as any,
         providerName: user?.name || 'Laboratory',
       });
 
@@ -456,13 +463,14 @@ const LaboratoryDashboard = () => {
         providerName: created.providerName,
         providerType: 'laboratory' as const,
         availability: (created as any)?.availability,
+        homeDelivery: Boolean((created as any)?.homeDelivery) || false,
       };
 
       // Add to local storage
       ServiceManager.addService(newTest);
 
       // Reset form
-      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private' });
+      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private', homeDelivery: false });
 
       setTestImagePreview('');
       setTestImageFile(null);
@@ -836,6 +844,20 @@ const LaboratoryDashboard = () => {
                     </div>
                   </div>
 
+                  {/* Home Delivery */}
+                  <div className="space-y-2 border-t pt-3">
+                    <h4 className="font-medium text-sm">Home Delivery</h4>
+                    <label className="flex items-center space-x-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={editForm.homeDelivery}
+                        onChange={(e) => setEditForm({ ...editForm, homeDelivery: e.target.checked })}
+                        className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="text-sm">🏠 Home Delivery Available</span>
+                    </label>
+                  </div>
+
                   <Button onClick={handleUpdateTest} className="w-full" disabled={isUploadingImage || isUpdatingTest}>
                     {isUpdatingTest ? 'Saving...' : 'Save Changes'}
                   </Button>
@@ -1113,6 +1135,20 @@ const LaboratoryDashboard = () => {
                                 </div>
                               </div>
 
+                              {/* Home Delivery */}
+                              <div className="space-y-2 border-t pt-3">
+                                <h4 className="font-medium text-sm">Home Delivery</h4>
+                                <label className="flex items-center space-x-2 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={testForm.homeDelivery}
+                                    onChange={(e) => setTestForm({ ...testForm, homeDelivery: e.target.checked })}
+                                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+                                  />
+                                  <span className="text-sm">🏠 Home Delivery Available</span>
+                                </label>
+                              </div>
+
                               <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
                                 {isAddingTest ? 'Adding Test...' : 'Add Test'}
                               </Button>
@@ -1154,6 +1190,9 @@ const LaboratoryDashboard = () => {
                                         <span className="text-xs text-muted-foreground">{test.duration || 'N/A'}</span>
                                         <AvailabilityBadge availability={test.availability || 'Physical'} size="sm" />
                                         <ServiceTypeBadge serviceType={test.serviceType || 'Private'} size="sm" />
+                                        {test.homeDelivery ? (
+                                          <Badge className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[11px]">🏠 Home Delivery</Badge>
+                                        ) : null}
                                       </div>
                                     </div>
                                   </div>
@@ -1181,6 +1220,7 @@ const LaboratoryDashboard = () => {
                                     <TableHead>Duration</TableHead>
                                     <TableHead>Availability</TableHead>
                                     <TableHead>Service Type</TableHead>
+                                    <TableHead>Home Delivery</TableHead>
                                     <TableHead>Actions</TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -1218,6 +1258,13 @@ const LaboratoryDashboard = () => {
                                       </TableCell>
                                       <TableCell>
                                         <ServiceTypeBadge serviceType={test.serviceType || 'Private'} size="md" />
+                                      </TableCell>
+                                      <TableCell>
+                                        {test.homeDelivery ? (
+                                          <Badge className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-emerald-500 text-white whitespace-nowrap">🏠 Available</Badge>
+                                        ) : (
+                                          <Badge variant="secondary" className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-gray-200 text-gray-700 whitespace-nowrap">Not Available</Badge>
+                                        )}
                                       </TableCell>
                                       <TableCell>
                                         <div className="flex space-x-2">

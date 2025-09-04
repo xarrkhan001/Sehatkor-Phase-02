@@ -77,6 +77,8 @@ const DoctorServiceSchema = new mongoose.Schema(
       enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
       default: "Private"
     },
+    // Indicates if the doctor service supports home delivery/visit
+    homeDelivery: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

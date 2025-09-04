@@ -136,6 +136,7 @@ export const createDoctorService = async (req, res) => {
       diseases,
       availability,
       serviceType,
+      homeDelivery,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
     const doc = await DoctorService.create({
@@ -157,6 +158,7 @@ export const createDoctorService = async (req, res) => {
       providerType: "doctor",
       availability: availability || "Physical",
       serviceType: serviceType || "Private",
+      homeDelivery: Boolean(homeDelivery) || false,
     });
     res.status(201).json({ service: doc });
   } catch (error) {
@@ -203,6 +205,7 @@ export const updateDoctorService = async (req, res) => {
           ...(Array.isArray(updates.diseases) && { diseases: updates.diseases }),
           ...(updates.availability != null && { availability: updates.availability }),
           ...(updates.serviceType != null && { serviceType: updates.serviceType }),
+          ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
         },
       },
       { new: true }

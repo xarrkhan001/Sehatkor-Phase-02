@@ -75,6 +75,7 @@ const LabsPage = () => {
             ratingBadge: (service as any).ratingBadge || null,
             availability: (service as any).availability,
             serviceType: (service as any).serviceType,
+            homeDelivery: (service as any).homeDelivery || false,
           } as unknown as Service;
           // Hydrate user's own badge from localStorage
           try {
@@ -262,6 +263,7 @@ const LabsPage = () => {
           ratingBadge: (service as any).ratingBadge || null,
           availability: (service as any).availability,
           serviceType: (service as any).serviceType,
+          homeDelivery: (service as any).homeDelivery || false,
         } as unknown as Service;
         // Hydrate user's own badge from localStorage
         try {
@@ -552,6 +554,11 @@ const LabsPage = () => {
                   )}
                   {(service as any).serviceType && (
                     <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
+                  )}
+                  {(service as any).homeDelivery && (
+                    <Badge className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-500 text-white whitespace-nowrap">
+                      🏠 Home Delivery
+                    </Badge>
                   )}
                 </div>
 

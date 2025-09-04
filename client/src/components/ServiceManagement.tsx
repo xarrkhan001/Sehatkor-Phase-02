@@ -74,7 +74,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private'
+    serviceType: 'Private',
+    homeDelivery: false,
   });
 
   const getServiceCategories = () => {
@@ -103,7 +104,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       city: '',
       detailAddress: '',
       availability: 'Physical',
-      serviceType: 'Private'
+      serviceType: 'Private',
+      homeDelivery: false,
     });
     setServiceImage('');
     setEditingService(null);
@@ -141,6 +143,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       detailAddress: serviceForm.detailAddress,
       availability: serviceForm.availability,
       serviceType: serviceForm.serviceType,
+      ...(userRole === 'doctor' ? { homeDelivery: serviceForm.homeDelivery } : {}),
       ...(userRole === 'pharmacy' && { stock: parsedStock })
     };
 
@@ -205,6 +208,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
           serviceType: serviceForm.serviceType,
+          homeDelivery: serviceForm.homeDelivery,
           diseases: disease ? [disease] : [],
           ...(payloadVariants ? { variants: payloadVariants } : {}),
         });
@@ -223,6 +227,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             detailAddress: serviceForm.detailAddress,
             availability: serviceForm.availability,
             serviceType: serviceForm.serviceType,
+            homeDelivery: serviceForm.homeDelivery,
             diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
@@ -235,9 +240,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             duration: updated.duration,
             availability: updated.availability,
             serviceType: updated.serviceType,
+            homeDelivery: Boolean((updated as any).homeDelivery),
             diseases: Array.isArray(updated.diseases) ? updated.diseases : (disease ? [disease] : []),
             variants: updated.variants || [],
           } as any);
+
           const list = services.map(s => s.id === editingService.id ? (updatedLocal as any) : s);
           onServicesUpdate(list);
           toast({ title: 'Success', description: 'Service updated successfully' });
@@ -259,12 +266,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             detailAddress: serviceForm.detailAddress,
             availability: serviceForm.availability,
             serviceType: serviceForm.serviceType,
+            homeDelivery: serviceForm.homeDelivery,
             providerName: userName,
             diseases: disease ? [disease] : [],
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           console.log('Doctor service created:', created);
-          
+
           const added = ServiceManager.addService({
             id: created._id as any,
             name: created.name,
@@ -279,6 +287,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             // Ensure badges render immediately in dashboard list
             availability: created.availability || serviceForm.availability,
             serviceType: created.serviceType || serviceForm.serviceType,
+            homeDelivery: Boolean((created as any).homeDelivery ?? serviceForm.homeDelivery),
             // Preserve optional location fields for immediate UI
             city: created.city ?? serviceForm.city,
             detailAddress: created.detailAddress ?? serviceForm.detailAddress,
@@ -348,8 +357,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       city: (service as any).city || '',
       detailAddress: (service as any).detailAddress || '',
       availability: (service as any).availability || 'Physical',
-      serviceType: (service as any).serviceType || 'Private'
+      serviceType: (service as any).serviceType || 'Private',
+      homeDelivery: Boolean((service as any).homeDelivery) || false,
     });
+
     setServiceImage(service.image || '');
     setDisease((((service as any).diseases as string[]) || [])[0] || '');
     // Load variants if any
@@ -668,6 +679,22 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                 </div>
 
+                {/* Home Delivery - Doctors only */}
+                {userRole === 'doctor' && (
+                  <div className="space-y-2 border-t pt-3">
+                    <h4 className="font-medium text-sm">Home Delivery / Visit</h4>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={serviceForm.homeDelivery}
+                        onChange={(e) => setServiceForm({ ...serviceForm, homeDelivery: e.target.checked })}
+                        className="text-emerald-600 focus:ring-emerald-600"
+                      />
+                      <span className="text-sm">Home Delivery Available <span className="ml-1">🏠</span></span>
+                    </label>
+                  </div>
+                )}
+                
                 {/* Disease Single-Select - Doctors only */}
                 {userRole === 'doctor' && (
                   <div className="space-y-2 border-t pt-3">
@@ -900,6 +927,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     {(service as any).serviceType && (
                       <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                     )}
+                    {userRole === 'doctor' && Boolean((service as any).homeDelivery) && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white whitespace-nowrap shadow">
+                        🏠 Home Delivery
+                      </span>
+                    )}
                     <span className="text-sm font-medium">PKR {service.price?.toLocaleString() || 0}</span>
                     <span className="text-sm text-muted-foreground">
                       {userRole === 'pharmacy' && 'stock' in service ? (
@@ -931,6 +963,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       <TableHead>Category</TableHead>
                       <TableHead>Availability</TableHead>
                       <TableHead>Service Type</TableHead>
+                      {userRole === 'doctor' && (<TableHead>Home Delivery</TableHead>)}
                       <TableHead>Price</TableHead>
                       {userRole === 'doctor' && (<TableHead>Variants</TableHead>)}
                       {userRole === 'pharmacy' ? (
@@ -992,6 +1025,19 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                             '-'
                           )}
                         </TableCell>
+                        {userRole === 'doctor' && (
+                          <TableCell>
+                            {Boolean((service as any).homeDelivery) ? (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white whitespace-nowrap shadow">
+                                🏠 Available
+                              </span>
+                            ) : (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 whitespace-nowrap">
+                                Not Available
+                              </span>
+                            )}
+                          </TableCell>
+                        )}
                         <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
                         {userRole === 'doctor' && (
                           <TableCell>

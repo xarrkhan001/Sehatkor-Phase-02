@@ -71,6 +71,7 @@ const DoctorsPage = () => {
             location: (service as any).city || "Karachi",
             type: service.category === "Surgery" ? "Surgery" : "Treatment",
             homeService: true,
+            homeDelivery: Boolean((service as any).homeDelivery),
             image: service.image,
             provider: resolvedProviderName,
             createdAt: (service as any).createdAt,
@@ -222,6 +223,7 @@ const DoctorsPage = () => {
           location: (service as any).city || "Karachi",
           type: service.category === "Surgery" ? "Surgery" : "Treatment",
           homeService: true,
+          homeDelivery: Boolean((service as any).homeDelivery),
           image: service.image,
           provider: resolvedProviderName,
           createdAt: (service as any).createdAt,
@@ -714,7 +716,7 @@ const DoctorsPage = () => {
                   )}
                 </div>
 
-                {/* Rating, Location, Home Service, WhatsApp, Availability, Service Type */}
+                {/* Rating, Location, Home Delivery Badge, WhatsApp, Availability, Service Type */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                   <RatingBadge
                     rating={service.rating}
@@ -726,12 +728,13 @@ const DoctorsPage = () => {
                     <MapPin className="w-4 h-4" />
                     <span>{getDisplayForService(service).location}</span>
                   </div>
-                  {service.homeService && (
-                    <div className="flex items-center gap-1 text-green-600">
-                      <Home className="w-4 h-4" />
-                      <span>Home service</span>
-                    </div>
+                  {(service as any).homeDelivery && (
+                    <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                      <span className="leading-none">🏠</span>
+                      <span className="leading-none">Home Delivery</span>
+                    </Badge>
                   )}
+                  
                   {(service as any).providerPhone && (
                     <ServiceWhatsAppButton
                       phoneNumber={(service as any).providerPhone}
