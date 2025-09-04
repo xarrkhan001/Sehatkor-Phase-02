@@ -8,11 +8,13 @@ import CompareTray from "@/components/CompareTray";
 import PartnersMarquee from "@/components/PartnersMarquee";
 import CompareExplorer from "@/components/CompareExplorer";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
+import { apiUrl } from "@/config/api";
 import heroImage from "@/assets/healthcare-hero-bg.jpg";
 import heroImage2 from "@/assets/hero1.jpg";
 import heroImage3 from "@/assets/hero2.png";
 import heroImage4 from "@/assets/hero3.png";
 import heroImage5 from "@/assets/hero4.png";
+
 import { 
   Search, 
   UserPlus, 
@@ -35,14 +37,16 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentHero, setCurrentHero] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
 
-  // Rotate hero background images every 5 seconds
+  // Rotate hero background images every 5 seconds based on available images
   useEffect(() => {
+    const total = heroImages.length || 5;
     const interval = setInterval(() => {
-      setCurrentHero((prev) => (prev + 1) % 5);
+      setCurrentHero((prev) => (prev + 1) % total);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [heroImages.length]);
 
   // Track mobile viewport to adjust hero4 positioning
   useEffect(() => {
@@ -62,6 +66,21 @@ const HomePage = () => {
     }, 1500);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // Fetch hero images from backend (public endpoint)
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch(apiUrl('/api/hero-images'));
+        const data = await res.json();
+        if (res.ok && data?.success && Array.isArray(data.images)) {
+          const urls = data.images.map((i: any) => i?.url).filter((u: any) => typeof u === 'string' && !!u);
+          setHeroImages(urls);
+        }
+      } catch {}
+    };
+    load();
   }, []);
 
   if (isLoading) {
@@ -139,60 +158,31 @@ const HomePage = () => {
     <div className="min-h-screen bg-background overflow-x-hidden pt-16">
       {/* Hero Section */}
       <section 
-  className="relative overflow-visible py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 px-4 text-white min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] lg:min-h-[85vh] hero-section hero-background"
-  style={{
-    width: '100vw',
-    marginLeft: 'calc(-50vw + 50%)',
-    marginRight: 'calc(-50vw + 50%)'
-  }}
->
-        {/* Background slider layers */}
+        className="relative overflow-visible py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 px-4 text-white min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] lg:min-h-[85vh] hero-section hero-background"
+        style={{
+          width: '100vw',
+          marginLeft: 'calc(-50vw + 50%)',
+          marginRight: 'calc(-50vw + 50%)'
+        }}
+      >
+        {/* Background slider layers (dynamic with fallback) */}
         <div className="absolute inset-0 z-0">
-          <div
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 0 ? 'opacity-100' : 'opacity-0'}`}
-            style={{
-              backgroundImage: `url(${heroImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
-          <div
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 1 ? 'opacity-100' : 'opacity-0'}`}
-            style={{
-              backgroundImage: `url(${heroImage2})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
-          <div
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 2 ? 'opacity-100' : 'opacity-0'}`}
-            style={{
-              backgroundImage: `url(${heroImage3})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
-          <div
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 3 ? 'opacity-100' : 'opacity-0'}`}
-            style={{
-              backgroundImage: `url(${heroImage4})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
-          <div
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === 4 ? 'opacity-100' : 'opacity-0'}`}
-            style={{
-              backgroundImage: `url(${heroImage5})`,
-              backgroundSize: 'cover',
-              backgroundPosition: isMobile ? 'center center' : 'center -160px',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
+          {(
+            (heroImages && heroImages.length > 0)
+              ? heroImages
+              : [heroImage, heroImage2, heroImage3, heroImage4, heroImage5]
+          ).map((src, idx) => (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === idx ? 'opacity-100' : 'opacity-0'}`}
+              style={{
+                backgroundImage: `url(${src})`,
+                backgroundSize: 'cover',
+                backgroundPosition: idx === 4 && !heroImages.length ? (isMobile ? 'center center' : 'center -160px') : 'center center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
+          ))}
         </div>
 
         {/* Dark overlay */}
