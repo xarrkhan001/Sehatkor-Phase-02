@@ -1049,7 +1049,12 @@ const PharmacyDashboard = () => {
                         {bookings.map((booking) => (
                           <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-medium">{booking.patientName}</h4>
+                              <h4 
+                                className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline transition-colors"
+                                onClick={() => navigate(`/patient/${booking.patientId}`)}
+                              >
+                                {booking.patientName}
+                              </h4>
                               <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-1">
