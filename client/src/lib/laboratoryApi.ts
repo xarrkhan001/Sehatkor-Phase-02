@@ -15,6 +15,7 @@ export type LaboratoryTestDoc = {
   city?: string;
   detailAddress?: string;
   googleMapLink?: string;
+  homeDelivery?: boolean;
   createdAt: string;
   updatedAt: string;
 };

@@ -1062,12 +1062,7 @@ const SearchPage = () => {
                           <MapPin className="w-4 h-4" />
                           <span>{getDisplayLocation(service)}</span>
                         </div>
-                        {service.homeService && (
-                          <div className="flex items-center gap-1 text-green-600">
-                            <Home className="w-4 h-4" />
-                            <span>Home service</span>
-                          </div>
-                        )}
+                        
                         {(service as any).providerPhone && (
                           <ServiceWhatsAppButton
                             phoneNumber={(service as any).providerPhone}
@@ -1090,7 +1085,7 @@ const SearchPage = () => {
                         {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic' || (service as any)._providerType === 'doctor') && (service as any).serviceType && (
                           <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                         )}
-                        {(service as any)._providerType === 'pharmacy' && (service as any).homeDelivery && (
+                        {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic' || (service as any)._providerType === 'doctor') && (service as any).homeDelivery && (
                           <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
                             <span className="leading-none">🏠</span>
                             <span className="leading-none">Home Delivery</span>

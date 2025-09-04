@@ -78,7 +78,8 @@ const ClinicDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private'
+    serviceType: 'Private',
+    homeDelivery: false
   });
 
   const clinicTypes = [
@@ -101,6 +102,9 @@ const ClinicDashboard = () => {
       providerName: d.providerName || (user?.name || 'Clinic'),
       image: d.imageUrl,
       duration: d.duration,
+      availability: d.availability,
+      serviceType: d.serviceType,
+      homeDelivery: Boolean(d.homeDelivery) || false,
       createdAt: d.createdAt || new Date().toISOString(),
       updatedAt: d.updatedAt || d.createdAt || new Date().toISOString(),
     }));
@@ -343,11 +347,11 @@ const ClinicDashboard = () => {
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
-          googleMapLink: serviceForm.googleMapLink,
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
           serviceType: serviceForm.serviceType,
+          homeDelivery: serviceForm.homeDelivery,
           providerName: user?.name || 'Clinic',
         });
         toast.success("Service updated successfully");
@@ -361,11 +365,11 @@ const ClinicDashboard = () => {
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
-          googleMapLink: serviceForm.googleMapLink,
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
           serviceType: serviceForm.serviceType,
+          homeDelivery: serviceForm.homeDelivery,
           providerName: user?.name || 'Clinic',
         });
         toast.success("Service added successfully");
@@ -382,7 +386,8 @@ const ClinicDashboard = () => {
         city: '',
         detailAddress: '',
         availability: 'Physical',
-        serviceType: 'Private'
+        serviceType: 'Private',
+        homeDelivery: false
       });
       setServiceImage('');
       setServiceImageFile(null);
@@ -778,6 +783,24 @@ const ClinicDashboard = () => {
                               </div>
                             </div>
 
+                            <div className="space-y-3 border-t pt-3">
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id="homeDelivery"
+                                  checked={serviceForm.homeDelivery}
+                                  onChange={(e) => setServiceForm({ ...serviceForm, homeDelivery: e.target.checked })}
+                                  className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                                />
+                                <Label htmlFor="homeDelivery" className="flex items-center gap-2 cursor-pointer">
+                                  🏠 Home Delivery Available
+                                </Label>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Check this if you offer home delivery for this service
+                              </p>
+                            </div>
+
                             <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
                               {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
                             </Button>
@@ -829,6 +852,11 @@ const ClinicDashboard = () => {
                                   {m.serviceType && (
                                     <ServiceTypeBadge serviceType={m.serviceType} />
                                   )}
+                                  {m.homeDelivery && (
+                                    <Badge className="bg-emerald-600 text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">
+                                      🏠 Home Delivery
+                                    </Badge>
+                                  )}
                                   <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
                                   <span className="text-muted-foreground">{m.duration ? `${m.duration} min` : '-'}</span>
                                 </div>
@@ -845,7 +873,8 @@ const ClinicDashboard = () => {
                                       city: m.city || '',
                                       detailAddress: m.detailAddress || '',
                                       availability: m.availability || 'Physical',
-                                      serviceType: m.serviceType || 'Private'
+                                      serviceType: m.serviceType || 'Private',
+                                      homeDelivery: Boolean(m.homeDelivery) || false
                                     });
                                     setServiceImage(m.imageUrl || m.image || '');
                                     setIsAddServiceOpen(true);
@@ -875,6 +904,7 @@ const ClinicDashboard = () => {
                                 <TableHead>Duration</TableHead>
                                 <TableHead>Availability</TableHead>
                                 <TableHead>Service Type</TableHead>
+                                <TableHead>Home Delivery</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -918,6 +948,17 @@ const ClinicDashboard = () => {
                                         '-'
                                       )}
                                     </TableCell>
+                                    <TableCell>
+                                      {m.homeDelivery ? (
+                                        <Badge className="bg-emerald-600 text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">
+                                          🏠 Available
+                                        </Badge>
+                                      ) : (
+                                        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap text-gray-500">
+                                          Not Available
+                                        </Badge>
+                                      )}
+                                    </TableCell>
                                     <TableCell className="text-right space-x-2">
                                       <Button size="sm" variant="outline" onClick={() => {
                                         setEditingService(m);
@@ -931,7 +972,8 @@ const ClinicDashboard = () => {
                                           city: m.city || '',
                                           detailAddress: m.detailAddress || '',
                                           availability: m.availability || 'Physical',
-                                          serviceType: m.serviceType || 'Private'
+                                          serviceType: m.serviceType || 'Private',
+                                          homeDelivery: Boolean(m.homeDelivery) || false
                                         });
                                         setServiceImage(m.imageUrl || m.image || '');
                                         setIsAddServiceOpen(true);

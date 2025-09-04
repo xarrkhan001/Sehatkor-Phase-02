@@ -142,7 +142,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       _providerVerified: (s as any)._providerVerified,
       availability: (s as any).availability || "Physical",
       serviceType: (s as any).serviceType || "Private",
-      homeDelivery: s.providerType === 'pharmacy' ? Boolean((s as any).homeDelivery) : undefined,
+      homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
     }));
   };
 
@@ -349,7 +349,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           address: service.detailAddress ?? undefined,
           providerPhone: service.providerPhone ?? undefined,
           googleMapLink: service.googleMapLink ?? undefined,
-          homeDelivery: service.providerType === 'pharmacy' ? Boolean(service.homeDelivery) : undefined,
+          homeDelivery: (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic' || service.providerType === 'doctor') ? Boolean(service.homeDelivery) : undefined,
           variants: service.variants || [],
           variantIndex: activeIdx,
           variantLabel: timeLabel ?? undefined,
@@ -510,7 +510,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         })() && (
                           <ServiceTypeBadge serviceType={service.serviceType} size="sm" />
                         )}
-                        {service.providerType === 'pharmacy' && service.homeDelivery && (
+                        {(service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic' || service.providerType === 'doctor') && service.homeDelivery && (
                           <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white border border-white whitespace-nowrap shadow-sm">
                             🏠 Home Delivery
                           </span>

@@ -27,6 +27,9 @@ export type DoctorServiceDoc = {
   providerId: string;
   providerName: string;
   providerType: 'doctor';
+  availability?: 'Online' | 'Physical' | 'Online and Physical';
+  serviceType?: 'Sehat Card' | 'Private' | 'Charity' | 'Public' | 'NPO' | 'NGO';
+  homeDelivery?: boolean;
   variants?: VariantDoc[];
   diseases?: string[];
   createdAt: string;

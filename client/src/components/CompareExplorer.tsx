@@ -130,7 +130,7 @@ const CompareExplorer = () => {
             days: (s as any)?.days,
             availability: (s as any)?.availability as any,
             serviceType: (s as any)?.serviceType,
-            homeDelivery: (s as any)?.providerType === 'pharmacy' ? Boolean((s as any)?.homeDelivery) : undefined,
+            homeDelivery: ((s as any)?.providerType === 'pharmacy' || (s as any)?.providerType === 'laboratory' || (s as any)?.providerType === 'clinic' || (s as any)?.providerType === 'doctor') ? Boolean((s as any)?.homeDelivery) : undefined,
             variants: (s as any)?.variants || [],
           } as Unified;
         });
@@ -691,7 +691,7 @@ const CompareExplorer = () => {
                         {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.serviceType && (
                           <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
                         )}
-                        {item._providerType === 'pharmacy' && item.homeDelivery && (
+                        {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.homeDelivery && (
                           <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
                             <span className="leading-none">🏠</span>
                             <span className="leading-none">Home Delivery</span>

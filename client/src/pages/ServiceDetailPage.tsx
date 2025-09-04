@@ -172,7 +172,7 @@ const ServiceDetailPage = () => {
       ratingBadge: (s as any).ratingBadge ?? null,
       myBadge: null,
       homeService: s.providerType === 'doctor',
-      homeDelivery: s.providerType === 'pharmacy' ? Boolean((s as any).homeDelivery) : undefined,
+      homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
       availability: (s as any).availability,
       serviceType: (s as any).serviceType,
       variants: (s as any).variants || [],
@@ -405,7 +405,7 @@ const ServiceDetailPage = () => {
                     {(item.serviceType ?? resolvedServiceType) && (
                       <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
                     )}
-                    {(item.homeDelivery === true) && ((item.providerType === 'pharmacy') || (item.type === 'Medicine')) && (
+                    {(item.homeDelivery === true) && ((item.providerType === 'pharmacy') || (item.providerType === 'laboratory') || (item.providerType === 'clinic') || (item.type === 'Medicine') || (item.type === 'Test') || (item.type === 'Treatment')) && (
                       <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
                         <span className="leading-none">🏠</span>
                         <span className="leading-none">Home Delivery</span>
@@ -418,12 +418,7 @@ const ServiceDetailPage = () => {
                         <span>Fair: {freshCounts.fair}</span>
                       </div>
                     )}
-                    {item.homeService && (
-                      <div className="flex items-center gap-1 text-green-600">
-                        <Home className="w-4 h-4" />
-                        <span>Home service</span>
-                      </div>
-                    )}
+                    
                   </div>
                   {activeSlide.address && (
                     <div className="text-sm text-muted-foreground">{activeSlide.address}</div>

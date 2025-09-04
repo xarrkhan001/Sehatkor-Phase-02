@@ -777,12 +777,7 @@ const ProviderProfilePage = () => {
                         <MapPin className="w-4 h-4" />
                         <span className="font-medium">{(service as any).city || (service as any).location}</span>
                       </div>
-                      {service.providerType === 'doctor' && (
-                        <div className="flex items-center gap-1.5 text-green-600">
-                          <Home className="w-4 h-4" />
-                          <span className="font-medium">Home service</span>
-                        </div>
-                      )}
+                      
                       {(service as any).providerPhone && (
                         <div className="relative z-50">
                           <ServiceWhatsAppButton 
@@ -804,8 +799,8 @@ const ProviderProfilePage = () => {
                       {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).serviceType && (
                         <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
                       )}
-                      {/* Home Delivery badge for pharmacy services */}
-                      {(service as any).providerType === 'pharmacy' && (service as any).homeDelivery && (
+                      {/* Home Delivery badge for pharmacy, laboratory, clinic, and doctor services */}
+                      {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).homeDelivery && (
                         <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">
                           🏠 Home Delivery
                         </Badge>
@@ -855,6 +850,20 @@ const ProviderProfilePage = () => {
                             state: {
                               service: {
                                 ...service,
+                                // Ensure providerType is present for detail page logic
+                                _providerType: (service as any).providerType || providerType || 'doctor',
+                                providerType: (service as any).providerType || providerType || 'doctor',
+                                // Derive a normalized type for consistent badge conditions
+                                type:
+                                  ((service as any).providerType || providerType) === 'pharmacy' ? 'Medicine' :
+                                  ((service as any).providerType || providerType) === 'laboratory' ? 'Test' :
+                                  ((service as any).category === 'Surgery' ? 'Surgery' : 'Treatment'),
+                                // Coerce homeDelivery to boolean to avoid falsy string issues
+                                homeDelivery: Boolean((service as any).homeDelivery),
+                                // Pass-through common optional fields
+                                providerId: (service as any).providerId,
+                                providerPhone: (service as any).providerPhone,
+                                serviceType: (service as any).serviceType,
                                 variants: (service as any).variants || [],
                               },
                               activeVariantIndex: activeIdx,

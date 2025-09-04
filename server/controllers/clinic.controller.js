@@ -32,6 +32,7 @@ export const createClinicService = async (req, res) => {
       detailAddress,
       availability,
       serviceType,
+      homeDelivery,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
     const doc = await ClinicService.create({
@@ -51,6 +52,7 @@ export const createClinicService = async (req, res) => {
       providerType: "clinic",
       availability: availability || "Physical",
       serviceType: serviceType || "Private",
+      homeDelivery: Boolean(homeDelivery) || false,
     });
     res.status(201).json({ service: doc });
   } catch (error) {
@@ -90,6 +92,7 @@ export const updateClinicService = async (req, res) => {
           ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
           ...(updates.availability != null && { availability: updates.availability }),
           ...(updates.serviceType != null && { serviceType: updates.serviceType }),
+          ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
         },
       },
       { new: true }
