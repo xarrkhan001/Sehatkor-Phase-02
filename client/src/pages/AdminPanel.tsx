@@ -562,7 +562,7 @@ const AdminPanel = () => {
         {/* Stylish Navigation Header */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 w-full">
               
               {/* Verify Entities Card */}
               <div 
@@ -624,6 +624,22 @@ const AdminPanel = () => {
                   <div>
                     <h3 className="font-semibold text-gray-900 group-hover:text-red-600 transition-colors">User Management</h3>
                     <p className="text-sm text-gray-500 mt-1">Remove verified users</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hero Images Manager Card */}
+              <div 
+                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200"
+                onClick={() => { window.location.href = '/admin/hero-images'; }}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <Eye className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">Hero Images</h3>
+                    <p className="text-sm text-gray-500 mt-1">Manage homepage slider images</p>
                   </div>
                 </div>
               </div>

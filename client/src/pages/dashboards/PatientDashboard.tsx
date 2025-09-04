@@ -171,16 +171,6 @@ const PatientDashboard = () => {
               Manage your health services and appointments from your dashboard
             </p>
           </div>
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <Button variant="outline" size="sm">
-              <Bell className="w-4 h-4 mr-2" />
-              Notifications
-            </Button>
-            <Button variant="outline" size="sm" onClick={logout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
         </div>
 
         {/* Verification Banner */}
