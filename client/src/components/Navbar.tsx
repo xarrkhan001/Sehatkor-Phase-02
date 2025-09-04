@@ -25,15 +25,17 @@ import {
   Pill,
   UserCircle,
   BadgeCheck,
-  Repeat
+  Repeat,
+  ChevronDown
 } from "lucide-react";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const { user, logout, mode, toggleMode } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, mode, toggleMode } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isInfoDropdownOpen, setIsInfoDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,16 +51,13 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleModeToggle = () => {
-    const newMode = mode === 'patient' ? 'provider' : 'patient';
     toggleMode();
 
     // Only navigate if user is currently on a dashboard page
     const isDashboardPage = location.pathname.startsWith('/dashboard');
     
     if (isDashboardPage) {
-      if (newMode === 'patient') {
-        navigate('/dashboard/patient');
-      } else {
+      if (mode === 'patient') {
         switch (user?.role) {
           case 'doctor':
             navigate('/dashboard/doctor');
@@ -75,6 +74,8 @@ const Navbar = () => {
           default:
             navigate('/');
         }
+      } else {
+        navigate('/dashboard/patient');
       }
     }
   };
@@ -86,6 +87,7 @@ const Navbar = () => {
     { name: "Hospitals", href: "/hospitals", icon: Hospital, color: "text-red-600" },
     { name: "Labs", href: "/labs", icon: FlaskConical, color: "text-orange-600" },
     { name: "Pharmacies", href: "/pharmacies", icon: Pill, color: "text-teal-600" },
+    { name: "About", href: "/about", icon: BadgeCheck, color: "text-blue-500" },
     { name: "Blog", href: "/blog", icon: BookOpen, color: "text-indigo-600" },
     { name: "Contact", href: "/contact", icon: Phone, color: "text-emerald-600" },
     { name: "Dashboard", href: "", icon: LayoutDashboard, color: "text-slate-600", requiresAuth: true },
@@ -157,6 +159,12 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
+              
+              // Group About, Blog, Contact into dropdown for large screens only
+              if (['About', 'Blog', 'Contact'].includes(item.name)) {
+                return null; // Don't render these individually
+              }
+              
               return (
                 <Link
                   key={item.name}
@@ -176,6 +184,92 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            
+            {/* Info Dropdown for large screens only */}
+            <div className="hidden lg:block relative">
+              <div className="flex items-center">
+                {/* About Link - Clickable */}
+                <Link
+                  to="/about"
+                  className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                    isActive('/about')
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
+                  <BadgeCheck className={`w-4 h-4 transition-all duration-300 ${
+                    isActive('/about') 
+                      ? "text-white drop-shadow-sm" 
+                      : "text-blue-500 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
+                  }`} strokeWidth={2.5} />
+                  <span className="transition-all duration-300">About</span>
+                </Link>
+                
+                {/* Dropdown Arrow - Separate clickable area */}
+                <DropdownMenu open={isInfoDropdownOpen} onOpenChange={setIsInfoDropdownOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button className="group flex items-center justify-center w-8 h-10 rounded-xl text-sm font-medium transition-all duration-300 ml-1 text-gray-800 hover:text-gray-900 hover:bg-gray-100">
+                      <ChevronDown className={`w-3 h-3 transition-all duration-200 ${
+                        isInfoDropdownOpen ? 'rotate-180' : ''
+                      } text-gray-500 group-hover:text-red-500`} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 mt-2 bg-white border border-gray-200 shadow-lg rounded-xl">
+                    <div className="p-1">
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/blog" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50">
+                            <BookOpen className="w-4 h-4 text-indigo-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Blog</span>
+                            <p className="text-xs text-gray-500">Health articles & tips</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/contact" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50">
+                            <Phone className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Contact</span>
+                            <p className="text-xs text-gray-500">Get in touch with us</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+            
+            {/* Show individual items for medium screens */}
+            <div className="lg:hidden flex items-center space-x-1">
+              {['About', 'Blog', 'Contact'].map((itemName) => {
+                const item = allNavItems.find(nav => nav.name === itemName);
+                if (!item) return null;
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                      isActive(item.href)
+                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                        : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 transition-all duration-300 ${
+                      isActive(item.href) 
+                        ? "text-white drop-shadow-sm" 
+                        : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
+                    }`} strokeWidth={2.5} />
+                    <span className=" transition-all duration-300">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           {/* User Dropdown or Mobile Menu */}
@@ -304,21 +398,20 @@ const Navbar = () => {
             ) : null}
 
            {/* Mobile Menu */}
-<Sheet open={isOpen} onOpenChange={setIsOpen}>
+<Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
   <SheetTrigger asChild>
     <Button variant="ghost" size="sm" className="md:hidden w-10 h-10 p-0 rounded-xl hover:bg-gray-100 transition-all duration-300">
       <Menu className="w-5 h-5 text-gray-600" />
     </Button>
   </SheetTrigger>
   <SheetContent side="right" className="w-80 bg-white">
-    <div className="flex items-center mb-6"> {/* Removed justify-between since we only have one element now */}
+    <div className="flex items-center mb-6">
       <div className="flex items-center space-x-2">
         <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
           <Stethoscope className="w-6 h-6 text-white" />
         </div>
         <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
       </div>
-      {/* Removed the custom close button */}
     </div>
     
     <div className="space-y-2">
@@ -328,7 +421,7 @@ const Navbar = () => {
           <Link
             key={item.name}
             to={item.href}
-            onClick={() => setIsOpen(false)}
+            onClick={() => setIsMobileMenuOpen(false)}
             className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
               isActive(item.href)
                 ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
@@ -376,7 +469,7 @@ const Navbar = () => {
           <button
             onClick={() => {
               handleLogout();
-              setIsOpen(false);
+              setIsMobileMenuOpen(false);
             }}
             className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-300 w-full"
           >
