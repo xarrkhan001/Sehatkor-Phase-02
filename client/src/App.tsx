@@ -33,6 +33,7 @@ const LaboratoryDashboard = lazy(() => import("./pages/dashboards/LaboratoryDash
 const PharmacyDashboard = lazy(() => import("./pages/dashboards/PharmacyDashboard"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const AdminPartners = lazy(() => import("./pages/AdminPartners"));
 const AdminVerifications = lazy(() => import("./pages/AdminVerifications"));
@@ -95,6 +96,7 @@ const AppShell = () => {
             <Route path="/dashboard/laboratory" element={<Suspense fallback={<DashboardSkeleton />}><LaboratoryDashboard /></Suspense>} />
             <Route path="/dashboard/pharmacy" element={<Suspense fallback={<DashboardSkeleton />}><PharmacyDashboard /></Suspense>} />
             <Route path="/blog" element={<Suspense fallback={<BlogSkeleton />}><BlogPage /></Suspense>} />
+            <Route path="/about" element={<Suspense fallback={<PageSkeleton />}><AboutPage /></Suspense>} />
             <Route path="/contact" element={<Suspense fallback={<PageSkeleton />}><ContactPage /></Suspense>} />
             <Route path="/admin" element={<Suspense fallback={<AdminSkeleton />}><AdminPanel /></Suspense>} />
             <Route path="/admin/partners" element={<Suspense fallback={<AdminSkeleton />}><AdminPartners /></Suspense>} />

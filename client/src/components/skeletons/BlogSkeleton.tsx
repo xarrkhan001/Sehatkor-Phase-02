@@ -6,12 +6,12 @@ const BlogSkeleton = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section Skeleton */}
       <div className="relative bg-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-slate-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50"></div>
         <div className="relative container mx-auto px-6 py-20">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg mb-8">
-                <Stethoscope className="w-10 h-10 text-white" />
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-2xl shadow-lg mb-8">
+                <Stethoscope className="w-10 h-10 text-blue-600" />
               </div>
               <Skeleton className="h-16 w-96 mx-auto mb-4" />
               <Skeleton className="h-8 w-80 mx-auto mb-6" />
@@ -22,8 +22,8 @@ const BlogSkeleton = () => {
             {/* Stats Skeleton */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50">
-                  <Skeleton className="w-16 h-16 rounded-xl mx-auto mb-4" />
+                <div key={index} className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-gray-200/50 shadow-lg">
+                  <Skeleton className="w-16 h-16 rounded-full mx-auto mb-4" />
                   <Skeleton className="h-8 w-16 mx-auto mb-2" />
                   <Skeleton className="h-4 w-20 mx-auto" />
                 </div>
@@ -41,7 +41,7 @@ const BlogSkeleton = () => {
             <Skeleton className="w-24 h-1 mx-auto rounded-full" />
           </div>
           
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200/50">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200">
             <div className="grid lg:grid-cols-5 gap-0">
               <div className="lg:col-span-2 relative h-80 lg:h-auto">
                 <Skeleton className="w-full h-full" />
@@ -67,7 +67,7 @@ const BlogSkeleton = () => {
                         <Skeleton className="h-3 w-16" />
                       </div>
                     </div>
-                    <div className="h-8 w-px bg-slate-200"></div>
+                    <div className="h-8 w-px bg-gray-200"></div>
                     <Skeleton className="h-4 w-20" />
                   </div>
                 </div>
@@ -86,7 +86,7 @@ const BlogSkeleton = () => {
           </div>
           
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-200/50 p-8">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
               <div className="flex flex-col lg:flex-row gap-4 mb-8">
                 <Skeleton className="flex-1 h-14 rounded-xl" />
                 <Skeleton className="h-14 w-32 rounded-xl" />
@@ -114,7 +114,7 @@ const BlogSkeleton = () => {
           
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-lg border border-slate-200/50 overflow-hidden">
+              <div key={i} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                 <Skeleton className="h-56 w-full" />
                 <div className="p-6">
                   <Skeleton className="h-6 w-full mb-2" />
@@ -141,7 +141,7 @@ const BlogSkeleton = () => {
 
         {/* Newsletter Section Skeleton */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gray-100 rounded-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 rounded-3xl"></div>
           <div className="relative p-12 text-center rounded-3xl">
             <div className="max-w-3xl mx-auto">
               <Skeleton className="w-20 h-20 rounded-2xl mx-auto mb-8" />
