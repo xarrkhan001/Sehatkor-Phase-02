@@ -762,43 +762,46 @@ const DoctorsPage = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="mt-auto grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
-                  <Button
-                    size="sm"
-                    className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-                    onClick={() => handleBookNow(service)}
-                  >
-                    <Clock className="w-3 h-3 sm:mr-1" />
-                    <span className="hidden sm:inline">Book</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowLocationMap(service.id)}
-                    className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
-                  >
-                    <MapPin className="w-3 h-3 sm:mr-1" />
-                    <span className="hidden sm:inline">Location</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => navigate(`/service/${service.id}`, { state: { service, fromDoctors: true } })}
-                    className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
-                  >
-                    Details
-                  </Button>
-                  {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                <div className="mt-auto space-y-2">
+                  {/* Mobile: 2x2 grid, Desktop: flex row */}
+                  <div className="grid grid-cols-2 gap-2 md:flex md:gap-1.5">
+                    <Button
+                      size="sm"
+                      className="flex items-center justify-center gap-1 h-9 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400 md:flex-1 md:min-w-[80px] md:h-8"
+                      onClick={() => handleBookNow(service)}
+                    >
+                      <Clock className="w-3 h-3" />
+                      <span className="text-xs">Book</span>
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleRateService(service)}
-                      className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
+                      onClick={() => setShowLocationMap(service.id)}
+                      className="flex items-center justify-center gap-1 h-9 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800 md:flex-1 md:min-w-[80px] md:h-8"
                     >
-                      <Star className="w-3 h-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Rate</span>
+                      <MapPin className="w-3 h-3" />
+                      <span className="text-xs">Location</span>
                     </Button>
-                  )}
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => navigate(`/service/${service.id}`, { state: { service, fromDoctors: true } })}
+                      className="col-span-2 flex items-center justify-center gap-1 h-9 text-xs md:col-span-1 md:flex-1 md:min-w-[80px] md:h-8"
+                    >
+                      <span className="text-xs">Details</span>
+                    </Button>
+                    {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRateService(service)}
+                        className="col-span-2 flex items-center justify-center gap-1 h-9 text-xs md:col-span-1 md:flex-1 md:min-w-[80px] md:h-8"
+                      >
+                        <Star className="w-3 h-3" />
+                        <span className="text-xs">Rate</span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
