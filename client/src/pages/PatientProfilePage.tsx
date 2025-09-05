@@ -9,14 +9,10 @@ import {
   User, 
   Mail, 
   Phone, 
-  MapPin, 
   Calendar, 
   Shield, 
   Heart, 
-  FileText, 
   Clock,
-  Edit,
-  Eye,
   CheckCircle,
   AlertCircle,
   XCircle,
@@ -25,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import EditProfileDialog from '@/components/EditProfileDialog';
+// Removed EditProfileDialog on profile page (editing handled via dashboard)
 
 interface PatientUser {
   _id: string;
@@ -70,7 +66,6 @@ const PatientProfilePage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [bookingsLoading, setBookingsLoading] = useState(true);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'medical'>('overview');
 
   const isOwnProfile = user?.id === patientId;
@@ -450,6 +445,40 @@ const PatientProfilePage = () => {
                     </div>
                   </div>
 
+                  {/* At a glance */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="col-span-1 md:col-span-2 rounded-xl border border-gray-200 bg-white p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600">Membership</div>
+                        <Calendar className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div className="mt-2 text-2xl font-semibold text-gray-900">
+                        {new Date(patientUser.createdAt).toLocaleDateString()}
+                      </div>
+                      <div className="mt-2">
+                        <Badge className="bg-green-50 text-green-700 border-green-200"><Shield className="w-4 h-4 mr-1" /> Verified</Badge>
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-4">
+                      <div className="text-sm text-gray-600">Last Booking</div>
+                      {bookings.length ? (
+                        <div className="mt-2">
+                          {(() => {
+                            const last = [...bookings].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+                            return (
+                              <>
+                                <div className="text-sm font-medium text-gray-900 truncate">{last.serviceName}</div>
+                                <div className="text-xs text-gray-500 truncate">{new Date(last.createdAt).toLocaleDateString()} • {(last.status || '').toString()}</div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-sm text-gray-500">No bookings yet</div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {patientUser.dateOfBirth && (
                       <div className="bg-gray-50 rounded-lg p-4">
@@ -469,6 +498,86 @@ const PatientProfilePage = () => {
                         <p className="text-gray-900">{patientUser.emergencyContact}</p>
                       </div>
                     )}
+                  </div>
+
+                  {/* Fillers: Recent Activity + Quick Actions */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* Recent Activity (last 3 bookings) */}
+                    <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Activity className="w-4 h-4 text-blue-600" />
+                        <h4 className="text-sm font-semibold text-gray-800">Recent Activity</h4>
+                      </div>
+                      {bookings && bookings.length > 0 ? (
+                        <div className="space-y-3">
+                          {bookings.slice(0, 3).map((b) => (
+                            <div key={b._id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{b.serviceName}</p>
+                                <p className="text-xs text-gray-500 truncate">{b.providerName} • {new Date(b.createdAt).toLocaleDateString()}</p>
+                              </div>
+                              <Badge className={`${getStatusColor(b.status)} flex items-center gap-1 whitespace-nowrap`}>
+                                {getStatusIcon(b.status)} {(b.status || '').toString()}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 text-sm text-gray-500">No recent activity yet</div>
+                      )}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-3">Quick Actions</h4>
+                      <div className="space-y-2">
+                        <Button variant="secondary" className="w-full" onClick={() => setActiveTab('bookings')}>
+                          View All Bookings
+                        </Button>
+                      </div>
+                      <div className="mt-4 rounded-lg bg-gray-50 border border-gray-200 p-3 text-xs text-gray-800">
+                        <div className="flex items-center gap-2 mb-2">
+                          <User className="w-4 h-4 text-gray-500" />
+                          <span className="font-semibold">Account Snapshot</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="truncate"><span className="text-gray-500">Email:</span> {patientUser?.email}</div>
+                          <div className="capitalize"><span className="text-gray-500">Role:</span> {patientUser?.role}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Milestones */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <h4 className="text-sm font-semibold text-gray-800 mb-3">Milestones</h4>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge className="bg-green-50 text-green-700 border-green-200">
+                        <Shield className="w-4 h-4 mr-1" /> Verified Patient
+                      </Badge>
+                      <Badge className="bg-blue-50 text-blue-700 border-blue-200">
+                        <User className="w-4 h-4 mr-1" /> {patientUser.role}
+                      </Badge>
+                      <Badge className="bg-purple-50 text-purple-700 border-purple-200">
+                        <Calendar className="w-4 h-4 mr-1" /> Since {new Date(patientUser.createdAt).getFullYear()}
+                      </Badge>
+                      {bookings.length > 0 && (
+                        <Badge className="bg-amber-50 text-amber-700 border-amber-200">
+                          <CreditCard className="w-4 h-4 mr-1" /> {bookings.length}+ bookings
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Info Ribbon */}
+                  <div className="rounded-xl p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-sm opacity-90">Stay on track</div>
+                      <div className="text-base font-semibold">Review your recent bookings and keep your profile up to date</div>
+                    </div>
+                    <Button variant="secondary" className="bg-white text-blue-700 hover:bg-white/90" onClick={() => setActiveTab('bookings')}>
+                      Go to History
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -609,16 +718,7 @@ const PatientProfilePage = () => {
         </div>
       </div>
 
-      {/* Edit Profile Dialog */}
-      {editDialogOpen && (
-        <EditProfileDialog
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          role="doctor"
-          name={patientUser?.name}
-          avatar={patientUser?.avatar}
-        />
-      )}
+      {/* Edit Profile Dialog removed: editing is handled from dashboard */}
     </div>
   );
 };
