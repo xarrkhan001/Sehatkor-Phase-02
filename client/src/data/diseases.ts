@@ -1,4 +1,4 @@
-import { type LucideIcon, Virus, Bug, Thermometer, Syringe, Droplet, Biohazard, Heart, Zap, Activity, Shield, AlertTriangle } from "lucide-react";
+import { type LucideIcon, Bug, Thermometer, Syringe, Droplet, Biohazard, Heart, Zap, Activity, Shield, AlertTriangle } from "lucide-react";
 
 export type Disease = {
   slug: string;
@@ -21,7 +21,7 @@ export const diseases: Disease[] = [
     category: "Viral",
     icon: Zap,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-red-200 via-red-300 to-red-400",
+    bgClass: "bg-red-500",
     ringClass: "ring-red-300",
     description:
       "Dengue is a mosquito-borne viral infection causing high fever, severe headache, pain behind the eyes, muscle and joint pains, and rash.",
@@ -50,7 +50,7 @@ export const diseases: Disease[] = [
     category: "Viral",
     icon: Activity,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-blue-200 via-blue-300 to-indigo-400",
+    bgClass: "bg-blue-500",
     ringClass: "ring-blue-300",
     description:
       "Influenza is a contagious respiratory illness caused by influenza viruses, leading to fever, cough, sore throat, and body aches.",
@@ -64,7 +64,7 @@ export const diseases: Disease[] = [
     category: "Parasitic",
     icon: Shield,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-green-200 via-emerald-300 to-teal-400",
+    bgClass: "bg-green-500",
     ringClass: "ring-green-300",
     description:
       "Malaria is a life-threatening disease caused by parasites transmitted through the bites of infected Anopheles mosquitoes.",
@@ -78,7 +78,7 @@ export const diseases: Disease[] = [
     category: "Viral",
     icon: AlertTriangle,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-pink-200 via-rose-300 to-red-400",
+    bgClass: "bg-pink-500",
     ringClass: "ring-pink-300",
     description:
       "COVID-19 is a respiratory illness caused by SARS-CoV-2, with symptoms ranging from mild to severe.",
@@ -92,7 +92,7 @@ export const diseases: Disease[] = [
     category: "Viral",
     icon: Droplet,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-yellow-200 via-amber-300 to-orange-400",
+    bgClass: "bg-yellow-500",
     ringClass: "ring-yellow-300",
     description:
       "Hepatitis A is a liver infection caused by the hepatitis A virus, often spread through contaminated food or water.",
@@ -106,7 +106,7 @@ export const diseases: Disease[] = [
     category: "Bacterial",
     icon: Biohazard,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-orange-200 via-red-300 to-pink-400",
+    bgClass: "bg-orange-500",
     ringClass: "ring-orange-300",
     description:
       "Typhoid is a bacterial infection caused by Salmonella Typhi, leading to prolonged fever, weakness, stomach pain, and constipation or diarrhea.",
@@ -120,7 +120,7 @@ export const diseases: Disease[] = [
     category: "Chronic",
     icon: Syringe,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-purple-200 via-violet-300 to-indigo-400",
+    bgClass: "bg-purple-500",
     ringClass: "ring-purple-300",
     description:
       "Diabetes is a chronic condition affecting how the body turns food into energy, leading to high blood sugar levels.",
@@ -134,7 +134,7 @@ export const diseases: Disease[] = [
     category: "Chronic",
     icon: Heart,
     colorClass: "text-white",
-    bgClass: "bg-gradient-to-br from-rose-200 via-pink-300 to-red-400",
+    bgClass: "bg-rose-500",
     ringClass: "ring-rose-300",
     description:
       "Hypertension (high blood pressure) increases the risk of heart disease, stroke, and other complications.",
