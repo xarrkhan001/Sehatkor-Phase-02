@@ -1111,86 +1111,89 @@ const SearchPage = () => {
                         )}
                       </div>
                       {/* Buttons */}
-                      <div className="mt-auto grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
-                        <Button
-                          size="sm"
-                          className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-                          onClick={() => handleBookNow({ ...(service as any), price: getDisplayPrice(service), image: getDisplayImage(service), location: getDisplayLocation(service) } as any)}
-                        >
-                          <Clock className="w-3 h-3 sm:mr-1" />
-                          <span className="hidden sm:inline">Book</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const augmented: any = { ...service, location: getDisplayLocation(service), address: getDisplayAddress(service), googleMapLink: getDisplayMapLink(service) };
-                            setCurrentMapService(augmented);
-                            setShowLocationMap(service.id);
-                          }}
-                          className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
-                        >
-                          <MapPin className="w-3 h-3 sm:mr-1" />
-                          <span className="hidden sm:inline">Location</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
-                            const timeInfo = getDisplayTimeInfo(service);
-                            const currentVariantIndex = activeVariantIndexByService[service.id] ?? 0;
-                            console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
-                            console.log('Service data being passed:', service);
-                            navigate(`/service/${service.id}`, {
-                              state: {
-                                from: `${routerLocation.pathname}${routerLocation.search}`,
-                                fromSearch: true,
-                                activeVariantIndex: currentVariantIndex,
-                                service: {
-                                  id: service.id,
-                                  name: service.name,
-                                  description: service.description,
-                                  price: getDisplayPrice(service) ?? service.price,
-                                  rating: service.rating ?? 0,
-                                  provider: service.provider,
-                                  // active slide overrides
-                                  image: getDisplayImage(service) || service.image,
-                                  location: getDisplayLocation(service) || service.location,
-                                  address: getDisplayAddress(service) || (service as any).address,
-                                  googleMapLink: getDisplayMapLink(service) || (service as any).googleMapLink,
-                                  // provider/meta
-                                  providerType: (service as any)._providerType,
-                                  providerId: (service as any)._providerId,
-                                  totalRatings: (service as any).totalRatings,
-                                  providerPhone: (service as any).providerPhone,
-                                  coordinates: (service as any).coordinates,
-                                  ratingBadge: (service as any).ratingBadge,
-                                  myBadge: (service as any).myBadge,
-                                  timeInfo,
-                                  variants: (service as any).variants || [],
-                                  isReal: true,
-                                  type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
-                                  availability: (service as any).availability,
-                                  homeDelivery: Boolean((service as any).homeDelivery),
-                                }
-                              }
-                            });
-                          }}
-                          className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
-                        >
-                          Details
-                        </Button>
-                        {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                      <div className="mt-auto space-y-2">
+                        {/* Mobile: 2x2 grid, Desktop: flex row */}
+                        <div className="grid grid-cols-2 gap-2 md:flex md:gap-1.5">
+                          <Button
+                            size="sm"
+                            className="flex items-center justify-center gap-1 h-9 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400 md:flex-1 md:min-w-[80px] md:h-8"
+                            onClick={() => handleBookNow({ ...(service as any), price: getDisplayPrice(service), image: getDisplayImage(service), location: getDisplayLocation(service) } as any)}
+                          >
+                            <Clock className="w-3 h-3" />
+                            <span className="text-xs">Book</span>
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleRateService(service)}
-                            className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
+                            onClick={() => {
+                              const augmented: any = { ...service, location: getDisplayLocation(service), address: getDisplayAddress(service), googleMapLink: getDisplayMapLink(service) };
+                              setCurrentMapService(augmented);
+                              setShowLocationMap(service.id);
+                            }}
+                            className="flex items-center justify-center gap-1 h-9 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800 md:flex-1 md:min-w-[80px] md:h-8"
                           >
-                            <Star className="w-3 h-3 sm:mr-1" />
-                            <span className="hidden sm:inline">Rate</span>
+                            <MapPin className="w-3 h-3" />
+                            <span className="text-xs">Location</span>
                           </Button>
-                        )}
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              const timeInfo = getDisplayTimeInfo(service);
+                              const currentVariantIndex = activeVariantIndexByService[service.id] ?? 0;
+                              console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
+                              console.log('Service data being passed:', service);
+                              navigate(`/service/${service.id}`, {
+                                state: {
+                                  from: `${routerLocation.pathname}${routerLocation.search}`,
+                                  fromSearch: true,
+                                  activeVariantIndex: currentVariantIndex,
+                                  service: {
+                                    id: service.id,
+                                    name: service.name,
+                                    description: service.description,
+                                    price: getDisplayPrice(service) ?? service.price,
+                                    rating: service.rating ?? 0,
+                                    provider: service.provider,
+                                    // active slide overrides
+                                    image: getDisplayImage(service) || service.image,
+                                    location: getDisplayLocation(service) || service.location,
+                                    address: getDisplayAddress(service) || (service as any).address,
+                                    googleMapLink: getDisplayMapLink(service) || (service as any).googleMapLink,
+                                    // provider/meta
+                                    providerType: (service as any)._providerType,
+                                    providerId: (service as any)._providerId,
+                                    totalRatings: (service as any).totalRatings,
+                                    providerPhone: (service as any).providerPhone,
+                                    coordinates: (service as any).coordinates,
+                                    ratingBadge: (service as any).ratingBadge,
+                                    myBadge: (service as any).myBadge,
+                                    timeInfo,
+                                    variants: (service as any).variants || [],
+                                    isReal: true,
+                                    type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
+                                    availability: (service as any).availability,
+                                    homeDelivery: Boolean((service as any).homeDelivery),
+                                  }
+                                }
+                              });
+                            }}
+                            className="col-span-2 flex items-center justify-center gap-1 h-9 text-xs md:col-span-1 md:flex-1 md:min-w-[80px] md:h-8"
+                          >
+                            <span className="text-xs">Details</span>
+                          </Button>
+                          {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRateService(service)}
+                              className="col-span-2 flex items-center justify-center gap-1 h-9 text-xs md:col-span-1 md:flex-1 md:min-w-[80px] md:h-8"
+                            >
+                              <Star className="w-3 h-3" />
+                              <span className="text-xs">Rate</span>
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
