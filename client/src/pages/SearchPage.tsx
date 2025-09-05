@@ -914,7 +914,7 @@ const SearchPage = () => {
               )}
             </div>
 
-            <div className={`grid gap-6 sm:grid-cols-2 ${isSidebarOpen ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+            <div className={`grid gap-4 grid-cols-1 sm:grid-cols-2 ${isSidebarOpen ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
               {servicesToDisplay.map((service) => {
                 const isHighlighted =
                   highlightedService &&
@@ -1050,7 +1050,7 @@ const SearchPage = () => {
                       </div>
 
                       {/* Rating Badge, Location, Availability, Home Service, WhatsApp */}
-                      <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 text-sm">
                         <RatingBadge
                           rating={service.rating}
                           ratingBadge={service.ratingBadge}
@@ -1093,15 +1093,17 @@ const SearchPage = () => {
                         )}
                       </div>
                       {/* Address + Single Disease Badge */}
-                      <div className="flex items-center gap-1 text-gray-500 mb-2">
-                        <MapPin className="w-4 h-4" />
-                        <span className="truncate" title={getDisplayAddress(service) || getDisplayLocation(service)}>
-                          {getDisplayAddress(service) || getDisplayLocation(service)}
-                        </span>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-gray-500 mb-2">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate text-xs sm:text-sm" title={getDisplayAddress(service) || getDisplayLocation(service)}>
+                            {getDisplayAddress(service) || getDisplayLocation(service)}
+                          </span>
+                        </div>
                         {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
                           <Badge
                             variant="outline"
-                            className="ml-2 text-[10px] px-2 py-0.5 bg-sky-50 text-sky-700 border-sky-100 whitespace-nowrap"
+                            className="text-[10px] px-2 py-0.5 bg-sky-50 text-sky-700 border-sky-100 whitespace-nowrap self-start sm:self-center"
                             title={(service as any).diseases[0]}
                           >
                             {(service as any).diseases[0]}
@@ -1109,13 +1111,14 @@ const SearchPage = () => {
                         )}
                       </div>
                       {/* Buttons */}
-                      <div className="mt-auto flex flex-wrap items-center gap-1.5">
+                      <div className="mt-auto grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
                         <Button
                           size="sm"
-                          className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
+                          className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
                           onClick={() => handleBookNow({ ...(service as any), price: getDisplayPrice(service), image: getDisplayImage(service), location: getDisplayLocation(service) } as any)}
                         >
-                          <Clock className="w-3 h-3 mr-1" /> Book
+                          <Clock className="w-3 h-3 sm:mr-1" />
+                          <span className="hidden sm:inline">Book</span>
                         </Button>
                         <Button
                           size="sm"
@@ -1125,9 +1128,10 @@ const SearchPage = () => {
                             setCurrentMapService(augmented);
                             setShowLocationMap(service.id);
                           }}
-                          className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
+                          className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
                         >
-                          <MapPin className="w-3 h-3 mr-1" /> Location
+                          <MapPin className="w-3 h-3 sm:mr-1" />
+                          <span className="hidden sm:inline">Location</span>
                         </Button>
                         <Button
                           size="sm"
@@ -1172,7 +1176,7 @@ const SearchPage = () => {
                               }
                             });
                           }}
-                          className="flex-1 min-w-[80px] h-8 text-xs"
+                          className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
                         >
                           Details
                         </Button>
@@ -1181,9 +1185,10 @@ const SearchPage = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => handleRateService(service)}
-                            className="flex-1 min-w-[80px] h-8 text-xs"
+                            className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
                           >
-                            <Star className="w-3 h-3 mr-1" /> Rate
+                            <Star className="w-3 h-3 sm:mr-1" />
+                            <span className="hidden sm:inline">Rate</span>
                           </Button>
                         )}
                       </div>

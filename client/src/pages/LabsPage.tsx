@@ -450,13 +450,13 @@ const LabsPage = () => {
         </div>
 
         {/* Results */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredServices.map((service) => (
             <Card
               key={service.id}
               className="shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 h-full flex flex-col"
             >
-              <CardContent className="p-5 h-full flex flex-col">
+              <CardContent className="p-5 flex flex-col h-full">
                 {/* Image */}
                 <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4 relative">
                   {service.image ? (
@@ -466,7 +466,7 @@ const LabsPage = () => {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.onerror = null; // prevent infinite loop
+                        target.onerror = null;
                         target.style.display = 'none';
                         const fallback = document.createElement('span');
                         fallback.className = 'text-gray-400 text-4xl';
@@ -477,7 +477,7 @@ const LabsPage = () => {
                   ) : (
                     <span className="text-gray-400 text-4xl">🔬</span>
                   )}
-                  
+
                   {/* Top-right corner badges */}
                   <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
                     {(service as any)._providerVerified ? (
@@ -519,14 +519,25 @@ const LabsPage = () => {
                           </>
                         )}
                     </div>
-                    <div className="flex gap-1 justify-end mt-1">
-                      <Badge
-                        className="text-[11px] px-2 py-0.5 rounded-full bg-rose-600 text-white border-0 leading-none whitespace-nowrap"
-                      >
-                        {service.type}
-                      </Badge>
-                    </div>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
+                    >
+                      Test
+                    </Badge>
                   </div>
+                </div>
+
+                {/* Address + Disease (badge on right) */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 mb-4">
+                  <span className="text-xs text-gray-600 truncate">
+                    {(service as any).detailAddress || service.location || 'Address not specified'}
+                  </span>
+                  {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap self-start sm:self-center">
+                      {((service as any).diseases as string[])[0]}
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Description */}
@@ -535,12 +546,19 @@ const LabsPage = () => {
                 </p>
 
                 {/* Rating, Location, WhatsApp, Availability, Service Type */}
-                <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 text-sm">
                   <RatingBadge rating={service.rating as number} totalRatings={(service as any).totalRatings} ratingBadge={(service as any).ratingBadge} yourBadge={(service as any).myBadge || null} size="sm" />
                   <div className="flex items-center gap-1 text-gray-500">
                     <MapPin className="w-4 h-4" />
                     <span>{service.location}</span>
                   </div>
+                  {(service as any).homeDelivery && (
+                    <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                      <span className="leading-none">🏠</span>
+                      <span className="leading-none">Home Delivery</span>
+                    </Badge>
+                  )}
+                  
                   {(service as any).providerPhone && (
                     <ServiceWhatsAppButton
                       phoneNumber={(service as any).providerPhone}
@@ -555,46 +573,35 @@ const LabsPage = () => {
                   {(service as any).serviceType && (
                     <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                   )}
-                  {(service as any).homeDelivery && (
-                    <Badge className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-500 text-white whitespace-nowrap">
-                      🏠 Home Delivery
-                    </Badge>
-                  )}
                 </div>
 
                 {/* Buttons */}
-                <div className="mt-auto flex flex-wrap gap-1.5">
+                <div className="mt-auto grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
                   <Button
                     size="sm"
-                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
-                    onClick={() => handleBookNow(service)}
-                  >
-                    <Clock className="w-3 h-3 mr-1" /> Book
+                    className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400" onClick={() => handleBookNow(service)}>
+                    <Clock className="w-3 h-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Book</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setShowLocationMap(service.id)}
-                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
-                  >
-                    <MapPin className="w-3 h-3 mr-1" /> Location
+                    className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800">
+                    <MapPin className="w-3 h-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Location</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
                     onClick={() => navigate(`/service/${service.id}`, { state: { service, fromLabs: true } })}
-                    className="flex-1 min-w-[80px] h-8 text-xs"
-                  >
+                    className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs">
                     Details
                   </Button>
                   {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleRateService(service)}
-                      className="flex-1 min-w-[80px] h-8 text-xs"
-                    >
-                      <Star className="w-3 h-3 mr-1" /> Rate
+                    <Button size="sm" variant="outline" onClick={() => handleRateService(service)} className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs">
+                      <Star className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Rate</span>
                     </Button>
                   )}
                 </div>
