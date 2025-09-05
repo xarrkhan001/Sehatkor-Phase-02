@@ -52,7 +52,7 @@ interface Booking {
   providerName: string;
   providerType: string;
   amount: number;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: string;
   bookingDate: string;
   appointmentDate?: string;
   location?: string;
@@ -114,14 +114,14 @@ const PatientProfilePage = () => {
       
       setBookingsLoading(true);
       try {
-        const response = await fetch(`/api/payments/patient/${patientId}`, {
+        const response = await fetch(`/api/bookings/patient/${patientId}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`
           }
         });
         if (response.ok) {
           const data = await response.json();
-          setBookings(data.payments || []);
+          setBookings(Array.isArray(data) ? data : (data?.bookings || []));
         }
       } catch (error) {
         console.error("Error fetching bookings:", error);
@@ -142,14 +142,14 @@ const PatientProfilePage = () => {
     const refetchBookings = async () => {
       if (patientId && canViewMedical) {
         try {
-          const response = await fetch(`/api/payments/patient/${patientId}`, {
+          const response = await fetch(`/api/bookings/patient/${patientId}`, {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`
             }
           });
           if (response.ok) {
             const data = await response.json();
-            setBookings(data.payments || []);
+            setBookings(Array.isArray(data) ? data : (data?.bookings || []));
           }
         } catch (error) {
           console.error("Error refetching bookings:", error);
@@ -167,14 +167,14 @@ const PatientProfilePage = () => {
       if (!document.hidden && patientId && canViewMedical) {
         const fetchBookings = async () => {
           try {
-            const response = await fetch(`/api/payments/patient/${patientId}`, {
+            const response = await fetch(`/api/bookings/patient/${patientId}`, {
               headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`
               }
             });
             if (response.ok) {
               const data = await response.json();
-              setBookings(data.payments || []);
+              setBookings(Array.isArray(data) ? data : (data?.bookings || []));
             }
           } catch (error) {
             console.error("Error refetching bookings:", error);
@@ -189,7 +189,8 @@ const PatientProfilePage = () => {
   }, [patientId, canViewMedical]);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    const s = (status || '').toString().toLowerCase();
+    switch (s) {
       case 'completed':
         return 'bg-green-50 text-green-700 border-green-200';
       case 'confirmed':
@@ -204,7 +205,8 @@ const PatientProfilePage = () => {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    const s = (status || '').toString().toLowerCase();
+    switch (s) {
       case 'completed':
         return <CheckCircle className="w-4 h-4" />;
       case 'confirmed':
@@ -215,6 +217,26 @@ const PatientProfilePage = () => {
         return <XCircle className="w-4 h-4" />;
       default:
         return <Activity className="w-4 h-4" />;
+    }
+  };
+
+  // Delete a single booking (same as dashboard)
+  const handleDeleteBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      if (response.ok) {
+        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        toast.success('Booking deleted successfully');
+      } else {
+        toast.error('Failed to delete booking');
+      }
+    } catch (error) {
+      toast.error('Failed to delete booking');
     }
   };
 
@@ -272,7 +294,7 @@ const PatientProfilePage = () => {
         {/* Left Sidebar - Patient Information */}
         <div className="w-full xl:w-96 xl:flex-shrink-0 xl:order-1">
           <div className="xl:sticky xl:top-8">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col min-h-[560px]">
               {/* Header with blue gradient */}
               <div className="bg-gradient-to-br from-blue-100 via-indigo-200 to-purple-300 p-8 text-gray-800 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-indigo-700/22 to-purple-900/22"></div>
@@ -304,10 +326,8 @@ const PatientProfilePage = () => {
                 </div>
               </div>
 
-              {/* Patient Details */}
-              <div className="p-6 space-y-6 flex-1">
-
-                {/* Verification Status */}
+              {/* Patient Details - Compact with contact info */}
+              <div className="p-6 space-y-6 flex-1 bg-white">
                 <div className="flex items-center justify-center">
                   <Badge className="bg-green-50 text-green-700 border-green-200 px-4 py-2 font-semibold">
                     <Shield className="w-4 h-4 mr-2" />
@@ -315,44 +335,26 @@ const PatientProfilePage = () => {
                   </Badge>
                 </div>
 
-                {/* Contact Information */}
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Contact Information</h3>
+                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+                {/* Contact - email and registered phone only */}
+                <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3">Contact</h3>
                   <div className="space-y-2">
-                    {patientUser.phone && (
-                      <div className="flex items-center gap-3">
-                        <Phone className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-900">{patientUser.phone}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 text-gray-800">
                       <Mail className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-900">{patientUser.email}</span>
+                      <span className="text-sm break-all">{patientUser.email}</span>
                     </div>
-                    {patientUser.address && (
-                      <div className="flex items-center gap-3">
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-900">{patientUser.address}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-3 text-gray-800">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm">{patientUser.phone || 'Not provided'}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Statistics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">{bookings.length}</div>
-                    <div className="text-xs text-blue-700 font-medium">Total Bookings</div>
-                  </div>
-                  <div className="bg-green-50 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-green-600 mb-1">
-                      {bookings.filter(b => b.status === 'completed').length}
-                    </div>
-                    <div className="text-xs text-green-700 font-medium">Completed</div>
-                  </div>
-                </div>
+                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
-                {/* Member Since */}
+                {/* Member Since - small foot info */}
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -360,7 +362,7 @@ const PatientProfilePage = () => {
                       <span className="text-sm text-gray-700">Member Since</span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900">
-                      {new Date(patientUser.createdAt).getFullYear()}
+                      {new Date(patientUser.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -396,18 +398,16 @@ const PatientProfilePage = () => {
                   Booking History
                 </button>
               )}
-              {canViewMedical && (
-                <button
-                  onClick={() => setActiveTab('medical')}
-                  className={`px-6 py-4 text-sm font-medium transition-colors ${
-                    activeTab === 'medical'
-                      ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Medical Info
-                </button>
-              )}
+              <button
+                onClick={() => setActiveTab('medical')}
+                className={`px-6 py-4 text-sm font-medium transition-colors ${
+                  activeTab === 'medical'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Wellness
+              </button>
             </div>
           </div>
 
@@ -421,7 +421,35 @@ const PatientProfilePage = () => {
                     Patient Overview
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
+                  {/* Friendly Summary */}
+                  <div className="rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-5 border border-gray-100">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h3 className="text-base md:text-lg font-semibold text-gray-900">
+                          Hi {patientUser.name.split(' ')[0]}, wishing you good health!
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Member since {new Date(patientUser.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 w-full md:w-auto">
+                        <div className="rounded-lg bg-white border border-gray-200 p-3 text-center">
+                          <div className="text-xs text-gray-500">Total Bookings</div>
+                          <div className="text-lg font-bold text-gray-900">{bookings.length}</div>
+                        </div>
+                        <div className="rounded-lg bg-white border border-gray-200 p-3 text-center">
+                          <div className="text-xs text-gray-500">Completed</div>
+                          <div className="text-lg font-bold text-green-600">{bookings.filter(b => (b.status || '').toLowerCase() === 'completed').length}</div>
+                        </div>
+                        <div className="rounded-lg bg-white border border-gray-200 p-3 text-center">
+                          <div className="text-xs text-gray-500">Pending</div>
+                          <div className="text-lg font-bold text-amber-600">{bookings.length - bookings.filter(b => (b.status || '').toLowerCase() === 'completed').length}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {patientUser.dateOfBirth && (
                       <div className="bg-gray-50 rounded-lg p-4">
@@ -482,14 +510,26 @@ const PatientProfilePage = () => {
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <CreditCard className="w-3 h-3" />
-                                  PKR {booking.amount.toLocaleString()}
+                                  PKR {Number(booking?.amount ?? 0).toLocaleString()}
                                 </span>
                               </div>
                             </div>
-                            <Badge className={`${getStatusColor(booking.status)} flex items-center gap-1`}>
-                              {getStatusIcon(booking.status)}
-                              {booking.status}
-                            </Badge>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge className={`${getStatusColor(booking.status)} flex items-center gap-1`}>
+                                {getStatusIcon(booking.status)}
+                                {(booking.status || '').toString()}
+                              </Badge>
+                              {isOwnProfile && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteBooking(booking._id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  Delete
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -500,44 +540,70 @@ const PatientProfilePage = () => {
             </div>
           )}
 
-          {activeTab === 'medical' && canViewMedical && (
+          {activeTab === 'medical' && (
             <div className="space-y-6">
-              <Card className="shadow-lg border-gray-100">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-blue-600" />
-                    Medical Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {patientUser.medicalHistory && patientUser.medicalHistory.length > 0 && (
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-blue-700 mb-2">Medical History</h4>
-                      <ul className="space-y-1">
-                        {patientUser.medicalHistory.map((item, index) => (
-                          <li key={index} className="text-sm text-blue-900">• {item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {patientUser.allergies && patientUser.allergies.length > 0 && (
-                    <div className="bg-red-50 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-red-700 mb-2">Allergies</h4>
-                      <ul className="space-y-1">
-                        {patientUser.allergies.map((item, index) => (
-                          <li key={index} className="text-sm text-red-900">• {item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {(!patientUser.medicalHistory || patientUser.medicalHistory.length === 0) &&
-                   (!patientUser.allergies || patientUser.allergies.length === 0) && (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">No medical information available</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Wellness Hero */}
+              <div className="rounded-2xl p-6 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border border-emerald-100">
+                <div className="flex items-center gap-3 mb-2">
+                  <Activity className="w-5 h-5 text-emerald-600" />
+                  <h3 className="text-lg font-semibold text-emerald-900">Wellness & Healthy Habits</h3>
+                </div>
+                <p className="text-sm text-emerald-700">Small daily steps make a big difference. Keep moving, stay hydrated, and rest well.</p>
+              </div>
+
+              {/* Quick Goals */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="rounded-xl border p-4 bg-white">
+                  <div className="text-sm text-gray-500 mb-1">Hydration</div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-2 bg-cyan-500 rounded-full" style={{ width: '70%' }} />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2">~ 7/10 glasses</div>
+                </div>
+                <div className="rounded-xl border p-4 bg-white">
+                  <div className="text-sm text-gray-500 mb-1">Steps</div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-2 bg-emerald-500 rounded-full" style={{ width: '55%' }} />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2">~ 5,500 / 10,000</div>
+                </div>
+                <div className="rounded-xl border p-4 bg-white">
+                  <div className="text-sm text-gray-500 mb-1">Sleep</div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-2 bg-indigo-500 rounded-full" style={{ width: '80%' }} />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2">~ 8 / 10 hours</div>
+                </div>
+              </div>
+
+              {/* Tips List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border p-4 bg-white">
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">Daily Tips</h4>
+                  <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                    <li>Drink a glass of water every hour</li>
+                    <li>Take a 10-minute walk after meals</li>
+                    <li>Add fruits and veggies to your plate</li>
+                  </ul>
+                </div>
+                <div className="rounded-xl border p-4 bg-white">
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">Mind & Mood</h4>
+                  <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                    <li>Pause for 3 deep breaths</li>
+                    <li>Write one thing you’re grateful for</li>
+                    <li>Take a 5-minute stretch break</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="rounded-xl border p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
+                <div>
+                  <div className="text-sm opacity-90">Weekly challenge</div>
+                  <div className="text-base font-semibold">Walk 70,000 steps this week</div>
+                </div>
+                <button className="px-4 py-2 bg-white text-blue-700 rounded-lg text-sm font-medium hover:bg-white/90">Join</button>
+              </div>
             </div>
           )}
         </div>
@@ -548,11 +614,9 @@ const PatientProfilePage = () => {
         <EditProfileDialog
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
-          user={patientUser}
-          onUpdate={(updatedUser) => {
-            setPatientUser(updatedUser as PatientUser);
-            toast.success("Profile updated successfully");
-          }}
+          role="doctor"
+          name={patientUser?.name}
+          avatar={patientUser?.avatar}
         />
       )}
     </div>
