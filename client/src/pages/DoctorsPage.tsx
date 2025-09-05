@@ -571,7 +571,7 @@ const DoctorsPage = () => {
         </div>
 
         {/* Results */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredServices.map((service) => (
             <Card
               key={service.id}
@@ -705,19 +705,19 @@ const DoctorsPage = () => {
                 </div>
 
                 {/* Address + Disease (badge on right) */}
-                <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 mb-4">
                   <span className="text-xs text-gray-600 truncate">
                     {getDisplayForService(service).detailAddress || getDisplayForService(service).location || 'Address not specified'}
                   </span>
                   {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap">
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap self-start sm:self-center">
                       {((service as any).diseases as string[])[0]}
                     </Badge>
                   )}
                 </div>
 
-                {/* Rating, Location, Home Delivery Badge, WhatsApp, Availability, Service Type */}
-                <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
+                {/* Rating, Location, WhatsApp, Availability, Service Type */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 text-sm">
                   <RatingBadge
                     rating={service.rating}
                     totalRatings={(service as any).totalRatings || 0}
@@ -762,54 +762,29 @@ const DoctorsPage = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="mt-auto flex flex-wrap gap-1.5">
+                <div className="mt-auto grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
                   <Button
                     size="sm"
-                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
+                    className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400"
                     onClick={() => handleBookNow(service)}
                   >
-                    <Clock className="w-3 h-3 mr-1" /> Book
+                    <Clock className="w-3 h-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Book</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      setShowLocationMap(service.id);
-                    }}
-                    className="flex-1 min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
+                    onClick={() => setShowLocationMap(service.id)}
+                    className="col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
                   >
-                    <MapPin className="w-3 h-3 mr-1" /> Location
+                    <MapPin className="w-3 h-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Location</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => {
-                      const timeInfo = getDisplayTimeInfo(service);
-                      const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
-                      const displayData = getDisplayForService(service);
-                      
-                      navigate(`/service/${service.id}`, {
-                        state: {
-                          from: `${location.pathname}${location.search}`,
-                          fromDoctors: true,
-                          activeVariantIndex: currentVariantIndex,
-                          service: {
-                            ...service,
-                            ...displayData,
-                            providerType: 'doctor',
-                            providerId: (service as any)._providerId,
-                            totalRatings: (service as any).totalRatings,
-                            providerPhone: (service as any).providerPhone,
-                            coordinates: (service as any).coordinates,
-                            ratingBadge: (service as any).ratingBadge,
-                            myBadge: (service as any).myBadge,
-                            timeInfo,
-                            variants: (service as any).variants || [],
-                          }
-                        }
-                      });
-                    }}
-                    className="flex-1 min-w-[80px] h-8 text-xs"
+                    onClick={() => navigate(`/service/${service.id}`, { state: { service, fromDoctors: true } })}
+                    className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
                   >
                     Details
                   </Button>
@@ -817,13 +792,11 @@ const DoctorsPage = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        setSelectedRatingService(service);
-                        setRatingModalOpen(true);
-                      }}
-                      className="flex-1 min-w-[80px] h-8 text-xs"
+                      onClick={() => handleRateService(service)}
+                      className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
                     >
-                      <Star className="w-3 h-3 mr-1" /> Rate
+                      <Star className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Rate</span>
                     </Button>
                   )}
                 </div>
