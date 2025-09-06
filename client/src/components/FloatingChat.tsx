@@ -1564,7 +1564,7 @@ const FloatingChat = () => {
               <Stethoscope className="w-7 h-7 text-white" />
             </Button>
             {totalUnread > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-[10px] px-1.5 py-0.5 shadow">
+              <span className="absolute -top-1 -right-1 bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500 text-white rounded-full text-[11px] h-6 w-6 grid place-items-center shadow-[0_0_10px_rgba(59,130,246,0.65),0_0_20px_rgba(99,102,241,0.55)] ring-1 ring-white/40 leading-none">
                 {totalUnread}
               </span>
             )}
