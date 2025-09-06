@@ -426,17 +426,14 @@ const CompareExplorer = () => {
 
   return (
     <div 
-      className="py-8 px-4 sm:px-6 lg:px-8 rounded-2xl"
-      style={{
-        backgroundColor: 'rgba(225, 236, 255, 0.9)'
-      }}
+      className="p-0 rounded-2xl"
     >
       <div className="container mx-auto max-w-7xl">
           {/* Centered Search Section */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-xl">
               <div className="space-y-3">
-                <div className="relative">
+                <div className="relative w-11/12 mx-auto">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <Search className="w-5 h-5" />
                   </div>
@@ -453,10 +450,10 @@ const CompareExplorer = () => {
                         setIsSuggestionsOpen(false);
                       }
                     }}
-                    className="pl-10 h-12 rounded-2xl bg-white/70 border border-white/60 hover:bg-white focus:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/30 shadow-sm focus:shadow-md transition-all placeholder:text-gray-400"
+                    className="pl-10 h-12 rounded-none w-full bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:border-gray-500/70 focus:ring-0 focus-visible:ring-0 outline-none shadow-sm transition-all placeholder:text-gray-400"
                   />
                   {isSuggestionsOpen && nameQuery && filteredNames.length > 0 && (
-                    <div className="absolute z-10 mt-2 w-full rounded-xl border border-gray-200/70 bg-white/90 backdrop-blur shadow-xl max-h-60 overflow-auto divide-y">
+                    <div className="absolute z-10 mt-2 w-full rounded-xl border border-gray-200/50 bg-white/90 backdrop-blur shadow-xl max-h-60 overflow-auto divide-y">
                       {filteredNames.slice(0, 8).map((n) => (
                         <button
                           key={n}
@@ -482,7 +479,7 @@ const CompareExplorer = () => {
                     <div>
                       <label className="text-xs text-gray-600">Location</label>
                       <Select value={locFilter} onValueChange={setLocFilter}>
-                        <SelectTrigger className="mt-1 h-10 rounded-xl bg-white/70 border border-white/60 hover:bg-white focus:ring-2 focus:ring-primary/30">
+                        <SelectTrigger className="mt-1 h-10 rounded-xl bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
                           <SelectValue placeholder="All locations" />
                         </SelectTrigger>
                         <SelectContent>
@@ -513,7 +510,7 @@ const CompareExplorer = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="mt-1 w-[140px] h-10 text-sm bg-white border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+                        <SelectTrigger className="mt-1 w-[140px] h-10 text-sm bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 rounded-lg shadow-sm focus:border-gray-500/70 focus:ring-0 focus-visible:ring-0 outline-none transition-all duration-200">
                           <SelectValue placeholder="Price Range" />
                         </SelectTrigger>
                         <SelectContent>
@@ -581,7 +578,7 @@ const CompareExplorer = () => {
                   </div>
                 )}
                 <Select value={effectiveSelectedName} onValueChange={(v) => { setSelectedName(v); setNameQuery(v); }}>
-                  <SelectTrigger className="h-12 rounded-2xl bg-white/70 border border-white/60 hover:bg-white focus:ring-2 focus:ring-primary/30 shadow-sm transition-colors">
+                  <SelectTrigger className="h-12 rounded-none w-11/12 mx-auto bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none shadow-sm transition-colors">
                     <SelectValue placeholder="Select service name" />
                   </SelectTrigger>
                   <SelectContent>
@@ -602,11 +599,11 @@ const CompareExplorer = () => {
                 return (
                   <Card
                     key={item.id}
-                    className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-white/40 bg-gray-100 ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                    className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200/60 bg-gradient-to-br from-slate-100 via-zinc-100 to-white ${isSelected ? 'ring-2 ring-blue-400/60' : ''}`}
                   >
                     <CardContent className="p-5 cursor-pointer" onClick={() => toggleSelect(item.id)}>
                       {/* Image with variant slider */}
-                      <div className="relative w-full h-40 bg-white/60 rounded-lg flex items-center justify-center overflow-hidden mb-4">
+                      <div className="relative w-full h-40 rounded-lg flex items-center justify-center overflow-hidden mb-4 bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-200/50">
                         {getDisplayImage(item) ? (
                           <img src={getDisplayImage(item)!} alt={item.name} className="w-full h-full object-cover" />
                         ) : (

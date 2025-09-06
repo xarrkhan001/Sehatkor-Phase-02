@@ -15,6 +15,8 @@ import heroImage3 from "@/assets/hero2.png";
 import heroImage4 from "@/assets/hero3.png";
 import heroImage5 from "@/assets/hero4.png";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 import { 
   Search, 
   UserPlus, 
@@ -26,11 +28,13 @@ import {
   Shield, 
   Clock,
   Users,
+  Info,
   Stethoscope,
   TestTube,
   Pill,
   Scissors
 } from "lucide-react";
+
 import { popularDiseases } from "@/data/diseases";
 
 const HomePage = () => {
@@ -38,6 +42,14 @@ const HomePage = () => {
   const [currentHero, setCurrentHero] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [heroImages, setHeroImages] = useState<string[]>([]);
+  const { user } = useAuth();
+
+  const scrollToAbout = () => {
+    try {
+      const el = document.getElementById('about');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch {}
+  };
 
   // Rotate hero background images every 5 seconds based on available images
   useEffect(() => {
@@ -217,19 +229,35 @@ const HomePage = () => {
     </Link>
   </Button>
 
-  <Button
-    asChild
-    variant="outline"
-    className="border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 
-    px-2 sm:px-6 py-1.5 sm:py-3 
-    text-[11px] sm:text-base 
-    flex-1 sm:flex-none"
-  >
-    <Link to="/register" className="flex items-center justify-center">
-      <UserPlus className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-      Register Now
-    </Link>
-  </Button>
+  {!user ? (
+    <Button
+      asChild
+      variant="outline"
+      className="border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 
+      px-2 sm:px-6 py-1.5 sm:py-3 
+      text-[11px] sm:text-base 
+      flex-1 sm:flex-none"
+    >
+      <Link to="/register" className="flex items-center justify-center">
+        <UserPlus className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+        Register Now
+      </Link>
+    </Button>
+  ) : (
+    <Button
+      asChild
+      variant="outline"
+      className="border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-blue-600 
+      px-2 sm:px-6 py-1.5 sm:py-3 
+      text-[11px] sm:text-base 
+      flex-1 sm:flex-none"
+    >
+      <Link to="/about" className="flex items-center justify-center">
+        <Info className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+        About Us
+      </Link>
+    </Button>
+  )}
 </div>
 
           </div>
@@ -325,20 +353,17 @@ const HomePage = () => {
 
       {/* Comparison Explorer (styled section) */}
       <section 
-        className="relative py-20 sm:py-24 overflow-hidden animate-gradient-x"
-        style={{
-          backgroundColor: '#e1ecff'
-        }}
+        className="relative py-20 sm:py-24 overflow-hidden bg-gradient-to-br from-slate-300 via-zinc-200 to-slate-100"
       >
         {/* Subtle overlay */}
-        <div className="absolute inset-0 bg-blue-100/10"></div>
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.17),transparent_62%),radial-gradient(ellipse_at_bottom_right,rgba(99,102,241,0.15),transparent_62%)]" />
         
-        {/* Decorative elements */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl animate-bounce"></div>
-        <div className="absolute bottom-10 right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-white/8 rounded-full blur-lg animate-ping"></div>
+        {/* Decorative elements (very subtle) */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-white/70 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-10 right-10 w-32 h-32 bg-cyan-300/35 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-indigo-300/30 rounded-full blur-2xl"></div>
         
-        {/* Glass morphism container */}
+        {/* Container (no inner card) */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-8 text-center">
             <Badge 
@@ -355,15 +380,7 @@ const HomePage = () => {
             </p>
           </div>
           
-          {/* Content wrapper with gradient glass effect */}
-          <div 
-            className="backdrop-blur-md rounded-2xl border border-white/40 shadow-xl p-6 sm:p-8"
-            style={{
-              backgroundColor: 'rgba(225, 236, 255, 0.8)'
-            }}
-          >
-            <CompareExplorer />
-          </div>
+          <CompareExplorer />
         </div>
 
       </section>
@@ -371,8 +388,8 @@ const HomePage = () => {
       {/* Partners Marquee below the compare section */}
       <PartnersMarquee speed="normal" />
 
-      {/* Features Section */}
-      <section className="py-16 sm:py-20 bg-white">
+      {/* Features Section (About) */}
+      <section id="about" className="py-16 sm:py-20 bg-white scroll-mt-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Why Choose SehatKor?</h2>
