@@ -84,6 +84,11 @@ app.use("/api", heroRoutes);
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
 app.get("/auth/facebook/callback", facebookCallback);
 
+// Health check for Render
+app.get("/api/health", (req, res) => {
+  res.status(200).send("ok");
+});
+
 console.log("🟢 server.js starting...");
 let PORT = process.env.PORT;
 if (!PORT || isNaN(Number(PORT))) {
@@ -97,11 +102,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:8080",
-      "http://localhost:8081",
-      "http://localhost:5173",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   },
   path: "/socket.io",
