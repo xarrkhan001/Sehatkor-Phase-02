@@ -1556,11 +1556,17 @@ const FloatingChat = () => {
         
         {!isOpen && (
           <div className="relative">
-            <Button onClick={() => setIsOpen(true)} className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all duration-300 hover:scale-105">
-            <MessageCircle className="w-6 h-6 text-white" />
-          </Button>
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-xl ring-2 ring-white/40 transition-all duration-300 hover:scale-105"
+              aria-label="Open SehatKor Chat"
+            >
+              <Stethoscope className="w-7 h-7 text-white" />
+            </Button>
             {totalUnread > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-[10px] px-1.5 py-0.5 shadow">{totalUnread}</span>
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-[10px] px-1.5 py-0.5 shadow">
+                {totalUnread}
+              </span>
             )}
           </div>
         )}
