@@ -12,6 +12,7 @@ import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
 type ServiceVariant = {
@@ -51,6 +52,7 @@ type Unified = {
   availability?: 'Online' | 'Physical' | 'Online and Physical' | string;
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
   variants?: ServiceVariant[];
+  diseases?: string[];
 };
 
 const ServiceDetailPage = () => {
@@ -62,6 +64,7 @@ const ServiceDetailPage = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [yourBadge, setYourBadge] = useState<Unified['myBadge']>((locationHook.state as any)?.service?.myBadge ?? null);
   const [freshCounts, setFreshCounts] = useState<{ excellent: number; good: number; fair: number } | null>(null);
+  const [hydratedDiseases, setHydratedDiseases] = useState<string[] | null>(null);
   const [activeVariantIndex, setActiveVariantIndex] = useState(() => {
     // Initialize with variant index from navigation state if available
     const initialIndex = (locationHook.state as any)?.initialVariantIndex;
@@ -140,7 +143,9 @@ const ServiceDetailPage = () => {
       startTime: rawStateService.startTime || null,
       endTime: rawStateService.endTime || null,
       days: rawStateService.days || null,
+      diseases: Array.isArray(rawStateService.diseases) ? rawStateService.diseases : [],
     };
+    console.log('🧬 ServiceDetailPage: diseases from navigation state:', Array.isArray((rawStateService as any).diseases) ? (rawStateService as any).diseases : undefined);
     return normalized;
   }, [rawStateService]);
   const fromPath = (locationHook.state as any)?.from as string | undefined;
@@ -218,6 +223,7 @@ const ServiceDetailPage = () => {
         availability: (s as any).availability,
         serviceType: (s as any).serviceType,
         variants: (s as any).variants || [],
+        diseases: Array.isArray((s as any).diseases) ? (s as any).diseases : [],
         // Include main service schedule fields from backend
         timeLabel: (s as any).timeLabel || null,
         startTime: (s as any).startTime || null,
@@ -297,6 +303,13 @@ const ServiceDetailPage = () => {
           console.log('Hydrated missing serviceType from fetch:', (svc as any).serviceType);
           setResolvedServiceType((svc as any).serviceType as any);
         }
+        // Hydrate diseases if missing or empty
+        const incomingDiseases = Array.isArray((svc as any)?.diseases) ? (svc as any).diseases : [];
+        const current = Array.isArray((item as any)?.diseases) ? (item as any).diseases : [];
+        console.log('🧬 Diseases hydration check:', { fromFetch: incomingDiseases, fromItem: current });
+        if (incomingDiseases.length && !current.length) {
+          setHydratedDiseases(incomingDiseases);
+        }
       } catch {}
     };
     fetchCounts();
@@ -317,12 +330,25 @@ const ServiceDetailPage = () => {
           console.log('Hydrated missing serviceType via inferred type:', (svc as any).serviceType, inferredType);
           setResolvedServiceType((svc as any).serviceType as any);
         }
+        // Also try diseases hydration in this path
+        const incomingDiseases = Array.isArray((svc as any)?.diseases) ? (svc as any).diseases : [];
+        const current = Array.isArray((item as any)?.diseases) ? (item as any).diseases : [];
+        console.log('🧬 Diseases hydration (infer path):', { fromFetch: incomingDiseases, fromItem: current });
+        if (incomingDiseases.length && !current.length) {
+          setHydratedDiseases(incomingDiseases);
+        }
       } catch (e) {
         console.warn('Failed to hydrate missing serviceType', e);
       }
     };
     hydrateServiceType();
   }, [item?.id, item?.isReal, item?.serviceType, item?.providerType, item?.type]);
+
+  // Log final diseases list that will render
+  useEffect(() => {
+    const arr = (hydratedDiseases ?? ((item as any)?.diseases || [])) as string[];
+    console.log('🧬 ServiceDetailPage: final diseases to render:', arr);
+  }, [hydratedDiseases, item?.id]);
 
   const handleBookNow = (svc: Unified) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
@@ -367,6 +393,29 @@ const ServiceDetailPage = () => {
   const hasVariants = slides.length > 1;
 
   const canRate = item.isReal && user && (user.role === 'patient' || mode === 'patient') && (item.providerId !== (user as any)?.id);
+
+  // Inline Virus icon component for diseases tooltip
+  const VirusIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <circle cx="32" cy="32" r="14" fill="#22c55e" />
+      {Array.from({ length: 12 }).map((_, i) => {
+        const angle = (i * Math.PI * 2) / 12;
+        const x2 = 32 + Math.cos(angle) * 22;
+        const y2 = 32 + Math.sin(angle) * 22;
+        const x1 = 32 + Math.cos(angle) * 14;
+        const y1 = 32 + Math.sin(angle) * 14;
+        return (
+          <g key={i} stroke="#22c55e" strokeWidth="3" strokeLinecap="round">
+            <line x1={x1} y1={y1} x2={x2} y2={y2} />
+            <circle cx={x2} cy={y2} r="2.5" fill="#22c55e" />
+          </g>
+        );
+      })}
+      <circle cx="26" cy="30" r="2.5" fill="#16a34a" />
+      <circle cx="36" cy="35" r="3" fill="#16a34a" />
+      <circle cx="32" cy="26" r="2" fill="#16a34a" />
+    </svg>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -574,6 +623,37 @@ const ServiceDetailPage = () => {
                     )}
                     {(item.serviceType ?? resolvedServiceType) && (
                       <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
+                    )}
+                    {(() => {
+                      const list = (hydratedDiseases ?? ((item as any).diseases || [])) as string[];
+                      return Array.isArray(list) && list.length > 0;
+                    })() && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              title="View diseases"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                            >
+                              <VirusIcon className="w-4 h-4" />
+                              <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <div className="text-xs text-emerald-800">
+                              <div className="mb-1 font-medium">Diseases</div>
+                              <div className="flex flex-wrap gap-1">
+                                {((hydratedDiseases ?? ((item as any).diseases || [])) as string[]).map((d, i) => (
+                                  <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    {d}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                     {(item.homeDelivery === true) && ((item.providerType === 'pharmacy') || (item.providerType === 'laboratory') || (item.providerType === 'clinic') || (item.type === 'Medicine') || (item.type === 'Test') || (item.type === 'Treatment')) && (
                       <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
