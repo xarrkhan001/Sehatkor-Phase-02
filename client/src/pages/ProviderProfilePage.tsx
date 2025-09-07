@@ -87,7 +87,7 @@ const ProviderProfilePage = () => {
   };
 
   // Variant helpers for this page
-  const [activeVariantIndexByService, setActiveVariantIndexByService] = useState<Record<string, number>>({});
+  const [activeVariantIndex, setActiveVariantIndex] = useState<Record<string, number>>({});
   const getSlides = (svc: Service) => {
     const base = {
       imageUrl: (svc as any).image as string | undefined,
@@ -100,6 +100,7 @@ const ProviderProfilePage = () => {
       endTime: (svc as any).endTime as string | undefined,
       days: (svc as any).days as string | undefined,
       availability: (svc as any).availability as ("Online" | "Physical" | "Online and Physical" | undefined),
+      hospitalClinicName: (svc as any).hospitalClinicName as string | undefined,
     };
     const variants = Array.isArray((svc as any).variants) ? (svc as any).variants : [];
     return [base, ...variants];
@@ -107,7 +108,7 @@ const ProviderProfilePage = () => {
   const getActiveSlide = (svc: Service) => {
     const slides = getSlides(svc);
     if (!slides.length) return undefined as any;
-    const raw = activeVariantIndexByService[svc.id] ?? 0;
+    const raw = activeVariantIndex[svc.id] ?? 0;
     const idx = ((raw % slides.length) + slides.length) % slides.length;
     return slides[idx] as any;
   };
@@ -124,17 +125,30 @@ const ProviderProfilePage = () => {
     const v: any = getActiveSlide(svc);
     return v?.city || (svc as any).city;
   };
+  const getDisplayHospitalClinicName = (svc: Service) => {
+    const v: any = getActiveSlide(svc);
+    return v?.hospitalClinicName || (svc as any).hospitalClinicName;
+  };
+  // Convert 24-hour time to 12-hour format with AM/PM
+  const formatTo12Hour = (time24?: string): string => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(':');
+    const hour24 = parseInt(hours, 10);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   const getDisplayTimeInfo = (svc: Service): string | null => {
     const v: any = getActiveSlide(svc);
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}` : "");
     const days = v.days ? String(v.days) : "";
     const parts = [label, days].filter(Boolean);
     return parts.length ? parts.join(" · ") : null;
   };
-  const nextVariant = (id: string) => setActiveVariantIndexByService(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
-  const prevVariant = (id: string) => setActiveVariantIndexByService(prev => ({ ...prev, [id]: (prev[id] ?? 0) - 1 }));
+  const nextVariant = (id: string) => setActiveVariantIndex(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+  const prevVariant = (id: string) => setActiveVariantIndex(prev => ({ ...prev, [id]: (prev[id] ?? 0) - 1 }));
 
   // Filter services based on search and price filters
   const filteredServices = useMemo(() => {
@@ -766,6 +780,25 @@ const ProviderProfilePage = () => {
 
                     <p className="text-[0.95rem] text-gray-700 line-clamp-3 mt-3">{service.description || 'No description provided.'}</p>
 
+                    {/* Hospital/Clinic Name */}
+                    {getDisplayHospitalClinicName(service) && (
+                      <div className="text-sm text-blue-600 font-medium mb-3 flex items-center gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          aria-hidden="true"
+                          className="shrink-0"
+                        >
+                          <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                          <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                          <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                        </svg>
+                        <span className="truncate">{getDisplayHospitalClinicName(service)}</span>
+                      </div>
+                    )}
+
                     <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
                       <RatingBadge 
                         rating={(service as any).averageRating ?? (service as any).rating ?? 0} 
@@ -844,7 +877,7 @@ const ProviderProfilePage = () => {
                         variant="secondary"
                         onClick={() => {
                           const slides = getSlides(service);
-                          const rawIdx = activeVariantIndexByService[service.id] ?? 0;
+                          const rawIdx = activeVariantIndex[service.id] ?? 0;
                           const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
                           navigate(`/service/${service.id}`, {
                             state: {
@@ -866,7 +899,7 @@ const ProviderProfilePage = () => {
                                 serviceType: (service as any).serviceType,
                                 variants: (service as any).variants || [],
                               },
-                              activeVariantIndex: activeIdx,
+                              initialVariantIndex: activeIdx,
                               from: window.location.pathname + window.location.search,
                             }
                           });

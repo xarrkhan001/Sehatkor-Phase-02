@@ -13,6 +13,7 @@ const ServiceVariantSchema = new mongoose.Schema(
     googleMapLink: { type: String },
     city: { type: String },
     detailAddress: { type: String },
+    hospitalClinicName: { type: String, trim: true }, // Hospital/Clinic name for this variant
     notes: { type: String },
     availability: { 
       type: String, 
@@ -36,6 +37,12 @@ const DoctorServiceSchema = new mongoose.Schema(
     googleMapLink: { type: String },
     city: { type: String },
     detailAddress: { type: String },
+    hospitalClinicName: { type: String, trim: true }, // Hospital/Clinic name for main service
+    // Optional base schedule fields for main service (distinct from variants)
+    timeLabel: { type: String, trim: true },
+    startTime: { type: String },
+    endTime: { type: String },
+    days: [{ type: String }],
     // Associated diseases for this service (service-level)
     diseases: { type: [String], default: [] },
     // New: array of variants for time/location/image specific offerings

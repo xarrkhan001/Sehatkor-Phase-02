@@ -76,7 +76,7 @@ const SearchPage = () => {
   const [visibleCount, setVisibleCount] = useState(6);
 
   // Track active variant index per service id
-  const [activeVariantIndexByService, setActiveVariantIndexByService] = useState<Record<string, number>>({});
+  const [activeVariantIndex, setActiveVariantIndex] = useState<Record<string, number>>({});
 
   // Variant helpers (variants exist primarily for doctor services)
   const getVariants = (service: any) => Array.isArray((service as any)?.variants) ? (service as any).variants : [];
@@ -88,6 +88,7 @@ const SearchPage = () => {
       price: service.price,
       city: service.location,
       detailAddress: (service as any).address,
+      hospitalClinicName: (service as any).hospitalClinicName,
       googleMapLink: (service as any).googleMapLink,
       timeLabel: (service as any).timeLabel,
       startTime: (service as any).startTime,
@@ -98,7 +99,7 @@ const SearchPage = () => {
   };
   const getActiveSlide = (service: any) => {
     const slides = getSlides(service);
-    const idx = activeVariantIndexByService[service.id] ?? 0;
+    const idx = activeVariantIndex[service.id] ?? 0;
     const safe = slides.length ? (((idx % slides.length) + slides.length) % slides.length) : 0;
     return slides[safe];
   };
@@ -110,12 +111,21 @@ const SearchPage = () => {
   const getDisplayLocation = (service: any) => (getActiveSlide(service)?.city) || service.location;
   const getDisplayAddress = (service: any) => (getActiveSlide(service)?.detailAddress) || (service as any).address;
   const getDisplayMapLink = (service: any) => (getActiveSlide(service)?.googleMapLink) || (service as any).googleMapLink;
+  // Convert 24-hour time to 12-hour format with AM/PM
+  const formatTo12Hour = (time24?: string): string => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(':');
+    const hour24 = parseInt(hours, 10);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   // Build display time label for the active slide (timeLabel or start-end + days)
   const getDisplayTimeInfo = (service: any): string | null => {
     const v = getActiveSlide(service);
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    const label = (v as any).timeLabel || ((v as any).startTime && (v as any).endTime ? `${formatTime((v as any).startTime)} - ${formatTime((v as any).endTime)}` : "");
+    const label = (v as any).timeLabel || ((v as any).startTime && (v as any).endTime ? `${formatTo12Hour((v as any).startTime)} - ${formatTo12Hour((v as any).endTime)}` : "");
     const days = (v as any).days ? String((v as any).days) : "";
     const parts = [label, days].filter(Boolean);
     return parts.length ? parts.join(" · ") : null;
@@ -124,15 +134,14 @@ const SearchPage = () => {
   const getDisplayTimeRange = (service: any): string | null => {
     const v = getActiveSlide(service);
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    if ((v as any).startTime && (v as any).endTime) return `${formatTime((v as any).startTime)} - ${formatTime((v as any).endTime)}`;
+    if ((v as any).startTime && (v as any).endTime) return `${formatTo12Hour((v as any).startTime)} - ${formatTo12Hour((v as any).endTime)}`;
     return (v as any).timeLabel ? String((v as any).timeLabel) : null;
   };
   const nextVariant = (serviceId: string) => {
-    setActiveVariantIndexByService(prev => ({ ...prev, [serviceId]: ((prev[serviceId] ?? 0) + 1) }));
+    setActiveVariantIndex(prev => ({ ...prev, [serviceId]: ((prev[serviceId] ?? 0) + 1) }));
   };
   const prevVariant = (serviceId: string) => {
-    setActiveVariantIndexByService(prev => ({ ...prev, [serviceId]: ((prev[serviceId] ?? 0) - 1) }));
+    setActiveVariantIndex(prev => ({ ...prev, [serviceId]: ((prev[serviceId] ?? 0) - 1) }));
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -185,7 +194,7 @@ const SearchPage = () => {
   useEffect(() => {
     if (!allServices.length) return;
     const timer = setInterval(() => {
-      setActiveVariantIndexByService(prev => {
+      setActiveVariantIndex(prev => {
         const next: Record<string, number> = { ...prev };
         for (const svc of allServices) {
           const slides = getSlides(svc);
@@ -293,6 +302,8 @@ const SearchPage = () => {
           providerPhone: (service as any).providerPhone,
           address: (service as any).detailAddress,
           googleMapLink: (service as any).googleMapLink,
+          // Preserve hospital/clinic name for main service (needed when no variants)
+          hospitalClinicName: (service as any).hospitalClinicName,
           diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : undefined,
           availability: (service as any).availability as any,
           createdAt: (service as any).createdAt,
@@ -300,6 +311,11 @@ const SearchPage = () => {
           serviceType: (service as any).serviceType || undefined,
           // include homeDelivery from backend
           homeDelivery: Boolean((service as any).homeDelivery),
+          // Add main service schedule fields
+          timeLabel: (service as any).timeLabel || null,
+          startTime: (service as any).startTime || null,
+          endTime: (service as any).endTime || null,
+          days: Array.isArray((service as any).days) ? (service as any).days : null,
         };
 
         // coordinates based on location
@@ -534,7 +550,7 @@ const SearchPage = () => {
 
     // Determine active slide index and time context
     const slides = getSlides(service);
-    const rawIdx = activeVariantIndexByService[service.id] ?? 0;
+    const rawIdx = activeVariantIndex[service.id] ?? 0;
     const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
     const timeLabel = getDisplayTimeInfo(service);
     const timeRange = getDisplayTimeRange(service);
@@ -638,7 +654,7 @@ const SearchPage = () => {
     } else {
       setCurrentMapService(null);
     }
-  }, [showLocationMap, allServices, activeVariantIndexByService]);
+  }, [showLocationMap, allServices, activeVariantIndex]);
 
   if (isLoading) {
     return <SearchPageSkeleton />;
@@ -992,7 +1008,7 @@ const SearchPage = () => {
                           <div className="absolute left-2 bottom-2 flex items-center gap-2">
                             {getSlides(service).length > 1 && (
                               <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
-                                {((((activeVariantIndexByService[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                                {((((activeVariantIndex[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
                               </div>
                             )}
                             {getDisplayTimeInfo(service) && (
@@ -1028,6 +1044,51 @@ const SearchPage = () => {
                           >
                             {service.provider}
                           </button>
+                          {(() => {
+                            const activeIdx = activeVariantIndex[service.id] || 0;
+                            const variants = getVariants(service);
+                            const totalSlides = 1 + variants.length;
+                            const slideIdx = ((activeIdx % totalSlides) + totalSlides) % totalSlides;
+                            
+                            const firstVariantWithName = variants.find(v => v?.hospitalClinicName);
+                            let hospitalClinicName = '';
+                            if (slideIdx === 0) {
+                              // Main service slide: prefer main; fallback to first variant with a name
+                              hospitalClinicName = (service as any).hospitalClinicName
+                                || (firstVariantWithName ? firstVariantWithName.hospitalClinicName : '');
+                            } else if (variants[slideIdx - 1]) {
+                              // Variant slide
+                              hospitalClinicName = variants[slideIdx - 1].hospitalClinicName || '';
+                            }
+                            
+                            console.log('🔎 SearchPage hospitalClinicName render:', {
+                              serviceId: service.id,
+                              serviceName: service.name,
+                              slideIdx,
+                              hospitalClinicName,
+                              serviceHospitalClinicName: (service as any).hospitalClinicName,
+                              variantHospitalClinicName: variants[slideIdx - 1]?.hospitalClinicName,
+                              firstVariantWithName: firstVariantWithName?.hospitalClinicName
+                            });
+                            
+                            return hospitalClinicName ? (
+                              <div className="text-xs text-blue-600 font-medium mt-1 flex items-center gap-1.5">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  width="12"
+                                  height="12"
+                                  aria-hidden="true"
+                                  className="shrink-0"
+                                >
+                                  <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                                  <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                                  <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                                </svg>
+                                <span className="truncate">{hospitalClinicName}</span>
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-bold text-blue-600">
@@ -1140,42 +1201,68 @@ const SearchPage = () => {
                             variant="secondary"
                             onClick={() => {
                               const timeInfo = getDisplayTimeInfo(service);
-                              const currentVariantIndex = activeVariantIndexByService[service.id] ?? 0;
+                              const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
                               console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
                               console.log('Service data being passed:', service);
+                              console.log('🔎 SearchPage navigation hospitalClinicName check:', {
+                                serviceId: service.id,
+                                serviceName: service.name,
+                                hospitalClinicName: (service as any).hospitalClinicName,
+                                variantsHospitalClinicNames: Array.isArray((service as any).variants) ? ((service as any).variants as any[]).map(v => v?.hospitalClinicName) : null
+                              });
                               navigate(`/service/${service.id}`, {
                                 state: {
                                   from: `${routerLocation.pathname}${routerLocation.search}`,
                                   fromSearch: true,
-                                  activeVariantIndex: currentVariantIndex,
+                                  initialVariantIndex: currentVariantIndex,
                                   service: {
                                     id: service.id,
                                     name: service.name,
                                     description: service.description,
                                     price: getDisplayPrice(service) ?? service.price,
                                     rating: service.rating ?? 0,
-                                    provider: service.provider,
-                                    // active slide overrides
-                                    image: getDisplayImage(service) || service.image,
-                                    location: getDisplayLocation(service) || service.location,
+                                    provider: service.providerName,
+                                    providerId: service.providerId,
+                                    image: getDisplayImage(service) ?? (service as any).image,
+                                    type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
+                                    providerType: service.providerType,
+                                    isReal: true,
+                                    // Hospital/Clinic name (main)
+                                    hospitalClinicName: (service as any).hospitalClinicName,
+                                    // Variants including hospital/clinic name
+                                    variants: Array.isArray((service as any).variants)
+                                      ? ((service as any).variants as any[]).map(v => ({
+                                          imageUrl: v.imageUrl,
+                                          price: v.price,
+                                          city: v.city,
+                                          detailAddress: v.detailAddress,
+                                          googleMapLink: v.googleMapLink,
+                                          timeLabel: v.timeLabel,
+                                          startTime: v.startTime,
+                                          endTime: v.endTime,
+                                          days: v.days,
+                                          availability: v.availability,
+                                          hospitalClinicName: v.hospitalClinicName,
+                                        }))
+                                      : [],
+                                    // Location/address helpers
+                                    location: getDisplayLocation(service) || (service as any).location,
                                     address: getDisplayAddress(service) || (service as any).address,
                                     googleMapLink: getDisplayMapLink(service) || (service as any).googleMapLink,
                                     // provider/meta
-                                    providerType: (service as any)._providerType,
-                                    providerId: (service as any)._providerId,
-                                    totalRatings: (service as any).totalRatings,
                                     providerPhone: (service as any).providerPhone,
-                                    coordinates: (service as any).coordinates,
                                     ratingBadge: (service as any).ratingBadge,
                                     myBadge: (service as any).myBadge,
                                     timeInfo,
-                                    variants: (service as any).variants || [],
-                                    isReal: true,
-                                    type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
+                                    // Main service schedule fields
+                                    timeLabel: (service as any).timeLabel || null,
+                                    startTime: (service as any).startTime || null,
+                                    endTime: (service as any).endTime || null,
+                                    days: Array.isArray((service as any).days) ? (service as any).days : null,
                                     availability: (service as any).availability,
                                     homeDelivery: Boolean((service as any).homeDelivery),
                                   }
-                                }
+                                },
                               });
                             }}
                             className="col-span-2 flex items-center justify-center gap-1 h-9 text-xs md:col-span-1 md:flex-1 md:min-w-[80px] md:h-8"

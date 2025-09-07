@@ -26,6 +26,7 @@ type Unified = {
   location: string; // Combined for display
   city?: string;
   detailAddress?: string;
+  hospitalClinicName?: string;
   googleMapLink?: string;
   provider: string;
   image?: string;
@@ -54,6 +55,7 @@ type Unified = {
     price?: number;
     city?: string;
     detailAddress?: string;
+    hospitalClinicName?: string;
     googleMapLink?: string;
     timeLabel?: string;
     startTime?: string;
@@ -113,6 +115,7 @@ const CompareExplorer = () => {
             location: [s.detailAddress, s.city].filter(Boolean).join(', ') || 'Location not provided',
             city: s.city,
             detailAddress: s.detailAddress,
+            hospitalClinicName: s.hospitalClinicName,
             googleMapLink: s.googleMapLink,
             provider: resolvedProviderName,
             image: (s as any)?.image,
@@ -316,11 +319,23 @@ const CompareExplorer = () => {
   const getDisplayLocation = (svc: Unified) => getActiveSlide(svc)?.city || svc.city || svc.location;
   const getDisplayAddress = (svc: Unified) => getActiveSlide(svc)?.detailAddress || svc.detailAddress;
   const getDisplayMapLink = (svc: Unified) => getActiveSlide(svc)?.googleMapLink || svc.googleMapLink;
+  // Convert 24-hour time to 12-hour format with AM/PM
+  const formatTo12Hour = (time24?: string): string => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(':');
+    const hour24 = parseInt(hours, 10);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   const getDisplayTimeInfo = (svc: Unified): string | null => {
     const v: any = getActiveSlide(svc);
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const range = v.startTime && v.endTime ? `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}` : "";
+    const baseLabel = v.timeLabel ? String(v.timeLabel) : "";
+    // If we have both a label (e.g., "Morning") and a concrete time range, show both: "Morning — 9:00 AM - 5:00 PM"
+    const label = baseLabel && range ? `${baseLabel} — ${range}` : (baseLabel || range);
     const days = v.days ? String(v.days) : "";
     const parts = [label, days].filter(Boolean);
     return parts.length ? parts.join(" · ") : null;
@@ -328,8 +343,7 @@ const CompareExplorer = () => {
   const getDisplayTimeRange = (svc: Unified): string | null => {
     const v: any = getActiveSlide(svc);
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    if (v.startTime && v.endTime) return `${formatTime(v.startTime)} - ${formatTime(v.endTime)}`;
+    if (v.startTime && v.endTime) return `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}`;
     return v.timeLabel ? String(v.timeLabel) : null;
   };
   const nextVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
@@ -667,6 +681,29 @@ const CompareExplorer = () => {
                       {/* Description */}
                       <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.description}</p>
 
+                      {/* Hospital/Clinic Name */}
+                      {(() => {
+                        const activeSlide = getActiveSlide(item);
+                        const hospitalClinicName = activeSlide?.hospitalClinicName || item.hospitalClinicName;
+                        return hospitalClinicName ? (
+                          <div className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="14"
+                              height="14"
+                              aria-hidden="true"
+                              className="shrink-0"
+                            >
+                              <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                              <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                              <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                            </svg>
+                            <span className="truncate">{hospitalClinicName}</span>
+                          </div>
+                        ) : null;
+                      })()}
+
                       {/* Rating Badge, Location, WhatsApp */}
                       <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
                         <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
@@ -719,7 +756,7 @@ const CompareExplorer = () => {
                               state: {
                                 from: window.location.pathname + window.location.search,
                                 fromCompare: true,
-                                activeVariantIndex: currentVariantIndex,
+                                initialVariantIndex: currentVariantIndex,
                                 service: {
                                   id: item.id,
                                   name: item.name,
@@ -734,11 +771,17 @@ const CompareExplorer = () => {
                                   ratingBadge: item.ratingBadge ?? null,
                                   location: item.city ?? item.location,
                                   address: item.detailAddress ?? undefined,
+                                  hospitalClinicName: item.hospitalClinicName ?? undefined,
                                   providerPhone: item.providerPhone ?? undefined,
                                   googleMapLink: item.googleMapLink ?? undefined,
                                   availability: item.availability ?? undefined,
                                   serviceType: item.serviceType,
                                   homeDelivery: item.homeDelivery,
+                                  // Pass main service schedule fields so main slide shows its own schedule
+                                  timeLabel: item.timeLabel || null,
+                                  startTime: item.startTime || null,
+                                  endTime: item.endTime || null,
+                                  days: item.days || null,
                                   variants: item.variants || [],
                                 }
                               }
@@ -862,17 +905,56 @@ const CompareExplorer = () => {
                             </td>
                           ))}
                         </tr>
+                        <tr className="border-b">
+                          <td className="p-4 font-medium">Schedule</td>
+                          {selected.map(s => (
+                            <td key={s.id} className="p-4">
+                              <div className="text-sm">
+                                {getDisplayTimeInfo(s) || 'Not specified'}
+                              </div>
+                            </td>
+                          ))}
+                        </tr>
                         <tr>
                           <td className="p-4 font-medium">Action</td>
                           {selected.map(s => (
                             <td key={s.id} className="p-4">
                               <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => {
                                 const currentVariantIndex = activeIdxById[s.id] ?? 0;
+                                console.log('🔍 CompareExplorer: Navigating to service detail:', s.id, 'with variant index:', currentVariantIndex);
+                                console.log('🔍 CompareExplorer: Service data:', s);
+                                console.log('🔍 CompareExplorer: Main service schedule fields:');
+                                console.log('  - timeLabel:', s.timeLabel);
+                                console.log('  - startTime:', s.startTime);
+                                console.log('  - endTime:', s.endTime);
+                                console.log('  - days:', s.days);
+                                console.log('  - variants:', s.variants);
+                                
+                                // Check if main service has schedule data, if not get from first variant
+                                let mainTimeLabel = s.timeLabel;
+                                let mainStartTime = s.startTime;
+                                let mainEndTime = s.endTime;
+                                let mainDays = s.days;
+                                
+                                if (!mainTimeLabel && !mainStartTime && !mainEndTime && !mainDays && s.variants && s.variants.length > 0) {
+                                  console.log('🔍 CompareExplorer: Main service has no schedule, checking variants...');
+                                  const firstVariant = s.variants[0];
+                                  console.log('🔍 CompareExplorer: First variant schedule:', firstVariant);
+                                  
+                                  // If we're on main slide (index 0), use main service schedule if available
+                                  // If main service has no schedule, keep it null to show proper fallback in ServiceDetailPage
+                                  if (currentVariantIndex === 0) {
+                                    console.log('🔍 CompareExplorer: On main slide, keeping main schedule as null for proper fallback');
+                                  } else {
+                                    // If we're on variant slide, we'll use variant schedule anyway
+                                    console.log('🔍 CompareExplorer: On variant slide, will use variant schedule');
+                                  }
+                                }
                                 navigate(`/service/${s.id}`, {
                                 state: {
                                   from: window.location.pathname + window.location.search,
                                   fromCompare: true,
-                                  activeVariantIndex: currentVariantIndex,
+                                  initialVariantIndex: currentVariantIndex,
                                   service: {
                                     id: s.id,
                                     name: s.name,
@@ -893,6 +975,11 @@ const CompareExplorer = () => {
                                     serviceType: s.serviceType,
                                     homeDelivery: s.homeDelivery,
                                     variants: s.variants || [],
+                                    // Pass main service schedule fields
+                                    timeLabel: s.timeLabel || null,
+                                    startTime: s.startTime || null,
+                                    endTime: s.endTime || null,
+                                    days: s.days || null,
                                   }
                                 }
                               });

@@ -30,6 +30,11 @@ export type DoctorServiceDoc = {
   availability?: 'Online' | 'Physical' | 'Online and Physical';
   serviceType?: 'Sehat Card' | 'Private' | 'Charity' | 'Public' | 'NPO' | 'NGO';
   homeDelivery?: boolean;
+  // Top-level base schedule (main service)
+  timeLabel?: string;
+  startTime?: string;
+  endTime?: string;
+  days?: string[];
   variants?: VariantDoc[];
   diseases?: string[];
   createdAt: string;

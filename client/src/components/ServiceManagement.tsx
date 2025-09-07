@@ -55,6 +55,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     price?: string;
     city?: string;
     detailAddress?: string;
+    hospitalClinicName?: string;
     googleMapLink?: string;
     availability?: string;
     isActive?: boolean;
@@ -73,9 +74,15 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     googleMapLink: '',
     city: '',
     detailAddress: '',
+    hospitalClinicName: '',
     availability: 'Physical',
     serviceType: 'Private',
     homeDelivery: false,
+    // Default schedule (used when no variants are added)
+    baseTimeLabel: '',
+    baseDays: '',
+    baseStartTime: '',
+    baseEndTime: '',
   });
 
   const getServiceCategories = () => {
@@ -103,10 +110,16 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       googleMapLink: '',
       city: '',
       detailAddress: '',
+      hospitalClinicName: '',
       availability: 'Physical',
       serviceType: 'Private',
       homeDelivery: false,
+      baseTimeLabel: '',
+      baseDays: '',
+      baseStartTime: '',
+      baseEndTime: '',
     });
+
     setServiceImage('');
     setEditingService(null);
     setVariants([]);
@@ -141,6 +154,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       googleMapLink: serviceForm.googleMapLink,
       city: serviceForm.city,
       detailAddress: serviceForm.detailAddress,
+      hospitalClinicName: serviceForm.hospitalClinicName,
       availability: serviceForm.availability,
       serviceType: serviceForm.serviceType,
       ...(userRole === 'doctor' ? { homeDelivery: serviceForm.homeDelivery } : {}),
@@ -173,7 +187,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 vImageUrl = r?.url;
                 vImagePublicId = r?.public_id;
               }
-              processed.push({
+              // Only include _id for variants when editing an existing service AND when id is a valid ObjectId
+              const maybeObjectId = (val?: string) => typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val);
+              const baseVariant = {
                 timeLabel: v.timeLabel,
                 startTime: v.startTime,
                 endTime: v.endTime,
@@ -181,12 +197,17 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 price: v.price ? parseFloat(v.price) : undefined,
                 city: v.city,
                 detailAddress: v.detailAddress,
+                hospitalClinicName: v.hospitalClinicName,
                 googleMapLink: v.googleMapLink,
                 availability: v.availability || 'Physical',
                 isActive: v.isActive ?? true,
                 imageUrl: vImageUrl,
                 imagePublicId: vImagePublicId,
-              });
+              } as any;
+              if (editingService && maybeObjectId(v.id)) {
+                baseVariant._id = v.id;
+              }
+              processed.push(baseVariant);
             }
             payloadVariants = processed;
           } finally {
@@ -194,7 +215,20 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           }
         }
 
+        // Auto-copy first variant schedule to main service if Default Schedule is empty
+        const hasExplicitBaseSchedule = serviceForm.baseTimeLabel || serviceForm.baseDays || serviceForm.baseStartTime || serviceForm.baseEndTime;
+        // Always use explicit base schedule for main service; do not auto-copy from variants
+        const mainScheduleFields = hasExplicitBaseSchedule 
+          ? {
+              ...(serviceForm.baseTimeLabel ? { timeLabel: serviceForm.baseTimeLabel } : {}),
+              ...(serviceForm.baseStartTime ? { startTime: serviceForm.baseStartTime } : {}),
+              ...(serviceForm.baseEndTime ? { endTime: serviceForm.baseEndTime } : {}),
+              ...(serviceForm.baseDays ? { days: serviceForm.baseDays.split(',').map(s => s.trim()).filter(Boolean) } : {}),
+            }
+          : {};
+
         // Now safe to log with payloadVariants
+        console.log('🔧 Main schedule fields computed:', mainScheduleFields);
         console.log('Creating doctor service with payload:', {
           name: serviceForm.name,
           description: serviceForm.description,
@@ -214,7 +248,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
         });
 
         if (editingService) {
-          const updated = await doctorUpdate(editingService.id, {
+          const updatePayload: any = {
             name: serviceForm.name,
             description: serviceForm.description,
             price: parsedPrice,
@@ -225,12 +259,17 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             googleMapLink: serviceForm.googleMapLink,
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
+            hospitalClinicName: serviceForm.hospitalClinicName,
             availability: serviceForm.availability,
             serviceType: serviceForm.serviceType,
             homeDelivery: serviceForm.homeDelivery,
             diseases: disease ? [disease] : [],
-            ...(payloadVariants ? { variants: payloadVariants } : {}),
-          });
+            // Top-level base schedule fields for main service (explicit or auto-copied from first variant)
+            ...mainScheduleFields,
+            // IMPORTANT: If user removed all variants, send an empty array to clear on server
+            variants: Array.isArray(payloadVariants) ? payloadVariants : [],
+          };
+          const updated = await doctorUpdate(editingService.id, updatePayload);
           const updatedLocal = ServiceManager.updateService(editingService.id, {
             name: updated.name,
             description: updated.description,
@@ -243,6 +282,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             homeDelivery: Boolean((updated as any).homeDelivery),
             diseases: Array.isArray(updated.diseases) ? updated.diseases : (disease ? [disease] : []),
             variants: updated.variants || [],
+            // Store base schedule at top-level for main card display
+            ...(serviceForm.baseTimeLabel ? { timeLabel: serviceForm.baseTimeLabel } : {}),
+            ...(serviceForm.baseStartTime ? { startTime: serviceForm.baseStartTime } : {}),
+            ...(serviceForm.baseEndTime ? { endTime: serviceForm.baseEndTime } : {}),
+            ...(serviceForm.baseDays ? { days: serviceForm.baseDays } : {}),
           } as any);
 
           const list = services.map(s => s.id === editingService.id ? (updatedLocal as any) : s);
@@ -264,11 +308,14 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             googleMapLink: serviceForm.googleMapLink,
             city: serviceForm.city,
             detailAddress: serviceForm.detailAddress,
+            hospitalClinicName: serviceForm.hospitalClinicName,
             availability: serviceForm.availability,
             serviceType: serviceForm.serviceType,
             homeDelivery: serviceForm.homeDelivery,
             providerName: userName,
             diseases: disease ? [disease] : [],
+            // Top-level base schedule fields for main service (explicit or auto-copied from first variant)
+            ...mainScheduleFields,
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           console.log('Doctor service created:', created);
@@ -295,6 +342,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             diseases: created.diseases || (disease ? [disease] : []),
             // Include variants array if API returned it
             variants: Array.isArray((created as any).variants) ? (created as any).variants : [],
+            // Store base schedule at top-level for main card display
+            ...(serviceForm.baseTimeLabel ? { timeLabel: serviceForm.baseTimeLabel } : {}),
+            ...(serviceForm.baseStartTime ? { startTime: serviceForm.baseStartTime } : {}),
+            ...(serviceForm.baseEndTime ? { endTime: serviceForm.baseEndTime } : {}),
+            ...(serviceForm.baseDays ? { days: serviceForm.baseDays } : {}),
           } as any);
           onServicesUpdate([...services, added]);
           toast({ title: 'Success', description: 'Service added successfully' });
@@ -356,9 +408,20 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       googleMapLink: (service as any).googleMapLink || '',
       city: (service as any).city || '',
       detailAddress: (service as any).detailAddress || '',
+      hospitalClinicName: (service as any).hospitalClinicName || '',
       availability: (service as any).availability || 'Physical',
       serviceType: (service as any).serviceType || 'Private',
       homeDelivery: Boolean((service as any).homeDelivery) || false,
+      // Prefer top-level base schedule fields if present; fallback to first variant
+      baseTimeLabel: (service as any).timeLabel
+        || (Array.isArray((service as any).variants) && (service as any).variants[0]?.timeLabel ? (service as any).variants[0].timeLabel : ''),
+      baseDays: (service as any).days
+        ? Array.isArray((service as any).days) ? ((service as any).days as string[]).join(', ') : String((service as any).days)
+        : (Array.isArray((service as any).variants) && (service as any).variants[0]?.days ? ((service as any).variants[0].days as string[]).join(', ') : ''),
+      baseStartTime: (service as any).startTime
+        || (Array.isArray((service as any).variants) && (service as any).variants[0]?.startTime ? (service as any).variants[0].startTime : ''),
+      baseEndTime: (service as any).endTime
+        || (Array.isArray((service as any).variants) && (service as any).variants[0]?.endTime ? (service as any).variants[0].endTime : ''),
     });
 
     setServiceImage(service.image || '');
@@ -376,6 +439,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           price: v.price != null ? String(v.price) : '',
           city: v.city,
           detailAddress: v.detailAddress,
+          hospitalClinicName: v.hospitalClinicName,
           googleMapLink: v.googleMapLink,
           availability: v.availability || 'Physical',
           isActive: v.isActive,
@@ -572,6 +636,16 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   <h4 className="font-medium text-sm">Location Information</h4>
                   
                   <div>
+                    <Label htmlFor="hospitalClinicName">Hospital/Clinic Name</Label>
+                    <Input
+                      id="hospitalClinicName"
+                      value={serviceForm.hospitalClinicName}
+                      onChange={(e) => setServiceForm({...serviceForm, hospitalClinicName: e.target.value})}
+                      placeholder="e.g., Aga Khan Hospital, Shaukat Khanum"
+                    />
+                  </div>
+
+                  <div>
                     <Label htmlFor="serviceCity">City</Label>
                     <Input
                       id="serviceCity"
@@ -679,6 +753,89 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                 </div>
 
+                {/* Default Schedule (if you don't add variants) - Doctors only */}
+                {userRole === 'doctor' && (
+                  <div className="space-y-3 border-t pt-3">
+                    <h4 className="font-medium text-sm">Default Schedule (optional)</h4>
+                    <p className="text-xs text-muted-foreground">If you don't add variants below, this schedule applies to the main service only.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label>Time Label</Label>
+                        <div className="flex gap-3 mt-2">
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="baseTimeLabel"
+                              value="Morning"
+                              checked={(serviceForm.baseTimeLabel || '') === 'Morning'}
+                              onChange={(e) => setServiceForm({ ...serviceForm, baseTimeLabel: e.target.value })}
+                              className="text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm">Morning</span>
+                          </label>
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="baseTimeLabel"
+                              value="Evening"
+                              checked={(serviceForm.baseTimeLabel || '') === 'Evening'}
+                              onChange={(e) => setServiceForm({ ...serviceForm, baseTimeLabel: e.target.value })}
+                              className="text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm">Evening</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Days</Label>
+                        <div className="grid grid-cols-4 gap-2 mt-2">
+                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
+                            const selectedDays = (serviceForm.baseDays || '').split(',').map(d => d.trim()).filter(Boolean);
+                            const isSelected = selectedDays.includes(day);
+                            return (
+                              <label key={day} className="flex items-center space-x-1 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    let newDays;
+                                    if (e.target.checked) {
+                                      newDays = [...selectedDays, day].join(', ');
+                                    } else {
+                                      newDays = selectedDays.filter(d => d !== day).join(', ');
+                                    }
+                                    setServiceForm({ ...serviceForm, baseDays: newDays });
+                                  }}
+                                  className="text-primary focus:ring-primary"
+                                />
+                                <span className="text-xs">{day}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Start Time</Label>
+                        <Input
+                          type="time"
+                          value={serviceForm.baseStartTime || ''}
+                          onChange={(e) => setServiceForm({ ...serviceForm, baseStartTime: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>End Time</Label>
+                        <Input
+                          type="time"
+                          value={serviceForm.baseEndTime || ''}
+                          onChange={(e) => setServiceForm({ ...serviceForm, baseEndTime: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Home Delivery - Doctors only */}
                 {userRole === 'doctor' && (
                   <div className="space-y-2 border-t pt-3">
@@ -732,33 +889,96 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <Label>Time Label</Label>
-                              <Input value={v.timeLabel || ''} onChange={(e) => {
-                                const nv = [...variants]; nv[idx] = { ...v, timeLabel: e.target.value }; setVariants(nv);
-                              }} placeholder="Morning / Evening" />
+                              <div className="flex gap-3 mt-2">
+                                <label className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`timeLabel-${idx}`}
+                                    value="Morning"
+                                    checked={(v.timeLabel || '') === 'Morning'}
+                                    onChange={(e) => {
+                                      const nv = [...variants]; nv[idx] = { ...v, timeLabel: e.target.value }; setVariants(nv);
+                                    }}
+                                    className="text-primary focus:ring-primary"
+                                  />
+                                  <span className="text-sm">Morning</span>
+                                </label>
+                                <label className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`timeLabel-${idx}`}
+                                    value="Evening"
+                                    checked={(v.timeLabel || '') === 'Evening'}
+                                    onChange={(e) => {
+                                      const nv = [...variants]; nv[idx] = { ...v, timeLabel: e.target.value }; setVariants(nv);
+                                    }}
+                                    className="text-primary focus:ring-primary"
+                                  />
+                                  <span className="text-sm">Evening</span>
+                                </label>
+                              </div>
                             </div>
                             <div>
                               <Label>Days</Label>
-                              <Input value={v.days || ''} onChange={(e) => {
-                                const nv = [...variants]; nv[idx] = { ...v, days: e.target.value }; setVariants(nv);
-                              }} placeholder="Mon, Wed, Fri" />
+                              <div className="grid grid-cols-4 gap-2 mt-2">
+                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
+                                  const selectedDays = (v.days || '').split(',').map(d => d.trim()).filter(Boolean);
+                                  const isSelected = selectedDays.includes(day);
+                                  return (
+                                    <label key={day} className="flex items-center space-x-1 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={(e) => {
+                                          let newDays;
+                                          if (e.target.checked) {
+                                            newDays = [...selectedDays, day].join(', ');
+                                          } else {
+                                            newDays = selectedDays.filter(d => d !== day).join(', ');
+                                          }
+                                          const nv = [...variants]; nv[idx] = { ...v, days: newDays }; setVariants(nv);
+                                        }}
+                                        className="text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-xs">{day}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
                             </div>
                             <div>
                               <Label>Start Time</Label>
-                              <Input value={v.startTime || ''} onChange={(e) => {
-                                const nv = [...variants]; nv[idx] = { ...v, startTime: e.target.value }; setVariants(nv);
-                              }} placeholder="09:00" />
+                              <Input 
+                                type="time"
+                                value={v.startTime || ''} 
+                                onChange={(e) => {
+                                  const nv = [...variants]; nv[idx] = { ...v, startTime: e.target.value }; setVariants(nv);
+                                }} 
+                                className="mt-1"
+                              />
                             </div>
                             <div>
                               <Label>End Time</Label>
-                              <Input value={v.endTime || ''} onChange={(e) => {
-                                const nv = [...variants]; nv[idx] = { ...v, endTime: e.target.value }; setVariants(nv);
-                              }} placeholder="12:00" />
+                              <Input 
+                                type="time"
+                                value={v.endTime || ''} 
+                                onChange={(e) => {
+                                  const nv = [...variants]; nv[idx] = { ...v, endTime: e.target.value }; setVariants(nv);
+                                }} 
+                                className="mt-1"
+                              />
                             </div>
                             <div>
                               <Label>Price (optional override)</Label>
                               <Input value={v.price || ''} onChange={(e) => {
                                 const nv = [...variants]; nv[idx] = { ...v, price: e.target.value }; setVariants(nv);
                               }} placeholder="e.g., 2500" />
+                            </div>
+                            <div>
+                              <Label>Hospital/Clinic Name</Label>
+                              <Input value={v.hospitalClinicName || ''} onChange={(e) => {
+                                const nv = [...variants]; nv[idx] = { ...v, hospitalClinicName: e.target.value }; setVariants(nv);
+                              }} placeholder="e.g., Aga Khan Hospital" />
                             </div>
                             <div>
                               <Label>City</Label>

@@ -212,6 +212,13 @@ class ServiceManager {
       throw new Error(`HTTP ${res.status}: Failed to fetch services`);
     }
     const data = await res.json();
+    console.debug('🧪 ServiceManager.fetchPublicServices raw[0..2]:', (data.services || []).slice(0,2).map((s:any)=>({
+      _id: s?._id,
+      name: s?.name,
+      hospitalClinicName: s?.hospitalClinicName,
+      hospitalClinic: s?.hospitalClinic,
+      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName ?? v?.hospitalClinic) : null,
+    })));
 
     const services: Service[] = (data.services || []).map((service: any) => ({
       id: String(service._id),
@@ -224,7 +231,9 @@ class ServiceManager {
       providerName: service.providerName || service.providerId?.name || 'Provider',
       image: service.imageUrl,
       duration: service.duration,
-      hospitalClinic: service.hospitalClinic,
+      // Map hospital/clinic name (backend may send either hospitalClinic or hospitalClinicName)
+      ...(service.hospitalClinicName ? { hospitalClinicName: service.hospitalClinicName } : {}),
+      ...(service.hospitalClinic ? { hospitalClinicName: service.hospitalClinic } : {}),
       city: service.city,
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
@@ -236,6 +245,12 @@ class ServiceManager {
       ratingBadge: service.ratingBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
+
+      // Main service schedule fields
+      ...(service.timeLabel ? { timeLabel: service.timeLabel } : {}),
+      ...(service.startTime ? { startTime: service.startTime } : {}),
+      ...(service.endTime ? { endTime: service.endTime } : {}),
+      ...(Array.isArray(service.days) ? { days: service.days } : {}),
 
       ...(Array.isArray(service.diseases) ? { diseases: service.diseases } : {}),
       ...(service.stock != null && { stock: service.stock }),
@@ -253,6 +268,8 @@ class ServiceManager {
               googleMapLink: v.googleMapLink,
               city: v.city,
               detailAddress: v.detailAddress,
+              // Variant hospital/clinic name
+              hospitalClinicName: v.hospitalClinicName ?? v.hospitalClinic,
               notes: v.notes,
               availability: v.availability,
               isActive: v.isActive,
@@ -265,7 +282,7 @@ class ServiceManager {
       updatedAt: service.updatedAt,
     }));
 
-    return {
+    const mappedResult = {
       services,
       total: data.total ?? services.length,
       byType: data.byType,
@@ -273,6 +290,13 @@ class ServiceManager {
       limit: data.limit,
       hasMore: data.hasMore,
     };
+    console.debug('✅ ServiceManager.fetchPublicServices mapped[0..2]:', mappedResult.services.slice(0,2).map((s:any)=>({
+      id: s?.id,
+      name: s?.name,
+      hospitalClinicName: s?.hospitalClinicName,
+      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName) : null,
+    })));
+    return mappedResult;
   }
 
   // Fetch a single public service by ID
@@ -283,8 +307,15 @@ class ServiceManager {
       throw new Error(`HTTP ${res.status}: Failed to fetch service ${serviceId}`);
     }
     const service = await res.json();
+    console.debug('🧪 ServiceManager.fetchServiceById raw:', {
+      _id: service?._id,
+      name: service?.name,
+      hospitalClinicName: service?.hospitalClinicName,
+      hospitalClinic: service?.hospitalClinic,
+      variantsHos: Array.isArray(service?.variants)? service.variants.map((v:any)=>v?.hospitalClinicName ?? v?.hospitalClinic) : null,
+    });
 
-    return {
+    const mappedOne = {
       id: String(service._id),
       name: service.name,
       description: service.description || '',
@@ -295,7 +326,9 @@ class ServiceManager {
       providerName: service.providerName || service.providerId?.name || 'Provider',
       image: service.imageUrl,
       duration: service.duration,
-      hospitalClinic: service.hospitalClinic,
+      // Map hospital/clinic name
+      ...(service.hospitalClinicName ? { hospitalClinicName: service.hospitalClinicName } : {}),
+      ...(service.hospitalClinic ? { hospitalClinicName: service.hospitalClinic } : {}),
       city: service.city,
       detailAddress: service.detailAddress,
       googleMapLink: service.googleMapLink,
@@ -308,6 +341,12 @@ class ServiceManager {
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
       ratingCounts: service.ratingCounts ?? null,
+
+      // Main service schedule fields
+      ...(service.timeLabel ? { timeLabel: service.timeLabel } : {}),
+      ...(service.startTime ? { startTime: service.startTime } : {}),
+      ...(service.endTime ? { endTime: service.endTime } : {}),
+      ...(Array.isArray(service.days) ? { days: service.days } : {}),
 
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
@@ -324,6 +363,7 @@ class ServiceManager {
               googleMapLink: v.googleMapLink,
               city: v.city,
               detailAddress: v.detailAddress,
+              hospitalClinicName: v.hospitalClinicName ?? v.hospitalClinic,
               notes: v.notes,
               availability: v.availability,
               isActive: v.isActive,
@@ -335,6 +375,13 @@ class ServiceManager {
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     } as Service;
+    console.debug('✅ ServiceManager.fetchServiceById mapped:', {
+      id: (mappedOne as any).id,
+      name: (mappedOne as any).name,
+      hospitalClinicName: (mappedOne as any).hospitalClinicName,
+      variantsHos: Array.isArray((mappedOne as any).variants)? (mappedOne as any).variants.map((v:any)=>v?.hospitalClinicName) : null,
+    });
+    return mappedOne;
   }
 
   // Fetch all services from server (removed local storage sync)
@@ -363,7 +410,8 @@ class ServiceManager {
         providerName: service.providerName,
         image: service.imageUrl,
         duration: service.duration,
-        hospitalClinic: service.hospitalClinic,
+        ...(service.hospitalClinicName ? { hospitalClinicName: service.hospitalClinicName } : {}),
+        ...(service.hospitalClinic ? { hospitalClinicName: service.hospitalClinic } : {}),
         city: service.city,
         detailAddress: service.detailAddress,
         googleMapLink: service.googleMapLink,
@@ -371,6 +419,12 @@ class ServiceManager {
         availability: service.availability,
         serviceType: service.serviceType,
         homeDelivery: Boolean(service.homeDelivery) === true,
+        // Main service schedule fields
+        ...(service.timeLabel ? { timeLabel: service.timeLabel } : {}),
+        ...(service.startTime ? { startTime: service.startTime } : {}),
+        ...(service.endTime ? { endTime: service.endTime } : {}),
+        ...(Array.isArray(service.days) ? { days: service.days } : {}),
+
         totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
         ratingBadge: service.ratingBadge ?? null,
         rating: service.averageRating ?? service.rating ?? 0,
@@ -392,6 +446,7 @@ class ServiceManager {
                 googleMapLink: v.googleMapLink,
                 city: v.city,
                 detailAddress: v.detailAddress,
+                hospitalClinicName: v.hospitalClinicName ?? v.hospitalClinic,
                 notes: v.notes,
                 availability: v.availability,
                 isActive: v.isActive,

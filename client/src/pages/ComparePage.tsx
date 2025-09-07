@@ -38,6 +38,7 @@ const ComparePage = () => {
       price: (svc as any).price,
       city: (svc as any).city,
       detailAddress: (svc as any).detailAddress,
+      hospitalClinicName: (svc as any).hospitalClinicName,
       googleMapLink: (svc as any).googleMapLink,
       timeLabel: (svc as any).timeLabel,
       startTime: (svc as any).startTime,
@@ -59,6 +60,11 @@ const ComparePage = () => {
       return latestProviderNames[providerId] || (svc as any).provider;
     }
     return (svc as any).provider;
+  };
+
+  const getDisplayHospitalClinicName = (svc: any): string | null => {
+    const activeSlide = getActiveSlide(svc);
+    return activeSlide?.hospitalClinicName || (svc as any).hospitalClinicName || null;
   };
 
   const handleViewDetails = (item: any) => {
@@ -85,6 +91,7 @@ const ComparePage = () => {
           ratingBadge: (item as any).ratingBadge ?? null,
           location: getDisplayLocation(item) || (item as any).location,
           address: (item as any).detailAddress ?? undefined,
+          hospitalClinicName: getDisplayHospitalClinicName(item) ?? undefined,
           providerPhone: (item as any).providerPhone ?? undefined,
           googleMapLink: getDisplayMapLink(item) ?? (item as any).googleMapLink ?? undefined,
           variantIndex: activeIdx,
@@ -109,11 +116,20 @@ const ComparePage = () => {
   const getDisplayLocation = (svc: any) => getActiveSlide(svc)?.city || (svc as any).city || (svc as any).location;
   const getDisplayAddress = (svc: any) => getActiveSlide(svc)?.detailAddress || (svc as any).detailAddress;
   const getDisplayMapLink = (svc: any) => getActiveSlide(svc)?.googleMapLink || (svc as any).googleMapLink;
+  // Convert 24-hour time to 12-hour format with AM/PM
+  const formatTo12Hour = (time24?: string): string => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(':');
+    const hour24 = parseInt(hours, 10);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   const getDisplayTimeInfo = (svc: any): string | null => {
     const v: any = getActiveSlide(svc);
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}` : "");
     const days = v.days ? String(v.days) : "";
     const parts = [label, days].filter(Boolean);
     return parts.length ? parts.join(" · ") : null;
@@ -121,8 +137,7 @@ const ComparePage = () => {
   const getDisplayTimeRange = (svc: any): string | null => {
     const v: any = getActiveSlide(svc);
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    if (v.startTime && v.endTime) return `${formatTime(v.startTime)} - ${formatTime(v.endTime)}`;
+    if (v.startTime && v.endTime) return `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}`;
     return v.timeLabel ? String(v.timeLabel) : null;
   };
   const nextVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
@@ -371,6 +386,32 @@ const ComparePage = () => {
                         <td key={item.id} className="p-4">
                           {((item as any)._providerType === 'pharmacy' || (item as any)._providerType === 'laboratory' || (item as any)._providerType === 'clinic' || (item as any)._providerType === 'doctor') && (item as any).serviceType ? (
                             <ServiceTypeBadge serviceType={(item as any).serviceType} size="sm" />
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b">
+                      <td className="p-4 font-medium">Hospital/Clinic</td>
+                      {sorted.map(item => (
+                        <td key={item.id} className="p-4">
+                          {getDisplayHospitalClinicName(item) ? (
+                            <div className="text-sm text-blue-600 font-medium flex items-center gap-2">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="14"
+                                height="14"
+                                aria-hidden="true"
+                                className="shrink-0"
+                              >
+                                <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                                <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                                <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                              </svg>
+                              <span className="truncate">{getDisplayHospitalClinicName(item)}</span>
+                            </div>
                           ) : (
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
