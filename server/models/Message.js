@@ -15,6 +15,8 @@ const MessageSchema = new mongoose.Schema(
     fileUrl: { type: String },
     fileName: { type: String },
     fileSize: { type: Number },
+    // For reply/quote support
+    replyToId: { type: mongoose.Schema.Types.ObjectId, ref: 'Message', default: null, index: true },
     readAt: { type: Date, default: null },
     // Soft delete for specific users (per-recipient/per-sender visibility)
     deletedFor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
