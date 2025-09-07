@@ -1199,12 +1199,112 @@ const FloatingChat = () => {
 
             {/* Camera dialog */}
             <Dialog open={cameraOpen} onOpenChange={(v) => v ? setCameraOpen(true) : closeCamera()}>
-              <DialogContent className="sm:max-w-lg bg-black rounded-xl p-0 overflow-hidden">
-                <div className="relative w-full aspect-video bg-black">
-                  <video ref={cameraVideoRef} className="w-full h-full object-cover" playsInline muted />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between gap-2 bg-black/40">
-                    <Button variant="secondary" onClick={closeCamera}>Close</Button>
-                    <Button onClick={capturePhoto} className="bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white">Capture</Button>
+              <DialogContent className="w-screen h-screen sm:w-[95vw] sm:h-auto sm:max-w-lg md:max-w-xl lg:max-w-2xl bg-gradient-to-br from-gray-900 via-black to-gray-900 sm:rounded-2xl p-0 overflow-hidden border-0 sm:border-2 sm:border-gray-700/50 shadow-2xl">
+                <div className="relative w-full h-full sm:h-auto sm:aspect-video bg-black sm:rounded-2xl overflow-hidden">
+                  {/* Header with title and close button */}
+                  <div className="absolute top-0 left-0 right-0 z-20 pt-8 pb-4 px-4 sm:p-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse"></div>
+                        <span className="text-white font-medium text-sm sm:text-base">Camera Active</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={closeCamera}
+                        className="text-white hover:bg-white/20 rounded-full w-8 h-8 sm:w-9 sm:h-9 p-0 text-lg"
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Video feed */}
+                  <video 
+                    ref={cameraVideoRef} 
+                    className="w-full h-full object-cover" 
+                    playsInline 
+                    muted 
+                  />
+
+                  {/* Camera overlay frame - responsive */}
+                  <div className="absolute inset-3 sm:inset-4 border-2 border-white/30 rounded-lg pointer-events-none">
+                    <div className="absolute top-0 left-0 w-4 h-4 sm:w-6 sm:h-6 border-t-2 border-l-2 border-white rounded-tl-lg"></div>
+                    <div className="absolute top-0 right-0 w-4 h-4 sm:w-6 sm:h-6 border-t-2 border-r-2 border-white rounded-tr-lg"></div>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 sm:w-6 sm:h-6 border-b-2 border-l-2 border-white rounded-bl-lg"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 sm:w-6 sm:h-6 border-b-2 border-r-2 border-white rounded-br-lg"></div>
+                  </div>
+
+                  {/* Bottom controls - responsive layout */}
+                  <div className="absolute bottom-0 left-0 right-0 pb-6 px-6 pt-4 sm:p-4 md:p-6 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+                    {/* Mobile layout - optimized positioning */}
+                    <div className="flex sm:hidden items-center justify-between">
+                      {/* Close button - left side */}
+                      <Button 
+                        variant="outline" 
+                        onClick={closeCamera}
+                        className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm rounded-full w-12 h-12 p-0 transition-all duration-200 text-lg"
+                      >
+                        ✕
+                      </Button>
+
+                      {/* Main capture button - center */}
+                      <Button 
+                        onClick={capturePhoto} 
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-full w-16 h-16 p-0 font-semibold text-2xl"
+                      >
+                        📷
+                      </Button>
+
+                      {/* Switch camera button - right side */}
+                      <Button 
+                        variant="outline"
+                        className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm rounded-full w-12 h-12 p-0 transition-all duration-200 text-lg"
+                        title="Switch Camera"
+                      >
+                        🔄
+                      </Button>
+                    </div>
+
+                    {/* Desktop/tablet layout - enhanced design */}
+                    <div className="hidden sm:flex items-center justify-center gap-6 md:gap-8">
+                      {/* Close button */}
+                      <Button 
+                        variant="outline" 
+                        onClick={closeCamera}
+                        className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm rounded-full px-5 md:px-6 py-2.5 md:py-3 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+                      >
+                        <span className="mr-2 text-lg">✕</span>
+                        <span className="font-medium">Close</span>
+                      </Button>
+
+                      {/* Main capture button - enhanced */}
+                      <Button 
+                        onClick={capturePhoto} 
+                        className="bg-gradient-to-r from-blue-500 via-purple-500 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-110 transition-all duration-300 rounded-full px-8 md:px-10 py-3 md:py-4 font-bold text-lg border-2 border-white/20"
+                      >
+                        <span className="mr-3 text-2xl">📷</span>
+                        <span className="hidden md:inline">Capture Photo</span>
+                        <span className="md:hidden">Capture</span>
+                      </Button>
+
+                      {/* Switch camera button - enhanced */}
+                      <Button 
+                        variant="outline"
+                        className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm rounded-full w-12 h-12 md:w-14 md:h-14 p-0 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+                        title="Switch Camera"
+                      >
+                        <span className="text-xl md:text-2xl">🔄</span>
+                      </Button>
+                    </div>
+
+                    {/* Instructions - responsive text */}
+                    <div className="text-center mt-3 sm:mt-4">
+                      <p className="text-white/70 text-xs sm:text-sm">
+                        <span className="hidden sm:inline">Position yourself in the frame and click capture when ready</span>
+                        <span className="sm:hidden">Tap the center button to capture</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
               </DialogContent>
@@ -1213,64 +1313,64 @@ const FloatingChat = () => {
 
           {/* Chat Panel Header */}
 <div className={`${(isMobile || isMediumScreen) && showUserList ? 'hidden' : ''} ${(!isMobile && !isMediumScreen && !hasSelectedUser) ? 'hidden' : 'flex'} flex-1 flex-col transition-all duration-300 h-full`}>
-  <div className="sticky top-0 z-10 flex items-center p-3 border-b bg-white/90 backdrop-blur">
-    {/* Back button for mobile and medium screens */}
-    {(isMobile || isMediumScreen) && (
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={() => setShowUserList(true)} 
-        className="mr-2 h-8 w-8 p-0 hover:bg-gray-100 transition-colors text-red-500 hover:text-red-600"
-        aria-label="Back to user list"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </Button>
-    )}
-    
-    {/* User Info - Now aligned to left */}
-    <div className="flex items-center gap-2 min-w-0 flex-1">
-      {activeUser ? (
-        <>
-          <Avatar className="h-8 w-8 ring-2 ring-red-100">
-            {activeUser?.avatar && <AvatarImage src={activeUser.avatar} alt={activeUser?.name} />}
-            <AvatarFallback>
-              <User className="w-4 h-4 text-red-500" />
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <div className="font-semibold text-sm truncate">{activeUser.name}</div>
-            <div className="flex items-center gap-1 mt-0.5">
-              {/* Online status indicator moved here */}
-             <span className={`inline-flex h-2 w-2 rounded-full ${onlineIds.includes(String((activeUser as any)?._id)) ? 'bg-emerald-400' : 'bg-gray-300'}`} />
-              <UserBadge role={activeUser.role} />
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-8 h-8 bg-red-50 border border-red-100 rounded-lg">
-            <Stethoscope className="w-4 h-4 text-red-600" />
-          </div>
-          <div className="font-semibold text-sm">SehatKor Chat</div>
-        </div>
-      )}
-    </div>
-    {activeUser && (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-            <MoreVertical className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[12rem] rounded-xl border bg-white/95 backdrop-blur-md shadow-2xl p-1">
-          <DropdownMenuItem onSelect={() => setClearChatOpen(true)} className="flex items-center gap-2 text-orange-600 focus:text-orange-700 focus:bg-orange-50">
-            <MessageCircle className="w-4 h-4" />
-            Clear Chat
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    )}
-  </div>
+              <div className="sticky top-0 z-10 flex items-center p-3 border-b bg-white/90 backdrop-blur">
+                {/* Back button for mobile and medium screens */}
+                {(isMobile || isMediumScreen) && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowUserList(true)} 
+                    className="mr-2 h-8 w-8 p-0 hover:bg-gray-100 transition-colors text-red-500 hover:text-red-600"
+                    aria-label="Back to user list"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
+                )}
+                
+                {/* User Info - Now aligned to left */}
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {activeUser ? (
+                    <>
+                      <Avatar className="h-8 w-8 ring-2 ring-red-100">
+                        {activeUser?.avatar && <AvatarImage src={activeUser.avatar} alt={activeUser?.name} />}
+                        <AvatarFallback>
+                          <User className="w-4 h-4 text-red-500" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm truncate">{activeUser.name}</div>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {/* Online status indicator moved here */}
+                         <span className={`inline-flex h-2 w-2 rounded-full ${onlineIds.includes(String((activeUser as any)?._id)) ? 'bg-emerald-400' : 'bg-gray-300'}`} />
+                          <UserBadge role={activeUser.role} />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center w-8 h-8 bg-red-50 border border-red-100 rounded-lg">
+                        <Stethoscope className="w-4 h-4 text-red-600" />
+                      </div>
+                      <div className="font-semibold text-sm">SehatKor Chat</div>
+                    </div>
+                  )}
+                </div>
+                {activeUser && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[12rem] rounded-xl border bg-white/95 backdrop-blur-md shadow-2xl p-1">
+                      <DropdownMenuItem onSelect={() => setClearChatOpen(true)} className="flex items-center gap-2 text-orange-600 focus:text-orange-700 focus:bg-orange-50">
+                        <MessageCircle className="w-4 h-4" />
+                        Clear Chat
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
 
               {activeUser ? (
                 <>
