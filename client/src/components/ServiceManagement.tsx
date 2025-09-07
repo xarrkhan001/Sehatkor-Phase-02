@@ -42,8 +42,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   const [serviceImageFile, setServiceImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  // Disease state (single-select at service level)
-  const [disease, setDisease] = useState<string>('');
+  // Disease state (multi-select up to 4 for doctor)
+  const [diseases, setDiseases] = useState<string[]>([]);
+  const [diseaseInput, setDiseaseInput] = useState<string>('');
 
   // Variants state (doctor only)
   const [variants, setVariants] = useState<Array<{
@@ -99,6 +100,28 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     }
   };
 
+  // Handlers for disease multi-select (doctor)
+  const addDisease = (raw: string) => {
+    const value = (raw || '').trim();
+    if (!value) return;
+    if (diseases.includes(value)) return;
+    if (diseases.length >= 4) {
+      toast({ title: 'Limit reached', description: 'You can select up to 4 diseases for one service.', variant: 'destructive' });
+      return;
+    }
+    setDiseases([...diseases, value]);
+    setDiseaseInput('');
+  };
+
+  const removeDisease = (value: string) => {
+    setDiseases(diseases.filter(d => d !== value));
+  };
+
+  const filteredDiseaseSuggestions = DISEASE_OPTIONS
+    .filter(opt => !diseases.includes(opt))
+    .filter(opt => opt.toLowerCase().includes((diseaseInput || '').toLowerCase()))
+    .slice(0, 6);
+
   const resetForm = () => {
     setServiceForm({
       name: '',
@@ -123,7 +146,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     setServiceImage('');
     setEditingService(null);
     setVariants([]);
-    setDisease('');
+    setDiseases([]);
+    setDiseaseInput('');
   };
 
   const handleAddService = async () => {
@@ -243,7 +267,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           availability: serviceForm.availability,
           serviceType: serviceForm.serviceType,
           homeDelivery: serviceForm.homeDelivery,
-          diseases: disease ? [disease] : [],
+          diseases,
           ...(payloadVariants ? { variants: payloadVariants } : {}),
         });
 
@@ -263,7 +287,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             availability: serviceForm.availability,
             serviceType: serviceForm.serviceType,
             homeDelivery: serviceForm.homeDelivery,
-            diseases: disease ? [disease] : [],
+            diseases,
             // Top-level base schedule fields for main service (explicit or auto-copied from first variant)
             ...mainScheduleFields,
             // IMPORTANT: If user removed all variants, send an empty array to clear on server
@@ -277,10 +301,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             category: updated.category,
             image: updated.imageUrl,
             duration: updated.duration,
-            availability: updated.availability,
-            serviceType: updated.serviceType,
+            availability: updated.availability as any,
+            serviceType: updated.serviceType as any,
             homeDelivery: Boolean((updated as any).homeDelivery),
-            diseases: Array.isArray(updated.diseases) ? updated.diseases : (disease ? [disease] : []),
+            diseases: Array.isArray(updated.diseases) ? updated.diseases : diseases,
             variants: updated.variants || [],
             // Store base schedule at top-level for main card display
             ...(serviceForm.baseTimeLabel ? { timeLabel: serviceForm.baseTimeLabel } : {}),
@@ -313,7 +337,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             serviceType: serviceForm.serviceType,
             homeDelivery: serviceForm.homeDelivery,
             providerName: userName,
-            diseases: disease ? [disease] : [],
+            diseases,
             // Top-level base schedule fields for main service (explicit or auto-copied from first variant)
             ...mainScheduleFields,
             ...(payloadVariants ? { variants: payloadVariants } : {}),
@@ -339,7 +363,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             city: created.city ?? serviceForm.city,
             detailAddress: created.detailAddress ?? serviceForm.detailAddress,
             googleMapLink: created.googleMapLink ?? serviceForm.googleMapLink,
-            diseases: created.diseases || (disease ? [disease] : []),
+            diseases: created.diseases || diseases,
             // Include variants array if API returned it
             variants: Array.isArray((created as any).variants) ? (created as any).variants : [],
             // Store base schedule at top-level for main card display
@@ -425,7 +449,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     });
 
     setServiceImage(service.image || '');
-    setDisease((((service as any).diseases as string[]) || [])[0] || '');
+    setDiseases(Array.isArray((service as any).diseases) ? ((service as any).diseases as string[]) : []);
+    setDiseaseInput('');
     // Load variants if any
     const svc: any = service as any;
     if (Array.isArray(svc.variants)) {
@@ -470,13 +495,15 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
   // Render up to 6 disease badges and a "+N more" indicator
   const renderDiseaseBadges = (arr?: string[]) => {
+    console.log('🔍 renderDiseaseBadges called with:', arr);
     if (!Array.isArray(arr) || arr.length === 0) return null;
     const shown = arr.slice(0, 6);
     const extra = arr.length - shown.length;
+    console.log('🔍 Showing diseases:', shown, 'Extra:', extra);
     return (
       <div className="mt-1 flex flex-wrap gap-1">
-        {shown.map((d) => (
-          <Badge key={d} variant="secondary" className="text-[10px] px-1.5 py-0.5">
+        {shown.map((d, index) => (
+          <Badge key={`${d}-${index}`} variant="secondary" className="text-[10px] px-1.5 py-0.5">
             {d}
           </Badge>
         ))}
@@ -852,24 +879,49 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                 )}
                 
-                {/* Disease Single-Select - Doctors only */}
+                {/* Diseases Multi-Select with Typeahead - Doctors only */}
                 {userRole === 'doctor' && (
                   <div className="space-y-2 border-t pt-3">
-                    <h4 className="font-medium text-sm">Disease</h4>
-                    <div className="max-w-xs">
-                      <Label className="sr-only">Disease</Label>
-                      <Select value={disease} onValueChange={(v) => setDisease(v)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a disease" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DISEASE_OPTIONS.map((opt) => (
-                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    <h4 className="font-medium text-sm">Diseases</h4>
+                    <div className="max-w-md">
+                      <div className="flex flex-wrap items-center gap-2 border rounded-md p-2">
+                        {diseases.map((d) => (
+                          <span key={d} className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                            {d}
+                            <button type="button" className="ml-1 text-blue-700 hover:text-blue-900" onClick={() => removeDisease(d)}>×</button>
+                          </span>
+                        ))}
+                        {diseases.length < 4 && (
+                          <input
+                            value={diseaseInput}
+                            onChange={(e) => setDiseaseInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ',') {
+                                e.preventDefault();
+                                addDisease(diseaseInput);
+                              }
+                            }}
+                            placeholder={diseases.length === 0 ? 'Type or pick disease (max 4)' : 'Add more...'}
+                            className="flex-1 min-w-[160px] outline-none text-sm bg-transparent"
+                          />
+                        )}
+                      </div>
+                      {filteredDiseaseSuggestions.length > 0 && diseaseInput && (
+                        <div className="mt-1 border rounded-md max-w-md bg-white shadow-sm">
+                          {filteredDiseaseSuggestions.map(opt => (
+                            <button
+                              type="button"
+                              key={opt}
+                              onClick={() => addDisease(opt)}
+                              className="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50"
+                            >
+                              {opt}
+                            </button>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">Select a single disease associated with this service.</p>
+                    <p className="text-xs text-muted-foreground">Add up to 4 diseases. You can type a custom disease or select from suggestions.</p>
                   </div>
                 )}
 
@@ -1126,15 +1178,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       <p className="font-semibold truncate">{service.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{service.description}</p>
                       {userRole === 'doctor' && (
-                        <div className="flex items-center justify-between gap-2 mt-1">
-                          <span className="text-[11px] text-muted-foreground truncate">
+                        <div className="space-y-1 mt-1">
+                          <span className="text-[11px] text-muted-foreground truncate block">
                             {(service as any).detailAddress || (service as any).city || 'Address not specified'}
                           </span>
-                          {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
-                              {((service as any).diseases as string[])[0]}
-                            </Badge>
-                          )}
+                          {renderDiseaseBadges((service as any).diseases)}
                         </div>
                       )}
                     </div>
@@ -1214,15 +1262,11 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               <p className="font-medium truncate max-w-[240px]">{service.name}</p>
                               <p className="text-sm text-muted-foreground truncate max-w-[260px]">{service.description}</p>
                               {userRole === 'doctor' && (
-                                <div className="flex items-center justify-between gap-2 mt-1 max-w-[420px]">
-                                  <span className="text-xs text-muted-foreground truncate">
+                                <div className="space-y-1 mt-1 max-w-[420px]">
+                                  <span className="text-xs text-muted-foreground truncate block">
                                     {(service as any).detailAddress || (service as any).city || 'Address not specified'}
                                   </span>
-                                  {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
-                                      {((service as any).diseases as string[])[0]}
-                                    </Badge>
-                                  )}
+                                  {renderDiseaseBadges((service as any).diseases)}
                                 </div>
                               )}
                             </div>

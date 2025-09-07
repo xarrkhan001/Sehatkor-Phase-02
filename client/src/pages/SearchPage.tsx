@@ -23,6 +23,7 @@ import SearchPageSkeleton from "@/components/skeletons/SearchPageSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useSocket } from "@/context/SocketContext";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 
@@ -74,6 +75,29 @@ const SearchPage = () => {
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
   const [priceCache, setPriceCache] = useState<Record<string, number>>({});
   const [visibleCount, setVisibleCount] = useState(6);
+
+  // Small inline virus icon to match DoctorsPage
+  const VirusIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <circle cx="32" cy="32" r="14" fill="#22c55e" />
+      {Array.from({ length: 12 }).map((_, i) => {
+        const angle = (i * Math.PI * 2) / 12;
+        const x2 = 32 + Math.cos(angle) * 22;
+        const y2 = 32 + Math.sin(angle) * 22;
+        const x1 = 32 + Math.cos(angle) * 14;
+        const y1 = 32 + Math.sin(angle) * 14;
+        return (
+          <g key={i} stroke="#22c55e" strokeWidth="3" strokeLinecap="round">
+            <line x1={x1} y1={y1} x2={x2} y2={y2} />
+            <circle cx={x2} cy={y2} r="2.5" fill="#22c55e" />
+          </g>
+        );
+      })}
+      <circle cx="26" cy="30" r="2.5" fill="#16a34a" />
+      <circle cx="36" cy="35" r="3" fill="#16a34a" />
+      <circle cx="32" cy="26" r="2" fill="#16a34a" />
+    </svg>
+  );
 
   // Track active variant index per service id
   const [activeVariantIndex, setActiveVariantIndex] = useState<Record<string, number>>({});
@@ -1129,8 +1153,35 @@ const SearchPage = () => {
                             phoneNumber={(service as any).providerPhone}
                             serviceName={service.name}
                             providerName={service.provider}
-                            providerId={(service as any)._providerId}
                           />
+                        )}
+                        {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  title="View diseases"
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                >
+                                  <VirusIcon className="w-4 h-4" />
+                                  <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <div className="text-xs text-emerald-800">
+                                  <div className="mb-1 font-medium">Diseases</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {((service as any).diseases as string[]).map((d, i) => (
+                                      <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        {d}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                         {(() => {
                           // Get variant-aware availability
@@ -1153,7 +1204,7 @@ const SearchPage = () => {
                           </Badge>
                         )}
                       </div>
-                      {/* Address + Single Disease Badge */}
+                      {/* Address only (diseases moved to tooltip icon) */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-gray-500 mb-2">
                         <div className="flex items-center gap-1 min-w-0">
                           <MapPin className="w-4 h-4 flex-shrink-0" />
@@ -1161,15 +1212,6 @@ const SearchPage = () => {
                             {getDisplayAddress(service) || getDisplayLocation(service)}
                           </span>
                         </div>
-                        {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] px-2 py-0.5 bg-sky-50 text-sky-700 border-sky-100 whitespace-nowrap self-start sm:self-center"
-                            title={(service as any).diseases[0]}
-                          >
-                            {(service as any).diseases[0]}
-                          </Badge>
-                        )}
                       </div>
                       {/* Buttons */}
                       <div className="mt-auto space-y-2">
@@ -1204,6 +1246,7 @@ const SearchPage = () => {
                               const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
                               console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
                               console.log('Service data being passed:', service);
+                              console.log('🧬 SearchPage diseases in service:', Array.isArray((service as any).diseases) ? (service as any).diseases : undefined);
                               console.log('🔎 SearchPage navigation hospitalClinicName check:', {
                                 serviceId: service.id,
                                 serviceName: service.name,
@@ -1225,10 +1268,12 @@ const SearchPage = () => {
                                     providerId: service.providerId,
                                     image: getDisplayImage(service) ?? (service as any).image,
                                     type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
-                                    providerType: service.providerType,
+                                    providerType: (service as any)._providerType || (service as any).providerType || 'doctor',
                                     isReal: true,
                                     // Hospital/Clinic name (main)
                                     hospitalClinicName: (service as any).hospitalClinicName,
+                                    // Diseases for tooltip on detail
+                                    diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : [],
                                     // Variants including hospital/clinic name
                                     variants: Array.isArray((service as any).variants)
                                       ? ((service as any).variants as any[]).map(v => ({

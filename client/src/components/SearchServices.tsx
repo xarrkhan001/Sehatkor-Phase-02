@@ -45,6 +45,7 @@ interface SearchService {
   availability?: "Online" | "Physical" | "Online and Physical";
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
   homeDelivery?: boolean;
+  diseases?: string[];
 }
 
 // No fallback or mock data. We will only show real services from backend.
@@ -152,6 +153,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       availability: (s as any).availability || "Physical",
       serviceType: (s as any).serviceType || "Private",
       homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
+      diseases: Array.isArray((s as any).diseases) ? ((s as any).diseases as string[]) : undefined,
       // Add main service schedule fields from backend (always include, even if null)
       timeLabel: (s as any).timeLabel || null,
       startTime: (s as any).startTime || null,
@@ -428,6 +430,8 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           serviceType: service.serviceType,
           // Ensure hospital/clinic name is available on detail page even without variants
           hospitalClinicName: resolvedHospitalClinicName,
+          // Pass diseases for tooltip on detail page
+          diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : [],
         }
       }
     });

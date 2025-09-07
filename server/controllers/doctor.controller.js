@@ -145,6 +145,17 @@ export const createDoctorService = async (req, res) => {
       days,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
+    // Normalize diseases: ensure array of strings, trimmed, unique, max 4
+    const normDiseases = Array.isArray(diseases)
+      ? Array.from(
+          new Set(
+            diseases
+              .map((d) => (typeof d === 'string' ? d : String(d || '')))
+              .map((d) => d.trim())
+              .filter((d) => d.length > 0)
+          )
+        ).slice(0, 4)
+      : [];
     const doc = await DoctorService.create({
       name,
       description: description || "",
@@ -164,7 +175,7 @@ export const createDoctorService = async (req, res) => {
       ...(Array.isArray(days) && { days }),
       // If variants provided, store them; else default to [] to keep compatibility
       variants: Array.isArray(variants) ? variants : [],
-      diseases: Array.isArray(diseases) ? diseases : [],
+      diseases: normDiseases,
       providerId: req.userId,
       providerName: providerName || "Doctor",
       providerType: "doctor",
@@ -184,6 +195,18 @@ export const updateDoctorService = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body || {};
+    // Normalize diseases if provided
+    let diseasesSet;
+    if (Array.isArray(updates.diseases)) {
+      diseasesSet = Array.from(
+        new Set(
+          updates.diseases
+            .map((d) => (typeof d === 'string' ? d : String(d || '')))
+            .map((d) => d.trim())
+            .filter((d) => d.length > 0)
+        )
+      ).slice(0, 4);
+    }
     const doc = await DoctorService.findOneAndUpdate(
       { _id: id, providerId: req.userId },
       {
@@ -221,8 +244,8 @@ export const updateDoctorService = async (req, res) => {
           ...(Array.isArray(updates.days) && { days: updates.days }),
           // Allow full variants replacement when provided
           ...(Array.isArray(updates.variants) && { variants: updates.variants }),
-          // Allow diseases replacement when provided
-          ...(Array.isArray(updates.diseases) && { diseases: updates.diseases }),
+          // Allow diseases replacement when provided (normalized)
+          ...(Array.isArray(updates.diseases) && { diseases: diseasesSet }),
           ...(updates.availability != null && { availability: updates.availability }),
           ...(updates.serviceType != null && { serviceType: updates.serviceType }),
           ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
