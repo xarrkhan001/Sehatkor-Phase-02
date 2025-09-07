@@ -142,6 +142,8 @@ io.on("connection", (socket) => {
         fileUrl,
         fileName,
         fileSize,
+        replyToId,
+        clientNonce,
       } = payload || {};
       if (!conversationId || !recipientId) return;
 
@@ -171,6 +173,7 @@ io.on("connection", (socket) => {
         fileUrl,
         fileName,
         fileSize,
+        replyToId: replyToId || null,
       });
       await Conversation.findByIdAndUpdate(conversationId, {
         lastMessage: {
@@ -183,9 +186,15 @@ io.on("connection", (socket) => {
         },
       });
 
+      // Prepare outbound payload (include clientNonce for optimistic dedupe, do not persist it)
+      const outbound = message.toObject ? message.toObject() : message;
+      if (clientNonce) outbound.clientNonce = clientNonce;
+
       // Emit to the conversation room (participants who have joined the room)
       const roomId = String(conversationId);
-      io.to(roomId).emit("new_message", message);
+      const toEmit = message?.toObject ? message.toObject() : message;
+      if (clientNonce) toEmit.clientNonce = clientNonce;
+      io.to(roomId).emit("new_message", toEmit);
 
       // Additionally, notify recipient sockets that are connected but have not joined the room yet
       try {
@@ -193,11 +202,11 @@ io.on("connection", (socket) => {
         for (const sid of recipientSocketIds) {
           const s = io.sockets.sockets.get(sid);
           if (s && !s.rooms.has(roomId)) {
-            s.emit("new_message", message);
+            s.emit("new_message", toEmit);
           }
         }
       } catch {}
-      if (callback) callback({ success: true, message });
+      if (callback) callback({ success: true, message: outbound });
     } catch (err) {
       if (callback) callback({ success: false, error: err.message });
     }

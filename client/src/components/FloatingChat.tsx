@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, X, Send, ImageIcon, Search, User, Stethoscope, Camera, Copy, Forward, Trash2, Loader2, ChevronLeft, Download, MoreVertical, UserPlus, UserX } from "lucide-react";
+import { MessageCircle, X, Send, ImageIcon, Search, User, Stethoscope, Camera, Copy, Forward, Trash2, Loader2, ChevronLeft, Download, MoreVertical, UserPlus, UserX, CornerUpLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,6 +46,8 @@ const FloatingChat = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'connections'>('chat');
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [clearChatOpen, setClearChatOpen] = useState(false);
+  const [removeUserOpen, setRemoveUserOpen] = useState(false);
+  const [removeTargetUser, setRemoveTargetUser] = useState<any>(null);
   const [clearingChat, setClearingChat] = useState(false);
 
   const chatPatternUrl = useMemo(() => {
@@ -91,18 +93,27 @@ const FloatingChat = () => {
     }
   };
 
+  // Show remove user confirmation modal
+  const onRemoveUser = (user: any) => {
+    setRemoveTargetUser(user);
+    setRemoveUserOpen(true);
+  };
+
   // Handle removing user connection from chat
-  const handleRemoveConnection = async (userId: string, userName: string) => {
+  const handleRemoveConnection = async () => {
+    if (!removeTargetUser) return;
     try {
-      await deleteUserConnection(userId);
+      await deleteUserConnection(removeTargetUser._id);
       toast({
         title: "Connection Removed",
-        description: `Connection with ${userName} has been removed`
+        description: `Connection with ${removeTargetUser.name} has been removed`
       });
       // Refresh connected users and conversations
       const [usersList, convs] = await Promise.all([getConnectedUsers(), fetchConversations()]);
       setUsers(usersList);
       setConversations(convs);
+      setRemoveUserOpen(false);
+      setRemoveTargetUser(null);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -174,7 +185,11 @@ const FloatingChat = () => {
   const audioInitializedRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const pendingOpenConvIdRef = useRef<string | null>(null);
+  // Reply state and swipe gesture anchor
+  const [replyTo, setReplyTo] = useState<any | null>(null);
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
 
+  // Ask for notification permission (was accidentally removed in edits)
   const requestNotificationPermissionIfNeeded = async () => {
     try {
       if (!('Notification' in window)) return;
@@ -189,6 +204,21 @@ const FloatingChat = () => {
       if (!('Notification' in window)) return;
       if (Notification.permission !== 'granted') return;
       new Notification(title, { body, silent: false });
+    } catch {}
+  };
+
+  // Briefly highlight a message by id and scroll it into view if needed
+  const flashMessage = (messageId: string) => {
+    try {
+      const el = msgElRefs.current[messageId];
+      if (!el) return;
+      // Add a temporary highlight ring
+      el.classList.add('ring-2', 'ring-emerald-300/70');
+      setTimeout(() => {
+        try { el.classList.remove('ring-2', 'ring-emerald-300/70'); } catch {}
+      }, 1500);
+      // Ensure it's visible
+      try { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch {}
     } catch {}
   };
 
@@ -253,6 +283,20 @@ const FloatingChat = () => {
   const totalUnread = useMemo(() => {
     return conversations.reduce((sum, c: any) => sum + (c?.unreadCount || 0), 0);
   }, [conversations]);
+
+  // Build quick index of replies for each original message
+  const replyChildrenIndex = useMemo(() => {
+    const map = new Map<string, any[]>();
+    for (const m of messages) {
+      const pid = (m as any)?.replyToId;
+      if (pid) {
+        const arr = map.get(String(pid)) || [];
+        arr.push(m);
+        map.set(String(pid), arr);
+      }
+    }
+    return map;
+  }, [messages]);
 
   const firstWords = (text: string, count: number) => {
     if (!text) return '';
@@ -398,7 +442,35 @@ const FloatingChat = () => {
     }
     const onNewMessage = (m: any) => {
       if (m.conversationId === conversationId) {
-        setMessages((prev) => [...prev, m]);
+        setMessages((prev) => {
+          // Helper to normalize various id forms
+          const normId = (v: any) => String((v && (v._id || v)) || '');
+          // First, remove any optimistic message matched by clientNonce
+          if ((m as any)?.clientNonce) {
+            const byNonce = prev.filter((x: any) => x?.clientNonce !== (m as any).clientNonce);
+            const refByNonce = (m as any)?.replyToId ? byNonce.find((x) => normId(x._id) === normId((m as any).replyToId)) : undefined;
+            return [...byNonce, refByNonce ? { ...m, replyTo: refByNonce } : m];
+          }
+          const filtered = prev.filter((x: any) => {
+            if (!x?.local) return true;
+            const sameType = String(x.type) === String(m.type);
+            const sameSender = normId(x.sender) === normId((m as any).sender);
+            const sameReply = normId(x.replyToId || '') === normId((m as any).replyToId || '');
+            let sameContent = false;
+            if (m.type === 'text') {
+              sameContent = String(x.text || '').trim() === String((m as any).text || '').trim();
+            } else if (m.type === 'image') {
+              sameContent = !!x.fileUrl && String(x.fileUrl) === String((m as any).fileUrl || '');
+            }
+            return !(sameType && sameSender && sameReply && sameContent);
+          });
+          const ref = (m as any)?.replyToId ? filtered.find((x) => normId(x._id) === normId((m as any).replyToId)) : undefined;
+          // If this is a reply and the referenced message is on screen, flash it
+          if (ref) {
+            setTimeout(() => flashMessage(String((m as any).replyToId)), 0);
+          }
+          return [...filtered, ref ? { ...m, replyTo: ref } : m];
+        });
         // Mark as read if the conversation is currently open
         try { markAsRead(m.conversationId); } catch {}
         setConversations((prev) => prev.map((c) => String(c._id) === String(m.conversationId)
@@ -582,6 +654,7 @@ const FloatingChat = () => {
     const t = e.touches?.[0];
     if (t) {
       lastTouchPointRef.current = { x: t.clientX, y: t.clientY };
+      swipeStartRef.current = { x: t.clientX, y: t.clientY };
     }
     longPressTimerRef.current = window.setTimeout(() => {
       setContextMessageId(mId);
@@ -605,6 +678,21 @@ const FloatingChat = () => {
     if (longPressTimerRef.current) window.clearTimeout(longPressTimerRef.current);
     longPressTimerRef.current = null;
     lastTouchPointRef.current = null;
+    // do not clear swipeStartRef here; we need it for touchend
+  };
+
+  const handleTouchEndForSwipe = (m: any, e: React.TouchEvent) => {
+    if (!isMobile) return;
+    const end = e.changedTouches?.[0];
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!end || !start) return;
+    const dx = end.clientX - start.x;
+    const dy = end.clientY - start.y;
+    // Swipe right to reply (thresholds tuned for chat)
+    if (dx > 60 && Math.abs(dy) < 40) {
+      setReplyTo(m);
+    }
   };
 
   const initials = (name?: string) => (name ? name.split(" ").map(n => n[0]).slice(0,2).join("") : "U");
@@ -695,7 +783,17 @@ const FloatingChat = () => {
       return next;
     });
     const msgs = await fetchMessages(conv._id);
-    setMessages(msgs);
+    // hydrate replyTo from replyToId using local map
+    const map = new Map<string, any>();
+    for (const m of msgs) map.set(String(m._id), m);
+    const hydrated = msgs.map((m: any) => {
+      if (m.replyToId) {
+        const ref = map.get(String(m.replyToId));
+        if (ref) return { ...m, replyTo: ref };
+      }
+      return m;
+    });
+    setMessages(hydrated);
     try { await markAsRead(conv._id); } catch {}
     setConversations((prev) => {
       const idx = prev.findIndex(c => c._id === conv._id);
@@ -759,16 +857,20 @@ const FloatingChat = () => {
     if (!message.trim() || !conversationId || !activeUser) return;
     setSending(true);
     const sc = getSocket();
+    const clientNonce = `${myId}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
     const payload = {
       conversationId,
       recipientId: activeUser._id,
       type: 'text',
       text: message.trim(),
-    };
+      replyToId: replyTo?._id || undefined,
+      clientNonce,
+    } as any;
     sc.emit('send_message', payload, (resp: any) => {
       setSending(false);
       if (resp?.success) {
         setMessage("");
+        setReplyTo(null);
         setConversations((prev) => {
           const next = [...prev];
           const idx = next.findIndex((c) => c._id === conversationId);
@@ -777,6 +879,15 @@ const FloatingChat = () => {
             type: 'text',
             sender: myId,
             createdAt: new Date().toISOString(),
+            replyToId: payload.replyToId,
+            replyTo: replyTo
+              ? {
+                  _id: replyTo._id,
+                  type: replyTo.type,
+                  text: replyTo.text,
+                  fileUrl: replyTo.fileUrl,
+                }
+              : undefined,
           } as any;
           if (idx !== -1) {
             const item = { ...next[idx], lastMessage: lm };
@@ -824,6 +935,7 @@ const FloatingChat = () => {
       setSending(true);
       const uploaded = await uploadFile(pendingAttachment.file);
     const sc = getSocket();
+    const clientNonce = `${myId}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
     sc.emit('send_message', {
       conversationId,
       recipientId: activeUser._id,
@@ -831,7 +943,10 @@ const FloatingChat = () => {
       fileUrl: uploaded.url,
         fileName: pendingAttachment.file.name,
         fileSize: pendingAttachment.file.size,
+        replyToId: replyTo?._id || undefined,
+        clientNonce,
       });
+      setReplyTo(null);
       setConversations((prev) => {
         const next = [...prev];
         const idx = next.findIndex((c) => c._id === conversationId);
@@ -840,6 +955,15 @@ const FloatingChat = () => {
           type: 'image',
           sender: myId,
           createdAt: new Date().toISOString(),
+          replyToId: replyTo?._id || undefined,
+          replyTo: replyTo
+            ? {
+                _id: replyTo._id,
+                type: replyTo.type,
+                text: replyTo.text,
+                fileUrl: replyTo.fileUrl,
+              }
+            : undefined,
         } as any;
         if (idx !== -1) {
           const item = { ...next[idx], lastMessage: lm };
@@ -1075,20 +1199,28 @@ const FloatingChat = () => {
               </div>
 
                 {loadingUsers ? (
-                  <div className="space-y-3 py-2">
+                  <div className="space-y-1 py-2">
                     {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2">
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <span className="inline-flex h-2.5 w-2.5 rounded-full bg-gray-200" />
+                      <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-lg">
+                        <div className="relative">
+                          <Skeleton className="h-12 w-12 rounded-full" />
+                          <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-gray-200" />
+                        </div>
                         <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-10 rounded-full" />
+                          </div>
                           <Skeleton className="h-3 w-32" />
-                          <Skeleton className="h-2 w-40" />
+                        </div>
+                        <div className="flex flex-col items-end gap-1.5">
+                          <Skeleton className="h-3 w-8" />
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-1">
                     {displayUsers.map((u) => {
                       const conv = conversations.find(c => (c.participants || []).some((p: any) => (p?._id || p) === u._id));
                       const unread = conv?.unreadCount || 0;
@@ -1098,21 +1230,25 @@ const FloatingChat = () => {
                           <ContextMenuTrigger asChild>
                             <button 
                               onClick={() => openChatWith(u)} 
-                              className={`w-full flex items-center gap-2 p-2 rounded-lg text-left hover:bg-gray-100 relative transition-all duration-200 border ${activeUser?._id===u._id?'bg-gray-100 border-gray-200':'border-transparent'}`}
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gradient-to-r hover:from-gray-50 hover:to-red-25 relative transition-all duration-300 rounded-lg ${activeUser?._id===u._id?'bg-gradient-to-r from-red-50 to-red-100 shadow-sm':'hover:shadow-sm'}`}
                             >
-                              <Avatar className="h-8 w-8 ring-2 ring-red-100">
-                                {u?.avatar && <AvatarImage src={u.avatar} alt={u.name} />}
-                                <AvatarFallback>
-                                  <User className="w-4 h-4 text-red-500" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className={`inline-flex h-2.5 w-2.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-gray-300'}`} />
-                              <div className="truncate text-sm">
-                                <div className="font-medium truncate flex items-center gap-1">
-                                  <span className="truncate max-w-[6.5rem]">{u.name}</span>
-                                  <UserBadge role={u.role} />
+                              <div className={`relative ${isOnline ? 'p-[2.5px] rounded-full bg-gradient-to-br from-rose-400 via-rose-300 to-sky-500 ring-1 ring-rose-300/45 shadow-[0_0_6px_rgba(244,63,94,0.08)]' : ''}`}>
+                                <Avatar className={`h-12 w-12 rounded-full shadow ${isOnline ? 'bg-white' : 'ring-2 ring-white'}`}>
+                                  {u?.avatar && <AvatarImage src={u.avatar} alt={u.name} />}
+                                  <AvatarFallback className="bg-gradient-to-br from-red-100 to-red-200 text-red-700 text-base font-semibold">
+                                    {initials(u.name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white shadow-sm ${isOnline ? 'bg-emerald-400' : 'bg-gray-400'}`} />
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                                  <span className="text-[11px] sm:text-xs font-semibold text-gray-800 leading-tight whitespace-nowrap flex-auto min-w-0">
+                                    {u.name.split(' ').slice(0, 2).join(' ')}
+                                  </span>
                                 </div>
-                                <div className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
+                                <div className="text-xs text-gray-500 truncate">
                                   {(() => {
                                     const conv = conversations.find(c => (c.participants || []).some((p: any) => (p?._id || p) === u._id));
                                     const last = conv?.lastMessage;
@@ -1120,35 +1256,56 @@ const FloatingChat = () => {
                                     const lastSender = (last as any)?.sender?._id || (last as any)?.sender;
                                     const mine = String(lastSender) === String(myId);
                                     return (
-                                      <>
+                                      <div className="flex items-center gap-1">
                                         <span className="inline-flex items-center gap-1">
                                           <span className={`h-1.5 w-1.5 rounded-full ${mine ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                                          <span className={`${mine ? 'text-blue-600' : 'text-emerald-700'}`}>{mine ? 'Sent' : 'Received'}</span>
+                                          <span className={`${mine ? 'text-blue-600' : 'text-emerald-700'} ${last.type === 'image' ? 'text-[11px]' : ''}`}>
+                                            {last.type === 'image' ? 
+                                              (mine ? 'Photo Sent' : 'Photo Received') : 
+                                              (mine ? 'Sent' : 'Received')
+                                            }
+                                          </span>
                                         </span>
                                         {last.type === 'image' ? (
                                           <span className="inline-flex items-center gap-0.5 truncate">
                                             <ImageIcon className="w-3 h-3 text-red-500" />
-                                            <span>Photo</span>
                                           </span>
                                         ) : (
-                                          <span className="truncate">{firstWords((last.text || ''), 4)}</span>
+                                          <span className="truncate">{firstWords((last.text || ''), 3)}</span>
                                         )}
-                                      </>
+                                      </div>
                                     );
                                   })()}
                                 </div>
                               </div>
-                              {unread > 0 && (
-                                <span className="absolute right-2 top-2 bg-red-500 text-white rounded-full text-[10px] px-1.5 py-0.5 shadow">{unread}</span>
-                              )}
+                              
+                              <div className="flex flex-col items-end gap-1">
+                                <div className="scale-75">
+                                  <UserBadge role={u.role} />
+                                </div>
+                                {(() => {
+                                  const conv = conversations.find(c => (c.participants || []).some((p: any) => (p?._id || p) === u._id));
+                                  const last = conv?.lastMessage;
+                                  if (last?.createdAt) {
+                                    return <span className="text-xs text-gray-400 font-medium">{formatTime(last.createdAt)}</span>;
+                                  }
+                                  return null;
+                                })()}
+                                {unread > 0 && (
+                                  <span className="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full text-xs px-2 py-1 min-w-[20px] text-center leading-none shadow-sm font-medium">{unread > 99 ? '99+' : unread}</span>
+                                )}
+                              </div>
                             </button>
                           </ContextMenuTrigger>
-                          <ContextMenuContent className="min-w-[12px] rounded-xl border bg-white/95 backdrop-blur-md shadow-2xl p-1">
+                          <ContextMenuContent className="w-auto min-w-0 rounded-2xl border border-gray-200/70 bg-gradient-to-b from-white via-white to-gray-50/90 backdrop-blur-xl backdrop-saturate-150 shadow-[0_12px_50px_rgba(0,0,0,0.15)] ring-1 ring-white/70 p-1.5">
                             <ContextMenuItem 
-                              onSelect={() => handleRemoveConnection(u._id, u.name)}
-                              className="gap-2 rounded-lg text-destructive focus:text-destructive"
+                              onSelect={() => onRemoveUser(u)}
+                              className="group gap-2.5 rounded-xl px-2.5 py-1.5 h-auto text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100/80 focus:bg-red-50 transition-all duration-200 cursor-pointer"
                             >
-                              <UserX className="w-4 h-4" /> Remove 
+                              <span className="inline-flex items-center justify-center rounded-full bg-red-100/80 text-red-600 p-1 transition-all duration-200 group-hover:scale-110 group-hover:bg-red-200/90 group-hover:shadow-sm">
+                                <UserX className="w-3.5 h-3.5" />
+                              </span>
+                              <span className="font-medium text-sm whitespace-nowrap">Remove</span>
                             </ContextMenuItem>
                           </ContextMenuContent>
                         </ContextMenu>
@@ -1414,12 +1571,39 @@ const FloatingChat = () => {
                               ref={(el) => { msgElRefs.current[m._id] = el; }}
                               onContextMenu={() => { setContextMessageId(m._id); }}
                               onTouchStart={(e) => startLongPress(m._id, e)}
-                              onTouchEnd={cancelLongPress}
+                              onTouchEnd={(e) => { handleTouchEndForSwipe(m, e); cancelLongPress(); }}
                               onTouchMove={cancelLongPress}
                                 className={`group relative max-w-[75%] p-2 rounded-2xl text-sm border transition-all ${mine
                                   ? 'ml-auto bg-gray-50 text-gray-900 border-gray-200 shadow-sm hover:shadow'
                                   : 'bg-white text-gray-900 border-gray-200 shadow-sm hover:shadow'} ${m.isDeleted ? 'opacity-60 bg-gray-100' : ''}`}
                             >
+                              {/* Quoted reply preview inside bubble */}
+                              {m.replyTo || (m.replyToId && messages.find((x) => x._id === m.replyToId)) ? (
+                                <div className={`mb-1 pl-2 pr-2 py-1 border-l-2 ${mine ? 'border-blue-300' : 'border-emerald-300'} text-[11px] text-gray-600/90 bg-white/60 rounded-sm`}> 
+                                  {(() => {
+                                    const refMsg = (m as any).replyTo || messages.find((x) => x._id === (m as any).replyToId);
+                                    if (!refMsg) return null;
+                                    const isImg = refMsg.type === 'image';
+                                    return (
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="font-medium text-gray-700 shrink-0">Reply</span>
+                                        {isImg ? (
+                                          <div className="flex items-center gap-1 min-w-0">
+                                            {refMsg.fileUrl ? (
+                                              <img src={refMsg.fileUrl} className="h-8 w-8 rounded border object-cover" alt="Replied" />
+                                            ) : (
+                                              <ImageIcon className="w-3 h-3 text-red-500" />
+                                            )}
+                                            <span className="text-gray-700 truncate">Photo</span>
+                                          </div>
+                                        ) : (
+                                          <span className="truncate">{firstWords(refMsg.text || '', 10)}</span>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              ) : null}
                               {m.isDeleted ? (
                                 <div className="text-gray-500 italic text-xs">This message was deleted</div>
                               ) : (
@@ -1445,26 +1629,75 @@ const FloatingChat = () => {
                               </div>
                             </div>
                           </ContextMenuTrigger>
-                          <ContextMenuContent className="min-w-[12rem] rounded-xl border bg-white/95 backdrop-blur-md shadow-2xl p-1">
+                          {/* Lightweight reply indicator under original message (latest reply preview) */}
+                            {(() => {
+                              const ch = replyChildrenIndex.get(String(m._id));
+                              if (!ch || ch.length === 0) return null;
+                              const latest = ch[ch.length - 1];
+                              const fromMe = String((latest as any)?.sender?._id || (latest as any)?.sender) === String(myId);
+                              const isImg = (latest as any)?.type === 'image';
+                              return (
+                                <div className={`mt-1 max-w-[70%] ${mine ? 'ml-auto' : ''} text-[11px] text-gray-600 bg-white/70 border rounded-xl px-2 py-1 flex items-center gap-2`}>
+                                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${fromMe ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+                                  <span className={`shrink-0 ${fromMe ? 'text-blue-600' : 'text-emerald-700'}`}>{fromMe ? 'You replied:' : 'Replied:'}</span>
+                                  {isImg ? (
+                                    <span className="inline-flex items-center gap-1 min-w-0">
+                                      {(latest as any)?.fileUrl ? (
+                                        <img src={(latest as any).fileUrl} className="h-6 w-6 rounded border object-cover" alt="Reply" />
+                                      ) : (
+                                        <ImageIcon className="w-3 h-3 text-red-500" />
+                                      )}
+                                      <span className="truncate">Photo</span>
+                                    </span>
+                                  ) : (
+                                    <span className="truncate">{firstWords(((latest as any)?.text || ''), 10)}</span>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          <ContextMenuContent className="min-w-[12rem] rounded-2xl border border-gray-200/70 bg-gradient-to-b from-white to-gray-50/80 backdrop-blur-xl backdrop-saturate-150 shadow-[0_8px_40px_rgba(0,0,0,0.12)] ring-1 ring-white/60 p-2">
+                            <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500/90">Message actions</div>
+                            <ContextMenuItem onSelect={() => setReplyTo(m)} className="group gap-3 rounded-lg px-3 py-2.5 h-auto text-[13px] hover:bg-gradient-to-r hover:from-gray-50 hover:to-white/60 focus:bg-gray-50 transition-colors">
+                              <span className="inline-flex items-center justify-center rounded-full bg-sky-50 text-sky-700 p-1.5 transition-transform duration-150 group-hover:scale-110">
+                                <CornerUpLeft className="w-4 h-4" />
+                              </span>
+                              <span className="font-medium">Reply</span>
+                            </ContextMenuItem>
                             {m.isDeleted ? (
-                              <ContextMenuItem disabled className="gap-2 rounded-lg text-gray-400">
-                                <Trash2 className="w-4 h-4" /> Message deleted
+                              <ContextMenuItem disabled className="gap-3 rounded-lg px-3 py-2.5 h-auto text-gray-400">
+                                <span className="inline-flex items-center justify-center rounded-full bg-gray-50 text-gray-400 p-1.5">
+                                  <Trash2 className="w-4 h-4" />
+                                </span>
+                                <span className="font-medium">Message deleted</span>
                               </ContextMenuItem>
                             ) : (
                               <>
-                            <ContextMenuItem onSelect={() => onCopyMessage(m)} className="gap-2 rounded-lg">
-                              <Copy className="w-4 h-4" /> Copy
+                            <ContextMenuItem onSelect={() => onCopyMessage(m)} className="group gap-3 rounded-lg px-3 py-2.5 h-auto hover:bg-gradient-to-r hover:from-gray-50 hover:to-white/60 transition-colors">
+                              <span className="inline-flex items-center justify-center rounded-full bg-indigo-50 text-indigo-700 p-1.5 transition-transform duration-150 group-hover:scale-110">
+                                <Copy className="w-4 h-4" />
+                              </span>
+                              <span className="font-medium">Copy</span>
                             </ContextMenuItem>
                             {(m.type === 'image' || m.type === 'file') && m.fileUrl && (
-                              <ContextMenuItem onSelect={() => onDownloadMessage(m)} className="gap-2 rounded-lg">
-                                <Download className="w-4 h-4" /> Download
+                              <ContextMenuItem onSelect={() => onDownloadMessage(m)} className="group gap-3 rounded-lg px-3 py-2.5 h-auto hover:bg-gradient-to-r hover:from-gray-50 hover:to-white/60 transition-colors">
+                                <span className="inline-flex items-center justify-center rounded-full bg-emerald-50 text-emerald-700 p-1.5 transition-transform duration-150 group-hover:scale-110">
+                                  <Download className="w-4 h-4" />
+                                </span>
+                                <span className="font-medium">Download</span>
                               </ContextMenuItem>
                             )}
-                            <ContextMenuItem onSelect={() => onForwardMessage(m)} className="gap-2 rounded-lg">
-                              <Forward className="w-4 h-4" /> Forward
+                            <ContextMenuItem onSelect={() => onForwardMessage(m)} className="group gap-3 rounded-lg px-3 py-2.5 h-auto hover:bg-gradient-to-r hover:from-gray-50 hover:to-white/60 transition-colors">
+                              <span className="inline-flex items-center justify-center rounded-full bg-violet-50 text-violet-700 p-1.5 transition-transform duration-150 group-hover:scale-110">
+                                <Forward className="w-4 h-4" />
+                              </span>
+                              <span className="font-medium">Forward</span>
                             </ContextMenuItem>
-                            <ContextMenuItem onSelect={() => onDeleteMessage(m)} className="gap-2 rounded-lg text-destructive focus:text-destructive">
-                              <Trash2 className="w-4 h-4" /> Delete
+                            <div className="h-px bg-gray-100 my-1" />
+                            <ContextMenuItem onSelect={() => onDeleteMessage(m)} className="group gap-3 rounded-lg px-3 py-2.5 h-auto text-red-600 hover:bg-red-50 focus:bg-red-50 transition-colors">
+                              <span className="inline-flex items-center justify-center rounded-full bg-red-50 text-red-600 p-1.5 transition-transform duration-150 group-hover:scale-110">
+                                <Trash2 className="w-4 h-4" />
+                              </span>
+                              <span className="font-medium">Delete</span>
                             </ContextMenuItem>
                               </>
                             )}
@@ -1488,6 +1721,33 @@ const FloatingChat = () => {
                             <Button size="sm" variant="secondary" onClick={cancelPendingAttachment} className="whitespace-nowrap flex-1">Remove</Button>
                             <Button size="sm" onClick={sendPendingAttachment} disabled={sending} className="bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white whitespace-nowrap flex-1">Send</Button>
                           </div>
+                        </div>
+                      </div>
+                    )}
+                    {replyTo && (
+                      <div className="mb-2 p-2 border rounded-lg bg-white shadow-sm">
+                        <div className="flex items-start gap-2">
+                          <div className="w-1.5 h-8 rounded bg-rose-300 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[11px] text-gray-600 flex items-center gap-2 min-w-0">
+                              <span className="font-medium">Replying to</span>
+                              {(() => {
+                                const isImg = (replyTo as any)?.type === 'image';
+                                if (isImg) return (
+                                  <span className="inline-flex items-center gap-1 min-w-0">
+                                    {(replyTo as any)?.fileUrl ? (
+                                      <img src={(replyTo as any).fileUrl} className="h-6 w-6 rounded border object-cover" alt="Replied" />
+                                    ) : (
+                                      <ImageIcon className="w-3 h-3 text-red-500" />
+                                    )}
+                                    <span className="text-gray-700 truncate">Photo</span>
+                                  </span>
+                                );
+                                return <span className="truncate inline-block max-w-[16rem] align-middle">{firstWords((replyTo as any)?.text || '', 10)}</span>;
+                              })()}
+                            </div>
+                          </div>
+                          <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setReplyTo(null)}>Cancel</Button>
                         </div>
                       </div>
                     )}
@@ -1654,6 +1914,51 @@ const FloatingChat = () => {
           </Card>
         )}
         
+        {/* Remove User Confirmation Modal */}
+        <Dialog open={removeUserOpen} onOpenChange={setRemoveUserOpen}>
+          <DialogContent className="max-w-md">
+            <DialogTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <UserX className="w-5 h-5 text-red-600" />
+              Remove Connection
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-600 space-y-3">
+              <div>
+                Are you sure you want to remove <span className="font-medium text-gray-900">{removeTargetUser?.name}</span> from your connections?
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-amber-600 text-xs font-bold">!</span>
+                  </div>
+                  <div className="text-amber-800 text-xs">
+                    <div className="font-medium mb-1">This action cannot be undone:</div>
+                    <ul className="space-y-1 text-amber-700">
+                      <li>• This user will no longer appear in your chat list</li>
+                      <li>• You'll need to send a new connection request to chat again</li>
+                      <li>• Your chat history will be preserved</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </DialogDescription>
+            <div className="flex gap-3 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setRemoveUserOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleRemoveConnection}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                Remove Connection
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {!isOpen && (
           <div className="relative">
             <Button

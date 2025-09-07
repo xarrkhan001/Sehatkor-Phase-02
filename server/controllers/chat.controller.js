@@ -105,7 +105,7 @@ export const markConversationRead = async (req, res) => {
 export const createMessage = async (req, res) => {
   try {
     const senderId = req.userId;
-    const { conversationId, recipientId, type, text, fileUrl, fileName, fileSize } = req.body;
+    const { conversationId, recipientId, type, text, fileUrl, fileName, fileSize, replyToId } = req.body;
     if (!conversationId || !recipientId) {
       return res.status(400).json({ message: 'conversationId and recipientId are required' });
     }
@@ -126,6 +126,7 @@ export const createMessage = async (req, res) => {
       fileUrl,
       fileName,
       fileSize,
+      replyToId: replyToId || null,
     });
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: {
