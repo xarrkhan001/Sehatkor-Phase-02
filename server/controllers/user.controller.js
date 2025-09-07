@@ -108,6 +108,13 @@ export const getAllPublicServices = async (req, res) => {
         serviceType: service.serviceType || "Private",
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
+        // Hospital/Clinic name
+        hospitalClinicName: service.hospitalClinicName || null,
+        // expose main service schedule fields
+        timeLabel: service.timeLabel || null,
+        startTime: service.startTime || null,
+        endTime: service.endTime || null,
+        days: Array.isArray(service.days) ? service.days : [],
       })),
       ...clinicServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
@@ -122,6 +129,11 @@ export const getAllPublicServices = async (req, res) => {
         serviceType: service.serviceType || "Private",
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
+        // expose main service schedule fields
+        timeLabel: service.timeLabel || null,
+        startTime: service.startTime || null,
+        endTime: service.endTime || null,
+        days: Array.isArray(service.days) ? service.days : [],
       })),
       ...pharmacyServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
@@ -133,6 +145,11 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
+        // expose main service schedule fields
+        timeLabel: service.timeLabel || null,
+        startTime: service.startTime || null,
+        endTime: service.endTime || null,
+        days: Array.isArray(service.days) ? service.days : [],
       })),
       ...laboratoryServices.map((service) => ({
         ...(service.toObject ? service.toObject() : service),
@@ -146,6 +163,11 @@ export const getAllPublicServices = async (req, res) => {
         ratingBadge: service.ratingBadge || null,
         serviceType: service.serviceType || "Private",
         availability: service.availability || "Physical",
+        // expose main service schedule fields
+        timeLabel: service.timeLabel || null,
+        startTime: service.startTime || null,
+        endTime: service.endTime || null,
+        days: Array.isArray(service.days) ? service.days : [],
       })),
     ];
 
@@ -280,6 +302,13 @@ export const getPublicServiceById = async (req, res) => {
       totalRatings: service.totalRatings || 0,
       ratingBadge: service.ratingBadge || null,
       ratingCounts: counts,
+      // Hospital/Clinic name
+      hospitalClinicName: service.hospitalClinicName || null,
+      // expose main service schedule fields
+      timeLabel: service.timeLabel || null,
+      startTime: service.startTime || null,
+      endTime: service.endTime || null,
+      days: Array.isArray(service.days) ? service.days : [],
     };
 
     res.status(200).json(serviceObject);

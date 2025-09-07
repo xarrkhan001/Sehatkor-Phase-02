@@ -22,6 +22,7 @@ interface SearchService {
     price?: number;
     city?: string;
     detailAddress?: string;
+    hospitalClinicName?: string;
     googleMapLink?: string;
     timeLabel?: string;
     startTime?: string;
@@ -32,6 +33,7 @@ interface SearchService {
   providerName: string;
   providerId: string;
   city?: string;
+  hospitalClinicName?: string;
   providerType: Service['providerType'];
   price?: number;
   rating?: number;
@@ -120,7 +122,13 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   }, [user?.name, user?.id]);
 
   const mapServices = (services: Service[]): SearchService[] => {
-    return (services || []).map((s: Service) => ({
+    console.log('🧪 SearchServices.mapServices input[0..2]:', (services || []).slice(0,2).map((s:any)=>({
+      id: s?.id,
+      name: s?.name,
+      hospitalClinicName: s?.hospitalClinicName,
+      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName) : null,
+    })));
+    const mapped = (services || []).map((s: Service) => ({
       id: s.id,
       name: s.name,
       description: s.description,
@@ -132,6 +140,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       providerName: (user && String(s.providerId) === String(user.id) ? (user.name || s.providerName) : s.providerName),
       providerId: s.providerId,
       city: (s as any).city,
+      hospitalClinicName: (s as any).hospitalClinicName,
       providerType: s.providerType,
       price: s.price,
       rating: (s as any).averageRating ?? (s as any).rating ?? 0,
@@ -143,7 +152,19 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       availability: (s as any).availability || "Physical",
       serviceType: (s as any).serviceType || "Private",
       homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
+      // Add main service schedule fields from backend (always include, even if null)
+      timeLabel: (s as any).timeLabel || null,
+      startTime: (s as any).startTime || null,
+      endTime: (s as any).endTime || null,
+      days: Array.isArray((s as any).days) ? (s as any).days : null,
     }));
+    console.log('✅ SearchServices.mapServices output[0..2]:', mapped.slice(0,2).map((s:any)=>({
+      id: s?.id,
+      name: s?.name,
+      hospitalClinicName: s?.hospitalClinicName,
+      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName) : null,
+    })));
+    return mapped;
   };
 
   const mapServiceToSearchCategory = (service: Service): string => {
@@ -216,10 +237,10 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       city: svc.city,
       detailAddress: svc.detailAddress,
       googleMapLink: svc.googleMapLink,
-      timeLabel: undefined as string | undefined,
-      startTime: undefined as string | undefined,
-      endTime: undefined as string | undefined,
-      days: undefined as string | undefined,
+      timeLabel: (svc as any).timeLabel,
+      startTime: (svc as any).startTime,
+      endTime: (svc as any).endTime,
+      days: (svc as any).days,
       availability: svc.availability,
     };
     const variants = Array.isArray(svc.variants) ? svc.variants : [];
@@ -238,20 +259,62 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     return p != null && !Number.isNaN(Number(p)) ? Number(p) : svc.price;
   };
   const getDisplayCity = (svc: SearchService) => getActiveSlide(svc)?.city || svc.city;
+  // Convert 24-hour time to 12-hour format with AM/PM
+  const formatTo12Hour = (time24?: string): string => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(':');
+    const hour24 = parseInt(hours, 10);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  // Build display time label for current slide (similar to DoctorsPage)
   const getDisplayTimeInfo = (svc: SearchService): string | null => {
-    const v: any = getActiveSlide(svc);
+    const variants = Array.isArray(svc.variants) ? svc.variants : [];
+    const totalSlides = 1 + variants.length;
+    const rawIdx = activeIdxById[svc.id] ?? 0;
+    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
+    
+    // For base slide (idx===0), show ONLY main service schedule; do not fallback to variants
+    if (idx === 0) {
+      const range = (svc as any).startTime && (svc as any).endTime ? `${formatTo12Hour((svc as any).startTime)} - ${formatTo12Hour((svc as any).endTime)}` : "";
+      const baseLabel = (svc as any).timeLabel ? String((svc as any).timeLabel) : "";
+      // If we have both a label (e.g., "Morning") and a concrete time range, show both: "Morning — 8:26 PM - 7:21 PM"
+      const label = baseLabel && range ? `${baseLabel} — ${range}` : (baseLabel || range);
+      const days = (svc as any).days ? String((svc as any).days) : "";
+      const parts = [label, days].filter(Boolean);
+      return parts.length ? parts.join(" · ") : null;
+    }
+
+    // For variant slides, show variant schedule
+    const v = variants[idx - 1];
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTime(v.startTime)} - ${formatTime(v.endTime)}` : "");
+    const range = v.startTime && v.endTime ? `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}` : "";
+    const baseLabel = v.timeLabel ? String(v.timeLabel) : "";
+    // If we have both a label (e.g., "Evening") and a concrete time range, show both: "Evening — 8:21 PM - 8:21 PM"
+    const label = baseLabel && range ? `${baseLabel} — ${range}` : (baseLabel || range);
     const days = v.days ? String(v.days) : "";
     const parts = [label, days].filter(Boolean);
     return parts.length ? parts.join(" · ") : null;
   };
   const getDisplayTimeRange = (svc: SearchService): string | null => {
-    const v: any = getActiveSlide(svc);
+    const variants = Array.isArray(svc.variants) ? svc.variants : [];
+    const totalSlides = 1 + variants.length;
+    const rawIdx = activeIdxById[svc.id] ?? 0;
+    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
+    
+    // For base slide (idx===0), show ONLY main service time range
+    if (idx === 0) {
+      const hasBase = (svc as any).startTime && (svc as any).endTime;
+      if (hasBase) return `${formatTo12Hour((svc as any).startTime)} - ${formatTo12Hour((svc as any).endTime)}`;
+      return (svc as any).timeLabel ? String((svc as any).timeLabel) : null;
+    }
+
+    // For variant slides, show variant time range
+    const v = variants[idx - 1];
     if (!v) return null;
-    const formatTime = (t?: string) => (t ? String(t) : "");
-    if (v.startTime && v.endTime) return `${formatTime(v.startTime)} - ${formatTime(v.endTime)}`;
+    if (v.startTime && v.endTime) return `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}`;
     return v.timeLabel ? String(v.timeLabel) : null;
   };
   const nextVariant = (id: string) => setActiveIdxById(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
@@ -326,11 +389,17 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
     const timeLabel = getDisplayTimeInfo(service);
     const timeRange = getDisplayTimeRange(service);
+    // Resolve hospital/clinic name for the active slide (base or variant)
+    const resolvedHospitalClinicName = (() => {
+      if (activeIdx === 0) return (service as any).hospitalClinicName || undefined;
+      const v = Array.isArray(service.variants) ? service.variants[activeIdx - 1] : undefined;
+      return v?.hospitalClinicName || (service as any).hospitalClinicName || undefined;
+    })();
     navigate(`/service/${service.id}`, {
       state: {
         from: locationHook.pathname + locationHook.search,
         fromSearch: true,
-        activeVariantIndex: activeIdx,
+        initialVariantIndex: activeIdx,
         service: {
           id: service.id,
           name: service.name,
@@ -351,10 +420,14 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           googleMapLink: service.googleMapLink ?? undefined,
           homeDelivery: (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic' || service.providerType === 'doctor') ? Boolean(service.homeDelivery) : undefined,
           variants: service.variants || [],
-          variantIndex: activeIdx,
-          variantLabel: timeLabel ?? undefined,
-          variantTimeRange: timeRange ?? undefined,
+          // Pass main service schedule fields
+          timeLabel: (service as any).timeLabel || null,
+          startTime: (service as any).startTime || null,
+          endTime: (service as any).endTime || null,
+          days: Array.isArray((service as any).days) ? (service as any).days : null,
           serviceType: service.serviceType,
+          // Ensure hospital/clinic name is available on detail page even without variants
+          hospitalClinicName: resolvedHospitalClinicName,
         }
       }
     });
@@ -536,6 +609,84 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         </button>
                         {getDisplayCity(service) ? <span className="text-gray-400"> • {getDisplayCity(service)}</span> : null}
                       </div>
+                      {(() => {
+                        const activeIdx = activeIdxById[service.id] ?? 0;
+                        const variants = Array.isArray(service.variants) ? service.variants : [];
+                        const totalSlides = 1 + variants.length;
+                        const slideIdx = ((activeIdx % totalSlides) + totalSlides) % totalSlides;
+                        
+                        let hospitalClinicName = '';
+                        if (slideIdx === 0) {
+                          // Main service slide
+                          hospitalClinicName = (service as any).hospitalClinicName || '';
+                        } else if (variants[slideIdx - 1]) {
+                          // Variant slide
+                          hospitalClinicName = variants[slideIdx - 1].hospitalClinicName || '';
+                        }
+                        
+                        console.log('🔎 SearchServices hospitalClinicName render:', {
+                          serviceId: service.id,
+                          serviceName: service.name,
+                          slideIdx,
+                          hospitalClinicName,
+                          serviceHospitalClinicName: (service as any).hospitalClinicName,
+                          variantHospitalClinicName: variants[slideIdx - 1]?.hospitalClinicName
+                        });
+                        
+                        return hospitalClinicName ? (
+                          <div className="mt-0.5 text-[10px] text-blue-600 font-medium truncate flex items-center gap-1.5">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="12"
+                              height="12"
+                              aria-hidden="true"
+                              className="shrink-0"
+                            >
+                              <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                              <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                              <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                            </svg>
+                            <span className="truncate">{hospitalClinicName}</span>
+                          </div>
+                        ) : null;
+                      })()}
+                      {(() => {
+                        const timeInfo = getDisplayTimeInfo(service);
+                        const activeIdx = activeIdxById[service.id] ?? 0;
+                        const variants = Array.isArray(service.variants) ? service.variants : [];
+                        const totalSlides = 1 + variants.length;
+                        const slideIdx = ((activeIdx % totalSlides) + totalSlides) % totalSlides;
+                        
+                        console.log('SearchServices Debug:', {
+                          serviceName: service.name,
+                          serviceId: service.id,
+                          providerType: service.providerType,
+                          activeIdx: activeIdx,
+                          slideIdx: slideIdx,
+                          totalSlides: totalSlides,
+                          isMainSlide: slideIdx === 0,
+                          mainSchedule: {
+                            timeLabel: (service as any).timeLabel,
+                            startTime: (service as any).startTime,
+                            endTime: (service as any).endTime,
+                            days: (service as any).days
+                          },
+                          variantSchedule: slideIdx > 0 && variants[slideIdx - 1] ? {
+                            timeLabel: variants[slideIdx - 1].timeLabel,
+                            startTime: variants[slideIdx - 1].startTime,
+                            endTime: variants[slideIdx - 1].endTime,
+                            days: variants[slideIdx - 1].days
+                          } : null,
+                          timeInfo: timeInfo,
+                          variants: service.variants
+                        });
+                        return timeInfo;
+                      })() && (
+                        <div className="mt-1 text-[10px] text-gray-500 bg-gray-50 px-2 py-1 rounded-md border">
+                          📅 {getDisplayTimeInfo(service)}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {getDisplayPrice(service) != null && (

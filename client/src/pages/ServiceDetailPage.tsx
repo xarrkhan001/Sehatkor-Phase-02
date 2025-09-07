@@ -62,7 +62,13 @@ const ServiceDetailPage = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [yourBadge, setYourBadge] = useState<Unified['myBadge']>((locationHook.state as any)?.service?.myBadge ?? null);
   const [freshCounts, setFreshCounts] = useState<{ excellent: number; good: number; fair: number } | null>(null);
-  const [activeVariantIndex, setActiveVariantIndex] = useState((locationHook.state as any)?.activeVariantIndex ?? 0);
+  const [activeVariantIndex, setActiveVariantIndex] = useState(() => {
+    // Initialize with variant index from navigation state if available
+    const initialIndex = (locationHook.state as any)?.initialVariantIndex;
+    const validIndex = typeof initialIndex === 'number' ? Math.max(0, Math.min(initialIndex, 1)) : 0;
+    console.log('🔧 ServiceDetailPage: Initializing activeVariantIndex:', validIndex, 'from initialIndex:', initialIndex);
+    return validIndex;
+  });
   const [resolvedServiceType, setResolvedServiceType] = useState<Unified['serviceType'] | undefined>(undefined);
 
   // Helper functions for variant display
@@ -75,7 +81,12 @@ const ServiceDetailPage = () => {
       availability: service.availability,
       description: service.description,
       googleMapLink: service.googleMapLink,
-      address: service.address
+      address: service.address,
+      hospitalClinicName: (service as any).hospitalClinicName,
+      timeLabel: (service as any).timeLabel,
+      startTime: (service as any).startTime,
+      endTime: (service as any).endTime,
+      days: (service as any).days
     }];
     
     if (service.variants && Array.isArray(service.variants)) {
@@ -88,11 +99,16 @@ const ServiceDetailPage = () => {
           availability: variant.availability,
           description: variant.description || service.description,
           googleMapLink: variant.googleMapLink || service.googleMapLink,
-          address: variant.detailAddress || service.address
+          hospitalClinicName: (variant as any).hospitalClinicName || (service as any).hospitalClinicName,
+          address: variant.detailAddress || service.address,
+          timeLabel: (variant as any).timeLabel,
+          startTime: (variant as any).startTime,
+          endTime: (variant as any).endTime,
+          days: (variant as any).days
         });
       });
     }
-    
+    console.log('🧪 ServiceDetailPage.getSlides result:', slides.map((s, i) => ({ index: i, name: s.name, hospitalClinicName: (s as any).hospitalClinicName })));
     return slides;
   };
 
@@ -119,6 +135,11 @@ const ServiceDetailPage = () => {
       variants: rawStateService.variants || [],
       // Ensure boolean coercion for homeDelivery in case it comes as string/undefined
       homeDelivery: typeof rawStateService.homeDelivery !== 'undefined' ? Boolean(rawStateService.homeDelivery) : undefined,
+      // Preserve main service schedule fields from navigation state
+      timeLabel: rawStateService.timeLabel || null,
+      startTime: rawStateService.startTime || null,
+      endTime: rawStateService.endTime || null,
+      days: rawStateService.days || null,
     };
     return normalized;
   }, [rawStateService]);
@@ -144,6 +165,12 @@ const ServiceDetailPage = () => {
         providerType: (stateService as any)?.providerType ?? (stateService as any)?._providerType,
         serviceType: (stateService as any)?.serviceType,
       });
+      console.log('🔍 Navigation State Service Schedule Fields:');
+      console.log('  - timeLabel:', (stateService as any)?.timeLabel);
+      console.log('  - startTime:', (stateService as any)?.startTime);
+      console.log('  - endTime:', (stateService as any)?.endTime);
+      console.log('  - days:', (stateService as any)?.days);
+      console.log('  - variants:', (stateService as any)?.variants);
       return stateService;
     }
     
@@ -151,32 +178,60 @@ const ServiceDetailPage = () => {
     const source = (ServiceManager as any).getAllServicesWithVariants
       ? (ServiceManager as any).getAllServicesWithVariants()
       : ServiceManager.getAllServices();
-    const realMapped = source.map((s: any) => ({
-      id: s.id,
-      name: s.name,
-      description: s.description,
-      price: Number(s.price ?? 0),
-      rating: s?.averageRating ?? s?.rating ?? 0,
-      location: s?.city ?? s?.location ?? "Karachi",
-      provider: s.providerName,
-      image: s.image,
-      type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : s.category === "Surgery" ? "Surgery" : "Treatment",
-      providerType: s.providerType as Unified['providerType'],
-      isReal: true,
-      providerId: (s as any).providerId,
-      totalRatings: (s as any).totalRatings ?? 0,
-      providerPhone: (s as any).providerPhone,
-      googleMapLink: (s as any).googleMapLink,
-      coordinates: (s as any).coordinates ?? null,
-      address: (s as any).detailAddress ?? null,
-      ratingBadge: (s as any).ratingBadge ?? null,
-      myBadge: null,
-      homeService: s.providerType === 'doctor',
-      homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
-      availability: (s as any).availability,
-      serviceType: (s as any).serviceType,
-      variants: (s as any).variants || [],
-    } as Unified));
+    const realMapped = source.map((s: any) => {
+      console.log('🔍 ServiceDetailPage Backend Mapping for service:', s.id);
+      console.log('  - Raw backend service data:', s);
+      console.log('  - Main service schedule from backend:');
+      console.log('    - timeLabel:', (s as any).timeLabel);
+      console.log('    - startTime:', (s as any).startTime);
+      console.log('    - endTime:', (s as any).endTime);
+      console.log('    - days:', (s as any).days);
+      console.log('  - hospitalClinicName (backend):', (s as any).hospitalClinicName);
+      console.log('  - Variants from backend:', (s as any).variants);
+      if (Array.isArray((s as any).variants)) {
+        console.log('    - Variant hospitalClinicNames:', ((s as any).variants as any[]).map(v => v?.hospitalClinicName));
+      }
+      
+      const mapped = {
+        id: s.id,
+        name: s.name,
+        description: s.description,
+        price: Number(s.price ?? 0),
+        rating: s?.averageRating ?? s?.rating ?? 0,
+        location: s?.city ?? s?.location ?? "Karachi",
+        provider: s.providerName,
+        image: s.image,
+        type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : s.category === "Surgery" ? "Surgery" : "Treatment",
+        providerType: s.providerType as Unified['providerType'],
+        isReal: true,
+        providerId: (s as any).providerId,
+        totalRatings: (s as any).totalRatings ?? 0,
+        providerPhone: (s as any).providerPhone,
+        googleMapLink: (s as any).googleMapLink,
+        coordinates: (s as any).coordinates ?? null,
+        address: (s as any).detailAddress ?? null,
+        hospitalClinicName: (s as any).hospitalClinicName ?? null,
+        ratingBadge: (s as any).ratingBadge ?? null,
+        myBadge: null,
+        homeService: s.providerType === 'doctor',
+        homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
+        availability: (s as any).availability,
+        serviceType: (s as any).serviceType,
+        variants: (s as any).variants || [],
+        // Include main service schedule fields from backend
+        timeLabel: (s as any).timeLabel || null,
+        startTime: (s as any).startTime || null,
+        endTime: (s as any).endTime || null,
+        days: (s as any).days || null,
+      } as Unified;
+      console.log('✅ ServiceDetailPage mapped service:', {
+        id: mapped.id,
+        name: mapped.name,
+        hospitalClinicName: (mapped as any).hospitalClinicName,
+        variantsHospitalClinicNames: Array.isArray((mapped as any).variants) ? ((mapped as any).variants as any[]).map(v => v?.hospitalClinicName) : null,
+      });
+      return mapped;
+    });
     const mockMapped = mockServices.map((m: MockService) => ({
       id: m.id,
       name: m.name,
@@ -330,13 +385,103 @@ const ServiceDetailPage = () => {
                   <span className="text-muted-foreground">No Image</span>
                 )}
                 
+                {/* Schedule label overlay */}
+                {(() => {
+                  const formatTo12Hour = (time24?: string): string => {
+                    if (!time24) return "";
+                    const [hours, minutes] = time24.split(':');
+                    const hour24 = parseInt(hours, 10);
+                    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+                    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                    return `${hour12}:${minutes} ${ampm}`;
+                  };
+
+                  const getScheduleLabel = () => {
+                    console.log('ServiceDetailPage Debug:', {
+                      activeVariantIndex,
+                      itemSchedule: {
+                        timeLabel: (item as any).timeLabel,
+                        startTime: (item as any).startTime,
+                        endTime: (item as any).endTime,
+                        days: (item as any).days
+                      },
+                      variants: (item as any).variants
+                    });
+
+                    if (activeVariantIndex === 0) {
+                      // Main service schedule - use item directly (not activeSlide to avoid confusion)
+                      const timeLabel = (item as any).timeLabel;
+                      const startTime = (item as any).startTime;
+                      const endTime = (item as any).endTime;
+                      const days = (item as any).days;
+                      
+                      console.log('🔍 Main Service Schedule Debug:');
+                      console.log('  - timeLabel:', timeLabel);
+                      console.log('  - startTime:', startTime);
+                      console.log('  - endTime:', endTime);
+                      console.log('  - days:', days);
+                      console.log('  - Full item object:', item);
+                      
+                      const range = startTime && endTime ? `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}` : "";
+                      const baseLabel = timeLabel ? String(timeLabel) : "";
+                      const label = baseLabel && range ? `${baseLabel} — ${range}` : (baseLabel || range);
+                      const daysStr = days ? String(days) : "";
+                      const parts = [label, daysStr].filter(Boolean);
+                      let result = parts.length ? parts.join(" · ") : null;
+                      
+                      console.log('  - range:', range);
+                      console.log('  - baseLabel:', baseLabel);
+                      console.log('  - label:', label);
+                      console.log('  - daysStr:', daysStr);
+                      console.log('  - parts:', parts);
+                      console.log('  - Final result:', result);
+                      
+                      // NEVER show variant schedule on main service slide - show null instead
+                      if (!result && !timeLabel && !startTime && !endTime && !days) {
+                        console.log('Main service has no schedule data - showing null instead of variant fallback');
+                        result = null;
+                      } else if (timeLabel || startTime || endTime || days) {
+                        console.log('Main service has its own schedule data, not using fallback');
+                      }
+                      
+                      return result;
+                    } else {
+                      // Variant schedule
+                      const variant = (item as any).variants?.[activeVariantIndex - 1];
+                      if (!variant) return null;
+                      const range = variant.startTime && variant.endTime ? `${formatTo12Hour(variant.startTime)} - ${formatTo12Hour(variant.endTime)}` : "";
+                      const baseLabel = variant.timeLabel ? String(variant.timeLabel) : "";
+                      const label = baseLabel && range ? `${baseLabel} — ${range}` : (baseLabel || range);
+                      const days = variant.days ? String(variant.days) : "";
+                      const parts = [label, days].filter(Boolean);
+                      const result = parts.length ? parts.join(" · ") : null;
+                      console.log('Variant schedule result:', result);
+                      return result;
+                    }
+                  };
+
+                  const scheduleLabel = getScheduleLabel();
+                  console.log('Final scheduleLabel:', scheduleLabel);
+                  
+                  // Only show overlay if there's a schedule
+                  return scheduleLabel && (
+                    <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{scheduleLabel}</span>
+                    </div>
+                  );
+                })()}
+
                 {/* Variant slider controls */}
                 {hasVariants && (
                   <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
                     {slides.map((_, index) => (
                       <button
                         key={index}
-                        onClick={() => setActiveVariantIndex(index)}
+                        onClick={() => {
+                          console.log('🔧 ServiceDetailPage: Setting activeVariantIndex to:', index);
+                          setActiveVariantIndex(index);
+                        }}
                         className={`w-2 h-2 rounded-full transition-all ${
                           activeVariantIndex === index
                             ? 'bg-white shadow-lg'
@@ -394,6 +539,31 @@ const ServiceDetailPage = () => {
                       size="sm"
                       layout="column-compact"
                     />
+                    {(() => {
+                      // Prefer active slide; if empty on main slide, fallback to first variant that has a name
+                      const variantsArr: any[] = Array.isArray((item as any)?.variants) ? (item as any).variants : [];
+                      const firstVariantWithName = variantsArr.find(v => v?.hospitalClinicName);
+                      const displayHospitalClinicName = (activeSlide as any).hospitalClinicName
+                        || (item as any).hospitalClinicName
+                        || (firstVariantWithName ? firstVariantWithName.hospitalClinicName : undefined);
+                      return displayHospitalClinicName ? (
+                        <div className="text-sm text-blue-600 font-medium mb-1 flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="16"
+                            height="16"
+                            aria-hidden="true"
+                            className="shrink-0"
+                          >
+                            <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                            <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                            <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                          </svg>
+                          <span className="truncate">{displayHospitalClinicName}</span>
+                        </div>
+                      ) : null;
+                    })()}
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <MapPin className="w-4 h-4" />
                       {activeSlide.location}

@@ -132,11 +132,17 @@ export const createDoctorService = async (req, res) => {
       googleMapLink,
       city,
       detailAddress,
+      hospitalClinicName,
       variants,
       diseases,
       availability,
       serviceType,
       homeDelivery,
+      // Top-level base schedule fields
+      timeLabel,
+      startTime,
+      endTime,
+      days,
     } = req.body || {};
     if (!name) return res.status(400).json({ message: "Name is required" });
     const doc = await DoctorService.create({
@@ -150,6 +156,12 @@ export const createDoctorService = async (req, res) => {
       googleMapLink,
       city,
       detailAddress,
+      hospitalClinicName,
+      // Save base schedule fields when provided
+      ...(timeLabel != null && { timeLabel }),
+      ...(startTime != null && { startTime }),
+      ...(endTime != null && { endTime }),
+      ...(Array.isArray(days) && { days }),
       // If variants provided, store them; else default to [] to keep compatibility
       variants: Array.isArray(variants) ? variants : [],
       diseases: Array.isArray(diseases) ? diseases : [],
@@ -199,6 +211,14 @@ export const updateDoctorService = async (req, res) => {
           ...(updates.detailAddress != null && {
             detailAddress: updates.detailAddress,
           }),
+          ...(updates.hospitalClinicName != null && {
+            hospitalClinicName: updates.hospitalClinicName,
+          }),
+          // Base schedule fields
+          ...(updates.timeLabel != null && { timeLabel: updates.timeLabel }),
+          ...(updates.startTime != null && { startTime: updates.startTime }),
+          ...(updates.endTime != null && { endTime: updates.endTime }),
+          ...(Array.isArray(updates.days) && { days: updates.days }),
           // Allow full variants replacement when provided
           ...(Array.isArray(updates.variants) && { variants: updates.variants }),
           // Allow diseases replacement when provided
