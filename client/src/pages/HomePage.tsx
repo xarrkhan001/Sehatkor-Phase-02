@@ -127,33 +127,42 @@ const HomePage = () => {
       icon: Stethoscope,
       title: "Medical Treatments",
       description: "Find doctors and clinics for all types of medical treatments",
-      color: "text-blue-700",
-      bgGradient: "bg-gradient-to-br from-blue-100 via-blue-200 to-indigo-200",
-      hoverGradient: "hover:from-blue-200 hover:via-blue-250 hover:to-indigo-250"
+      color: "text-blue-600",
+      bgGradient: "bg-gradient-to-br from-blue-200 via-sky-200 to-indigo-300",
+      hoverGradient: "hover:from-blue-300 hover:via-sky-300 hover:to-indigo-400"
     },
     {
       icon: TestTube,
       title: "Lab Tests",
       description: "Book lab tests and get results delivered to your home",
-      color: "text-emerald-700",
-      bgGradient: "bg-gradient-to-br from-emerald-100 via-green-200 to-teal-200",
-      hoverGradient: "hover:from-emerald-200 hover:via-green-250 hover:to-teal-250"
+      color: "text-emerald-600",
+      bgGradient: "bg-gradient-to-br from-emerald-200 via-teal-200 to-green-300",
+      hoverGradient: "hover:from-emerald-300 hover:via-teal-300 hover:to-green-400"
     },
     {
       icon: Pill,
       title: "Medicines",
       description: "Order medicines online with home delivery options",
-      color: "text-purple-700",
-      bgGradient: "bg-gradient-to-br from-purple-100 via-violet-200 to-indigo-200",
-      hoverGradient: "hover:from-purple-200 hover:via-violet-250 hover:to-indigo-250"
+      color: "text-purple-600",
+      bgGradient: "bg-gradient-to-br from-violet-200 via-purple-200 to-indigo-300",
+      hoverGradient: "hover:from-violet-300 hover:via-purple-300 hover:to-indigo-400"
     },
     {
       icon: Scissors,
       title: "Surgeries",
       description: "Find qualified surgeons and surgical facilities",
-      color: "text-orange-700",
-      bgGradient: "bg-gradient-to-br from-orange-100 via-amber-200 to-yellow-200",
-      hoverGradient: "hover:from-orange-200 hover:via-amber-250 hover:to-yellow-250"
+      color: "text-orange-600",
+      bgGradient: "bg-gradient-to-br from-amber-200 via-orange-200 to-yellow-300",
+      hoverGradient: "hover:from-amber-300 hover:via-orange-300 hover:to-yellow-400"
+    },
+    {
+      icon: Heart,
+      title: "Health Checkups",
+      description: "Comprehensive health screenings and preventive care",
+      color: "text-red-600",
+      bgGradient: "bg-gradient-to-br from-zinc-200 via-slate-200 to-rose-300",
+      hoverGradient: "hover:from-zinc-300 hover:via-slate-300 hover:to-rose-400",
+      isDashed: true
     }
   ];
 
@@ -313,40 +322,108 @@ const HomePage = () => {
       </section>
 
       {/* Services Section */}
-      <section className="py-16 sm:py-20 bg-muted/30">
+      <section className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Our Services</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-800">Our Services</h2>
             <p className="text-sm sm:text-base lg:text-xl text-muted-foreground max-w-2xl mx-auto">
               Comprehensive healthcare services to meet all your medical needs
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {services.map((service, index) => {
-              const Icon = service.icon;
-              return (
-                <Card key={index} className={`group relative overflow-hidden border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 ${service.bgGradient} ${service.hoverGradient}`}>
-                  {/* Subtle overlay for depth */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-gray-50/20 pointer-events-none"></div>
-                  
-                  <CardHeader className="relative text-center pb-3 sm:pb-4 pt-6">
-                    <div className="mx-auto mb-4 w-16 h-16 sm:w-20 sm:h-20 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm border border-white/60 group-hover:scale-105 transition-transform duration-300">
-                      <Icon className={`w-8 h-8 sm:w-10 sm:h-10 ${service.color}`} />
-                    </div>
-                    <CardTitle className="text-xl sm:text-2xl font-semibold text-gray-800">{service.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="relative text-center pb-6">
-                    <CardDescription className="text-sm sm:text-base leading-relaxed text-gray-600 font-normal">
-                      {service.description}
-                    </CardDescription>
-                  </CardContent>
-                  
-                  {/* Subtle shine effect on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none"></div>
-                </Card>
-              );
-            })}
+          {/* 5-Card Layout matching screenshot */}
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+              
+              {/* Left Column - 2 stacked cards */}
+              <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+                {services.slice(0, 2).map((service, index) => {
+                  const Icon = service.icon;
+                  return (
+                    <Card key={index} className={`group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl ring-1 ring-black/5 hover:ring-black/10 transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 ${service.bgGradient} ${service.hoverGradient} min-h-[140px] sm:min-h-[160px]`}>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent pointer-events-none"></div>
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-white/20 rounded-full -translate-y-8 translate-x-8 blur-xl"></div>
+                      <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/15 rounded-full translate-y-6 -translate-x-6 blur-lg"></div>
+                      
+                      <CardHeader className="relative text-center pb-2 pt-3">
+                        <div className="mx-auto mb-2 w-12 h-12 sm:w-14 sm:h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border-2 border-white/70 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${service.color} group-hover:scale-110 transition-transform duration-300`} />
+                        </div>
+                        <CardTitle className="text-sm sm:text-base lg:text-lg font-bold text-gray-800 mb-1">{service.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="relative text-center pb-3 px-4">
+                        <CardDescription className="text-xs leading-relaxed text-gray-700 font-medium">
+                          {service.description}
+                        </CardDescription>
+                      </CardContent>
+                      
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none"></div>
+                      <div className={`absolute bottom-0 left-0 right-0 h-1 ${service.color.replace('text-', 'bg-').replace('-700', '-400')} opacity-60 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Center Column - Large card */}
+              <div className="lg:col-span-6">
+                {(() => {
+                  const service = services[2]; // Medicines card
+                  const Icon = service.icon;
+                  return (
+                    <Card className={`group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl ring-1 ring-black/5 hover:ring-black/10 transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 ${service.bgGradient} ${service.hoverGradient} min-h-[300px] sm:min-h-[340px] h-full`}>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent pointer-events-none"></div>
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12 blur-xl"></div>
+                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/15 rounded-full translate-y-10 -translate-x-10 blur-lg"></div>
+                      
+                      <CardHeader className="relative text-center pb-4 pt-8">
+                        <div className="mx-auto mb-6 w-20 h-20 sm:w-24 sm:h-24 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border-2 border-white/70 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                          <Icon className={`w-10 h-10 sm:w-12 sm:h-12 ${service.color} group-hover:scale-110 transition-transform duration-300`} />
+                        </div>
+                        <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-3">{service.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="relative text-center pb-8 px-8">
+                        <CardDescription className="text-sm sm:text-base lg:text-lg leading-relaxed text-gray-700 font-medium">
+                          {service.description}
+                        </CardDescription>
+                      </CardContent>
+                      
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none"></div>
+                      <div className={`absolute bottom-0 left-0 right-0 h-1 ${service.color.replace('text-', 'bg-').replace('-700', '-400')} opacity-60 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                    </Card>
+                  );
+                })()}
+              </div>
+
+              {/* Right Column - 2 cards (one regular, one dashed) */}
+              <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+                {services.slice(3).map((service, index) => {
+                  const Icon = service.icon;
+                  const isDashed = service.isDashed;
+                  return (
+                    <Card key={index + 3} className={`group relative overflow-hidden ${isDashed ? 'border-2 border-dashed border-gray-400 bg-gray-50/50' : 'border-0 shadow-lg ring-1 ring-black/5 hover:ring-black/10'} hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 ${!isDashed ? service.bgGradient + ' ' + service.hoverGradient : 'hover:bg-gray-100/70'} min-h-[140px] sm:min-h-[160px]`}>
+                      {!isDashed && <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent pointer-events-none"></div>}
+                      {!isDashed && <div className="absolute top-0 right-0 w-16 h-16 bg-white/20 rounded-full -translate-y-8 translate-x-8 blur-xl"></div>}
+                      {!isDashed && <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/15 rounded-full translate-y-6 -translate-x-6 blur-lg"></div>}
+                      
+                      <CardHeader className="relative text-center pb-2 pt-3">
+                        <div className={`mx-auto mb-2 w-12 h-12 sm:w-14 sm:h-14 ${isDashed ? 'bg-white border-2 border-dashed border-gray-400' : 'bg-white/90 backdrop-blur-sm border-2 border-white/70'} rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${service.color} group-hover:scale-110 transition-transform duration-300`} />
+                        </div>
+                        <CardTitle className={`text-sm sm:text-base lg:text-lg font-bold ${isDashed ? 'text-gray-600' : 'text-gray-800'} mb-1`}>{service.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="relative text-center pb-3 px-4">
+                        <CardDescription className={`text-xs leading-relaxed ${isDashed ? 'text-gray-500' : 'text-gray-700'} font-medium`}>
+                          {service.description}
+                        </CardDescription>
+                      </CardContent>
+                      
+                      {!isDashed && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none"></div>}
+                      {!isDashed && <div className={`absolute bottom-0 left-0 right-0 h-1 ${service.color.replace('text-', 'bg-').replace('-700', '-400')} opacity-60 group-hover:opacity-100 transition-opacity duration-300`}></div>}
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </section>
