@@ -32,6 +32,8 @@ type Unified = {
   provider: string;
   image?: string;
   type: "Treatment" | "Medicine" | "Test" | "Surgery";
+  // Real pharmacy category (e.g., Tablets, Capsules) when providerType is pharmacy
+  pharmacyCategory?: string;
   createdAt?: string;
   updatedAt?: string;
   ratingBadge?: string | null;
@@ -146,6 +148,8 @@ const CompareExplorer = () => {
             provider: resolvedProviderName,
             image: (s as any)?.image,
             type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : (s as any)?.category === "Surgery" ? "Surgery" : "Treatment",
+            // Preserve real pharmacy category
+            pharmacyCategory: (s as any)?.providerType === 'pharmacy' ? ((s as any)?.category || undefined) : undefined,
             createdAt: (s as any)?.createdAt,
             updatedAt: (s as any)?.updatedAt,
             ratingBadge: (s as any)?.ratingBadge || null,
@@ -697,7 +701,9 @@ const CompareExplorer = () => {
                             {getDisplayPrice(item) === 0 ? 'Free' : `PKR ${getDisplayPrice(item).toLocaleString()}`}
                           </div>
                           <Badge variant="outline" className="text-xs px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100">
-                            {item.type}
+                            {(item._providerType === 'pharmacy' && item.pharmacyCategory)
+                              ? item.pharmacyCategory
+                              : item.type}
                           </Badge>
                         </div>
                       </div>

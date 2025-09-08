@@ -772,8 +772,8 @@ const ProviderProfilePage = () => {
                             <p className="text-sm text-gray-500 font-medium truncate max-w-[12rem] md:max-w-[16rem]">
                               {providerUser?.name || service.providerName}
                             </p>
-                            <Badge className="bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md">
-                              {(service as any).category || 'Service'}
+                            <Badge className={(service as any).providerType === 'pharmacy' ? "text-[10px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100" : "bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md"}>
+                              {(service as any).providerType === 'pharmacy' ? ((service as any).category || 'Medicine') : ((service as any).category || 'Service')}
                             </Badge>
                           </div>
                         </div>
@@ -790,8 +790,8 @@ const ProviderProfilePage = () => {
                           <User className="w-3 h-3 mr-1" />
                           {meta.label}
                         </Badge>
-                        <Badge className="bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md">
-                          {(service as any).category || 'Service'}
+                        <Badge className={(service as any).providerType === 'pharmacy' ? "text-[10px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100" : "bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md"}>
+                          {(service as any).providerType === 'pharmacy' ? ((service as any).category || 'Medicine') : ((service as any).category || 'Service')}
                         </Badge>
                       </div>
                       <div className="text-right shrink-0">

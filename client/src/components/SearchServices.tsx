@@ -17,6 +17,7 @@ interface SearchService {
   description: string;
   icon: string; // emoji fallback
   image?: string;
+  pharmacyCategory?: string; // Real pharmacy category like Tablets/Capsules for pharmacy services
   variants?: Array<{
     imageUrl?: string;
     price?: number;
@@ -134,6 +135,8 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       name: s.name,
       description: s.description,
       category: mapServiceToSearchCategory(s),
+      // Keep real pharmacy category separately for badge display
+      pharmacyCategory: s.providerType === 'pharmacy' ? ((s as any).category || undefined) : undefined,
       icon: getServiceIcon(s),
       image: (s as any).image,
       variants: Array.isArray((s as any).variants) ? (s as any).variants : [],
@@ -563,7 +566,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                       <div className="flex items-center gap-2 min-w-0">
                         <h4 className="font-medium text-gray-900 text-sm truncate" title={service.name}>{service.name}</h4>
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
-                          {service.category}
+                          {(service.providerType === 'pharmacy' && service.pharmacyCategory)
+                            ? service.pharmacyCategory
+                            : service.category}
                         </span>
                         {(() => {
                           // Get variant-aware availability
