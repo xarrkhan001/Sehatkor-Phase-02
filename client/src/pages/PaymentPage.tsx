@@ -10,11 +10,11 @@ import { toast } from 'sonner';
 import { CreditCard, Smartphone, ArrowLeft, Stethoscope, MapPin, Phone, Clock, DollarSign, CheckCircle, User, Mail, ShieldCheck, Lock } from 'lucide-react';
 
 interface ServiceData {
-  serviceId: string;
+  serviceId?: string; // optional for donations
   serviceName: string;
   providerId: string;
   providerName: string;
-  providerType: 'doctor' | 'hospital' | 'lab' | 'pharmacy' | 'clinic' | 'laboratory';
+  providerType: 'doctor' | 'hospital' | 'lab' | 'pharmacy' | 'clinic' | 'laboratory' | 'admin';
   price?: number;
   currency?: string;
   location?: string;
@@ -38,6 +38,7 @@ const PaymentPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const serviceData = location.state as ServiceData;
+  const isDonation = serviceData?.serviceId === 'donation' || serviceData?.providerType === 'admin';
   // Normalize price from state (number or string). Fallback to 0 to always render a value.
   const _rawPrice: any = serviceData?.price as any;
   const _numPrice = (typeof _rawPrice === 'number' && !isNaN(_rawPrice)) ? _rawPrice : Number(_rawPrice);
@@ -77,45 +78,80 @@ const PaymentPage = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(apiUrl('/api/bookings'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
-        },
-        body: JSON.stringify({
-          patientId: user.id,
-          patientName: user.name,
-          patientContact: patientContact,
-          providerId: serviceData.providerId,
-          providerName: serviceData.providerName,
-          providerType: serviceData.providerType,
-          serviceId: serviceData.serviceId,
-          serviceName: serviceData.serviceName,
-          price: displayPrice,
-          currency,
-          paymentMethod,
-          paymentNumber,
-          // Variant context
-          variantIndex: serviceData.variantIndex,
-          variantLabel: serviceData.variantLabel,
-          variantTimeRange: serviceData.variantTimeRange,
-          // Snapshot
-          image: serviceData.image,
-          location: serviceData.location,
-          phone: serviceData.phone,
-        }),
-      });
+      const response = await (async () => {
+        if (isDonation) {
+          // Directly create a payment record for Admin (no booking)
+          return fetch(apiUrl('/api/payments'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+            },
+            body: JSON.stringify({
+              // No bookingId for donation
+              patientId: user.id,
+              patientName: user.name,
+              patientContact: patientContact,
+              // Provider set to Admin; omit providerId to avoid invalid ObjectId
+              providerName: serviceData.providerName || 'Sehat Kor Admin',
+              providerType: 'admin',
+              // Service details optional
+              // serviceId omitted for donation
+              serviceName: serviceData.serviceName || 'Donation to Sehat Kor Foundation',
+              amount: displayPrice,
+              currency,
+              paymentMethod,
+              paymentNumber,
+              metadata: {
+                isDonation: true,
+                image: serviceData.image,
+                location: serviceData.location,
+                phone: serviceData.phone,
+              },
+            }),
+          });
+        }
+        // Default flow: create booking
+        return fetch(apiUrl('/api/bookings'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+          },
+          body: JSON.stringify({
+            patientId: user.id,
+            patientName: user.name,
+            patientContact: patientContact,
+            providerId: serviceData.providerId,
+            providerName: serviceData.providerName,
+            providerType: serviceData.providerType,
+            serviceId: serviceData.serviceId,
+            serviceName: serviceData.serviceName,
+            price: displayPrice,
+            currency,
+            paymentMethod,
+            paymentNumber,
+            // Variant context
+            variantIndex: serviceData.variantIndex,
+            variantLabel: serviceData.variantLabel,
+            variantTimeRange: serviceData.variantTimeRange,
+            // Snapshot
+            image: serviceData.image,
+            location: serviceData.location,
+            phone: serviceData.phone,
+          }),
+        });
+      })();
 
       if (response.ok) {
-        toast.success('Booking confirmed successfully!');
+        toast.success(isDonation ? 'Donation recorded successfully!' : 'Booking confirmed successfully!');
         navigate('/dashboard');
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Payment failed');
+        toast.error(error.message || (isDonation ? 'Donation failed' : 'Payment failed'));
       }
     } catch (error) {
-      toast.error('Payment failed. Please try again.');
+      toast.error(isDonation ? 'Donation failed. Please try again.' : 'Payment failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -140,8 +176,8 @@ const PaymentPage = () => {
               <Stethoscope className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Confirm Booking</h1>
-              <p className="text-gray-500 text-sm">Complete your service booking securely</p>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">{isDonation ? 'Confirm Donation' : 'Confirm Booking'}</h1>
+              <p className="text-gray-500 text-sm">{isDonation ? 'Complete your donation securely' : 'Complete your service booking securely'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -260,13 +296,14 @@ const PaymentPage = () => {
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
-                    <span>Processing Payment...</span>
+                    <span>Processing {isDonation ? 'Donation' : 'Payment'}...</span>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5" />
                     <span>
-                      Confirm & Pay {
+                      {isDonation ? 'Confirm & Donate ' : 'Confirm & Pay '}
+                      {
                         displayPrice === 0
                           ? 'Free'
                           : `PKR ${displayPrice.toLocaleString()}`
@@ -290,7 +327,7 @@ const PaymentPage = () => {
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                     <CheckCircle className="w-5 h-5 text-blue-600" />
                   </div>
-                  Booking Summary
+                  {isDonation ? 'Donation Summary' : 'Booking Summary'}
                 </h2>
                 
                 <div className="space-y-6">

@@ -2,25 +2,25 @@ import mongoose from "mongoose";
 
 const PaymentSchema = new mongoose.Schema(
   {
-    // Booking reference
-    bookingId: { type: mongoose.Schema.Types.ObjectId, ref: "Booking", required: true },
+    // Booking reference (optional for donations)
+    bookingId: { type: mongoose.Schema.Types.ObjectId, ref: "Booking" },
     
     // Patient info
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     patientName: { type: String, required: true },
     patientContact: { type: String, required: true },
     
-    // Provider info
-    providerId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    // Provider info (optional for donations)
+    providerId: { type: mongoose.Schema.Types.ObjectId },
     providerName: { type: String, required: true },
     providerType: {
       type: String,
-      enum: ["doctor", "hospital", "lab", "pharmacy"],
+      enum: ["doctor", "hospital", "lab", "pharmacy", "admin"],
       required: true,
     },
     
-    // Service info
-    serviceId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    // Service info (optional for donations)
+    serviceId: { type: mongoose.Schema.Types.ObjectId },
     serviceName: { type: String, required: true },
     
     // Payment details
@@ -59,9 +59,12 @@ const PaymentSchema = new mongoose.Schema(
       variantTimeRange: { type: String },
       image: { type: String },
       location: { type: String },
-      phone: { type: String }
+      phone: { type: String },
+      // Donation flags
+      isDonation: { type: Boolean, default: false },
+      donationNote: { type: String }
     },
-
+    
     // Soft delete for provider wallet (hide from provider's Payment History list)
     deletedForProvider: { type: Boolean, default: false },
     deletedAt: { type: Date },
