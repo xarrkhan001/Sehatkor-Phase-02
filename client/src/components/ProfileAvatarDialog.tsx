@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { uploadFile, updateMyProfile } from '@/lib/chatApi';
+import { uploadProfileImage } from '@/lib/chatApi';
 import { useAuth } from '@/contexts/AuthContext';
 
 type Props = {
@@ -32,12 +32,11 @@ const ProfileAvatarDialog: React.FC<Props> = ({ open, onOpenChange }) => {
     if (!selectedFile) return;
     setSaving(true);
     try {
-      // Upload the original full image without cropping
-      const uploaded = await uploadFile(selectedFile);
-      const resp = await updateMyProfile({ avatar: uploaded.url });
-      const updatedUser = resp?.user || resp;
-      if (updatedUser?.avatar) {
-        updateCurrentUser({ avatar: updatedUser.avatar });
+      // Use profile-specific upload which also removes the previous image server-side
+      const uploaded = await uploadProfileImage(selectedFile);
+      const newUrl = uploaded?.url || uploaded?.avatar;
+      if (newUrl) {
+        updateCurrentUser({ avatar: newUrl });
       }
       onOpenChange(false);
       setImageDataUrl(null);

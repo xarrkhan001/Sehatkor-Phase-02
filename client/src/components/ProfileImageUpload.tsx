@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Camera, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+// Replace automatically removes the old image server-side
 
 interface ProfileImageUploadProps {
   currentImage?: string;
@@ -28,6 +29,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
   const [preview, setPreview] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const { user, updateUser } = useAuth();
+  const hasImage = Boolean(currentImage || user?.avatar);
 
   const sizeClasses = {
     sm: 'h-10 w-10',
@@ -86,7 +88,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Profile image updated successfully');
+        toast.success(hasImage ? 'Profile image replaced successfully' : 'Profile image added successfully');
         
         // Update user context
         if (data.user && updateUser) {
@@ -119,6 +121,8 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
     setIsOpen(false);
   };
 
+  // No explicit remove button; replacing will automatically remove old image on server
+
   return (
     <div className="relative inline-block">
       <Avatar className={`${sizeClasses[size]} ring-2 ring-white shadow-sm`}>
@@ -141,9 +145,11 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Update Profile Image</DialogTitle>
+              <DialogTitle>{hasImage ? 'Replace Profile Image' : 'Add Profile Image'}</DialogTitle>
               <DialogDescription>
-                Choose a new profile image. Maximum file size is 5MB.
+                {hasImage
+                  ? 'Choose a new profile image. The previous one will be replaced automatically. Maximum file size is 5MB.'
+                  : 'Add your profile image. Maximum file size is 5MB.'}
               </DialogDescription>
             </DialogHeader>
             
@@ -167,6 +173,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                   className="cursor-pointer"
                 />
               </div>
+              {/* No explicit remove action in UI; replace is sufficient */}
               
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={handleCancel} disabled={isUploading}>
@@ -180,12 +187,12 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
                   {isUploading ? (
                     <div className="flex items-center space-x-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Uploading...</span>
+                      <span>{hasImage ? 'Replacing...' : 'Adding...'}</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
                       <Upload className="h-4 w-4" />
-                      <span>Upload</span>
+                      <span>{hasImage ? 'Replace' : 'Add'}</span>
                     </div>
                   )}
                 </Button>
