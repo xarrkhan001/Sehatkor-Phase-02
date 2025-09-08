@@ -60,6 +60,9 @@ const SearchPage = () => {
   const [priceFilter, setPriceFilter] = useState("all");
   // New: Availability filter (All, Online, Physical, Online and Physical)
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
+  // New: All Categories hierarchical filter (Doctors/Hospitals/Labs/Pharmacies and sub-categories)
+  // Encoded values: "all" | "doctor" | "doctor:Consultation" | "clinic:Surgery" | "laboratory:Blood Test" | "pharmacy:Tablets" etc.
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   // Local states for manual custom price inputs (allow typing, including empty values)
   const [customFrom, setCustomFrom] = useState<string>("");
@@ -527,7 +530,26 @@ const SearchPage = () => {
       const matchesAvailability = availabilityFilter === 'all'
         || (service.availability && String(service.availability) === availabilityFilter);
 
-      return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesRating && matchesHomeService && matchesAvailability;
+      // New: Hierarchical All Categories filter
+      let matchesAllCategory = true;
+      if (categoryFilter !== 'all') {
+        const [type, sub] = categoryFilter.split(":");
+        const svcType = String((service as any)._providerType || '').toLowerCase();
+        if (!type || svcType !== type.toLowerCase()) {
+          matchesAllCategory = false;
+        } else if (sub) {
+          // Determine the service's subcategory based on provider type
+          let svcCategory = '';
+          if (svcType === 'pharmacy') {
+            svcCategory = String(((service as any).pharmacyCategory ?? service.category) || '');
+          } else {
+            svcCategory = String((service as any).category ?? service.type ?? '');
+          }
+          matchesAllCategory = svcCategory === sub;
+        }
+      }
+
+      return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesRating && matchesHomeService && matchesAvailability && matchesAllCategory;
     });
 
     // Sort so that highlighted service appears at the top, then real services before mock services
@@ -559,7 +581,7 @@ const SearchPage = () => {
       });
     }
     return filtered;
-  }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, availabilityFilter, highlightedService, allServices, user?.id]);
+  }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, availabilityFilter, categoryFilter, highlightedService, allServices, user?.id]);
 
   const servicesToDisplay = useMemo(() => {
     return filteredServices.slice(0, visibleCount);
@@ -639,6 +661,7 @@ const SearchPage = () => {
     setMinRating(0);
     setHomeServiceOnly(false);
     setAvailabilityFilter("all");
+    setCategoryFilter("all");
   };
 
   // Get emoji for service type
@@ -765,6 +788,46 @@ const SearchPage = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* All Categories (hierarchical) */}
+                <div>
+                  <Label className="text-base font-medium">All Categories</Label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {/* Doctors */}
+                      <SelectItem value="doctor" className="font-semibold text-gray-800">Doctors (All)</SelectItem>
+                      <SelectItem value="doctor:Consultation" className="pl-4 text-gray-600">• Consultation</SelectItem>
+                      <SelectItem value="doctor:Check-up" className="pl-4 text-gray-600">• Check-up</SelectItem>
+                      <SelectItem value="doctor:Treatment" className="pl-4 text-gray-600">• Treatment</SelectItem>
+                      <SelectItem value="doctor:Surgery" className="pl-4 text-gray-600">• Surgery</SelectItem>
+                      <SelectItem value="doctor:Therapy" className="pl-4 text-gray-600">• Therapy</SelectItem>
+                      <SelectItem value="doctor:Diagnosis" className="pl-4 text-gray-600">• Diagnosis</SelectItem>
+                      {/* Hospitals/Clinics */}
+                      <SelectItem value="clinic" className="font-semibold text-gray-800">Hospitals (All)</SelectItem>
+                      <SelectItem value="clinic:Treatment" className="pl-4 text-gray-600">• Treatment</SelectItem>
+                      <SelectItem value="clinic:Surgery" className="pl-4 text-gray-600">• Surgery</SelectItem>
+                      {/* Labs */}
+                      <SelectItem value="laboratory" className="font-semibold text-gray-800">Labs (All)</SelectItem>
+                      <SelectItem value="laboratory:Blood Test" className="pl-4 text-gray-600">• Blood Test</SelectItem>
+                      <SelectItem value="laboratory:Urine Test" className="pl-4 text-gray-600">• Urine Test</SelectItem>
+                      <SelectItem value="laboratory:X-Ray" className="pl-4 text-gray-600">• X-Ray</SelectItem>
+                      <SelectItem value="laboratory:MRI" className="pl-4 text-gray-600">• MRI</SelectItem>
+                      <SelectItem value="laboratory:CT Scan" className="pl-4 text-gray-600">• CT Scan</SelectItem>
+                      <SelectItem value="laboratory:Ultrasound" className="pl-4 text-gray-600">• Ultrasound</SelectItem>
+                      {/* Pharmacies */}
+                      <SelectItem value="pharmacy" className="font-semibold text-gray-800">Pharmacies (All)</SelectItem>
+                      <SelectItem value="pharmacy:Tablets" className="pl-4 text-gray-600">• Tablets</SelectItem>
+                      <SelectItem value="pharmacy:Capsules" className="pl-4 text-gray-600">• Capsules</SelectItem>
+                      <SelectItem value="pharmacy:Syrups" className="pl-4 text-gray-600">• Syrups</SelectItem>
+                      <SelectItem value="pharmacy:Injections" className="pl-4 text-gray-600">• Injections</SelectItem>
+                      <SelectItem value="pharmacy:Ointments" className="pl-4 text-gray-600">• Ointments</SelectItem>
+                      <SelectItem value="pharmacy:Drops" className="pl-4 text-gray-600">• Drops</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 {/* Service Type (backend serviceType) */}
                 <div>
                   <Label className="text-base font-medium">Service Type</Label>
@@ -783,7 +846,6 @@ const SearchPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 {/* Location */}
                 <div>
                   <Label className="text-base font-medium">Location</Label>
