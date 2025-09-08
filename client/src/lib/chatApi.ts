@@ -160,4 +160,19 @@ export async function updateMyProfile(updates: Record<string, any>) {
   return res.json();
 }
 
+export async function removeProfileImage() {
+  const token = localStorage.getItem('sehatkor_token');
+  const res = await fetch('http://localhost:4000/api/profile/image', {
+    method: 'DELETE',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+  let data: any = {};
+  try { data = await res.json(); } catch {}
+  if (!res.ok || data?.success === false) {
+    const msg = data?.message || 'Failed to remove profile image';
+    throw new Error(msg);
+  }
+  return data;
+}
+
 

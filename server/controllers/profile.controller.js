@@ -155,3 +155,50 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error updating profile' });
   }
 };
+
+// Remove current profile image and clear avatar field
+export const removeProfileImage = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // If avatar exists and is a Cloudinary URL, attempt to delete it
+    if (user.avatar) {
+      try {
+        if (user.avatar.includes('res.cloudinary.com') || user.avatar.includes('cloudinary')) {
+          const publicId = user.avatar.split('/').pop().split('.')[0];
+          await cloudinary.uploader.destroy(`sehatkor/profiles/${publicId}`);
+        }
+      } catch (e) {
+        // Log but do not fail removal because of Cloudinary issues
+        console.warn('Cloudinary delete failed:', e?.message || e);
+      }
+    }
+
+    user.avatar = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile image removed successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        isVerified: user.isVerified
+      }
+    });
+  } catch (err) {
+    console.error('Remove profile image error:', err);
+    res.status(500).json({ success: false, message: 'Error removing profile image', error: err.message });
+  }
+};
