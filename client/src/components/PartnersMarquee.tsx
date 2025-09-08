@@ -87,6 +87,8 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
     gradientTo: gradients[i % gradients.length][1]
   }));
   const normalized = normalizePartners(priorityList.length > 0 ? priorityList : partners);
+  // If partners are coming from admin panel (remote), hide text labels and show only logos
+  const hideNames = priorityList.length > 0;
   
   // Animation duration based on speed prop
   const animationDuration = {
@@ -106,9 +108,9 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
 
       {/* Full-width marquee bar attached to viewport edges */}
       <div className="w-full overflow-hidden">
-        <div className="relative overflow-hidden rounded-none border-y shadow-sm bg-gray-50">
-          <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-gray-50 to-transparent z-10" />
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-gray-50 to-transparent z-10" />
+        <div className="relative overflow-hidden rounded-none shadow-sm bg-white">
+          <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-white to-transparent z-10" />
 
           <div 
             className="flex items-center py-9 sm:py-11 w-max will-change-transform"
@@ -118,15 +120,16 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
             <div className="flex items-center gap-8 sm:gap-10">
               {normalized.map((p, idx) => (
                 <div key={`${p.name}-${idx}`} className="shrink-0 flex items-center gap-5 sm:gap-6 px-4 sm:px-5 py-2 sm:py-3">
-                  <div className={`relative overflow-hidden h-16 w-16 sm:h-20 sm:w-20 rounded-full grid place-items-center ring-2 ring-white/70 shadow-lg bg-gradient-to-tr ${p.gradientFrom ?? "from-sky-500"} ${p.gradientTo ?? "to-blue-500"}`}>
-                    <div className="pointer-events-none absolute inset-0 opacity-25 bg-[radial-gradient(60%_60%_at_30%_30%,white,transparent)]" />
+                  <div className={`relative h-24 w-24 sm:h-28 sm:w-28 grid place-items-center`}>
                     {p.logoUrl ? (
-                      <img src={p.logoUrl} alt={p.name} className="absolute inset-0 h-full w-full object-contain p-2" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                      <img src={p.logoUrl} alt={p.name} className="h-full w-full object-contain p-1" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     ) : (
-                      <div className="relative z-10 drop-shadow-md">{getIconFor(p.name)}</div>
+                      <div className="relative">{getIconFor(p.name)}</div>
                     )}
                   </div>
-                  <span className="whitespace-nowrap text-base sm:text-2xl font-semibold tracking-wide text-foreground/90">{p.name}</span>
+                  {!hideNames && (
+                    <span className="whitespace-nowrap text-base sm:text-2xl font-semibold tracking-wide text-foreground/90">{p.name}</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -134,15 +137,16 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
             <div className="flex items-center gap-8 sm:gap-10" aria-hidden="true">
               {normalized.map((p, idx) => (
                 <div key={`dup-${p.name}-${idx}`} className="shrink-0 flex items-center gap-5 sm:gap-6 px-4 sm:px-5 py-2 sm:py-3">
-                  <div className={`relative overflow-hidden h-16 w-16 sm:h-20 sm:w-20 rounded-full grid place-items-center ring-2 ring-white/70 shadow-lg bg-gradient-to-tr ${p.gradientFrom ?? "from-sky-500"} ${p.gradientTo ?? "to-blue-500"}`}>
-                    <div className="pointer-events-none absolute inset-0 opacity-25 bg-[radial-gradient(60%_60%_at_30%_30%,white,transparent)]" />
+                  <div className={`relative h-24 w-24 sm:h-28 sm:w-28 grid place-items-center`}>
                     {p.logoUrl ? (
-                      <img src={p.logoUrl} alt="" className="absolute inset-0 h-full w-full object-contain p-2" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                      <img src={p.logoUrl} alt="" className="h-full w-full object-contain p-1" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     ) : (
-                      <div className="relative z-10 drop-shadow-md">{getIconFor(p.name)}</div>
+                      <div className="relative">{getIconFor(p.name)}</div>
                     )}
                   </div>
-                  <span className="whitespace-nowrap text-base sm:text-2xl font-semibold tracking-wide text-foreground/90">{p.name}</span>
+                  {!hideNames && (
+                    <span className="whitespace-nowrap text-base sm:text-2xl font-semibold tracking-wide text-foreground/90">{p.name}</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -162,7 +166,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
 
 const getIconFor = (name: string) => {
   const lower = name.toLowerCase();
-  const commonProps = { className: "text-white w-7 h-7 sm:w-10 sm:h-10" } as const;
+  const commonProps = { className: "text-gray-600 w-9 h-9 sm:w-12 sm:h-12" } as const;
   if (lower.includes("insur")) return <ShieldCheck {...commonProps} />;
   if (lower.includes("zameen") || lower.includes("graana")) return <Home {...commonProps} />;
   if (lower.includes("tcs")) return <Truck {...commonProps} />;

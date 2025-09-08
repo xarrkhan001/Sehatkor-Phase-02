@@ -56,7 +56,7 @@ const AddPartnerDialog = memo(function AddPartnerDialog({
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!name.trim() || !logo) return;
+    if (!logo) return;
     await onSave({ name: name.trim(), logo });
     // reset after successful save
     setName("");
@@ -73,11 +73,11 @@ const AddPartnerDialog = memo(function AddPartnerDialog({
       <DialogContent onOpenAutoFocus={(e)=>e.preventDefault()} onPointerDownOutside={(e)=>e.preventDefault()} onInteractOutside={(e)=>e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Add Partner</DialogTitle>
-          <DialogDescription>Provide company name and PNG logo.</DialogDescription>
+          <DialogDescription>Upload PNG logo. Company name is optional.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Company Name</label>
+            <label className="text-sm font-medium">Company Name (optional)</label>
             <UiInput autoComplete="off" value={name} onChange={(e:any)=>setName(e.target.value)} placeholder="e.g., TCS" />
           </div>
           <div className="space-y-2">
@@ -243,7 +243,7 @@ const AdminPanel = () => {
     <Card className="shadow-sm">
       <CardHeader>
         <CardTitle>Marquee Partners</CardTitle>
-        <CardDescription>Upload PNG logos with company names. Stored on Cloudinary.</CardDescription>
+        <CardDescription>Upload partner PNG logos. Company name is optional. Stored on Cloudinary.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex justify-between items-center" id="partners-section">
@@ -289,9 +289,9 @@ const AdminPanel = () => {
   };
 
   const handleCreatePartner = async (name: string, logo: File) => {
-    if (!name || !logo) return toast({ title: 'Missing', description: 'Name and PNG logo required', variant: 'destructive' });
+    if (!logo) return toast({ title: 'Missing', description: 'PNG logo is required', variant: 'destructive' });
     const fd = new FormData();
-    fd.append('name', name);
+    if (name && name.trim()) fd.append('name', name.trim());
     fd.append('logo', logo);
     const res = await fetch(apiUrl('/api/partners'), { method: 'POST', body: fd });
     const data = await res.json();

@@ -32,17 +32,17 @@ export const createPartner = async (req, res) => {
   try {
     const { name } = req.body || {};
     const file = req.file;
-    if (!name || !file)
+    if (!file)
       return res
         .status(400)
-        .json({ success: false, message: "name and logo (png) required" });
+        .json({ success: false, message: "logo (PNG) is required" });
     if (file.mimetype !== "image/png")
       return res
         .status(400)
         .json({ success: false, message: "Only PNG allowed" });
     const result = await uploadPngToCloudinary(file.buffer);
     const partner = await Partner.create({
-      name: name.trim(),
+      name: typeof name === "string" ? name.trim() : "",
       logoUrl: result.secure_url,
       publicId: result.public_id,
     });
