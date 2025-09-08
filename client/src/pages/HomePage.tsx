@@ -140,12 +140,12 @@ const HomePage = () => {
       hoverGradient: "hover:from-emerald-300 hover:via-teal-300 hover:to-green-400"
     },
     {
-      icon: Pill,
-      title: "Medicines",
-      description: "Order medicines online with home delivery options",
-      color: "text-purple-600",
-      bgGradient: "bg-gradient-to-br from-violet-200 via-purple-200 to-indigo-300",
-      hoverGradient: "hover:from-violet-300 hover:via-purple-300 hover:to-indigo-400"
+      icon: Heart,
+      title: "Health Checkups",
+      description: "Comprehensive health screenings and preventive care",
+      color: "text-red-600",
+      bgGradient: "bg-gradient-to-br from-zinc-200 via-slate-200 to-rose-300",
+      hoverGradient: "hover:from-zinc-300 hover:via-slate-300 hover:to-rose-400"
     },
     {
       icon: Scissors,
@@ -156,13 +156,12 @@ const HomePage = () => {
       hoverGradient: "hover:from-amber-300 hover:via-orange-300 hover:to-yellow-400"
     },
     {
-      icon: Heart,
-      title: "Health Checkups",
-      description: "Comprehensive health screenings and preventive care",
-      color: "text-red-600",
-      bgGradient: "bg-gradient-to-br from-zinc-200 via-slate-200 to-rose-300",
-      hoverGradient: "hover:from-zinc-300 hover:via-slate-300 hover:to-rose-400",
-      isDashed: true
+      icon: Pill,
+      title: "Medicines",
+      description: "Order medicines online with home delivery options",
+      color: "text-purple-600",
+      bgGradient: "bg-gradient-to-br from-violet-200 via-purple-200 to-indigo-300",
+      hoverGradient: "hover:from-violet-300 hover:via-purple-300 hover:to-indigo-400"
     }
   ];
 
@@ -367,7 +366,7 @@ const HomePage = () => {
               {/* Center Column - Large card */}
               <div className="lg:col-span-6">
                 {(() => {
-                  const service = services[2]; // Medicines card
+                  const service = services[2]; // Health Checkups card
                   const Icon = service.icon;
                   return (
                     <Card className={`group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl ring-1 ring-black/5 hover:ring-black/10 transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 ${service.bgGradient} ${service.hoverGradient} min-h-[300px] sm:min-h-[340px] h-full`}>

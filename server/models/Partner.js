@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const PartnerSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: false, trim: true, default: "" },
     logoUrl: { type: String, required: true },
     publicId: { type: String, required: true },
     isActive: { type: Boolean, default: true },
