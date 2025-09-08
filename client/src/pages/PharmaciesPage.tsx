@@ -72,7 +72,7 @@ const PharmaciesPage = () => {
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
             availability: (service as any).availability || 'Physical',
-            serviceType: (service as any).serviceType || 'Private',
+            serviceType: (service as any).serviceType || undefined,
             homeDelivery: Boolean((service as any).homeDelivery) === true,
           } as Service;
           // Hydrate user's own badge from localStorage
@@ -238,7 +238,7 @@ const PharmaciesPage = () => {
           totalRatings: (service as any).totalRatings,
           ratingBadge: (service as any).ratingBadge || null,
           availability: (service as any).availability || 'Physical',
-          serviceType: (service as any).serviceType || 'Private',
+          serviceType: (service as any).serviceType || undefined,
           homeDelivery: Boolean((service as any).homeDelivery) === true,
         } as Service;
         // Hydrate user's own badge from localStorage

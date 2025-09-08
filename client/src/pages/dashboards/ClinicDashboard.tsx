@@ -78,7 +78,7 @@ const ClinicDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private',
+    serviceType: '',
     homeDelivery: false
   });
 
@@ -350,6 +350,7 @@ const ClinicDashboard = () => {
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
+          // Send even if empty string to allow backend to unset default
           serviceType: serviceForm.serviceType,
           homeDelivery: serviceForm.homeDelivery,
           providerName: user?.name || 'Clinic',
@@ -368,7 +369,7 @@ const ClinicDashboard = () => {
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
-          serviceType: serviceForm.serviceType,
+          serviceType: serviceForm.serviceType || undefined,
           homeDelivery: serviceForm.homeDelivery,
           providerName: user?.name || 'Clinic',
         });
@@ -386,7 +387,7 @@ const ClinicDashboard = () => {
         city: '',
         detailAddress: '',
         availability: 'Physical',
-        serviceType: 'Private',
+        serviceType: '',
         homeDelivery: false
       });
       setServiceImage('');
@@ -709,75 +710,86 @@ const ClinicDashboard = () => {
                             </div>
 
                             <div className="space-y-3 border-t pt-3">
-                              <h4 className="font-medium text-sm">Service Type</h4>
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setServiceForm({ ...serviceForm, serviceType: '' })}
+                                  className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                                >
+                                  Clear
+                                </Button>
+                              </div>
                               <div className="space-y-2">
-                                <Label>What type of service is this? *</Label>
+                                <Label>What type of service is this?</Label>
                                 <div className="grid grid-cols-2 gap-2">
-                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                                     <input
                                       type="radio"
                                       name="serviceType"
                                       value="Private"
                                       checked={serviceForm.serviceType === 'Private'}
                                       onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                                      className="text-primary focus:ring-primary"
+                                      className="text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className="text-sm">Private</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                                     <input
                                       type="radio"
                                       name="serviceType"
                                       value="Public"
                                       checked={serviceForm.serviceType === 'Public'}
                                       onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                                      className="text-primary focus:ring-primary"
+                                      className="text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className="text-sm">Public</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                                     <input
                                       type="radio"
                                       name="serviceType"
                                       value="Charity"
                                       checked={serviceForm.serviceType === 'Charity'}
                                       onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                                      className="text-primary focus:ring-primary"
+                                      className="text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className="text-sm">Charity</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                                     <input
                                       type="radio"
                                       name="serviceType"
                                       value="NGO"
                                       checked={serviceForm.serviceType === 'NGO'}
                                       onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                                      className="text-primary focus:ring-primary"
+                                      className="text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className="text-sm">NGO</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer">
-                                    <input
-                                      type="radio"
-                                      name="serviceType"
-                                      value="Sehat Card"
-                                      checked={serviceForm.serviceType === 'Sehat Card'}
-                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                                      className="text-primary focus:ring-primary"
-                                    />
-                                    <span className="text-sm">Sehat Card</span>
-                                  </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                                     <input
                                       type="radio"
                                       name="serviceType"
                                       value="NPO"
                                       checked={serviceForm.serviceType === 'NPO'}
                                       onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                                      className="text-primary focus:ring-primary"
+                                      className="text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className="text-sm">NPO</span>
+                                  </label>
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                    <input
+                                      type="radio"
+                                      name="serviceType"
+                                      value="Sehat Card"
+                                      checked={serviceForm.serviceType === 'Sehat Card'}
+                                      onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                                      className="text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm">Sehat Card</span>
                                   </label>
                                 </div>
                               </div>
@@ -873,7 +885,7 @@ const ClinicDashboard = () => {
                                       city: m.city || '',
                                       detailAddress: m.detailAddress || '',
                                       availability: m.availability || 'Physical',
-                                      serviceType: m.serviceType || 'Private',
+                                      serviceType: m.serviceType || '',
                                       homeDelivery: Boolean(m.homeDelivery) || false
                                     });
                                     setServiceImage(m.imageUrl || m.image || '');
@@ -972,7 +984,7 @@ const ClinicDashboard = () => {
                                           city: m.city || '',
                                           detailAddress: m.detailAddress || '',
                                           availability: m.availability || 'Physical',
-                                          serviceType: m.serviceType || 'Private',
+                                          serviceType: m.serviceType || '',
                                           homeDelivery: Boolean(m.homeDelivery) || false
                                         });
                                         setServiceImage(m.imageUrl || m.image || '');

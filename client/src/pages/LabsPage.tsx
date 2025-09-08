@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
@@ -23,11 +24,13 @@ import AvailabilityBadge from "@/components/AvailabilityBadge";
 
 const LabsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [labServices, setLabServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState<boolean | undefined>(true);
+  const [selectedLabCategory, setSelectedLabCategory] = useState<string | null>(null);
 
   const [showLocationMap, setShowLocationMap] = useState<string | null>(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
@@ -39,6 +42,15 @@ const LabsPage = () => {
 
   const { user, mode } = useAuth();
   const { socket } = useSocket();
+
+  useEffect(() => {
+    // Read labCategory from URL and apply filter
+    try {
+      const params = new URLSearchParams(location.search);
+      const labCat = params.get('labCategory');
+      setSelectedLabCategory(labCat);
+    } catch {}
+  }, [location.search]);
 
   useEffect(() => {
     let isMounted = true;
@@ -75,6 +87,7 @@ const LabsPage = () => {
             ratingBadge: (service as any).ratingBadge || null,
             availability: (service as any).availability,
             serviceType: (service as any).serviceType,
+            labCategory: (service as any).category || null,
             homeDelivery: (service as any).homeDelivery || false,
           } as unknown as Service;
           // Hydrate user's own badge from localStorage
@@ -127,7 +140,7 @@ const LabsPage = () => {
     setPage(1);
     loadPage(1);
     return () => { isMounted = false; };
-  }, [user?.id, user?.name]);
+  }, [user?.id, user?.name, selectedLabCategory]);
 
   useEffect(() => {
     if (!socket) return;
@@ -238,7 +251,7 @@ const LabsPage = () => {
     setPage(next);
     setIsLoading(true);
     try {
-      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'laboratory', page: next, limit: 9 });
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'laboratory', page: next, limit: 9, labCategory: selectedLabCategory });
       const mapped = services.map((service: any) => {
         const isOwn = String((service as any).providerId) === String(user?.id || '');
         const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Laboratory') : ((service as any).providerName || 'Laboratory');
@@ -263,6 +276,7 @@ const LabsPage = () => {
           ratingBadge: (service as any).ratingBadge || null,
           availability: (service as any).availability,
           serviceType: (service as any).serviceType,
+          labCategory: (service as any).category || null,
           homeDelivery: (service as any).homeDelivery || false,
         } as unknown as Service;
         // Hydrate user's own badge from localStorage
@@ -312,12 +326,14 @@ const LabsPage = () => {
   };
 
   const filteredServices = useMemo(() => {
-    return labServices.filter(service => {
+    const bySearch = labServices.filter(service => {
       return service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
         service.description.toLowerCase().includes(searchTerm.toLowerCase());
     });
-  }, [labServices, searchTerm]);
+    if (!selectedLabCategory) return bySearch;
+    return bySearch.filter((s: any) => ((s as any).labCategory || '').toLowerCase() === selectedLabCategory.toLowerCase());
+  }, [labServices, searchTerm, selectedLabCategory]);
 
   const handleRateService = (service: Service) => {
     if (!user) {
@@ -519,12 +535,17 @@ const LabsPage = () => {
                           </>
                         )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] px-1.5 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const labCat = ((service as any).labCategory || 'Test');
+                        navigate(`/labs?labCategory=${encodeURIComponent(labCat)}`);
+                      }}
+                      className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
+                      title={((service as any).labCategory) ? `View labs in ${((service as any).labCategory)}` : 'View lab tests'}
                     >
-                      Test
-                    </Badge>
+                      {((service as any).labCategory) || 'Test'}
+                    </button>
                   </div>
                 </div>
 

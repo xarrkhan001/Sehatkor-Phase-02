@@ -76,6 +76,7 @@ const ServiceDetailPage = () => {
   });
   const [resolvedServiceType, setResolvedServiceType] = useState<Unified['serviceType'] | undefined>(undefined);
   const [resolvedPharmacyCategory, setResolvedPharmacyCategory] = useState<string | undefined>(undefined);
+  const [resolvedLabCategory, setResolvedLabCategory] = useState<string | undefined>(undefined);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -140,6 +141,8 @@ const ServiceDetailPage = () => {
       serviceType: rawStateService.serviceType,
       // Preserve pharmacy category if present in navigation state or derive from category field
       pharmacyCategory: rawStateService.pharmacyCategory ?? ((rawStateService.providerType ?? rawStateService._providerType) === 'pharmacy' ? (rawStateService.category || undefined) : undefined),
+      // Preserve lab category if present in navigation state or derive from category field
+      labCategory: (rawStateService.providerType ?? rawStateService._providerType) === 'laboratory' ? (rawStateService.labCategory || rawStateService.category || undefined) : undefined,
       variants: rawStateService.variants || [],
       // Ensure boolean coercion for homeDelivery in case it comes as string/undefined
       homeDelivery: typeof rawStateService.homeDelivery !== 'undefined' ? Boolean(rawStateService.homeDelivery) : undefined,
@@ -229,6 +232,8 @@ const ServiceDetailPage = () => {
         serviceType: (s as any).serviceType,
         // Preserve real pharmacy category from backend response
         pharmacyCategory: s.providerType === 'pharmacy' ? ((s as any).category || undefined) : undefined,
+        // Preserve real lab category from backend response
+        labCategory: s.providerType === 'laboratory' ? ((s as any).category || undefined) : undefined,
         variants: (s as any).variants || [],
         diseases: Array.isArray((s as any).diseases) ? (s as any).diseases : [],
         // Include main service schedule fields from backend
@@ -318,6 +323,13 @@ const ServiceDetailPage = () => {
             setResolvedPharmacyCategory(incomingCat);
           }
         }
+        if ((item as any)?.providerType === 'laboratory') {
+          const incomingLabCat = (svc as any)?.category as string | undefined;
+          console.log('🧪 Hydration check (labCategory): fromFetch:', incomingLabCat, 'fromItem:', (item as any)?.labCategory);
+          if (incomingLabCat && !(item as any)?.labCategory) {
+            setResolvedLabCategory(incomingLabCat);
+          }
+        }
         // Hydrate diseases if missing or empty
         const incomingDiseases = Array.isArray((svc as any)?.diseases) ? (svc as any).diseases : [];
         const current = Array.isArray((item as any)?.diseases) ? (item as any).diseases : [];
@@ -351,6 +363,13 @@ const ServiceDetailPage = () => {
           console.log('🧪 Hydration (infer path) pharmacyCategory:', incomingCat);
           if (incomingCat && !(item as any)?.pharmacyCategory) {
             setResolvedPharmacyCategory(incomingCat);
+          }
+        }
+        if ((inferredType as any) === 'laboratory') {
+          const incomingLabCat = (svc as any)?.category as string | undefined;
+          console.log('🧪 Hydration (infer path) labCategory:', incomingLabCat);
+          if (incomingLabCat && !(item as any)?.labCategory) {
+            setResolvedLabCategory(incomingLabCat);
           }
         }
         // Also try diseases hydration in this path
@@ -646,7 +665,9 @@ const ServiceDetailPage = () => {
                     >
                       {(item.providerType === 'pharmacy' && (item.pharmacyCategory || resolvedPharmacyCategory))
                         ? (item.pharmacyCategory || resolvedPharmacyCategory)
-                        : item.type}
+                        : (item.providerType === 'laboratory' && ((item as any).labCategory || resolvedLabCategory))
+                          ? (((item as any).labCategory || resolvedLabCategory) as string)
+                          : item.type}
                     </Badge>
                     {activeSlide.availability && (
                       <AvailabilityBadge availability={activeSlide.availability} size="sm" />

@@ -82,7 +82,7 @@ const LaboratoryDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical' as 'Physical' | 'Online' | 'Online and Physical',
-    serviceType: 'Private' as 'Private' | 'Public' | 'Charity' | 'NGO' | 'NPO' | 'Sehat Card',
+    serviceType: '' as '' | 'Private' | 'Public' | 'Charity' | 'NGO' | 'NPO' | 'Sehat Card',
     imageUrl: '',
     homeDelivery: false
   });
@@ -100,7 +100,7 @@ const LaboratoryDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private',
+    serviceType: '',
     homeDelivery: false
   });
 
@@ -169,7 +169,7 @@ const LaboratoryDashboard = () => {
       city: t.city || '',
       detailAddress: t.detailAddress || '',
       availability: (t.availability as any) || 'Physical',
-      serviceType: (t.serviceType as any) || 'Private',
+      serviceType: (t.serviceType as any) || '',
       imageUrl: t.image || '',
       homeDelivery: Boolean(t.homeDelivery) || false
     });
@@ -215,6 +215,7 @@ const LaboratoryDashboard = () => {
         city: editForm.city,
         detailAddress: editForm.detailAddress,
         availability: editForm.availability as any,
+        // send even if empty string so backend can unset
         serviceType: editForm.serviceType as any,
         homeDelivery: editForm.homeDelivery as any,
       } as any);
@@ -447,7 +448,7 @@ const LaboratoryDashboard = () => {
         city: testForm.city,
         detailAddress: testForm.detailAddress,
         availability: testForm.availability as any,
-        serviceType: testForm.serviceType as any,
+        serviceType: (testForm.serviceType as any) || undefined,
         homeDelivery: testForm.homeDelivery as any,
         providerName: user?.name || 'Laboratory',
       });
@@ -470,7 +471,7 @@ const LaboratoryDashboard = () => {
       ServiceManager.addService(newTest);
 
       // Reset form
-      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private', homeDelivery: false });
+      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: '', homeDelivery: false });
 
       setTestImagePreview('');
       setTestImageFile(null);
@@ -768,12 +769,24 @@ const LaboratoryDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Service Type */}
+                  {/* Service Type (Optional) */}
                   <div className="space-y-3 border-t pt-3">
-                    <h4 className="font-medium text-sm">Service Type</h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditForm(prev => ({ ...prev, serviceType: '' }))}
+                        className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                      >
+                        Clear
+                      </Button>
+                    </div>
                     <div className="space-y-2">
-                      <Label>What type of service is this? *</Label>
+                      <Label>What type of service is this?</Label>
                       <div className="grid grid-cols-2 gap-3">
+
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
                             type="radio"
@@ -1059,12 +1072,24 @@ const LaboratoryDashboard = () => {
                                 </div>
                               </div>
 
-                              {/* Service Type */}
+                              {/* Service Type (Optional) */}
                               <div className="space-y-3 border-t pt-3">
-                                <h4 className="font-medium text-sm">Service Type</h4>
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setTestForm(prev => ({ ...prev, serviceType: '' }))}
+                                    className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                                  >
+                                    Clear
+                                  </Button>
+                                </div>
                                 <div className="space-y-2">
-                                  <Label>What type of service is this? *</Label>
+                                  <Label>What type of service is this?</Label>
                                   <div className="grid grid-cols-2 gap-3">
+
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
                                         type="radio"
@@ -1189,7 +1214,10 @@ const LaboratoryDashboard = () => {
                                         <span className="text-sm">PKR {test.price.toLocaleString()}</span>
                                         <span className="text-xs text-muted-foreground">{test.duration || 'N/A'}</span>
                                         <AvailabilityBadge availability={test.availability || 'Physical'} size="sm" />
-                                        <ServiceTypeBadge serviceType={test.serviceType || 'Private'} size="sm" />
+                                        {test.serviceType && (
+                                          <ServiceTypeBadge serviceType={test.serviceType} size="sm" />
+                                        )}
+
                                         {test.homeDelivery ? (
                                           <Badge className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[11px]">🏠 Home Delivery</Badge>
                                         ) : null}
@@ -1257,7 +1285,9 @@ const LaboratoryDashboard = () => {
                                         <AvailabilityBadge availability={test.availability || 'Physical'} size="md" />
                                       </TableCell>
                                       <TableCell>
-                                        <ServiceTypeBadge serviceType={test.serviceType || 'Private'} size="md" />
+                                        {test.serviceType && (
+                                          <ServiceTypeBadge serviceType={test.serviceType} size="md" />
+                                        )}
                                       </TableCell>
                                       <TableCell>
                                         {test.homeDelivery ? (

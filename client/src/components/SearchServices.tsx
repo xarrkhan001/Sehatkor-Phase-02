@@ -18,6 +18,7 @@ interface SearchService {
   icon: string; // emoji fallback
   image?: string;
   pharmacyCategory?: string; // Real pharmacy category like Tablets/Capsules for pharmacy services
+  labCategory?: string; // Real laboratory category like Blood Test, Urine Test for lab services
   variants?: Array<{
     imageUrl?: string;
     price?: number;
@@ -137,6 +138,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       category: mapServiceToSearchCategory(s),
       // Keep real pharmacy category separately for badge display
       pharmacyCategory: s.providerType === 'pharmacy' ? ((s as any).category || undefined) : undefined,
+      labCategory: s.providerType === 'laboratory' ? ((s as any).category || undefined) : undefined,
       icon: getServiceIcon(s),
       image: (s as any).image,
       variants: Array.isArray((s as any).variants) ? (s as any).variants : [],
@@ -154,7 +156,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       detailAddress: (s as any).detailAddress,
       _providerVerified: (s as any)._providerVerified,
       availability: (s as any).availability || "Physical",
-      serviceType: (s as any).serviceType || "Private",
+      serviceType: (s as any).serviceType || undefined,
       homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
       diseases: Array.isArray((s as any).diseases) ? ((s as any).diseases as string[]) : undefined,
       // Add main service schedule fields from backend (always include, even if null)
@@ -435,6 +437,8 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           hospitalClinicName: resolvedHospitalClinicName,
           // Pass diseases for tooltip on detail page
           diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : [],
+          // Pass lab category if applicable
+          labCategory: service.providerType === 'laboratory' ? (service as any).labCategory : undefined,
         }
       }
     });
@@ -565,11 +569,23 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
                         <h4 className="font-medium text-gray-900 text-sm truncate" title={service.name}>{service.name}</h4>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
+                        <button
+                          type="button"
+                          className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap hover:bg-rose-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (service.providerType === 'laboratory' && service.labCategory) {
+                              navigate(`/labs?labCategory=${encodeURIComponent(service.labCategory)}`);
+                            }
+                          }}
+                          title={service.providerType === 'laboratory' && service.labCategory ? `View labs in ${service.labCategory}` : undefined}
+                        >
                           {(service.providerType === 'pharmacy' && service.pharmacyCategory)
                             ? service.pharmacyCategory
-                            : service.category}
-                        </span>
+                            : (service.providerType === 'laboratory' && service.labCategory)
+                              ? service.labCategory
+                              : service.category}
+                        </button>
                         {(() => {
                           // Get variant-aware availability
                           const activeSlide = getActiveSlide(service);

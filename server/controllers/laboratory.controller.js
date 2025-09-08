@@ -31,7 +31,7 @@ export const createLaboratoryTest = async (req, res) => {
       providerName: providerName || 'Laboratory',
       providerType: 'laboratory',
       availability: availability || 'Physical',
-      serviceType: serviceType || 'Private',
+      ...(serviceType ? { serviceType } : {}),
       homeDelivery: Boolean(homeDelivery) || false,
     });
     
@@ -45,25 +45,29 @@ export const updateLaboratoryTest = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body || {};
-    
+    const setObj = {
+      ...(updates.name != null && { name: updates.name }),
+      ...(updates.description != null && { description: updates.description }),
+      ...(updates.price != null && { price: typeof updates.price === 'number' ? updates.price : Number(updates.price) || 0 }),
+      ...(updates.category != null && { category: updates.category }),
+      ...(updates.duration != null && { duration: updates.duration }),
+      ...(updates.imageUrl != null && { imageUrl: updates.imageUrl }),
+      ...(updates.imagePublicId != null && { imagePublicId: updates.imagePublicId }),
+      ...(updates.googleMapLink != null && { googleMapLink: updates.googleMapLink }),
+      ...(updates.city != null && { city: updates.city }),
+      ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
+      ...(updates.availability != null && { availability: updates.availability }),
+      ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
+    };
+    const unsetObj = {};
+    if ('serviceType' in updates) {
+      if (updates.serviceType) setObj.serviceType = updates.serviceType; else unsetObj.serviceType = "";
+    }
     const test = await LaboratoryTest.findOneAndUpdate(
       { _id: id, providerId: req.userId },
       {
-        $set: {
-          ...(updates.name != null && { name: updates.name }),
-          ...(updates.description != null && { description: updates.description }),
-          ...(updates.price != null && { price: typeof updates.price === 'number' ? updates.price : Number(updates.price) || 0 }),
-          ...(updates.category != null && { category: updates.category }),
-          ...(updates.duration != null && { duration: updates.duration }),
-          ...(updates.imageUrl != null && { imageUrl: updates.imageUrl }),
-          ...(updates.imagePublicId != null && { imagePublicId: updates.imagePublicId }),
-          ...(updates.googleMapLink != null && { googleMapLink: updates.googleMapLink }),
-          ...(updates.city != null && { city: updates.city }),
-          ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
-          ...(updates.availability != null && { availability: updates.availability }),
-          ...(updates.serviceType != null && { serviceType: updates.serviceType }),
-          ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
-        }
+        ...(Object.keys(setObj).length ? { $set: setObj } : {}),
+        ...(Object.keys(unsetObj).length ? { $unset: unsetObj } : {}),
       },
       { new: true }
     );

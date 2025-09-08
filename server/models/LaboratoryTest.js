@@ -28,7 +28,7 @@ const LaboratoryTestSchema = new mongoose.Schema(
     serviceType: {
       type: String,
       enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
-      default: "Private"
+      // no default; optional
     },
     homeDelivery: { type: Boolean, default: false },
     reviews: [

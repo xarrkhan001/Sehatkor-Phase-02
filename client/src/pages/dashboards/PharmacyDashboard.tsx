@@ -80,7 +80,7 @@ const PharmacyDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private',
+    serviceType: '',
     homeDelivery: false
   });
   const [editImagePreview, setEditImagePreview] = useState('');
@@ -96,7 +96,7 @@ const PharmacyDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: 'Private',
+    serviceType: '',
     homeDelivery: false
   });
 
@@ -127,7 +127,7 @@ const PharmacyDashboard = () => {
         city: d.city,
         detailAddress: d.detailAddress,
         availability: d.availability || 'Physical',
-        serviceType: d.serviceType || 'Private',
+        serviceType: d.serviceType || undefined,
         homeDelivery: d.homeDelivery || false,
         createdAt: d.createdAt || new Date().toISOString(),
         updatedAt: d.updatedAt || new Date().toISOString(),
@@ -161,7 +161,7 @@ const PharmacyDashboard = () => {
         providerName: d.providerName || (user?.name || 'Pharmacy'),
         providerType: 'pharmacy' as const,
         availability: d.availability || 'Physical',
-        serviceType: d.serviceType || 'Private',
+        serviceType: d.serviceType || undefined,
         homeDelivery: d.homeDelivery || false,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
@@ -372,7 +372,7 @@ const PharmacyDashboard = () => {
         city: medicineForm.city,
         detailAddress: medicineForm.detailAddress,
         availability: medicineForm.availability,
-        serviceType: medicineForm.serviceType,
+        serviceType: medicineForm.serviceType || undefined,
         homeDelivery: medicineForm.homeDelivery,
         providerName: user?.name || 'Pharmacy',
       });
@@ -395,7 +395,7 @@ const PharmacyDashboard = () => {
       ServiceManager.addService(newMedicine);
 
       // Reset form
-      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: 'Private', homeDelivery: false });
+      setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: '', homeDelivery: false });
       setMedicineImagePreview('');
       setMedicineImageFile(null);
       setIsAddMedicineOpen(false);
@@ -440,7 +440,7 @@ const PharmacyDashboard = () => {
       city: m.city || '',
       detailAddress: m.detailAddress || '',
       availability: m.availability || 'Physical',
-      serviceType: m.serviceType || 'Private',
+      serviceType: m.serviceType || '',
       homeDelivery: m.homeDelivery || false
     });
     setEditImagePreview(m.imageUrl || m.image || '');
@@ -476,6 +476,7 @@ const PharmacyDashboard = () => {
         city: editForm.city,
         detailAddress: editForm.detailAddress,
         availability: editForm.availability,
+        // Send serviceType even if empty string so backend can $unset when empty
         serviceType: editForm.serviceType,
         homeDelivery: editForm.homeDelivery,
       });
@@ -738,11 +739,22 @@ const PharmacyDashboard = () => {
                               </div>
                             </div>
                             
-                            {/* Service Type Selection */}
+                            {/* Service Type Selection (Optional) */}
                             <div className="space-y-3 border-t pt-3">
-                              <h4 className="font-medium text-sm">Service Type</h4>
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setMedicineForm(prev => ({ ...prev, serviceType: '' }))}
+                                  className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                                >
+                                  Clear
+                                </Button>
+                              </div>
                               <div className="space-y-2">
-                                <Label>What type of service is this? *</Label>
+                                <Label>What type of service is this?</Label>
                                 <div className="grid grid-cols-2 gap-2">
                                   <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                                     <input
@@ -1236,9 +1248,20 @@ const PharmacyDashboard = () => {
                   
                   {/* Service Type Selection */}
                   <div className="space-y-3 border-t pt-3">
-                    <h4 className="font-medium text-sm">Service Type</h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditForm(prev => ({ ...prev, serviceType: '' }))}
+                        className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                      >
+                        Clear
+                      </Button>
+                    </div>
                     <div className="space-y-2">
-                      <Label>What type of service is this? *</Label>
+                      <Label>What type of service is this?</Label>
                       <div className="grid grid-cols-2 gap-2">
                         <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                           <input
