@@ -51,6 +51,8 @@ type Unified = {
   homeDelivery?: boolean;
   availability?: 'Online' | 'Physical' | 'Online and Physical' | string;
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
+  // Real pharmacy category (e.g., Tablets, Capsules) when providerType is pharmacy
+  pharmacyCategory?: string;
   variants?: ServiceVariant[];
   diseases?: string[];
 };
@@ -73,6 +75,7 @@ const ServiceDetailPage = () => {
     return validIndex;
   });
   const [resolvedServiceType, setResolvedServiceType] = useState<Unified['serviceType'] | undefined>(undefined);
+  const [resolvedPharmacyCategory, setResolvedPharmacyCategory] = useState<string | undefined>(undefined);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -135,6 +138,8 @@ const ServiceDetailPage = () => {
       address: rawStateService.detailAddress ?? rawStateService.address ?? null,
       availability: rawStateService.availability,
       serviceType: rawStateService.serviceType,
+      // Preserve pharmacy category if present in navigation state or derive from category field
+      pharmacyCategory: rawStateService.pharmacyCategory ?? ((rawStateService.providerType ?? rawStateService._providerType) === 'pharmacy' ? (rawStateService.category || undefined) : undefined),
       variants: rawStateService.variants || [],
       // Ensure boolean coercion for homeDelivery in case it comes as string/undefined
       homeDelivery: typeof rawStateService.homeDelivery !== 'undefined' ? Boolean(rawStateService.homeDelivery) : undefined,
@@ -222,6 +227,8 @@ const ServiceDetailPage = () => {
         homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
         availability: (s as any).availability,
         serviceType: (s as any).serviceType,
+        // Preserve real pharmacy category from backend response
+        pharmacyCategory: s.providerType === 'pharmacy' ? ((s as any).category || undefined) : undefined,
         variants: (s as any).variants || [],
         diseases: Array.isArray((s as any).diseases) ? (s as any).diseases : [],
         // Include main service schedule fields from backend
@@ -303,6 +310,14 @@ const ServiceDetailPage = () => {
           console.log('Hydrated missing serviceType from fetch:', (svc as any).serviceType);
           setResolvedServiceType((svc as any).serviceType as any);
         }
+        // Hydrate pharmacy category if missing on item
+        if ((item as any)?.providerType === 'pharmacy') {
+          const incomingCat = (svc as any)?.category as string | undefined;
+          console.log('🧪 Hydration check (pharmacyCategory): fromFetch:', incomingCat, 'fromItem:', (item as any)?.pharmacyCategory);
+          if (incomingCat && !(item as any)?.pharmacyCategory) {
+            setResolvedPharmacyCategory(incomingCat);
+          }
+        }
         // Hydrate diseases if missing or empty
         const incomingDiseases = Array.isArray((svc as any)?.diseases) ? (svc as any).diseases : [];
         const current = Array.isArray((item as any)?.diseases) ? (item as any).diseases : [];
@@ -329,6 +344,14 @@ const ServiceDetailPage = () => {
         if ((svc as any)?.serviceType) {
           console.log('Hydrated missing serviceType via inferred type:', (svc as any).serviceType, inferredType);
           setResolvedServiceType((svc as any).serviceType as any);
+        }
+        // Also hydrate pharmacy category if applicable
+        if ((inferredType as any) === 'pharmacy') {
+          const incomingCat = (svc as any)?.category as string | undefined;
+          console.log('🧪 Hydration (infer path) pharmacyCategory:', incomingCat);
+          if (incomingCat && !(item as any)?.pharmacyCategory) {
+            setResolvedPharmacyCategory(incomingCat);
+          }
         }
         // Also try diseases hydration in this path
         const incomingDiseases = Array.isArray((svc as any)?.diseases) ? (svc as any).diseases : [];
@@ -617,7 +640,14 @@ const ServiceDetailPage = () => {
                       <MapPin className="w-4 h-4" />
                       {activeSlide.location}
                     </div>
-                    <Badge variant="outline">{item.type}</Badge>
+                    <Badge
+                      variant="outline"
+                      className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
+                    >
+                      {(item.providerType === 'pharmacy' && (item.pharmacyCategory || resolvedPharmacyCategory))
+                        ? (item.pharmacyCategory || resolvedPharmacyCategory)
+                        : item.type}
+                    </Badge>
                     {activeSlide.availability && (
                       <AvailabilityBadge availability={activeSlide.availability} size="sm" />
                     )}

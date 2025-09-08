@@ -39,6 +39,10 @@ interface SearchService extends Service {
   diseases?: string[];
   availability?: "Online" | "Physical" | "Online and Physical";
   homeDelivery?: boolean;
+  // Backend service type for pricing/coverage category
+  serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
+  // For pharmacy cards: show real medicine category (Tablets, Capsules, etc.)
+  pharmacyCategory?: string;
 }
 
 const SearchPage = () => {
@@ -54,6 +58,9 @@ const SearchPage = () => {
   const [minRating, setMinRating] = useState(0);
   const [homeServiceOnly, setHomeServiceOnly] = useState(false);
   const [priceFilter, setPriceFilter] = useState("all");
+  // New: Availability filter (All, Online, Physical, Online and Physical)
+  const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
+
   // Local states for manual custom price inputs (allow typing, including empty values)
   const [customFrom, setCustomFrom] = useState<string>("");
   const [customTo, setCustomTo] = useState<string>("");
@@ -331,6 +338,8 @@ const SearchPage = () => {
           diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : undefined,
           availability: (service as any).availability as any,
           createdAt: (service as any).createdAt,
+          // Preserve real pharmacy category from backend for badge display
+          pharmacyCategory: ((service as any).providerType === 'pharmacy') ? ((service as any).category || undefined) : undefined,
           // include pharmacy service type (and pass-through if present on others)
           serviceType: (service as any).serviceType || undefined,
           // include homeDelivery from backend
@@ -507,13 +516,18 @@ const SearchPage = () => {
     const filtered = allServices.filter(service => {
       const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         service.provider.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = serviceType === "all" || service.type === serviceType;
+      // Service Type filter now uses backend serviceType (Sehat Card, Private, Charity, Public, NPO, NGO)
+      const matchesType = serviceType === "all" || String((service as any).serviceType) === serviceType;
       const matchesLocation = location === "all" || service.location?.includes(location);
       const matchesPrice = service.price >= priceRange[0] && service.price <= priceRange[1];
       const matchesRating = service.rating >= minRating;
-      const matchesHomeService = !homeServiceOnly || service.homeService;
+      // When "Home service available" filter is enabled, only include services with homeDelivery=true
+      const matchesHomeService = !homeServiceOnly || service.homeDelivery === true;
+      // New: Availability filter condition
+      const matchesAvailability = availabilityFilter === 'all'
+        || (service.availability && String(service.availability) === availabilityFilter);
 
-      return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesRating && matchesHomeService;
+      return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesRating && matchesHomeService && matchesAvailability;
     });
 
     // Sort so that highlighted service appears at the top, then real services before mock services
@@ -527,38 +541,31 @@ const SearchPage = () => {
         // If neither matches highlight, prioritize real services
         if (a.isReal && !b.isReal) return -1;
         if (!a.isReal && b.isReal) return 1;
-        return 0;
+        // Badge priority: excellent > good > fair > others
+        const rank = (s: any) => {
+          const badge = (s?.ratingBadge || '').toString().toLowerCase();
+          if (badge === 'excellent') return 3;
+          if (badge === 'good') return 2;
+          if (badge === 'fair') return 1;
+          return 0;
+        };
+        const rb = rank(b) - rank(a);
+        if (rb !== 0) return rb;
+        // Sort by rating (highest first)
+        if (a.rating !== b.rating) return b.rating - a.rating;
+        const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+        return bd - ad;
       });
     }
-
-    // User's own items first (newest first), then other real items (newest), then mock
-    return filtered.sort((a: any, b: any) => {
-      const aOwn = a._providerId && user?.id && String(a._providerId) === String(user.id);
-      const bOwn = b._providerId && user?.id && String(b._providerId) === String(user.id);
-      if (aOwn !== bOwn) return aOwn ? -1 : 1;
-      if (a.isReal !== b.isReal) return a.isReal ? -1 : 1;
-      // Badge priority: excellent > good > fair > others
-      const rank = (s: any) => {
-        const badge = (s?.ratingBadge || '').toString().toLowerCase();
-        if (badge === 'excellent') return 3;
-        if (badge === 'good') return 2;
-        if (badge === 'fair') return 1;
-        return 0;
-      };
-      const rb = rank(b) - rank(a);
-      if (rb !== 0) return rb;
-      // Sort by rating (highest first)
-      if (a.rating !== b.rating) return b.rating - a.rating;
-      const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
-      const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
-      return bd - ad;
-    });
-  }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, highlightedService, allServices]);
+    return filtered;
+  }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, availabilityFilter, highlightedService, allServices, user?.id]);
 
   const servicesToDisplay = useMemo(() => {
     return filteredServices.slice(0, visibleCount);
   }, [filteredServices, visibleCount]);
 
+// ...
   const handleBookNow = (service: SearchService) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
@@ -631,6 +638,7 @@ const SearchPage = () => {
     setPriceRange([0, maxPrice]);
     setMinRating(0);
     setHomeServiceOnly(false);
+    setAvailabilityFilter("all");
   };
 
   // Get emoji for service type
@@ -757,7 +765,7 @@ const SearchPage = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Service Type */}
+                {/* Service Type (backend serviceType) */}
                 <div>
                   <Label className="text-base font-medium">Service Type</Label>
                   <Select value={serviceType} onValueChange={setServiceType}>
@@ -766,10 +774,12 @@ const SearchPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="Treatment">Treatment</SelectItem>
-                      <SelectItem value="Medicine">Medicine</SelectItem>
-                      <SelectItem value="Test">Test</SelectItem>
-                      <SelectItem value="Surgery">Surgery</SelectItem>
+                      <SelectItem value="Sehat Card">Sehat Card</SelectItem>
+                      <SelectItem value="Private">Private</SelectItem>
+                      <SelectItem value="Charity">Charity</SelectItem>
+                      <SelectItem value="Public">Public</SelectItem>
+                      <SelectItem value="NPO">NPO</SelectItem>
+                      <SelectItem value="NGO">NGO</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -926,6 +936,22 @@ const SearchPage = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Availability */}
+                <div>
+                  <Label className="text-base font-medium">Availability</Label>
+                  <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select availability" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="Online">Online</SelectItem>
+                      <SelectItem value="Physical">Physical</SelectItem>
+                      <SelectItem value="Online and Physical">Online and Physical</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Home Service */}
@@ -1129,11 +1155,12 @@ const SearchPage = () => {
                             variant="outline"
                             className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
                           >
-                            {service.type}
+                            {((service as any)._providerType === 'pharmacy' && (service as any).pharmacyCategory)
+                              ? (service as any).pharmacyCategory
+                              : service.type}
                           </Badge>
                         </div>
                       </div>
-
                       {/* Rating Badge, Location, Availability, Home Service, WhatsApp */}
                       <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 text-sm">
                         <RatingBadge
