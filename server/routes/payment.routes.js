@@ -29,6 +29,7 @@ import {
   bulkDeleteProviderPayments,
   deleteProviderInvoice,
   bulkDeleteProviderInvoices,
+  deletePayment,
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
@@ -44,6 +45,9 @@ router.get('/provider/:providerId', getPaymentsByProvider);
 // Service completion and payment release
 router.put('/:paymentId/complete', markServiceCompleted);
 router.put('/:paymentId/release', releasePaymentToProvider);
+
+// Admin permanent delete payment
+router.delete('/:paymentId', deletePayment);
 
 // Provider wallet routes
 router.get('/wallet/:providerId', getProviderWallet);

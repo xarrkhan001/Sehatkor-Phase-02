@@ -67,6 +67,8 @@ const PaymentSchema = new mongoose.Schema(
     
     // Soft delete for provider wallet (hide from provider's Payment History list)
     deletedForProvider: { type: Boolean, default: false },
+    // Soft delete for admin views (hide from admin history lists only)
+    deletedForAdmin: { type: Boolean, default: false },
     deletedAt: { type: Date },
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
   },

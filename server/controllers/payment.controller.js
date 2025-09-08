@@ -195,6 +195,36 @@ export const deleteProviderPayment = async (req, res) => {
   }
 };
 
+// Permanently delete a payment (admin)
+export const deletePayment = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    if (!paymentId) {
+      return res.status(400).json({ success: false, message: 'paymentId is required' });
+    }
+    const updated = await Payment.findByIdAndUpdate(
+      paymentId,
+      {
+        $set: {
+          deletedForAdmin: true,
+          deletedAt: new Date(),
+          deletedBy: req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)
+            ? new mongoose.Types.ObjectId(req.user.id)
+            : undefined,
+        }
+      },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
+    return res.json({ success: true, message: 'Payment removed from admin view', paymentId });
+  } catch (error) {
+    console.error(' Admin soft delete payment error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to delete payment from admin view', error: error.message });
+  }
+};
+
 // Bulk delete invoices (admin) -> soft delete for admin only
 export const bulkDeleteInvoices = async (req, res) => {
   try {
@@ -433,7 +463,7 @@ export const getAllPayments = async (req, res) => {
   try {
     const { page = 1, limit = 20, status, providerType } = req.query;
     
-    const filter = {};
+    const filter = { deletedForAdmin: { $ne: true } };
     if (status) filter.paymentStatus = status;
     if (providerType) filter.providerType = providerType;
 
@@ -1101,7 +1131,7 @@ export const getProvidersSummary = async (req, res) => {
           console.warn('Failed to auto-unhide provider', stat._id, e?.message);
         }
       }
-      const payments = await Payment.find({ providerId: stat._id })
+      const payments = await Payment.find({ providerId: stat._id, deletedForAdmin: { $ne: true } })
         .populate('patientId', 'name email')
         .sort({ createdAt: -1 });
 

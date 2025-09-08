@@ -84,6 +84,8 @@ const AdminProviderPayments: React.FC = () => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteTargetProviderId, setDeleteTargetProviderId] = useState<string | null>(null);
   const [deleteTargetProviderName, setDeleteTargetProviderName] = useState<string | null>(null);
+  // Per-payment deleting state to keep rows independent
+  const [deletingPayments, setDeletingPayments] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchProviderPayments();
@@ -193,6 +195,47 @@ const AdminProviderPayments: React.FC = () => {
         setForProvider.add(paymentId);
         next[providerId] = setForProvider;
         return next;
+      });
+    }
+  };
+
+  // Remove a payment from admin view (soft delete for admin). We still hide locally first
+  // to keep UI responsive, then refresh the summary to sync lists. Totals remain unchanged.
+  const deletePaymentForProvider = async (providerId: string, paymentId: string) => {
+    const key = `${providerId}:${paymentId}`;
+    try {
+      const confirmed = window.confirm('Remove this payment from the admin view? Totals will remain unchanged.');
+      if (!confirmed) return;
+      setDeletingPayments(prev => ({ ...prev, [key]: true }));
+      const resp = await fetch(`http://localhost:4000/api/payments/${paymentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
+        },
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || data?.success === false) {
+        throw new Error(data?.message || 'Failed to remove payment from admin view');
+      }
+      // Locally hide from this admin view for responsiveness
+      setHiddenPayments(prev => {
+        const next = { ...prev };
+        const setForProvider = new Set(next[providerId] ?? []);
+        setForProvider.add(paymentId);
+        next[providerId] = setForProvider;
+        return next;
+      });
+      toast.success('Payment removed from admin view');
+      // Refresh in background to update provider lists (totals remain same)
+      fetchProviderPayments();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Unable to remove payment from admin view');
+    } finally {
+      setDeletingPayments(prev => {
+        const copy = { ...prev };
+        delete copy[key];
+        return copy;
       });
     }
   };
@@ -434,8 +477,9 @@ const AdminProviderPayments: React.FC = () => {
                           <Button
                             variant="outline"
                             size="icon"
-                            title="Remove from view"
-                            onClick={() => hidePaymentFromView(provider.providerId, payment._id)}
+                            title="Remove from admin view"
+                            disabled={deletingPayments[`${provider.providerId}:${payment._id}`]}
+                            onClick={() => deletePaymentForProvider(provider.providerId, payment._id)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -637,8 +681,9 @@ const AdminProviderPayments: React.FC = () => {
                         <Button
                           variant="outline"
                           size="icon"
-                          title="Remove from view"
-                          onClick={() => hidePaymentFromView(selectedProviderDetails.providerId, payment._id)}
+                          title="Remove from admin view"
+                          disabled={deletingPayments[`${selectedProviderDetails.providerId}:${payment._id}`]}
+                          onClick={() => deletePaymentForProvider(selectedProviderDetails.providerId, payment._id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
