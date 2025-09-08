@@ -29,7 +29,6 @@ const ClinicServiceSchema = new mongoose.Schema(
     serviceType: {
       type: String,
       enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
-      default: "Private"
     },
     homeDelivery: { type: Boolean, default: false },
     reviews: [

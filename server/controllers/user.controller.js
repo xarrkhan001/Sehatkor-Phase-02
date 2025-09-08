@@ -105,7 +105,7 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
-        serviceType: service.serviceType || "Private",
+        ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
         // Hospital/Clinic name
@@ -126,7 +126,7 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
-        serviceType: service.serviceType || "Private",
+        ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
         // expose main service schedule fields
@@ -145,6 +145,12 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
+        // include standard public fields for pharmacy services too (no default)
+        ...(service.serviceType ? { serviceType: service.serviceType } : {}),
+        availability: service.availability || "Physical",
+        homeDelivery: Boolean(service.homeDelivery) || false,
+        // Hospital/Clinic name (if any provided on medicine)
+        hospitalClinicName: service.hospitalClinicName || null,
         // expose main service schedule fields
         timeLabel: service.timeLabel || null,
         startTime: service.startTime || null,
@@ -161,7 +167,7 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
-        serviceType: service.serviceType || "Private",
+        ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         // expose main service schedule fields
         timeLabel: service.timeLabel || null,

@@ -343,6 +343,8 @@ const SearchPage = () => {
           createdAt: (service as any).createdAt,
           // Preserve real pharmacy category from backend for badge display
           pharmacyCategory: ((service as any).providerType === 'pharmacy') ? ((service as any).category || undefined) : undefined,
+          // Preserve real lab category from backend for badge display
+          labCategory: ((service as any).providerType === 'laboratory') ? ((service as any).category || undefined) : undefined,
           // include pharmacy service type (and pass-through if present on others)
           serviceType: (service as any).serviceType || undefined,
           // include homeDelivery from backend
@@ -518,7 +520,8 @@ const SearchPage = () => {
   const filteredServices = useMemo(() => {
     const filtered = allServices.filter(service => {
       const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.provider.toLowerCase().includes(searchTerm.toLowerCase());
+        service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String((service as any).labCategory || '').toLowerCase().includes(searchTerm.toLowerCase());
       // Service Type filter now uses backend serviceType (Sehat Card, Private, Charity, Public, NPO, NGO)
       const matchesType = serviceType === "all" || String((service as any).serviceType) === serviceType;
       const matchesLocation = location === "all" || service.location?.includes(location);
@@ -542,6 +545,8 @@ const SearchPage = () => {
           let svcCategory = '';
           if (svcType === 'pharmacy') {
             svcCategory = String(((service as any).pharmacyCategory ?? service.category) || '');
+          } else if (svcType === 'laboratory') {
+            svcCategory = String(((service as any).labCategory ?? (service as any).category ?? service.type) || '');
           } else {
             svcCategory = String((service as any).category ?? service.type ?? '');
           }
@@ -1219,7 +1224,9 @@ const SearchPage = () => {
                           >
                             {((service as any)._providerType === 'pharmacy' && (service as any).pharmacyCategory)
                               ? (service as any).pharmacyCategory
-                              : service.type}
+                              : ((service as any)._providerType === 'laboratory' && (service as any).labCategory)
+                                ? (service as any).labCategory
+                                : service.type}
                           </Badge>
                         </div>
                       </div>

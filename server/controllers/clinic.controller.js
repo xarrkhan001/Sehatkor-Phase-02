@@ -51,7 +51,8 @@ export const createClinicService = async (req, res) => {
       providerName: providerName || "Clinic",
       providerType: "clinic",
       availability: availability || "Physical",
-      serviceType: serviceType || "Private",
+      // Only set serviceType if provided and non-empty; otherwise leave undefined
+      serviceType: (typeof serviceType === 'string' && serviceType.trim() !== '') ? serviceType : undefined,
       homeDelivery: Boolean(homeDelivery) || false,
     });
     res.status(201).json({ service: doc });
@@ -91,9 +92,10 @@ export const updateClinicService = async (req, res) => {
           ...(updates.city != null && { city: updates.city }),
           ...(updates.detailAddress != null && { detailAddress: updates.detailAddress }),
           ...(updates.availability != null && { availability: updates.availability }),
-          ...(updates.serviceType != null && { serviceType: updates.serviceType }),
+          ...((updates.serviceType != null && updates.serviceType !== '') && { serviceType: updates.serviceType }),
           ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
         },
+        ...(updates.serviceType === '' && { $unset: { serviceType: "" } }),
       },
       { new: true }
     );
