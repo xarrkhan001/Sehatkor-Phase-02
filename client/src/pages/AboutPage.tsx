@@ -31,18 +31,44 @@ import {
   ArrowRight,
   Target,
   Eye,
-  Lightbulb,
-  BookOpen
+  Lightbulb
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const AboutPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [donateOpen, setDonateOpen] = useState(false);
+  const [donationAmount, setDonationAmount] = useState<number>(1000);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  const quickSetAmount = (amt: number) => setDonationAmount(amt);
+  const proceedDonate = () => {
+    const amount = Number(donationAmount);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    navigate('/payment', {
+      state: {
+        serviceId: 'donation',
+        serviceName: 'Donation to Sehat Kor Foundation',
+        providerId: 'admin',
+        providerName: 'Sehat Kor Admin',
+        providerType: 'hospital',
+        price: amount,
+        currency: 'PKR',
+      }
+    });
+  };
 
   const stats = [
     { icon: Users, label: "Healthcare Providers", value: "1000+", color: "text-blue-600", description: "Verified doctors, hospitals, labs & pharmacies" },
@@ -166,18 +192,54 @@ const AboutPage = () => {
                 </Button>
               </Link>
             ) : (
-              <Link to="/blog">
-                <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800">
-                  <BookOpen className="mr-2 w-4 h-4" />
-                  Read Our Blog
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                onClick={() => setDonateOpen(true)}
+                className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800"
+              >
+                <CreditCard className="mr-2 w-4 h-4" />
+                Donate
+              </Button>
             )}
             <Link to="/search">
               <Button size="lg" variant="outline" className="border-2 border-blue-200 hover:bg-blue-50">
                 Explore Services
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* About Us Section (moved below Hero) */}
+      <section className="relative px-4 pt-2 md:pt-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-4 py-2 text-sm font-medium shadow-sm">
+            <Shield className="w-4 h-4" />
+            Not-for-profit by Sehat Kor Foundation
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-md">
+            <div className="bg-gradient-to-r from-blue-600/10 to-emerald-600/10 p-6 md:p-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">About Us</h2>
+              <p className="mt-2 text-sm text-gray-600">Transparent. Accessible. Patient-centered.</p>
+            </div>
+            <div className="p-6 md:p-8 grid gap-6">
+              <p className="text-gray-700 leading-relaxed text-base md:text-lg">
+                Sehat Kor is a not-for-profit digital platform by Sehat Kor Foundation, built to connect healthcare providers
+                with patients in a transparent, accessible, and meaningful way. Our mission is to make healthcare easier to
+                reach, understand, and trust.
+              </p>
+              <p className="text-gray-700 leading-relaxed text-base md:text-lg">
+                Unlike commercial platforms, Sehat Kor focuses on social impact—bridging the gap between healthcare seekers
+                and providers through a multi-layer comparison model. Patients can explore and match with services not just on
+                cost or availability, but also on quality, process, accessibility, and expectations. This empowers people to make
+                informed choices, while healthcare providers can reach the patients who value their specific services.
+              </p>
+              <p className="text-gray-700 leading-relaxed text-base md:text-lg">
+                Alongside the digital platform, Sehat Kor Foundation also runs a unique co-payment model clinic in Mardan, where
+                thousands of deserving families receive quality treatment at an affordable cost. Together, our physical and digital
+                models reflect one vision: healthcare that is fair, accessible, and patient-centered.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -486,12 +548,14 @@ const AboutPage = () => {
                 </Button>
               </Link>
             ) : (
-              <Link to="/blog">
-                <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 px-8">
-                  <BookOpen className="mr-2 w-4 h-4" />
-                  Read Our Blog
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                onClick={() => setDonateOpen(true)}
+                className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 px-8"
+              >
+                <CreditCard className="mr-2 w-4 h-4" />
+                Donate
+              </Button>
             )}
             <Link to="/contact">
               <Button size="lg" variant="outline" className="border-2 border-gray-300 hover:bg-gray-50 px-8">
@@ -501,6 +565,63 @@ const AboutPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Donation Dialog */}
+      <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Donate to Sehat Kor Foundation</DialogTitle>
+            <DialogDescription>
+              Your contribution helps us keep healthcare accessible and patient-centered.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-5">
+            <div>
+              <Label htmlFor="donationAmount" className="text-gray-700">Enter Amount (PKR)</Label>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">PKR</div>
+                <Input
+                  id="donationAmount"
+                  type="number"
+                  min={1}
+                  value={Number.isFinite(donationAmount) ? donationAmount : 0}
+                  onChange={(e) => setDonationAmount(Number(e.target.value))}
+                  className="text-lg py-5"
+                  placeholder="e.g., 1000"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm text-gray-600 mb-2">Quick amounts</div>
+              <div className="flex flex-wrap gap-2">
+                {[500, 1000, 2500, 5000].map((amt) => (
+                  <Button
+                    key={amt}
+                    type="button"
+                    variant="outline"
+                    className={`border-2 ${donationAmount === amt ? 'border-green-500 text-green-700' : 'border-gray-200'}`}
+                    onClick={() => quickSetAmount(amt)}
+                  >
+                    PKR {amt.toLocaleString()}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setDonateOpen(false)}>Cancel</Button>
+              <Button
+                onClick={proceedDonate}
+                disabled={!Number.isFinite(donationAmount) || donationAmount <= 0}
+                className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800"
+              >
+                Continue to Payment
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

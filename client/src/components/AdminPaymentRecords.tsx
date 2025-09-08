@@ -41,6 +41,11 @@ interface Payment {
   releaseDate?: string;
   createdAt: string;
   completionDate?: string;
+  metadata?: {
+    isDonation?: boolean;
+    donationNote?: string;
+    [key: string]: any;
+  };
 }
 
 interface PaymentStats {
@@ -193,6 +198,10 @@ const AdminPaymentRecords: React.FC = () => {
   });
 
   const getStatusBadge = (payment: Payment) => {
+    const isDonation = payment?.metadata?.isDonation || payment.providerType === 'admin';
+    if (isDonation) {
+      return <Badge variant="secondary">Donation</Badge>;
+    }
     if (payment.releasedToProvider) {
       return <Badge variant="default">Released</Badge>;
     }
@@ -310,6 +319,7 @@ const AdminPaymentRecords: React.FC = () => {
                 <SelectItem value="hospital">Hospitals</SelectItem>
                 <SelectItem value="lab">Labs</SelectItem>
                 <SelectItem value="pharmacy">Pharmacies</SelectItem>
+                <SelectItem value="admin">Donations</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -360,14 +370,14 @@ const AdminPaymentRecords: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{payment.providerName}</div>
-                          <Badge variant="outline" className="text-xs">
-                            {payment.providerType}
+                          <div className="font-medium">{payment.providerType === 'admin' ? 'Sehat Kor Admin' : payment.providerName}</div>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {payment.providerType === 'admin' ? 'donation' : payment.providerType}
                           </Badge>
                         </div>
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate">
-                        {payment.serviceName}
+                        {payment.metadata?.isDonation || payment.providerType === 'admin' ? 'Donation' : payment.serviceName}
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
@@ -424,7 +434,8 @@ const AdminPaymentRecords: React.FC = () => {
                             </DialogContent>
                           </Dialog>
 
-                          {!payment.serviceCompleted && (
+                          {/* Hide action buttons for donations */}
+                          {!((payment.metadata?.isDonation || payment.providerType === 'admin')) && !payment.serviceCompleted && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -434,7 +445,7 @@ const AdminPaymentRecords: React.FC = () => {
                             </Button>
                           )}
 
-                          {payment.serviceCompleted && !payment.releasedToProvider && (
+                          {(payment.serviceCompleted && !payment.releasedToProvider && !(payment.metadata?.isDonation || payment.providerType === 'admin')) && (
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
