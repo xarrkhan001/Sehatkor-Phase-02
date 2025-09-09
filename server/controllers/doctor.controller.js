@@ -180,7 +180,8 @@ export const createDoctorService = async (req, res) => {
       providerName: providerName || "Doctor",
       providerType: "doctor",
       availability: availability || "Physical",
-      serviceType: serviceType || "Private",
+      // Only set serviceType if provided and non-empty; otherwise leave undefined
+      serviceType: (typeof serviceType === 'string' && serviceType.trim() !== '') ? serviceType : undefined,
       homeDelivery: Boolean(homeDelivery) || false,
     });
     res.status(201).json({ service: doc });
@@ -247,9 +248,10 @@ export const updateDoctorService = async (req, res) => {
           // Allow diseases replacement when provided (normalized)
           ...(Array.isArray(updates.diseases) && { diseases: diseasesSet }),
           ...(updates.availability != null && { availability: updates.availability }),
-          ...(updates.serviceType != null && { serviceType: updates.serviceType }),
+          ...((updates.serviceType != null && updates.serviceType !== '') && { serviceType: updates.serviceType }),
           ...(updates.homeDelivery != null && { homeDelivery: Boolean(updates.homeDelivery) }),
         },
+        ...(updates.serviceType === '' && { $unset: { serviceType: "" } }),
       },
       { new: true }
     );

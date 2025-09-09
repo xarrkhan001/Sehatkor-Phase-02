@@ -53,6 +53,8 @@ type Unified = {
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
   // Real pharmacy category (e.g., Tablets, Capsules) when providerType is pharmacy
   pharmacyCategory?: string;
+  // Real doctor category (e.g., Consultation, Therapy) when providerType is doctor
+  doctorCategory?: string;
   variants?: ServiceVariant[];
   diseases?: string[];
 };
@@ -77,6 +79,7 @@ const ServiceDetailPage = () => {
   const [resolvedServiceType, setResolvedServiceType] = useState<Unified['serviceType'] | undefined>(undefined);
   const [resolvedPharmacyCategory, setResolvedPharmacyCategory] = useState<string | undefined>(undefined);
   const [resolvedLabCategory, setResolvedLabCategory] = useState<string | undefined>(undefined);
+  const [resolvedDoctorCategory, setResolvedDoctorCategory] = useState<string | undefined>(undefined);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -143,6 +146,8 @@ const ServiceDetailPage = () => {
       pharmacyCategory: rawStateService.pharmacyCategory ?? ((rawStateService.providerType ?? rawStateService._providerType) === 'pharmacy' ? (rawStateService.category || undefined) : undefined),
       // Preserve lab category if present in navigation state or derive from category field
       labCategory: (rawStateService.providerType ?? rawStateService._providerType) === 'laboratory' ? (rawStateService.labCategory || rawStateService.category || undefined) : undefined,
+      // Preserve doctor category if present in navigation state or derive from category field
+      doctorCategory: (rawStateService.providerType ?? rawStateService._providerType) === 'doctor' ? (rawStateService.doctorCategory || rawStateService.category || undefined) : undefined,
       variants: rawStateService.variants || [],
       // Ensure boolean coercion for homeDelivery in case it comes as string/undefined
       homeDelivery: typeof rawStateService.homeDelivery !== 'undefined' ? Boolean(rawStateService.homeDelivery) : undefined,
@@ -234,6 +239,8 @@ const ServiceDetailPage = () => {
         pharmacyCategory: s.providerType === 'pharmacy' ? ((s as any).category || undefined) : undefined,
         // Preserve real lab category from backend response
         labCategory: s.providerType === 'laboratory' ? ((s as any).category || undefined) : undefined,
+        // Preserve real doctor category from backend response
+        doctorCategory: s.providerType === 'doctor' ? ((s as any).category || undefined) : undefined,
         variants: (s as any).variants || [],
         diseases: Array.isArray((s as any).diseases) ? (s as any).diseases : [],
         // Include main service schedule fields from backend
@@ -330,6 +337,13 @@ const ServiceDetailPage = () => {
             setResolvedLabCategory(incomingLabCat);
           }
         }
+        if ((item as any)?.providerType === 'doctor') {
+          const incomingDocCat = (svc as any)?.category as string | undefined;
+          console.log('🧪 Hydration check (doctorCategory): fromFetch:', incomingDocCat, 'fromItem:', (item as any)?.doctorCategory);
+          if (incomingDocCat && !(item as any)?.doctorCategory) {
+            setResolvedDoctorCategory(incomingDocCat);
+          }
+        }
         // Hydrate diseases if missing or empty
         const incomingDiseases = Array.isArray((svc as any)?.diseases) ? (svc as any).diseases : [];
         const current = Array.isArray((item as any)?.diseases) ? (item as any).diseases : [];
@@ -370,6 +384,13 @@ const ServiceDetailPage = () => {
           console.log('🧪 Hydration (infer path) labCategory:', incomingLabCat);
           if (incomingLabCat && !(item as any)?.labCategory) {
             setResolvedLabCategory(incomingLabCat);
+          }
+        }
+        if ((inferredType as any) === 'doctor') {
+          const incomingDocCat = (svc as any)?.category as string | undefined;
+          console.log('🧪 Hydration (infer path) doctorCategory:', incomingDocCat);
+          if (incomingDocCat && !(item as any)?.doctorCategory) {
+            setResolvedDoctorCategory(incomingDocCat);
           }
         }
         // Also try diseases hydration in this path
@@ -667,7 +688,9 @@ const ServiceDetailPage = () => {
                         ? (item.pharmacyCategory || resolvedPharmacyCategory)
                         : (item.providerType === 'laboratory' && ((item as any).labCategory || resolvedLabCategory))
                           ? (((item as any).labCategory || resolvedLabCategory) as string)
-                          : item.type}
+                          : (item.providerType === 'doctor' && ((item as any).doctorCategory || resolvedDoctorCategory))
+                            ? (((item as any).doctorCategory || resolvedDoctorCategory) as string)
+                            : item.type}
                     </Badge>
                     {activeSlide.availability && (
                       <AvailabilityBadge availability={activeSlide.availability} size="sm" />

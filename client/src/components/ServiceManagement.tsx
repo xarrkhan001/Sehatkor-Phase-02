@@ -77,7 +77,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     detailAddress: '',
     hospitalClinicName: '',
     availability: 'Physical',
-    serviceType: 'Private',
+    serviceType: '',
     homeDelivery: false,
     // Default schedule (used when no variants are added)
     baseTimeLabel: '',
@@ -135,7 +135,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       detailAddress: '',
       hospitalClinicName: '',
       availability: 'Physical',
-      serviceType: 'Private',
+      serviceType: '',
       homeDelivery: false,
       baseTimeLabel: '',
       baseDays: '',
@@ -434,7 +434,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       detailAddress: (service as any).detailAddress || '',
       hospitalClinicName: (service as any).hospitalClinicName || '',
       availability: (service as any).availability || 'Physical',
-      serviceType: (service as any).serviceType || 'Private',
+      serviceType: (service as any).serviceType || '',
       homeDelivery: Boolean((service as any).homeDelivery) || false,
       // Prefer top-level base schedule fields if present; fallback to first variant
       baseTimeLabel: (service as any).timeLabel
@@ -706,75 +706,88 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
                 {/* Service Type Selection */}
                 <div className="space-y-3 border-t pt-3">
-                  <h4 className="font-medium text-sm">Service Type</h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                    {userRole === 'doctor' && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setServiceForm(prev => ({ ...prev, serviceType: '' }))}
+                        className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
                   <div className="space-y-2">
-                    <Label>What type of service is this? *</Label>
+                    <Label>What type of service is this?</Label>
                     <div className="grid grid-cols-2 gap-2">
-                      <label className="flex items-center space-x-2 cursor-pointer">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
                           type="radio"
                           name="serviceType"
                           value="Sehat Card"
                           checked={serviceForm.serviceType === 'Sehat Card'}
                           onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-primary focus:ring-primary"
+                          className="text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm">Sehat Card</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
                           type="radio"
                           name="serviceType"
                           value="Private"
                           checked={serviceForm.serviceType === 'Private'}
                           onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-primary focus:ring-primary"
+                          className="text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm">Private</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="serviceType"
-                          value="Charity"
-                          checked={serviceForm.serviceType === 'Charity'}
-                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-primary focus:ring-primary"
-                        />
-                        <span className="text-sm">Charity</span>
-                      </label>
-                      <label className="flex items-center space-x-2 cursor-pointer">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
                           type="radio"
                           name="serviceType"
                           value="Public"
                           checked={serviceForm.serviceType === 'Public'}
                           onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-primary focus:ring-primary"
+                          className="text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm">Public</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
                           type="radio"
                           name="serviceType"
-                          value="NPO"
-                          checked={serviceForm.serviceType === 'NPO'}
+                          value="Charity"
+                          checked={serviceForm.serviceType === 'Charity'}
                           onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-primary focus:ring-primary"
+                          className="text-blue-600 focus:ring-blue-500"
                         />
-                        <span className="text-sm">NPO</span>
+                        <span className="text-sm">Charity</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
                           type="radio"
                           name="serviceType"
                           value="NGO"
                           checked={serviceForm.serviceType === 'NGO'}
                           onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-primary focus:ring-primary"
+                          className="text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm">NGO</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="NPO"
+                          checked={serviceForm.serviceType === 'NPO'}
+                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          className="text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm">NPO</span>
                       </label>
                     </div>
                   </div>

@@ -92,6 +92,8 @@ const DoctorsPage = () => {
             name: service.name,
             description: service.description,
             price: service.price,
+            // Preserve real doctor category
+            category: service.category || 'Treatment',
             rating: service.averageRating || service.rating || 0,
             location: (service as any).city || "Karachi",
             type: service.category === "Surgery" ? "Surgery" : "Treatment",
@@ -287,6 +289,8 @@ const DoctorsPage = () => {
           name: service.name,
           description: service.description,
           price: service.price,
+          // Preserve real doctor category
+          category: service.category || 'Treatment',
           rating: service.averageRating || service.rating || 0,
           location: (service as any).city || "Karachi",
           type: service.category === "Surgery" ? "Surgery" : "Treatment",
@@ -298,7 +302,6 @@ const DoctorsPage = () => {
           _providerId: (service as any).providerId,
           googleMapLink: (service as any).googleMapLink,
           detailAddress: (service as any).detailAddress,
-          // Preserve hospital/clinic name on load more (bug fix)
           hospitalClinicName: (service as any).hospitalClinicName,
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings || 0,
@@ -835,7 +838,7 @@ const DoctorsPage = () => {
                       variant="outline"
                       className="text-[10px] px-1.5 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
                     >
-                      Treatment
+                      {String(((service as any).category || 'Treatment'))}
                     </Badge>
                   </div>
                 </div>

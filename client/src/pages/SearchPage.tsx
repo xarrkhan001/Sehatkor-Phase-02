@@ -59,6 +59,8 @@ interface SearchService extends Service {
   serviceType?: "Sehat Card" | "Private" | "Charity" | "Public" | "NPO" | "NGO";
   // For pharmacy cards: show real medicine category (Tablets, Capsules, etc.)
   pharmacyCategory?: string;
+  // For doctor cards: show real category from backend (Consultation, Therapy, etc.)
+  doctorCategory?: string;
 }
 
 const SearchPage = () => {
@@ -248,7 +250,7 @@ const SearchPage = () => {
       }
       return s;
     }));
-  }, [user?.id, user?.name]);
+  }, [user?.id]);
 
   // Auto-advance variant/base slides every 10 seconds for services with multiple slides
   useEffect(() => {
@@ -371,6 +373,8 @@ const SearchPage = () => {
           pharmacyCategory: ((service as any).providerType === 'pharmacy') ? ((service as any).category || undefined) : undefined,
           // Preserve real lab category from backend for badge display
           labCategory: ((service as any).providerType === 'laboratory') ? ((service as any).category || undefined) : undefined,
+          // Preserve real doctor category from backend for badge display
+          doctorCategory: ((service as any).providerType === 'doctor') ? ((service as any).category || undefined) : undefined,
           // include pharmacy service type (and pass-through if present on others)
           serviceType: (service as any).serviceType || undefined,
           // include homeDelivery from backend
@@ -576,7 +580,7 @@ const SearchPage = () => {
           } else if (svcType === 'laboratory') {
             svcCategory = String(((service as any).labCategory ?? (service as any).category ?? service.type) || '');
           } else {
-            svcCategory = String((service as any).category ?? service.type ?? '');
+            svcCategory = String(((service as any).doctorCategory ?? (service as any).category ?? service.type) || '');
           }
           matchesAllCategory = svcCategory === sub;
         }
@@ -620,7 +624,7 @@ const SearchPage = () => {
     return filteredServices.slice(0, visibleCount);
   }, [filteredServices, visibleCount]);
 
-// ...
+  // ...
   const handleBookNow = (service: SearchService) => {
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
@@ -1264,7 +1268,9 @@ const SearchPage = () => {
                               ? (service as any).pharmacyCategory
                               : ((service as any)._providerType === 'laboratory' && (service as any).labCategory)
                                 ? (service as any).labCategory
-                                : service.type}
+                                : ((service as any)._providerType === 'doctor' && (service as any).doctorCategory)
+                                  ? (service as any).doctorCategory
+                                  : service.type}
                           </Badge>
                         </div>
                       </div>
