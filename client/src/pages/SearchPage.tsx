@@ -61,6 +61,8 @@ interface SearchService extends Service {
   pharmacyCategory?: string;
   // For doctor cards: show real category from backend (Consultation, Therapy, etc.)
   doctorCategory?: string;
+  // For clinic/hospital cards: real category from backend (e.g., Emergency Care, Blood Bank)
+  clinicCategory?: string;
 }
 
 const SearchPage = () => {
@@ -375,6 +377,8 @@ const SearchPage = () => {
           labCategory: ((service as any).providerType === 'laboratory') ? ((service as any).category || undefined) : undefined,
           // Preserve real doctor category from backend for badge display
           doctorCategory: ((service as any).providerType === 'doctor') ? ((service as any).category || undefined) : undefined,
+          // Preserve real clinic/hospital category from backend for badge display
+          clinicCategory: ((service as any).providerType === 'clinic') ? ((service as any).category || undefined) : undefined,
           // include pharmacy service type (and pass-through if present on others)
           serviceType: (service as any).serviceType || undefined,
           // include homeDelivery from backend
@@ -579,6 +583,8 @@ const SearchPage = () => {
             svcCategory = String(((service as any).pharmacyCategory ?? service.category) || '');
           } else if (svcType === 'laboratory') {
             svcCategory = String(((service as any).labCategory ?? (service as any).category ?? service.type) || '');
+          } else if (svcType === 'clinic') {
+            svcCategory = String(((service as any).clinicCategory ?? (service as any).category ?? service.type) || '');
           } else {
             svcCategory = String(((service as any).doctorCategory ?? (service as any).category ?? service.type) || '');
           }
@@ -844,8 +850,24 @@ const SearchPage = () => {
                       <SelectItem value="doctor:Diagnosis" className="pl-4 text-gray-600">• Diagnosis</SelectItem>
                       {/* Hospitals/Clinics */}
                       <SelectItem value="clinic" className="font-semibold text-gray-800">Hospitals (All)</SelectItem>
-                      <SelectItem value="clinic:Treatment" className="pl-4 text-gray-600">• Treatment</SelectItem>
-                      <SelectItem value="clinic:Surgery" className="pl-4 text-gray-600">• Surgery</SelectItem>
+                      <SelectItem value="clinic:Consultation (OPD)" className="pl-4 text-gray-600">• Consultation (OPD)</SelectItem>
+                      <SelectItem value="clinic:Emergency Care" className="pl-4 text-gray-600">• Emergency Care</SelectItem>
+                      <SelectItem value="clinic:Follow-up Visit" className="pl-4 text-gray-600">• Follow-up Visit</SelectItem>
+                      <SelectItem value="clinic:Diagnosis/Assessment" className="pl-4 text-gray-600">• Diagnosis/Assessment</SelectItem>
+                      <SelectItem value="clinic:Minor Procedures (OPD)" className="pl-4 text-gray-600">• Minor Procedures (OPD)</SelectItem>
+                      <SelectItem value="clinic:Surgery (Daycare)" className="pl-4 text-gray-600">• Surgery (Daycare)</SelectItem>
+                      <SelectItem value="clinic:Surgery (Inpatient)" className="pl-4 text-gray-600">• Surgery (Inpatient)</SelectItem>
+                      <SelectItem value="clinic:Maternity & Obstetrics" className="pl-4 text-gray-600">• Maternity & Obstetrics</SelectItem>
+                      <SelectItem value="clinic:Pediatrics" className="pl-4 text-gray-600">• Pediatrics</SelectItem>
+                      <SelectItem value="clinic:Physiotherapy & Rehabilitation" className="pl-4 text-gray-600">• Physiotherapy & Rehabilitation</SelectItem>
+                      <SelectItem value="clinic:Dental Care" className="pl-4 text-gray-600">• Dental Care</SelectItem>
+                      <SelectItem value="clinic:Mental Health & Counseling" className="pl-4 text-gray-600">• Mental Health & Counseling</SelectItem>
+                      <SelectItem value="clinic:Vaccination & Immunization" className="pl-4 text-gray-600">• Vaccination & Immunization</SelectItem>
+                      <SelectItem value="clinic:Telemedicine" className="pl-4 text-gray-600">• Telemedicine</SelectItem>
+                      <SelectItem value="clinic:Home Visit / Home Care" className="pl-4 text-gray-600">• Home Visit / Home Care</SelectItem>
+                      <SelectItem value="clinic:Wound Care & Dressings" className="pl-4 text-gray-600">• Wound Care & Dressings</SelectItem>
+                      <SelectItem value="clinic:Endoscopy/Scopes" className="pl-4 text-gray-600">• Endoscopy/Scopes</SelectItem>
+                      <SelectItem value="clinic:Blood Bank" className="pl-4 text-gray-600">• Blood Bank</SelectItem>
                       {/* Labs */}
                       <SelectItem value="laboratory" className="font-semibold text-gray-800">Labs (All)</SelectItem>
                       <SelectItem value="laboratory:Blood Test" className="pl-4 text-gray-600">• Blood Test</SelectItem>
@@ -1270,7 +1292,9 @@ const SearchPage = () => {
                                 ? (service as any).labCategory
                                 : ((service as any)._providerType === 'doctor' && (service as any).doctorCategory)
                                   ? (service as any).doctorCategory
-                                  : service.type}
+                                  : ((service as any)._providerType === 'clinic' && (service as any).clinicCategory)
+                                    ? (service as any).clinicCategory
+                                    : service.type}
                           </Badge>
                         </div>
                       </div>
@@ -1438,6 +1462,8 @@ const SearchPage = () => {
                                     days: Array.isArray((service as any).days) ? (service as any).days : null,
                                     availability: (service as any).availability,
                                     homeDelivery: Boolean((service as any).homeDelivery),
+                                    // Pass clinic category to detail page for clinic/hospital services
+                                    clinicCategory: ((service as any)._providerType === 'clinic') ? ((service as any).clinicCategory || undefined) : undefined,
                                   }
                                 },
                               });

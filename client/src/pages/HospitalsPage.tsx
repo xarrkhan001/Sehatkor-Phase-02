@@ -60,6 +60,7 @@ const HospitalsPage = () => {
             rating: service.averageRating || service.rating || 0,
             location: (service as any).city || "Karachi",
             type: service.category === "Surgery" ? "Surgery" : "Treatment",
+            category: (service as any).category,
             homeService: false,
             image: service.image,
             provider: resolvedProviderName,
@@ -72,6 +73,7 @@ const HospitalsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
+            _providerVerified: Boolean((service as any).providerVerified),
             recommended: Boolean((service as any).recommended),
             availability: (service as any).availability,
             serviceType: (service as any).serviceType,
@@ -257,6 +259,7 @@ const HospitalsPage = () => {
           rating: service.averageRating || service.rating || 0,
           location: (service as any).city || "Karachi",
           type: service.category === "Surgery" ? "Surgery" : "Treatment",
+          category: (service as any).category,
           homeService: false,
           image: service.image,
           provider: resolvedProviderName,
@@ -492,6 +495,16 @@ const HospitalsPage = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Top-right verification and provider-type badges */}
+                <div className="absolute top-1.5 right-1.5 z-10 flex flex-col items-end gap-0.5">
+                  {((service as any)._providerVerified === true) ? (
+                    <Badge className="text-[9px] px-1.5 py-0.5 bg-green-500 text-white border-0 shadow-md">Verified</Badge>
+                  ) : (
+                    <Badge className="text-[9px] px-1.5 py-0.5 bg-red-500 text-white border-0 shadow-md">Not Verified</Badge>
+                  )}
+                  <Badge className="text-[9px] px-1.5 py-0.5 bg-indigo-500 text-white border-0 shadow-md">Hospital</Badge>
+                </div>
               </div>
 
                 {/* Title and Provider */}
@@ -523,7 +536,7 @@ const HospitalsPage = () => {
                         variant="outline"
                         className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
                       >
-                        {service.type}
+                        {(service as any).category || service.type}
                       </Badge>
                     </div>
                   </div>
@@ -598,7 +611,7 @@ const HospitalsPage = () => {
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => navigate(`/service/${service.id}`, { state: { service, fromHospitals: true } })}
+                    onClick={() => navigate(`/service/${service.id}`, { state: { service: { ...service, clinicCategory: (service as any).category }, fromHospitals: true } })}
                     className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs"
                   >
                     Details

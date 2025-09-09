@@ -65,6 +65,7 @@ const HospitalDashboard = () => {
     price: '',
     duration: '',
     description: '',
+    category: '',
     department: ''
   });
 
@@ -77,6 +78,28 @@ const HospitalDashboard = () => {
   const hospitalDepartments = [
     'Emergency', 'Cardiology', 'Neurology', 'Orthopedics', 
     'Oncology', 'Pediatrics', 'Surgery', 'ICU', 'Radiology'
+  ];
+
+  // Hospital/Clinic service categories (aligned with ClinicDashboard, excluding lab/imaging/cardiac diagnostics per user request)
+  const hospitalCategories = [
+    'Consultation (OPD)',
+    'Emergency Care',
+    'Follow-up Visit',
+    'Diagnosis/Assessment',
+    'Minor Procedures (OPD)',
+    'Surgery (Daycare)',
+    'Surgery (Inpatient)',
+    'Maternity & Obstetrics',
+    'Pediatrics',
+    'Physiotherapy & Rehabilitation',
+    'Dental Care',
+    'Mental Health & Counseling',
+    'Vaccination & Immunization',
+    'Telemedicine',
+    'Home Visit / Home Care',
+    'Wound Care & Dressings',
+    'Endoscopy/Scopes',
+    'Blood Bank',
   ];
 
   const syncLocalFromDocs = (docs: any[]) => {
@@ -259,7 +282,7 @@ const HospitalDashboard = () => {
         description: serviceForm.description,
         price: parsedPrice,
         department: serviceForm.department || undefined,
-        category: serviceForm.department || 'Treatment',
+        category: serviceForm.category || serviceForm.department || 'Treatment',
         duration: serviceForm.duration || undefined,
         imageUrl,
         imagePublicId,
@@ -271,6 +294,7 @@ const HospitalDashboard = () => {
         price: '',
         duration: '',
         description: '',
+        category: '',
         department: ''
       });
       setServiceImage(''); setServiceImageFile(null);
@@ -494,6 +518,20 @@ const HospitalDashboard = () => {
                                 />
                               </div>
                             </div>
+                            {/* Category Dropdown */}
+                            <div>
+                              <Label htmlFor="serviceCategory">Category</Label>
+                              <Select value={serviceForm.category} onValueChange={(value) => setServiceForm({ ...serviceForm, category: value })}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select service category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {hospitalCategories.map((cat) => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                             <div>
                               <Label htmlFor="serviceDepartment">Department</Label>
                               <Select value={serviceForm.department} onValueChange={(value) => setServiceForm({...serviceForm, department: value})}>
@@ -535,6 +573,7 @@ const HospitalDashboard = () => {
                             <TableRow>
                               <TableHead className="w-20">Image</TableHead>
                               <TableHead>Name</TableHead>
+                              <TableHead>Category</TableHead>
                               <TableHead>Department</TableHead>
                               <TableHead>Price (PKR)</TableHead>
                               <TableHead>Duration</TableHead>
@@ -556,6 +595,7 @@ const HospitalDashboard = () => {
                                   )}
                                 </TableCell>
                                 <TableCell className="font-medium">{m.name}</TableCell>
+                                <TableCell>{m.category || '-'}</TableCell>
                                 <TableCell>{m.department || m.category || '-'}</TableCell>
                                 <TableCell>{m.price ?? 0}</TableCell>
                                 <TableCell>{m.duration ?? '-'}</TableCell>
