@@ -19,6 +19,7 @@ interface SearchService {
   image?: string;
   pharmacyCategory?: string; // Real pharmacy category like Tablets/Capsules for pharmacy services
   labCategory?: string; // Real laboratory category like Blood Test, Urine Test for lab services
+  doctorCategory?: string; // Real doctor category like Consultation/Treatment for doctor services
   variants?: Array<{
     imageUrl?: string;
     price?: number;
@@ -139,6 +140,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       // Keep real pharmacy category separately for badge display
       pharmacyCategory: s.providerType === 'pharmacy' ? ((s as any).category || undefined) : undefined,
       labCategory: s.providerType === 'laboratory' ? ((s as any).category || undefined) : undefined,
+      doctorCategory: s.providerType === 'doctor' ? ((s as any).category || undefined) : undefined,
       icon: getServiceIcon(s),
       image: (s as any).image,
       variants: Array.isArray((s as any).variants) ? (s as any).variants : [],
@@ -584,7 +586,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                             ? service.pharmacyCategory
                             : (service.providerType === 'laboratory' && service.labCategory)
                               ? service.labCategory
-                              : service.category}
+                              : (service.providerType === 'doctor' && service.doctorCategory)
+                                ? service.doctorCategory
+                                : service.category}
                         </button>
                         {(() => {
                           // Get variant-aware availability

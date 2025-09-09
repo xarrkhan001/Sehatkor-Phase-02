@@ -773,7 +773,15 @@ const ProviderProfilePage = () => {
                               {providerUser?.name || service.providerName}
                             </p>
                             <Badge className={(service as any).providerType === 'pharmacy' ? "text-[10px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100" : "bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md"}>
-                              {(service as any).providerType === 'pharmacy' ? ((service as any).category || 'Medicine') : ((service as any).category || 'Service')}
+                              {((service as any).providerType === 'pharmacy' && (service as any).category)
+                                ? (service as any).category
+                                : ((service as any).providerType === 'laboratory' && (service as any).category)
+                                  ? (service as any).category
+                                  : ((service as any).providerType === 'doctor' && (service as any).category)
+                                    ? (service as any).category
+                                    : ((service as any).providerType === 'clinic' && (service as any).category)
+                                      ? (service as any).category
+                                      : 'Service'}
                             </Badge>
                           </div>
                         </div>
@@ -791,7 +799,15 @@ const ProviderProfilePage = () => {
                           {meta.label}
                         </Badge>
                         <Badge className={(service as any).providerType === 'pharmacy' ? "text-[10px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100" : "bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md"}>
-                          {(service as any).providerType === 'pharmacy' ? ((service as any).category || 'Medicine') : ((service as any).category || 'Service')}
+                          {((service as any).providerType === 'pharmacy' && (service as any).category)
+                            ? (service as any).category
+                            : ((service as any).providerType === 'laboratory' && (service as any).category)
+                              ? (service as any).category
+                              : ((service as any).providerType === 'doctor' && (service as any).category)
+                                ? (service as any).category
+                                : ((service as any).providerType === 'clinic' && (service as any).category)
+                                  ? (service as any).category
+                                  : 'Service'}
                         </Badge>
                       </div>
                       <div className="text-right shrink-0">
