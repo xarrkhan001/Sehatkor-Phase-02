@@ -110,6 +110,10 @@ const DoctorsPage = () => {
             totalRatings: (service as any).totalRatings || 0,
             ratingBadge: (service as any).ratingBadge || null,
             recommended: Boolean((service as any).recommended),
+            // Provider verification propagated from API or fallback to current user for own services
+            _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
+              ? Boolean((service as any)._providerVerified)
+              : (isOwn && Boolean((user as any)?.isVerified) && Boolean((user as any)?.licenseNumber) && String((user as any)?.licenseNumber).trim() !== ''),
             ...(service.serviceType ? { serviceType: service.serviceType } : {}),
             ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
               ? { diseases: (service as any).diseases }
@@ -307,6 +311,10 @@ const DoctorsPage = () => {
           totalRatings: (service as any).totalRatings || 0,
           ratingBadge: (service as any).ratingBadge || null,
           recommended: Boolean((service as any).recommended),
+          // Provider verification propagated from API or fallback to current user for own services
+          _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
+            ? Boolean((service as any)._providerVerified)
+            : (isOwn && Boolean((user as any)?.isVerified) && Boolean((user as any)?.licenseNumber) && String((user as any)?.licenseNumber).trim() !== ''),
           ...(service.serviceType ? { serviceType: service.serviceType } : {}),
           ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
             ? { diseases: (service as any).diseases }
@@ -746,7 +754,7 @@ const DoctorsPage = () => {
                       </Badge>
                     ) : (
                       <Badge className="text-[8px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
-                        Not Verified
+                        Unverified
                       </Badge>
                     )}
                     <Badge className="text-[8px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
@@ -967,30 +975,21 @@ const DoctorsPage = () => {
                       variant="secondary"
                       onClick={() => {
                         const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
-                        // Build a rich service payload for detail page
-                        const variants = (service as any).variants as any[] | undefined;
-                        const baseSlide = getDisplayForService(service);
-                        const payload = {
+                        const baseSlide: any = getDisplayForService(service);
+                        const variants = (service as any).variants;
+                        const payload: any = {
                           id: service.id,
-                          name: service.name,
-                          description: service.description,
-                          price: Number(baseSlide.price ?? service.price ?? 0),
+                          name: baseSlide.name,
+                          description: (service as any).description,
+                          price: Number(baseSlide.price ?? (service as any).price ?? 0),
                           rating: (service as any).rating ?? 0,
                           provider: service.provider,
-                          providerId: (service as any)._providerId,
-                          image: baseSlide.image ?? service.image,
-                          type: 'Treatment',
-                          providerType: 'doctor' as const,
+                          image: baseSlide.image,
+                          type: (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
+                          providerType: 'doctor',
+                          _providerVerified: Boolean((service as any)._providerVerified),
                           isReal: true,
-                          ratingBadge: (service as any).ratingBadge ?? null,
-                          availability: (() => {
-                            if (Array.isArray(variants) && variants.length > 0 && currentVariantIndex > 0) {
-                              const v = variants[currentVariantIndex - 1];
-                              return v?.availability ?? (service as any).availability;
-                            }
-                            return (service as any).availability;
-                          })(),
-                          location: baseSlide.location ?? (service as any).location,
+                          location: baseSlide.location,
                           address: baseSlide.detailAddress ?? (service as any).detailAddress ?? null,
                           providerPhone: (service as any).providerPhone ?? undefined,
                           googleMapLink: baseSlide.googleMapLink ?? (service as any).googleMapLink ?? undefined,

@@ -74,12 +74,34 @@ export const verifyEntity = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     if (status === 'approved') {
-      user.isVerified = true;
+      // If provider has a license number, mark fully verified
+      const hasLicense = !!(user.licenseNumber && String(user.licenseNumber).trim() !== '');
+      if (hasLicense) {
+        user.isVerified = true;
+        user.allowedToOperate = true;
+        user.verificationStatus = 'approved';
+      } else {
+        // No license: allow operation but keep not verified
+        user.isVerified = false;
+        user.allowedToOperate = true;
+        user.verificationStatus = 'approved';
+      }
+      user.verifiedAt = new Date();
+      try {
+        user.verifiedBy = req.user?.id || req.userId || user.verifiedBy || null;
+      } catch {}
       await user.save();
-      return res.status(200).json({ message: 'Entity approved and verified successfully' });
+      return res.status(200).json({ message: hasLicense ? 'Entity approved and verified successfully' : 'Entity approved to operate without verification' });
     } else if (status === 'rejected') {
-      await User.findByIdAndDelete(userId);
-      return res.status(200).json({ message: 'Entity rejected and removed successfully' });
+      user.isVerified = false;
+      user.allowedToOperate = false;
+      user.verificationStatus = 'rejected';
+      user.verifiedAt = null;
+      try {
+        user.verifiedBy = req.user?.id || req.userId || user.verifiedBy || null;
+      } catch {}
+      await user.save();
+      return res.status(200).json({ message: 'Entity rejected. User remains not verified and cannot operate.' });
     } else {
       return res.status(400).json({ message: 'Invalid status value' });
     }
@@ -93,6 +115,7 @@ export const getPendingVerifications = async (req, res) => {
   try {
     const pendingUsers = await User.find({
       isVerified: false,
+      verificationStatus: { $in: ['pending'] },
       role: { $in: ['doctor', 'pharmacy', 'laboratory', 'clinic/hospital'] }
     }).select('-password');
     res.status(200).json(pendingUsers);

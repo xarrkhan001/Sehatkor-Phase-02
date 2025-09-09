@@ -47,6 +47,7 @@ type Unified = {
   providerPhone?: string;
   _providerId?: string;
   _providerType?: 'doctor' | 'clinic' | 'laboratory' | 'pharmacy';
+  _providerVerified?: boolean;
   totalRatings?: number;
   // base time fields (optional) in case backend sends them for base service
   timeLabel?: string;
@@ -172,6 +173,10 @@ const CompareExplorer = () => {
             providerPhone: (s as any)?.providerPhone,
             _providerId: (s as any)?.providerId,
             _providerType: (s as any)?.providerType,
+            // Verification: prefer backend `_providerVerified`; if missing and it's your own card, fallback to AuthContext
+            _providerVerified: (typeof (s as any)?._providerVerified !== 'undefined')
+              ? Boolean((s as any)?._providerVerified)
+              : (isOwn && Boolean((user as any)?.isVerified) && Boolean((user as any)?.licenseNumber) && String((user as any)?.licenseNumber).trim() !== ''),
             totalRatings: (s as any)?.totalRatings || 0,
             timeLabel: (s as any)?.timeLabel,
             startTime: (s as any)?.startTime,
@@ -730,10 +735,10 @@ const CompareExplorer = () => {
                         <div>
                           <h3 className="text-lg font-semibold flex items-center gap-2">
                             {item.name}
-                            {item._providerId ? (
+                            {item._providerVerified ? (
                               <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
                             ) : (
-                              <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Not Verified</Badge>
+                              <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Unverified</Badge>
                             )}
                             {isSelected && (
                               <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">Selected</Badge>
@@ -876,6 +881,7 @@ const CompareExplorer = () => {
                                   image: item.image,
                                   type: item.type,
                                   providerType: item._providerType,
+                                  _providerVerified: item._providerVerified,
                                   isReal: true,
                                   ratingBadge: item.ratingBadge ?? null,
                                   location: item.city ?? item.location,

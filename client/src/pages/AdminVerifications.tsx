@@ -86,7 +86,7 @@ const AdminVerifications = () => {
         body: JSON.stringify({ status: 'approved' })
       });
       if (res.ok) {
-        toast({ title: 'User Verified!', description: 'The user has been verified. Please inform them to login.' });
+        toast({ title: 'Entity Approved', description: 'The provider has been approved. If they provided a license, they will show as Verified.' });
         fetchPendingUsers();
       } else {
         const errData = await res.json();
@@ -112,7 +112,7 @@ const AdminVerifications = () => {
         body: JSON.stringify({ status: 'rejected' })
       });
       if (res.ok) {
-        toast({ title: 'User Rejected', description: 'The user has been removed from the system.' });
+        toast({ title: 'Entity Rejected', description: 'The provider remains not verified and cannot operate.' });
         fetchPendingUsers();
       } else {
         const errData = await res.json();

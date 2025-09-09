@@ -8,6 +8,10 @@ interface User {
   isVerified: boolean;
   avatar?: string;
   specialization?: string;
+  // Extended verification fields from backend
+  licenseNumber?: string;
+  verificationStatus?: 'pending' | 'approved' | 'rejected';
+  allowedToOperate?: boolean;
 }
 
 type UserMode = 'patient' | 'provider';

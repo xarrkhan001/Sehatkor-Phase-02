@@ -87,8 +87,8 @@ const LoginPage = () => {
         setIsSubmitting(false);
         return;
       }
-      // Block only unverified providers; patients can login immediately
-      if (["doctor", "clinic/hospital", "laboratory", "pharmacy"].includes(data.user.role) && !data.user.isVerified) {
+      // Providers: allow login if verified OR allowedToOperate; patients always allowed
+      if (["doctor", "clinic/hospital", "laboratory", "pharmacy"].includes(data.user.role) && !data.user.isVerified && !data.user.allowedToOperate) {
         toast({
           title: "Admin Verification Required",
           description: "Your account is pending admin approval. Please wait for verification before logging in.",
@@ -271,8 +271,8 @@ const LoginPage = () => {
                           throw new Error(data.message || 'Google sign-in failed');
                         }
                       } else {
-                        // Block only unverified providers on Google login too
-                        if (["doctor", "clinic/hospital", "laboratory", "pharmacy"].includes(data.user.role) && !data.user.isVerified) {
+                        // Providers: allow login if verified OR allowedToOperate on Google login too
+                        if (["doctor", "clinic/hospital", "laboratory", "pharmacy"].includes(data.user.role) && !data.user.isVerified && !data.user.allowedToOperate) {
                           toast({
                             title: 'Admin Verification Required',
                             description: 'Your account is pending admin approval. Please wait for verification before logging in.',
