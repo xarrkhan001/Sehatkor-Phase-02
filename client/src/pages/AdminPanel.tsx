@@ -26,7 +26,14 @@ import {
   Activity,
   Download,
   Stethoscope,
-  CreditCard
+  CreditCard,
+  ChevronRight,
+  Star,
+  Handshake,
+  Pill,
+  Heart,
+  DollarSign,
+  Image
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminPaymentDashboard from "@/components/AdminPaymentDashboard";
@@ -561,8 +568,9 @@ const AdminPanel = () => {
 
         {/* Stylish Navigation Header */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 w-full">
+          <div className="flex flex-col gap-6">
+            {/* First Row - Main Admin Functions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
               
               {/* Verify Entities Card */}
               <div 
@@ -611,10 +619,14 @@ const AdminPanel = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Second Row - Management Functions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
 
               {/* User Management Card - DANGER */}
               <div 
-                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-red-200 hover:border-red-300"
+                className="group cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:border-red-300 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 onClick={() => window.location.href = '/admin/user-management'}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
@@ -622,8 +634,24 @@ const AdminPanel = () => {
                     <AlertTriangle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-red-600 transition-colors">User Management</h3>
-                    <p className="text-sm text-gray-500 mt-1">Remove verified users</p>
+                    <h3 className="font-semibold text-red-800 group-hover:text-red-900 transition-colors">User Management</h3>
+                    <p className="text-sm text-red-600 mt-1">Manage and delete user accounts</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommended Services Management */}
+              <div 
+                className="group cursor-pointer bg-gradient-to-br from-yellow-50 to-orange-100 border border-yellow-200 hover:border-yellow-300 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                onClick={() => window.location.href = '/admin/recommended-services'}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <Star className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-yellow-800 group-hover:text-yellow-900 transition-colors">Recommended Services</h3>
+                    <p className="text-sm text-yellow-600 mt-1">Mark services as recommended by SehatKor</p>
                   </div>
                 </div>
               </div>
@@ -635,7 +663,7 @@ const AdminPanel = () => {
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <Eye className="w-6 h-6" />
+                    <Image className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">Hero Images</h3>
@@ -646,15 +674,15 @@ const AdminPanel = () => {
 
               {/* Partners Manager Card */}
               <div 
-                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200"
+                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-purple-200"
                 onClick={() => { window.location.href = '/admin/partners'; }}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <Users className="w-6 h-6" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <Handshake className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">Partners Marquee</h3>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Partners Marquee</h3>
                     <p className="text-sm text-gray-500 mt-1">Add logos and names</p>
                   </div>
                 </div>

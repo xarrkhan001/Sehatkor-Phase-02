@@ -283,7 +283,7 @@ const ProviderProfilePage = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'normal' | 'poor' }) => {
+    const handleRatingUpdate = (data: { serviceId: string; averageRating: number; totalRatings: number; ratingBadge: 'excellent' | 'good' | 'fair' | 'poor' }) => {
       setServices(prevServices => {
         return prevServices.map(service =>
           service.id === data.serviceId
@@ -295,8 +295,19 @@ const ProviderProfilePage = () => {
 
     socket.on('rating_updated', handleRatingUpdate);
 
+    // Live update: recommended flag toggled by admin
+    const handleRecommendedToggle = (data: { serviceId: string; providerType: string; recommended: boolean }) => {
+      setServices(prev => prev.map(s => {
+        const pType = (s as any).providerType || (s as any)._providerType;
+        const matches = String(s.id) === String(data.serviceId) && (!data.providerType || String(pType) === String(data.providerType));
+        return matches ? ({ ...s, recommended: Boolean(data.recommended) } as any) : s;
+      }));
+    };
+    socket.on('service_recommendation_toggled', handleRecommendedToggle);
+
     return () => {
       socket.off('rating_updated', handleRatingUpdate);
+      socket.off('service_recommendation_toggled', handleRecommendedToggle);
     };
   }, [socket]);
 
@@ -765,8 +776,8 @@ const ProviderProfilePage = () => {
                           {/* Badges moved to card body below */}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-[1.25rem] md:text-2xl font-semibold text-gray-900 mb-1 truncate">
-                            {getDisplayServiceName(service.name)}
+                          <h3 className="text-[1.25rem] md:text-2xl font-semibold text-gray-900 mb-1 truncate flex items-center gap-2">
+                            <span>{getDisplayServiceName(service.name)}</span>
                           </h3>
                           <div className="flex items-center gap-2">
                             <p className="text-sm text-gray-500 font-medium truncate max-w-[12rem] md:max-w-[16rem]">
@@ -880,6 +891,18 @@ const ProviderProfilePage = () => {
                           <AvailabilityBadge availability={availability} size="md" />
                         ) : null;
                       })()}
+                      {/* Recommended badge */}
+                      <div className="absolute top-1.5 left-1.5 z-10">
+                        <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-slate-300 via-gray-200 to-slate-400 border border-slate-300/50 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-slate-700">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                          <div className="flex flex-col leading-tight">
+                            <span className="font-black text-slate-800 text-[10px] tracking-wider">RECOMMENDED</span>
+                            <span className="font-medium text-slate-600 text-[8px]">by SehatKor</span>
+                          </div>
+                        </div>
+                      </div>
                       {/* Pharmacy serviceType badge (moved from image) */}
                       {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).serviceType && (
                         <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />

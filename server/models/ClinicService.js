@@ -31,6 +31,8 @@ const ClinicServiceSchema = new mongoose.Schema(
       enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
     },
     homeDelivery: { type: Boolean, default: false },
+    // Admin recommendation flag
+    recommended: { type: Boolean, default: false },
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,

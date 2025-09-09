@@ -46,6 +46,7 @@ export interface BaseService {
   averageRating?: number;
   ratingCounts?: { excellent: number; good: number; fair: number } | null;
   hospitalClinic?: string;
+  recommended?: boolean;
   [key: string]: any; // Allow additional properties
 }
 
@@ -241,6 +242,7 @@ class ServiceManager {
       availability: service.availability,
       serviceType: service.serviceType,
       homeDelivery: Boolean(service.homeDelivery) === true,
+      recommended: Boolean(service.recommended) === true,
       totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
       ratingBadge: service.ratingBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,

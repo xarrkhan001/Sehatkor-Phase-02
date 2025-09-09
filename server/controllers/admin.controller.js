@@ -1,6 +1,10 @@
 // controllers/admin.controller.js
 import User from '../models/User.js';
-// import HospitalService from '../models/HospitalService.js';
+import DoctorService from '../models/DoctorService.js';
+import ClinicService from '../models/ClinicService.js';
+import Medicine from '../models/Medicine.js';
+import LaboratoryTest from '../models/LaboratoryTest.js';
+import { getModelForServiceType } from '../utils/serviceModelMapper.js';
 
 // 📊 Admin Dashboard - Get platform stats
 export const getAdminStats = async (req, res) => {
@@ -171,5 +175,157 @@ export const deleteUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting user', error: error.message });
+  }
+};
+
+// 🌟 Get all services for admin recommendation management
+export const getAllServicesForAdmin = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const providerType = req.query.providerType || 'all';
+
+    // Fetch services from all providers with provider details
+    let allServices = [];
+
+    // Helper function to add services from a model
+    const addServicesFromModel = async (Model, type) => {
+      let query = {};
+      if (search) {
+        query.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { providerName: { $regex: search, $options: 'i' } }
+        ];
+      }
+      
+      const services = await Model.find(query)
+        .populate('providerId', 'name phone avatar')
+        .sort({ recommended: -1, createdAt: -1 })
+        .lean();
+      
+      return services.map(service => ({
+        ...service,
+        id: service._id,
+        providerType: type,
+        providerPhone: service.providerId?.phone || null,
+        providerName: service.providerId?.name || service.providerName,
+      }));
+    };
+
+    if (providerType === 'all' || providerType === 'doctor') {
+      const doctorServices = await addServicesFromModel(DoctorService, 'doctor');
+      allServices.push(...doctorServices);
+    }
+    if (providerType === 'all' || providerType === 'clinic') {
+      const clinicServices = await addServicesFromModel(ClinicService, 'clinic');
+      allServices.push(...clinicServices);
+    }
+    if (providerType === 'all' || providerType === 'pharmacy') {
+      const pharmacyServices = await addServicesFromModel(Medicine, 'pharmacy');
+      allServices.push(...pharmacyServices);
+    }
+    if (providerType === 'all' || providerType === 'laboratory') {
+      const laboratoryServices = await addServicesFromModel(LaboratoryTest, 'laboratory');
+      allServices.push(...laboratoryServices);
+    }
+
+    // Sort by recommended first, then by creation date
+    allServices.sort((a, b) => {
+      if (a.recommended !== b.recommended) {
+        return b.recommended ? 1 : -1;
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    // Apply pagination
+    const paginatedServices = allServices.slice(skip, skip + limit);
+    const totalServices = allServices.length;
+
+    res.status(200).json({
+      services: paginatedServices,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalServices / limit),
+        totalServices,
+        hasMore: skip + paginatedServices.length < totalServices
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching services', error: error.message });
+  }
+};
+
+// 🌟 Toggle service recommendation status
+export const toggleServiceRecommendation = async (req, res) => {
+  try {
+    const { serviceId, providerType } = req.params;
+    const { recommended } = req.body;
+
+    if (!serviceId || !providerType) {
+      return res.status(400).json({ message: 'Service ID and provider type are required' });
+    }
+
+    const ServiceModel = getModelForServiceType(providerType);
+    if (!ServiceModel) {
+      return res.status(400).json({ message: 'Invalid provider type' });
+    }
+
+    const service = await ServiceModel.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    service.recommended = Boolean(recommended);
+    await service.save();
+
+    // Broadcast real-time update to all clients
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('service_recommendation_toggled', {
+          serviceId: String(service._id),
+          providerType: String(providerType),
+          recommended: Boolean(service.recommended),
+        });
+      }
+    } catch {}
+
+    res.status(200).json({
+      message: `Service ${recommended ? 'marked as recommended' : 'unmarked as recommended'} successfully`,
+      service: {
+        id: service._id,
+        name: service.name,
+        providerType,
+        recommended: service.recommended
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating service recommendation', error: error.message });
+  }
+};
+
+// 🌟 Get recommended services count
+export const getRecommendedServicesCount = async (req, res) => {
+  try {
+    const doctorCount = await DoctorService.countDocuments({ recommended: true });
+    const clinicCount = await ClinicService.countDocuments({ recommended: true });
+    const pharmacyCount = await Medicine.countDocuments({ recommended: true });
+    const laboratoryCount = await LaboratoryTest.countDocuments({ recommended: true });
+    
+    const total = doctorCount + clinicCount + pharmacyCount + laboratoryCount;
+
+    res.status(200).json({
+      total,
+      byType: {
+        doctor: doctorCount,
+        clinic: clinicCount,
+        pharmacy: pharmacyCount,
+        laboratory: laboratoryCount
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching recommended services count', error: error.message });
   }
 };
