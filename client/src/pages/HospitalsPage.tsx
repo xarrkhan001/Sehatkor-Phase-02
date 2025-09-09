@@ -73,7 +73,9 @@ const HospitalsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings,
             ratingBadge: (service as any).ratingBadge || null,
-            _providerVerified: Boolean((service as any).providerVerified),
+            _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
+              ? Boolean((service as any)._providerVerified)
+              : (isOwn && Boolean((user as any)?.isVerified) && Boolean((user as any)?.licenseNumber) && String((user as any)?.licenseNumber).trim() !== ''),
             recommended: Boolean((service as any).recommended),
             availability: (service as any).availability,
             serviceType: (service as any).serviceType,
@@ -275,6 +277,10 @@ const HospitalsPage = () => {
           availability: (service as any).availability,
           serviceType: (service as any).serviceType,
           homeDelivery: Boolean((service as any).homeDelivery) || false,
+          // Provider verification propagated from API or fallback to current user for own services
+          _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
+            ? Boolean((service as any)._providerVerified)
+            : (isOwn && Boolean((user as any)?.isVerified) && Boolean((user as any)?.licenseNumber) && String((user as any)?.licenseNumber).trim() !== ''),
         }) as unknown as Service;
       });
       setHospitalServices(prev => {
@@ -495,15 +501,13 @@ const HospitalsPage = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Top-right verification and provider-type badges */}
                 <div className="absolute top-1.5 right-1.5 z-10 flex flex-col items-end gap-0.5">
                   {((service as any)._providerVerified === true) ? (
-                    <Badge className="text-[9px] px-1.5 py-0.5 bg-green-500 text-white border-0 shadow-md">Verified</Badge>
+                    <Badge className="text-[9px] px-1.5 py-0.5 bg-green-600 text-white border-0 shadow-lg">Verified</Badge>
                   ) : (
-                    <Badge className="text-[9px] px-1.5 py-0.5 bg-red-500 text-white border-0 shadow-md">Not Verified</Badge>
+                    <Badge className="text-[9px] px-1.5 py-0.5 bg-red-600 text-white border-0 shadow-lg">Unverified</Badge>
                   )}
-                  <Badge className="text-[9px] px-1.5 py-0.5 bg-indigo-500 text-white border-0 shadow-md">Hospital</Badge>
+                  <Badge className="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white border-0 shadow-lg">Hospital</Badge>
                 </div>
               </div>
 
