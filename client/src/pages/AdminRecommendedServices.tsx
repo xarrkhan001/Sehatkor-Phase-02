@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ interface Pagination {
 }
 
 const AdminRecommendedServices = () => {
+  const navigate = useNavigate();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,6 +61,14 @@ const AdminRecommendedServices = () => {
     byType: { doctor: 0, clinic: 0, pharmacy: 0, laboratory: 0 }
   });
   const { toast } = useToast();
+
+  // Guard: redirect to /admin (gate) if not admin-authenticated
+  useEffect(() => {
+    const hasAdmin = localStorage.getItem('sehatkor_admin_auth');
+    if (!hasAdmin) {
+      navigate('/admin', { replace: true });
+    }
+  }, [navigate]);
 
   const fetchServices = async (page = 1, search = "", providerType = "all") => {
     setLoading(true);
@@ -201,7 +211,7 @@ const AdminRecommendedServices = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.location.href = '/admin'}
+            onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/admin'); }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />

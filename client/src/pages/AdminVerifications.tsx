@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +23,20 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 const AdminVerifications = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Guard: redirect to /admin (gate) if not admin-authenticated
+  useEffect(() => {
+    const hasAdmin = localStorage.getItem('sehatkor_admin_auth');
+    if (!hasAdmin) {
+      navigate('/admin', { replace: true });
+    }
+  }, [navigate]);
 
   // Fetch pending users from backend
   const fetchPendingUsers = async () => {
@@ -136,7 +146,9 @@ const AdminVerifications = () => {
       <div className="flex items-center gap-4 mb-8">
         <Button 
           variant="outline" 
-          onClick={() => window.history.back()}
+          onClick={() => {
+            if (window.history.length > 1) navigate(-1); else navigate('/admin');
+          }}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
