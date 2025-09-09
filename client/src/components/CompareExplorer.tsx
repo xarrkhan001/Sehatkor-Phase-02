@@ -39,6 +39,8 @@ type Unified = {
   labCategory?: string;
   // Real doctor category (e.g., Consultation, Therapy) when providerType is doctor
   doctorCategory?: string;
+  // Real clinic/hospital category when providerType is clinic
+  clinicCategory?: string;
   createdAt?: string;
   updatedAt?: string;
   ratingBadge?: string | null;
@@ -162,6 +164,8 @@ const CompareExplorer = () => {
             labCategory: (s as any)?.providerType === 'laboratory' ? ((s as any)?.category || undefined) : undefined,
             // Preserve real doctor category
             doctorCategory: (s as any)?.providerType === 'doctor' ? ((s as any)?.category || undefined) : undefined,
+            // Preserve real clinic category
+            clinicCategory: (s as any)?.providerType === 'clinic' ? ((s as any)?.category || undefined) : undefined,
             createdAt: (s as any)?.createdAt,
             updatedAt: (s as any)?.updatedAt,
             ratingBadge: (s as any)?.ratingBadge || null,
@@ -748,7 +752,9 @@ const CompareExplorer = () => {
                                 ? item.labCategory
                                 : (item._providerType === 'doctor' && item.doctorCategory)
                                   ? item.doctorCategory
-                                  : item.type}
+                                  : (item._providerType === 'clinic' && item.clinicCategory)
+                                    ? item.clinicCategory
+                                    : item.type}
                           </Badge>
                         </div>
                       </div>

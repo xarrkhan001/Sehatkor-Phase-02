@@ -20,6 +20,7 @@ interface SearchService {
   pharmacyCategory?: string; // Real pharmacy category like Tablets/Capsules for pharmacy services
   labCategory?: string; // Real laboratory category like Blood Test, Urine Test for lab services
   doctorCategory?: string; // Real doctor category like Consultation/Treatment for doctor services
+  clinicCategory?: string; // Real clinic/hospital category (e.g., Emergency Care, Blood Bank)
   variants?: Array<{
     imageUrl?: string;
     price?: number;
@@ -141,6 +142,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       pharmacyCategory: s.providerType === 'pharmacy' ? ((s as any).category || undefined) : undefined,
       labCategory: s.providerType === 'laboratory' ? ((s as any).category || undefined) : undefined,
       doctorCategory: s.providerType === 'doctor' ? ((s as any).category || undefined) : undefined,
+      clinicCategory: s.providerType === 'clinic' ? ((s as any).category || undefined) : undefined,
       icon: getServiceIcon(s),
       image: (s as any).image,
       variants: Array.isArray((s as any).variants) ? (s as any).variants : [],
@@ -441,6 +443,8 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : [],
           // Pass lab category if applicable
           labCategory: service.providerType === 'laboratory' ? (service as any).labCategory : undefined,
+          // Pass clinic category if applicable
+          clinicCategory: service.providerType === 'clinic' ? (service as any).clinicCategory : undefined,
         }
       }
     });
@@ -588,7 +592,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                               ? service.labCategory
                               : (service.providerType === 'doctor' && service.doctorCategory)
                                 ? service.doctorCategory
-                                : service.category}
+                                : (service.providerType === 'clinic' && service.clinicCategory)
+                                  ? service.clinicCategory
+                                  : service.category}
                         </button>
                         {(() => {
                           // Get variant-aware availability

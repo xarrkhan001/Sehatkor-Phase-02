@@ -773,6 +773,18 @@ const ProviderProfilePage = () => {
                             </Badge>
                           </div>
 
+                          {/* Top-right verification + provider-type badges for Clinic/Hospital (to match pharmacies UI) */}
+                          {providerType === 'clinic' && (
+                            <div className="absolute top-1.5 right-1.5 z-10 flex flex-col items-end gap-0.5">
+                              {(((service as any)._providerVerified) || ((service as any).providerVerified) || (providerUser?.isVerified)) ? (
+                                <Badge className="text-[9px] px-1.5 py-0.5 bg-green-500 text-white border-0 shadow-md">Verified</Badge>
+                              ) : (
+                                <Badge className="text-[9px] px-1.5 py-0.5 bg-red-500 text-white border-0 shadow-md">Not Verified</Badge>
+                              )}
+                              <Badge className="text-[9px] px-1.5 py-0.5 bg-indigo-500 text-white border-0 shadow-md">Hospital</Badge>
+                            </div>
+                          )}
+
                           {/* Badges moved to card body below */}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -783,17 +795,6 @@ const ProviderProfilePage = () => {
                             <p className="text-sm text-gray-500 font-medium truncate max-w-[12rem] md:max-w-[16rem]">
                               {providerUser?.name || service.providerName}
                             </p>
-                            <Badge className={(service as any).providerType === 'pharmacy' ? "text-[10px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100" : "bg-gray-100 text-gray-700 border border-gray-200 shadow-sm text-[10px] px-2 py-0.5 rounded-md"}>
-                              {((service as any).providerType === 'pharmacy' && (service as any).category)
-                                ? (service as any).category
-                                : ((service as any).providerType === 'laboratory' && (service as any).category)
-                                  ? (service as any).category
-                                  : ((service as any).providerType === 'doctor' && (service as any).category)
-                                    ? (service as any).category
-                                    : ((service as any).providerType === 'clinic' && (service as any).category)
-                                      ? (service as any).category
-                                      : 'Service'}
-                            </Badge>
                           </div>
                         </div>
                       </div>
@@ -929,6 +930,7 @@ const ProviderProfilePage = () => {
                           🏠 Home Delivery
                         </Badge>
                       )}
+                      {/* Removed duplicate clinic category badge to avoid double display */}
                     </div>
 
                     <div className="mt-auto space-y-2">
@@ -989,6 +991,8 @@ const ProviderProfilePage = () => {
                                 providerId: (service as any).providerId,
                                 providerPhone: (service as any).providerPhone,
                                 serviceType: (service as any).serviceType,
+                                // Pass clinic category to detail page if clinic
+                                clinicCategory: ((service as any).providerType || providerType) === 'clinic' ? ((service as any).category || undefined) : undefined,
                                 variants: (service as any).variants || [],
                               },
                               initialVariantIndex: activeIdx,

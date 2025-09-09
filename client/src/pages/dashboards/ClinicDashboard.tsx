@@ -73,6 +73,7 @@ const ClinicDashboard = () => {
     price: '',
     duration: '',
     description: '',
+    category: '',
     department: '',
     googleMapLink: '',
     city: '',
@@ -85,6 +86,27 @@ const ClinicDashboard = () => {
   const clinicTypes = [
     'General Hospital', 'Specialized Hospital', 'Eye Hospital',
     'Heart Hospital', 'Children Hospital', 'Emergency Center'
+  ];
+
+  const clinicCategories = [
+    'Consultation (OPD)',
+    'Emergency Care',
+    'Follow-up Visit',
+    'Diagnosis/Assessment',
+    'Minor Procedures (OPD)',
+    'Surgery (Daycare)',
+    'Surgery (Inpatient)',
+    'Maternity & Obstetrics',
+    'Pediatrics',
+    'Physiotherapy & Rehabilitation',
+    'Dental Care',
+    'Mental Health & Counseling',
+    'Vaccination & Immunization',
+    'Telemedicine',
+    'Home Visit / Home Care',
+    'Wound Care & Dressings',
+    'Endoscopy/Scopes',
+    'Blood Bank',
   ];
 
   const syncLocalFromDocs = (docs: any[]) => {
@@ -343,7 +365,7 @@ const ClinicDashboard = () => {
           description: serviceForm.description,
           price: parsedPrice,
           department: serviceForm.department || undefined,
-          category: serviceForm.department || 'Treatment',
+          category: serviceForm.category || serviceForm.department || 'Treatment',
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
@@ -362,7 +384,7 @@ const ClinicDashboard = () => {
           description: serviceForm.description,
           price: parsedPrice,
           department: serviceForm.department || undefined,
-          category: serviceForm.department || 'Treatment',
+          category: serviceForm.category || serviceForm.department || 'Treatment',
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
@@ -382,6 +404,7 @@ const ClinicDashboard = () => {
         price: '',
         duration: '',
         description: '',
+        category: '',
         department: '',
         googleMapLink: '',
         city: '',
@@ -613,6 +636,20 @@ const ClinicDashboard = () => {
                                   placeholder="e.g., 45"
                                 />
                               </div>
+                            </div>
+                            {/* Category Dropdown */}
+                            <div>
+                              <Label htmlFor="serviceCategory">Category</Label>
+                              <Select value={serviceForm.category} onValueChange={(value) => setServiceForm({ ...serviceForm, category: value })}>
+                                <SelectTrigger id="serviceCategory">
+                                  <SelectValue placeholder="Select service category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {clinicCategories.map((category) => (
+                                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                             <div>
                               <Label htmlFor="serviceDepartment">Department</Label>
@@ -911,6 +948,7 @@ const ClinicDashboard = () => {
                               <TableRow>
                                 <TableHead className="w-20">Image</TableHead>
                                 <TableHead>Name</TableHead>
+                                <TableHead>Category</TableHead>
                                 <TableHead>Department</TableHead>
                                 <TableHead>Price (PKR)</TableHead>
                                 <TableHead>Duration</TableHead>
@@ -933,6 +971,7 @@ const ClinicDashboard = () => {
                                       )}
                                     </TableCell>
                                     <TableCell className="font-medium">{m.name}</TableCell>
+                                    <TableCell>{m.category || '-'}</TableCell>
                                     <TableCell>{m.department || m.category || '-'}</TableCell>
                                     <TableCell>{m.price ?? 0}</TableCell>
                                     <TableCell>{m.duration ?? '-'}</TableCell>
