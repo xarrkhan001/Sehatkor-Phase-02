@@ -1,4 +1,5 @@
 import { useState, useEffect, memo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -107,8 +108,9 @@ const AddPartnerDialog = memo(function AddPartnerDialog({
 });
 
 const AdminPanel = () => {
-  // Simple in-page gate for /admin route
-  const [showGate, setShowGate] = useState(true);
+  // Simple in-page gate for /admin route with persisted state
+  const navigate = useNavigate();
+  const [showGate, setShowGate] = useState(() => !localStorage.getItem('sehatkor_admin_auth'));
   const [gateEmail, setGateEmail] = useState("");
   const [gatePassword, setGatePassword] = useState("");
   const [animateIn, setAnimateIn] = useState(false);
@@ -119,6 +121,8 @@ const AdminPanel = () => {
     const validEmail = "test@gmail.com";
     const validPassword = "12345678";
     if (gateEmail.trim().toLowerCase() === validEmail && gatePassword === validPassword) {
+      // Persist admin auth so navigating between admin pages doesn't prompt again
+      localStorage.setItem('sehatkor_admin_auth', 'true');
       setShowGate(false);
       toast({ title: "Access granted", description: "Welcome to the Admin Panel." });
     } else {
@@ -135,6 +139,13 @@ const AdminPanel = () => {
       setAnimateIn(false);
     }
   }, [showGate]);
+
+  // Admin-only logout: clears only admin auth and redirects home
+  const handleAdminLogout = () => {
+    localStorage.removeItem('sehatkor_admin_auth');
+    toast({ title: 'Logged out', description: 'You have been logged out from the Admin Panel.' });
+    navigate('/', { replace: true });
+  };
 
   // Soft surface gradient per card color
   const getCardSurface = (color: string) => {
@@ -253,6 +264,10 @@ const AdminPanel = () => {
         <CardDescription>Upload partner PNG logos. Company name is optional. Stored on Cloudinary.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Admin top controls */}
+        <div className="flex items-center justify-end">
+          <Button variant="destructive" onClick={handleAdminLogout}>Admin Logout</Button>
+        </div>
         <div className="flex justify-between items-center" id="partners-section">
           <h3 className="font-semibold">Add New Partner</h3>
           <AddPartnerDialog open={openAddModal} onOpenChange={setOpenAddModal} onSave={({name, logo})=>handleCreatePartner(name, logo)} />
@@ -296,13 +311,13 @@ const AdminPanel = () => {
   };
 
   const handleCreatePartner = async (name: string, logo: File) => {
-    if (!logo) return toast({ title: 'Missing', description: 'PNG logo is required', variant: 'destructive' });
+    if (!logo) { toast({ title: 'Missing', description: 'PNG logo is required', variant: 'destructive' }); return; }
     const fd = new FormData();
     if (name && name.trim()) fd.append('name', name.trim());
     fd.append('logo', logo);
     const res = await fetch(apiUrl('/api/partners'), { method: 'POST', body: fd });
     const data = await res.json();
-    if (!res.ok) return toast({ title: 'Error', description: data?.message || 'Failed', variant: 'destructive' });
+    if (!res.ok) { toast({ title: 'Error', description: data?.message || 'Failed', variant: 'destructive' }); return; }
     toast({ title: 'Added', description: 'Partner created' });
     fetchPartners();
   };
@@ -314,7 +329,7 @@ const AdminPanel = () => {
     if (file) fd.append('logo', file);
     const res = await fetch(apiUrl(`/api/partners/${id}`), { method: 'PUT', body: fd });
     const data = await res.json();
-    if (!res.ok) return toast({ title: 'Update failed', description: data?.message || 'Try again', variant: 'destructive' });
+    if (!res.ok) { toast({ title: 'Update failed', description: data?.message || 'Try again', variant: 'destructive' }); return; }
     toast({ title: 'Updated', description: 'Partner updated' });
     fetchPartners();
   };
@@ -322,7 +337,7 @@ const AdminPanel = () => {
   const handleDeletePartner = async (id: string) => {
     const res = await fetch(apiUrl(`/api/partners/${id}`), { method: 'DELETE' });
     const data = await res.json();
-    if (!res.ok) return toast({ title: 'Delete failed', description: data?.message || 'Try again', variant: 'destructive' });
+    if (!res.ok) { toast({ title: 'Delete failed', description: data?.message || 'Try again', variant: 'destructive' }); return; }
     toast({ title: 'Deleted', description: 'Partner removed' });
     fetchPartners();
   };
@@ -521,11 +536,12 @@ const AdminPanel = () => {
               Manage SehatKor platform operations and user verifications
             </p>
           </div>
-          <div>
+          <div className="flex items-center gap-3">
             <Badge variant="outline" className="text-success border-success w-fit">
               <ShieldCheck className="w-4 h-4 mr-1" />
               Admin Access
             </Badge>
+            <Button variant="destructive" onClick={handleAdminLogout}>Admin Logout</Button>
           </div>
         </div>
 
@@ -575,7 +591,7 @@ const AdminPanel = () => {
               {/* Verify Entities Card */}
               <div 
                 className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-blue-200"
-                onClick={() => window.location.href = '/admin/verifications'}
+                onClick={() => navigate('/admin/verifications')}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -591,7 +607,7 @@ const AdminPanel = () => {
               {/* Documents Card */}
               <div 
                 className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-purple-200"
-                onClick={() => window.location.href = '/admin/documents'}
+                onClick={() => navigate('/admin/documents')}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -607,7 +623,7 @@ const AdminPanel = () => {
               {/* Payment Management Card */}
               <div 
                 className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-blue-200"
-                onClick={() => window.location.href = '/admin/payments'}
+                onClick={() => navigate('/admin/payments')}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -627,7 +643,7 @@ const AdminPanel = () => {
               {/* User Management Card - DANGER */}
               <div 
                 className="group cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:border-red-300 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                onClick={() => window.location.href = '/admin/user-management'}
+                onClick={() => navigate('/admin/user-management')}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -643,7 +659,7 @@ const AdminPanel = () => {
               {/* Recommended Services Management */}
               <div 
                 className="group cursor-pointer bg-gradient-to-br from-yellow-50 to-orange-100 border border-yellow-200 hover:border-yellow-300 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                onClick={() => window.location.href = '/admin/recommended-services'}
+                onClick={() => navigate('/admin/recommended-services')}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -659,7 +675,7 @@ const AdminPanel = () => {
               {/* Hero Images Manager Card */}
               <div 
                 className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200"
-                onClick={() => { window.location.href = '/admin/hero-images'; }}
+                onClick={() => { navigate('/admin/hero-images'); }}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -675,7 +691,7 @@ const AdminPanel = () => {
               {/* Partners Manager Card */}
               <div 
                 className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-purple-200"
-                onClick={() => { window.location.href = '/admin/partners'; }}
+                onClick={() => { navigate('/admin/partners'); }}
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">

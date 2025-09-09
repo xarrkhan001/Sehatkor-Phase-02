@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +59,7 @@ interface PaginationInfo {
 
 const AdminUserManagement = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -202,8 +204,14 @@ const AdminUserManagement = () => {
   };
 
   useEffect(() => {
+    // Guard: redirect to /admin if not admin-authenticated
+    const hasAdmin = localStorage.getItem('sehatkor_admin_auth');
+    if (!hasAdmin) {
+      navigate('/admin', { replace: true });
+      return;
+    }
     fetchUsers();
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,7 +222,7 @@ const AdminUserManagement = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.history.back()}
+              onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/admin'); }}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
