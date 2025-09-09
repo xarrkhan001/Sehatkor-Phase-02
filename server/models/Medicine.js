@@ -53,6 +53,8 @@ const MedicineSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    // Admin recommendation flag
+    recommended: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

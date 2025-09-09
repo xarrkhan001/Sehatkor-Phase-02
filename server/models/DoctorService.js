@@ -86,6 +86,8 @@ const DoctorServiceSchema = new mongoose.Schema(
     },
     // Indicates if the doctor service supports home delivery/visit
     homeDelivery: { type: Boolean, default: false },
+    // Admin recommendation flag
+    recommended: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

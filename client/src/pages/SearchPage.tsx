@@ -27,6 +27,22 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { useSocket } from "@/context/SocketContext";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 
+// Map rating badge to tailwind classes used for small label chips
+const getRatingBadgeClass = (badge: "excellent" | "good" | "fair" | "poor" | null | undefined): string => {
+  switch (badge) {
+    case "excellent":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    case "good":
+      return "bg-blue-50 text-blue-700 border-blue-200";
+    case "fair":
+      return "bg-yellow-50 text-yellow-700 border-yellow-200";
+    case "poor":
+      return "bg-red-50 text-red-700 border-red-200";
+    default:
+      return "bg-gray-50 text-gray-600 border-gray-200";
+  }
+};
+
 interface SearchService extends Service {
   isReal?: boolean;
   coordinates?: { lat: number; lng: number };
@@ -207,8 +223,18 @@ const SearchPage = () => {
 
     socket.on("rating_updated", handleRatingUpdate);
 
+    // Live update: recommended flag toggled by admin
+    const handleRecommendedToggle = (data: { serviceId: string; providerType: string; recommended: boolean }) => {
+      setAllServices(prev => prev.map(s => {
+        const matches = s.id === data.serviceId && String((s as any)._providerType) === String(data.providerType);
+        return matches ? ({ ...s, recommended: Boolean(data.recommended) } as any) : s;
+      }));
+    };
+    socket.on('service_recommendation_toggled', handleRecommendedToggle);
+
     return () => {
       socket.off("rating_updated", handleRatingUpdate);
+      socket.off('service_recommendation_toggled', handleRecommendedToggle);
     };
   }, [socket]);
 
@@ -354,6 +380,8 @@ const SearchPage = () => {
           startTime: (service as any).startTime || null,
           endTime: (service as any).endTime || null,
           days: Array.isArray((service as any).days) ? (service as any).days : null,
+          // include recommended flag for overlay tag
+          recommended: Boolean((service as any).recommended),
         };
 
         // coordinates based on location
@@ -1081,6 +1109,21 @@ const SearchPage = () => {
                           <span className="text-gray-400 text-4xl">{getServiceEmoji(service.type)}</span>
                         )}
                         
+                        {/* Top-left recommended overlay */}
+                        {(service as any).recommended && (
+                          <div className="absolute top-1.5 left-1.5 z-10">
+                            <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-slate-400 via-gray-300 to-slate-500 border border-slate-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-slate-800">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                              </svg>
+                              <div className="flex flex-col leading-tight">
+                                <span className="font-black text-slate-900 text-[10px] tracking-wider">RECOMMENDED</span>
+                                <span className="font-medium text-slate-700 text-[8px]">by SehatKor</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Top-right corner badges (availability moved to action row) */}
                         <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
                           {(service as any)._providerVerified ? (
@@ -1147,13 +1190,8 @@ const SearchPage = () => {
                       {/* Title and Provider */}
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="text-lg font-semibold flex items-center gap-2">
-                            {service.name}
-                            {isHighlighted && (
-                              <Badge className="text-[11px] px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">
-                                Selected
-                              </Badge>
-                            )}
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 leading-snug flex items-center gap-2">
+                            <span className="line-clamp-1">{service.name}</span>
                           </h3>
                           <button
                             className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
@@ -1300,15 +1338,7 @@ const SearchPage = () => {
                           </Badge>
                         )}
                       </div>
-                      {/* Address only (diseases moved to tooltip icon) */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-gray-500 mb-2">
-                        <div className="flex items-center gap-1 min-w-0">
-                          <MapPin className="w-4 h-4 flex-shrink-0" />
-                          <span className="truncate text-xs sm:text-sm" title={getDisplayAddress(service) || getDisplayLocation(service)}>
-                            {getDisplayAddress(service) || getDisplayLocation(service)}
-                          </span>
-                        </div>
-                      </div>
+                      
                       {/* Buttons */}
                       <div className="mt-auto space-y-2">
                         {/* Mobile: 2x2 grid, Desktop: flex row */}

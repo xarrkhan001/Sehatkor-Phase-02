@@ -313,6 +313,11 @@ const ComparePage = () => {
                             <div>
                               <div className="font-semibold leading-tight flex items-center gap-2">
                                 <span>{item.name}</span>
+                                {(item as any).recommended && (
+                                  <Badge className="text-[9px] px-1.5 py-0.5 bg-red-600 text-white border-0 shadow-sm font-medium">
+                                    ⭐ Recommended
+                                  </Badge>
+                                )}
                                 {getSlides(item).length > 1 && (
                                   <div className="inline-flex items-center gap-1">
                                     <button className="px-1 py-0.5 rounded bg-gray-100" onClick={() => prevVariant(item.id)} aria-label="Prev">‹</button>

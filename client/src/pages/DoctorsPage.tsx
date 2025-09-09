@@ -107,6 +107,7 @@ const DoctorsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings || 0,
             ratingBadge: (service as any).ratingBadge || null,
+            recommended: Boolean((service as any).recommended),
             ...(service.serviceType ? { serviceType: service.serviceType } : {}),
             ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
               ? { diseases: (service as any).diseases }
@@ -228,8 +229,16 @@ const DoctorsPage = () => {
 
     socket.on('rating_updated', handleRatingUpdate);
 
+    // Live update: recommended flag toggled by admin
+    const handleRecommendedToggle = (data: { serviceId: string; providerType: string; recommended: boolean }) => {
+      if (!data || data.providerType !== 'doctor') return;
+      setDoctorServices(prev => prev.map(s => s.id === data.serviceId ? ({ ...s, recommended: Boolean(data.recommended) } as any) : s));
+    };
+    socket.on('service_recommendation_toggled', handleRecommendedToggle);
+
     return () => {
       socket.off('rating_updated', handleRatingUpdate);
+      socket.off('service_recommendation_toggled', handleRecommendedToggle);
     };
   }, [socket]);
 
@@ -294,6 +303,7 @@ const DoctorsPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings || 0,
           ratingBadge: (service as any).ratingBadge || null,
+          recommended: Boolean((service as any).recommended),
           ...(service.serviceType ? { serviceType: service.serviceType } : {}),
           ...(Array.isArray((service as any).diseases) && (service as any).diseases.length > 0
             ? { diseases: (service as any).diseases }
@@ -710,6 +720,21 @@ const DoctorsPage = () => {
                     <span className="text-gray-400 text-4xl">🩺</span>
                   )}
                   
+                  {/* Top-left recommended overlay */}
+                  {(service as any).recommended && (
+                    <div className="absolute top-1.5 left-1.5 z-10">
+                      <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-slate-400 via-gray-300 to-slate-500 border border-slate-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-slate-800">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <div className="flex flex-col leading-tight">
+                          <span className="font-black text-slate-900 text-[10px] tracking-wider">RECOMMENDED</span>
+                          <span className="font-medium text-slate-700 text-[8px]">by SehatKor</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Top-right corner badges */}
                   <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
                     {(service as any)._providerVerified ? (
@@ -785,7 +810,7 @@ const DoctorsPage = () => {
                 {/* Title and Provider */}
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-semibold">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
                       {service.name}
                     </h3>
                     <button

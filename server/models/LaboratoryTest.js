@@ -31,6 +31,8 @@ const LaboratoryTestSchema = new mongoose.Schema(
       // no default; optional
     },
     homeDelivery: { type: Boolean, default: false },
+    // Admin recommendation flag
+    recommended: { type: Boolean, default: false },
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,

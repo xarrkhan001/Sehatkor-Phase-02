@@ -108,6 +108,7 @@ export const getAllPublicServices = async (req, res) => {
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
+        recommended: Boolean(service.recommended) || false,
         // Hospital/Clinic name
         hospitalClinicName: service.hospitalClinicName || null,
         // expose main service schedule fields
@@ -129,6 +130,7 @@ export const getAllPublicServices = async (req, res) => {
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
+        recommended: Boolean(service.recommended) || false,
         // expose main service schedule fields
         timeLabel: service.timeLabel || null,
         startTime: service.startTime || null,
@@ -149,6 +151,7 @@ export const getAllPublicServices = async (req, res) => {
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
+        recommended: Boolean(service.recommended) || false,
         // Hospital/Clinic name (if any provided on medicine)
         hospitalClinicName: service.hospitalClinicName || null,
         // expose main service schedule fields
@@ -169,6 +172,7 @@ export const getAllPublicServices = async (req, res) => {
         ratingBadge: service.ratingBadge || null,
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
+        recommended: Boolean(service.recommended) || false,
         // expose main service schedule fields
         timeLabel: service.timeLabel || null,
         startTime: service.startTime || null,
