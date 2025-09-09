@@ -156,7 +156,13 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       providerPhone: (s as any).providerPhone,
       googleMapLink: (s as any).googleMapLink,
       detailAddress: (s as any).detailAddress,
-      _providerVerified: (s as any)._providerVerified,
+      // Use backend-provided verification; if missing and it's your own service, fall back to user verification + license
+      _providerVerified: (typeof (s as any)._providerVerified !== 'undefined')
+        ? Boolean((s as any)._providerVerified)
+        : (user && String(s.providerId) === String(user.id)
+            && Boolean((user as any)?.isVerified)
+            && Boolean((user as any)?.licenseNumber)
+            && String((user as any)?.licenseNumber).trim() !== ''),
       availability: (s as any).availability || "Physical",
       serviceType: (s as any).serviceType || undefined,
       homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
@@ -421,6 +427,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           type: service.category === 'Lab Test' ? 'Test' : service.category === 'Medicine' ? 'Medicine' : service.category === 'Surgery' ? 'Surgery' : 'Treatment',
           providerType: service.providerType,
           isReal: true,
+          _providerVerified: Boolean(service._providerVerified),
           ratingBadge: service.ratingBadge ?? null,
           availability: service.availability,
           location: getDisplayCity(service) ?? service.city ?? undefined,
@@ -537,9 +544,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                             Verified
                           </Badge>
                         ) : (
-                          <Badge className="text-[7px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
-                            Not Verified
-                          </Badge>
+                          <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Unverified</Badge>
                         )}
                         <Badge className="text-[7px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
                           {service.providerType === 'doctor' ? 'Doctor' : 

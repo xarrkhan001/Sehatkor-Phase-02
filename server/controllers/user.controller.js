@@ -66,28 +66,28 @@ export const getAllPublicServices = async (req, res) => {
       }
       doctorServices = await applyPaging(
         DoctorService.find(docQuery)
-          .populate("providerId", "phone name avatar")
+          .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
     }
     if (!hasType || type === "clinic") {
       clinicServices = await applyPaging(
         ClinicService.find({})
-          .populate("providerId", "phone name avatar")
+          .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
     }
     if (!hasType || type === "pharmacy") {
       pharmacyServices = await applyPaging(
         Medicine.find({})
-          .populate("providerId", "phone name avatar")
+          .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
     }
     if (!hasType || type === "laboratory") {
       laboratoryServices = await applyPaging(
         LaboratoryTest.find({})
-          .populate("providerId", "phone name avatar")
+          .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
     }
@@ -101,6 +101,7 @@ export const getAllPublicServices = async (req, res) => {
         providerPhone: service.providerId?.phone || null,
         // ensure latest name overrides any stale providerName on the document
         providerName: service.providerId?.name || service.providerName,
+        _providerVerified: Boolean(service?.providerId?.isVerified && service?.providerId?.licenseNumber),
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
@@ -123,6 +124,7 @@ export const getAllPublicServices = async (req, res) => {
         providerType: "clinic",
         providerPhone: service.providerId?.phone || null,
         providerName: service.providerId?.name || service.providerName,
+        _providerVerified: Boolean(service?.providerId?.isVerified && service?.providerId?.licenseNumber),
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
@@ -143,6 +145,7 @@ export const getAllPublicServices = async (req, res) => {
         providerType: "pharmacy",
         providerPhone: service.providerId?.phone || null,
         providerName: service.providerId?.name || service.providerName,
+        _providerVerified: Boolean(service?.providerId?.isVerified && service?.providerId?.licenseNumber),
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
@@ -166,6 +169,7 @@ export const getAllPublicServices = async (req, res) => {
         providerType: "laboratory",
         providerPhone: service.providerId?.phone || null,
         providerName: service.providerId?.name || service.providerName,
+        _providerVerified: Boolean(service?.providerId?.isVerified && service?.providerId?.licenseNumber),
         rating: service.rating ?? service.averageRating ?? 0,
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,

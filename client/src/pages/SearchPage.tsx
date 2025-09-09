@@ -355,20 +355,13 @@ const SearchPage = () => {
           location: (service as any).location || (service as any).city || "Karachi",
           rating: Number((service as any).rating) || 0,
           ratingBadge: (service as any).ratingBadge ?? null,
-          totalRatings: (service as any).totalRatings ?? 0,
-          isReal: true,
-          // meta
-          _providerId: (service as any).providerId,
-          _providerType: (service as any).providerType,
-          _providerVerified: Boolean((service as any).providerVerified),
-          providerPhone: (service as any).providerPhone,
-          address: (service as any).detailAddress,
-          googleMapLink: (service as any).googleMapLink,
-          // Preserve hospital/clinic name for main service (needed when no variants)
-          hospitalClinicName: (service as any).hospitalClinicName,
           diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : undefined,
           availability: (service as any).availability as any,
           createdAt: (service as any).createdAt,
+          // meta for navigation and actions
+          _providerId: (service as any).providerId,
+          _providerType: (service as any).providerType,
+          providerPhone: (service as any).providerPhone,
           // Preserve real pharmacy category from backend for badge display
           pharmacyCategory: ((service as any).providerType === 'pharmacy') ? ((service as any).category || undefined) : undefined,
           // Preserve real lab category from backend for badge display
@@ -386,6 +379,13 @@ const SearchPage = () => {
           days: Array.isArray((service as any).days) ? (service as any).days : null,
           // include recommended flag for overlay tag
           recommended: Boolean((service as any).recommended),
+          // Verification: trust backend `_providerVerified`; if missing and it's your own service, fallback to AuthContext
+          _providerVerified: (typeof (service as any)._providerVerified !== 'undefined')
+            ? Boolean((service as any)._providerVerified)
+            : (user && String((service as any).providerId) === String(user.id)
+                && Boolean((user as any)?.isVerified)
+                && Boolean((user as any)?.licenseNumber)
+                && String((user as any)?.licenseNumber).trim() !== ''),
         };
 
         // coordinates based on location
@@ -1136,7 +1136,7 @@ const SearchPage = () => {
                             </Badge>
                           ) : (
                             <Badge className="text-[9px] px-1.5 py-0.5 bg-red-600 text-white border-0 shadow-lg">
-                              Not Verified
+                              Unverified
                             </Badge>
                           )}
                           <Badge className="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
@@ -1199,7 +1199,11 @@ const SearchPage = () => {
                           </h3>
                           <button
                             className="text-sm text-gray-500 hover:text-primary hover:underline text-left"
-                            onClick={() => navigate(`/provider/${(service as any)._providerId}`)}
+                            onClick={() => {
+                              const pid = (service as any)._providerId || (service as any).providerId;
+                              if (!pid) return;
+                              navigate(`/provider/${pid}`);
+                            }}
                           >
                             {service.provider}
                           </button>
@@ -1377,14 +1381,6 @@ const SearchPage = () => {
                               const timeInfo = getDisplayTimeInfo(service);
                               const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
                               console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
-                              console.log('Service data being passed:', service);
-                              console.log('🧬 SearchPage diseases in service:', Array.isArray((service as any).diseases) ? (service as any).diseases : undefined);
-                              console.log('🔎 SearchPage navigation hospitalClinicName check:', {
-                                serviceId: service.id,
-                                serviceName: service.name,
-                                hospitalClinicName: (service as any).hospitalClinicName,
-                                variantsHospitalClinicNames: Array.isArray((service as any).variants) ? ((service as any).variants as any[]).map(v => v?.hospitalClinicName) : null
-                              });
                               navigate(`/service/${service.id}`, {
                                 state: {
                                   from: `${routerLocation.pathname}${routerLocation.search}`,
@@ -1401,27 +1397,9 @@ const SearchPage = () => {
                                     image: getDisplayImage(service) ?? (service as any).image,
                                     type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
                                     providerType: (service as any)._providerType || (service as any).providerType || 'doctor',
+                                    // Ensure detail page shows the same verification badge
+                                    _providerVerified: Boolean((service as any)._providerVerified),
                                     isReal: true,
-                                    // Hospital/Clinic name (main)
-                                    hospitalClinicName: (service as any).hospitalClinicName,
-                                    // Diseases for tooltip on detail
-                                    diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : [],
-                                    // Variants including hospital/clinic name
-                                    variants: Array.isArray((service as any).variants)
-                                      ? ((service as any).variants as any[]).map(v => ({
-                                          imageUrl: v.imageUrl,
-                                          price: v.price,
-                                          city: v.city,
-                                          detailAddress: v.detailAddress,
-                                          googleMapLink: v.googleMapLink,
-                                          timeLabel: v.timeLabel,
-                                          startTime: v.startTime,
-                                          endTime: v.endTime,
-                                          days: v.days,
-                                          availability: v.availability,
-                                          hospitalClinicName: v.hospitalClinicName,
-                                        }))
-                                      : [],
                                     // Location/address helpers
                                     location: getDisplayLocation(service) || (service as any).location,
                                     address: getDisplayAddress(service) || (service as any).address,

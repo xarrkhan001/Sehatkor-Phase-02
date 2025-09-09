@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Clock, Home, Star, Minimize2, Maximize2, X, User, Award, Calendar, Phone, Search, Filter } from "lucide-react";
+import { MapPin, Clock, Home, Star, Minimize2, Maximize2, X, User, Award, Calendar, Phone, Search, Filter, BadgeCheck } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
@@ -31,6 +31,7 @@ interface ProviderUser {
   address?: string;
   specialization?: string;
   isVerified?: boolean;
+  licenseNumber?: string;
   createdAt: string;
 }
 
@@ -498,9 +499,15 @@ const ProviderProfilePage = () => {
                           </AvatarFallback>
                         </Avatar>
                       </div>
-                      <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg">
-                        <Award className="w-4 h-4 text-white" />
-                      </div>
+                      {providerUser?.isVerified && providerUser?.licenseNumber && String(providerUser.licenseNumber).trim() !== '' ? (
+                        <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg">
+                          <BadgeCheck className="w-4 h-4 text-white" />
+                        </div>
+                      ) : (
+                        <div className="absolute -bottom-2 -right-2 bg-orange-500 rounded-full p-2 shadow-lg">
+                          <X className="w-4 h-4 text-white" />
+                        </div>
+                      )}
                     </div>
                     <h1 className="text-2xl font-bold mb-2 text-gray-800">{providerUser?.name || providerName}</h1>
                     <Badge className="bg-gray-100 text-gray-700 border-gray-200 font-medium px-3 py-1">
@@ -514,10 +521,17 @@ const ProviderProfilePage = () => {
               <div className="p-6 space-y-6 flex-1">
                 {/* Verification Status */}
                 <div className="flex items-center justify-center">
-                  <Badge className="bg-green-50 text-green-700 border-green-200 px-4 py-2 font-semibold">
-                    <Award className="w-4 h-4 mr-2" />
-                    Verified Provider
-                  </Badge>
+                  {providerUser?.isVerified && providerUser?.licenseNumber && String(providerUser.licenseNumber).trim() !== '' ? (
+                    <Badge className="bg-green-50 text-green-700 border-green-200 px-4 py-2 font-semibold">
+                      <BadgeCheck className="w-4 h-4 mr-2" />
+                      Verified Provider
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 px-4 py-2 font-semibold">
+                      <X className="w-4 h-4 mr-2" />
+                      Unverified
+                    </Badge>
+                  )}
                 </div>
                 {/* Specialization */}
                 {providerUser?.specialization && (

@@ -105,6 +105,7 @@ export const register = async (req, res) => {
       staffDetails: safeStaffDetails,
       bankDetails: safeBankDetails,
       isVerified: ['doctor', 'pharmacy', 'laboratory', 'clinic/hospital'].includes(role) ? false : true,
+      verificationStatus: ['doctor', 'pharmacy', 'laboratory', 'clinic/hospital'].includes(role) ? 'pending' : 'approved',
     });
 
     await newUser.save();

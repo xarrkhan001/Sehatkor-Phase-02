@@ -30,6 +30,12 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['patient', 'doctor', 'clinic/hospital', 'laboratory', 'pharmacy'], default: 'patient' },
   avatar: String,
   isVerified: { type: Boolean, default: false },
+  // Verification lifecycle fields
+  verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  verifiedAt: { type: Date, default: null },
+  verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  // Allow providers to operate without being fully verified
+  allowedToOperate: { type: Boolean, default: false },
   phone: String,
   phoneAlternate: String,
   cnic: String,

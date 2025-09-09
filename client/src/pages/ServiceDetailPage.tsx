@@ -222,6 +222,7 @@ const ServiceDetailPage = () => {
         type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : s.category === "Surgery" ? "Surgery" : "Treatment",
         providerType: s.providerType as Unified['providerType'],
         isReal: true,
+        _providerVerified: Boolean((s as any)._providerVerified),
         providerId: (s as any).providerId,
         totalRatings: (s as any).totalRatings ?? 0,
         providerPhone: (s as any).providerPhone,
@@ -610,9 +611,13 @@ const ServiceDetailPage = () => {
     <h2 className="text-3xl font-semibold text-gray-600 truncate" title={activeSlide.name}>
       {activeSlide.name}
     </h2>
-    {item.isReal && (
+    {(item as any)._providerVerified ? (
       <Badge className="px-1.5 py-0.5 text-[10px] bg-green-50 text-green-600 border border-green-100">
         Verified
+      </Badge>
+    ) : (
+      <Badge className="px-1.5 py-0.5 text-[10px] bg-red-50 text-red-600 border border-red-100">
+        Unverified
       </Badge>
     )}
   </div>
@@ -630,10 +635,10 @@ const ServiceDetailPage = () => {
             <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2 min-w-0">
                 <CardTitle className="text-xl sm:text-2xl md:text-3xl leading-tight break-words">{activeSlide.name}</CardTitle>
-                {item.isReal ? (
+                {(item as any)._providerVerified ? (
                   <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
                 ) : (
-                  <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Not Verified</Badge>
+                  <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Unverified</Badge>
                 )}
               </div>
               <CardDescription className="break-words leading-snug text-sm sm:text-base">{item.provider}</CardDescription>

@@ -322,15 +322,34 @@ const Navbar = () => {
                               <div className="rounded-full px-1.5 py-0.5 h-5 flex items-center min-w-fit">
                                 <UserBadge role={(user as any).role} />
                               </div>
-                              {user.isVerified ? (
-                                <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-green-200 to-green-300 border border-green-400/50 px-1.5 py-0.5 text-xs font-medium text-green-900 h-5 min-w-fit">
-                                  <BadgeCheck className="h-2.5 w-2.5" /> Verified
-                                </span>
-                              ) : user.role !== 'patient' && (
-                                <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-orange-200 to-orange-300 border border-orange-400/50 px-1.5 py-0.5 text-xs font-medium text-orange-900 h-5 min-w-fit">
-                                  <X className="h-2.5 w-2.5" /> Pending
-                                </span>
-                              )}
+                              {(() => {
+                                const hasLicense = Boolean((user as any).licenseNumber && String((user as any).licenseNumber).trim() !== '');
+                                const verified = Boolean(user.isVerified && hasLicense);
+                                const status = (user as any).verificationStatus as string | undefined;
+                                const allowed = Boolean((user as any).allowedToOperate);
+                                if (verified) {
+                                  return (
+                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-green-200 to-green-300 border border-green-400/50 px-1.5 py-0.5 text-xs font-medium text-green-900 h-5 min-w-fit">
+                                      <BadgeCheck className="h-2.5 w-2.5" /> Verified
+                                    </span>
+                                  );
+                                }
+                                if (user.role !== 'patient' && status === 'pending') {
+                                  return (
+                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-200 to-orange-300 border border-orange-400/50 px-1.5 py-0.5 text-xs font-medium text-orange-900 h-5 min-w-fit">
+                                      <X className="h-2.5 w-2.5" /> Pending
+                                    </span>
+                                  );
+                                }
+                                if (user.role !== 'patient' && allowed && !verified) {
+                                  return (
+                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-red-200 to-rose-300 border border-red-400/50 px-1.5 py-0.5 text-xs font-medium text-red-900 h-5 min-w-fit">
+                                      <X className="h-2.5 w-2.5" /> Unverified
+                                    </span>
+                                  );
+                                }
+                                return null;
+                              })()}
                             </div>
                             
                             {/* Specialization Section */}
@@ -447,15 +466,34 @@ const Navbar = () => {
             <div className="mt-2 flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <UserBadge role={(user as any).role} />
-                {user.isVerified ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                    <BadgeCheck className="h-3 w-3" /> Verified
-                  </span>
-                ) : user.role !== 'patient' && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                    <X className="h-3 w-3" /> Not Verified
-                  </span>
-                )}
+                {(() => {
+                  const hasLicense = Boolean((user as any).licenseNumber && String((user as any).licenseNumber).trim() !== '');
+                  const verified = Boolean(user.isVerified && hasLicense);
+                  const status = (user as any).verificationStatus as string | undefined;
+                  const allowed = Boolean((user as any).allowedToOperate);
+                  if (verified) {
+                    return (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                        <BadgeCheck className="h-3 w-3" /> Verified
+                      </span>
+                    );
+                  }
+                  if (user.role !== 'patient' && status === 'pending') {
+                    return (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
+                        <X className="h-3 w-3" /> Pending
+                      </span>
+                    );
+                  }
+                  if (user.role !== 'patient' && allowed && !verified) {
+                    return (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                        <X className="h-3 w-3" /> Unverified
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
               {user?.specialization && (
                 <div className="flex items-center gap-2 mt-1.5">

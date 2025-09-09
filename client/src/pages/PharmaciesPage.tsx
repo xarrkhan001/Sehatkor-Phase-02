@@ -75,6 +75,10 @@ const PharmaciesPage = () => {
             serviceType: (service as any).serviceType || undefined,
             homeDelivery: Boolean((service as any).homeDelivery) === true,
             recommended: Boolean((service as any).recommended),
+            // Provider verification propagated from API or fallback to current user for own services
+            _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
+              ? Boolean((service as any)._providerVerified)
+              : (isOwn && Boolean((user as any)?.isVerified) && Boolean((user as any)?.licenseNumber) && String((user as any)?.licenseNumber).trim() !== ''),
           } as Service;
           // Hydrate user's own badge from localStorage
           try {
@@ -250,6 +254,10 @@ const PharmaciesPage = () => {
           serviceType: (service as any).serviceType || undefined,
           homeDelivery: Boolean((service as any).homeDelivery) === true,
           recommended: Boolean((service as any).recommended),
+          // Provider verification propagated from API or fallback to current user for own services
+          _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
+            ? Boolean((service as any)._providerVerified)
+            : (isOwn && Boolean((user as any)?.isVerified) && Boolean((user as any)?.licenseNumber) && String((user as any)?.licenseNumber).trim() !== ''),
         } as Service;
         // Hydrate user's own badge from localStorage
         try {
@@ -490,7 +498,7 @@ const PharmaciesPage = () => {
                       </Badge>
                     ) : (
                       <Badge className="text-[8px] px-1 py-0.5 bg-red-600 text-white border-0 shadow-lg">
-                        Not Verified
+                        Unverified
                       </Badge>
                     )}
                     <Badge className="text-[8px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">

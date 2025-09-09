@@ -247,13 +247,13 @@ class ServiceManager {
       ratingBadge: service.ratingBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
-
+      // Provider verification flag (server should compute based on isVerified and license presence)
+      ...(typeof service._providerVerified !== 'undefined' ? { _providerVerified: Boolean(service._providerVerified) } : {}),
       // Main service schedule fields
       ...(service.timeLabel ? { timeLabel: service.timeLabel } : {}),
       ...(service.startTime ? { startTime: service.startTime } : {}),
       ...(service.endTime ? { endTime: service.endTime } : {}),
       ...(Array.isArray(service.days) ? { days: service.days } : {}),
-
       ...(Array.isArray(service.diseases) ? { diseases: service.diseases } : {}),
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
@@ -343,7 +343,8 @@ class ServiceManager {
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
       ratingCounts: service.ratingCounts ?? null,
-
+      // Provider verification flag (server should compute based on isVerified and license presence)
+      ...(typeof service._providerVerified !== 'undefined' ? { _providerVerified: Boolean(service._providerVerified) } : {}),
       // Main service schedule fields
       ...(service.timeLabel ? { timeLabel: service.timeLabel } : {}),
       ...(service.startTime ? { startTime: service.startTime } : {}),

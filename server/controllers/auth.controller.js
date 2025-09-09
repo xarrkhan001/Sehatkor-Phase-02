@@ -18,7 +18,7 @@ const generateToken = (user) => {
 // 📌 Register (with hashing)
 export const register = async (req, res) => {
   try {
-    const { fullName, email, password, role, phone } = req.body;
+    const { fullName, email, password, role, phone, licenseNumber } = req.body;
 
     // Validation
     if (!fullName || !email || !password) {
@@ -42,13 +42,19 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const isProvider = role === 'doctor' || role === 'clinic/hospital' || role === 'laboratory' || role === 'pharmacy';
     const newUser = new User({
       name: fullName,
       email,
       password: hashedPassword,
       role: role || 'patient',
       phone,
-      isVerified: role === 'doctor' || role === 'clinic/hospital' || role === 'laboratory' || role === 'pharmacy' ? false : true,
+      // Persist license (may be provided at registration time)
+      licenseNumber: typeof licenseNumber === 'string' ? licenseNumber : undefined,
+      // Providers start pending; admin approval will set final verification
+      isVerified: isProvider ? false : true,
+      allowedToOperate: isProvider ? false : true,
+      verificationStatus: isProvider ? 'pending' : 'approved',
     });
 
     await newUser.save();
