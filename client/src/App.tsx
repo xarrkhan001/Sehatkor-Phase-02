@@ -111,8 +111,8 @@ const AppShell = () => {
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
         </Suspense>
-        {isAuthenticated && <FloatingChat />}
-        {isAuthenticated && <WhatsAppButton />}
+        <FloatingChat />
+        <WhatsAppButton />
         <Footer />
       </div>
     </BrowserRouter>

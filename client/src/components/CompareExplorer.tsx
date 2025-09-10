@@ -572,7 +572,7 @@ const CompareExplorer = () => {
                     <div>
                       <label className="text-xs text-gray-600">Location</label>
                       <Select value={locFilter} onValueChange={setLocFilter}>
-                        <SelectTrigger className="mt-1 h-10 w-full rounded-xl bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
+                        <SelectTrigger className="mt-1 h-10 w-full rounded-none bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
                           <SelectValue placeholder="All locations" />
                         </SelectTrigger>
                         <SelectContent>
@@ -603,7 +603,7 @@ const CompareExplorer = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="mt-1 h-10 w-full rounded-xl bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
+                        <SelectTrigger className="mt-1 h-10 w-full rounded-none bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
                           <SelectValue placeholder="Price Range" />
                         </SelectTrigger>
                         <SelectContent>
@@ -639,7 +639,7 @@ const CompareExplorer = () => {
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                               }}
-                              className="h-9"
+                              className="h-9 rounded-none"
                             />
                           </div>
                           <div>
@@ -662,7 +662,7 @@ const CompareExplorer = () => {
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                               }}
-                              className="h-9"
+                              className="h-9 rounded-none"
                             />
                           </div>
                         </div>

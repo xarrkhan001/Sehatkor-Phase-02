@@ -14,7 +14,7 @@ import {
   Trash2,
   UserCheck,
   Building,
-  TestTube,
+  FlaskConical,
   ShoppingBag,
   ArrowLeft,
   Phone,
@@ -158,7 +158,7 @@ const AdminUserManagement = () => {
       case "clinic/hospital":
         return <Building className="w-4 h-4 text-blue-600" />;
       case "laboratory":
-        return <TestTube className="w-4 h-4 text-orange-600" />;
+        return <FlaskConical className="w-4 h-4 text-orange-600" />;
       case "pharmacy":
         return <ShoppingBag className="w-4 h-4 text-purple-600" />;
       case "patient":

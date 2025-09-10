@@ -8,9 +8,9 @@ import {
   Twitter, 
   Instagram, 
   Linkedin,
-  TestTube,
+  FlaskConical,
   Pill,
-  Calendar,
+  Hospital,
   Shield,
   Heart,
   Users
@@ -20,10 +20,10 @@ import { Input } from "@/components/ui/input";
 
 const Footer = () => {
   const services = [
-    { name: "Find Doctors", href: "/search", icon: Stethoscope },
-    { name: "Lab Tests", href: "/search", icon: TestTube },
-    { name: "Medicines", href: "/search", icon: Pill },
-    { name: "Book Appointments", href: "/search", icon: Calendar }
+    { name: "Find Doctors", href: "/doctors", icon: Stethoscope },
+    { name: "Lab Tests", href: "/labs", icon: FlaskConical },
+    { name: "Medicines", href: "/pharmacies", icon: Pill },
+    { name: "Hospitals", href: "/hospitals", icon: Hospital }
   ];
 
   const quickLinks = [

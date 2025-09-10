@@ -33,7 +33,7 @@ import {
   Edit,
   Star,
   FileText,
-  TestTube,
+  FlaskConical,
   Activity,
   Plus,
   Trash2,
@@ -544,7 +544,7 @@ const LaboratoryDashboard = () => {
                   <p className="text-2xl font-bold">{tests.length}</p>
                 </div>
                 <div className="p-3 rounded-full bg-blue-400/20">
-                  <TestTube className="w-6 h-6" />
+                  <FlaskConical className="w-6 h-6" />
                 </div>
               </div>
             </CardContent>
@@ -1467,7 +1467,7 @@ const LaboratoryDashboard = () => {
             <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white shadow-xl">
               <CardHeader className="relative z-10">
                 <CardTitle className="text-white flex items-center gap-2">
-                  <TestTube className="w-5 h-5" />
+                  <FlaskConical className="w-5 h-5" />
                   Laboratory Profile
                 </CardTitle>
               </CardHeader>

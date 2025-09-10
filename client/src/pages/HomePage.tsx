@@ -30,12 +30,24 @@ import {
   Users,
   Info,
   Stethoscope,
-  TestTube,
+  FlaskConical,
+  Plus,
   Pill,
   Scissors
 } from "lucide-react";
 
 import { popularDiseases } from "@/data/diseases";
+
+// Red circle with white medical cross, stylable via text-*/currentColor for the circle
+const MedicalPlusIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <circle cx="32" cy="32" r="28" fill="currentColor" />
+    {/* Vertical bar of cross */}
+    <rect x="28" y="18" width="8" height="28" rx="1.5" fill="#ffffff" />
+    {/* Horizontal bar of cross */}
+    <rect x="18" y="28" width="28" height="8" rx="1.5" fill="#ffffff" />
+  </svg>
+);
 
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -132,7 +144,7 @@ const HomePage = () => {
       hoverGradient: "hover:from-blue-300 hover:via-sky-300 hover:to-indigo-400"
     },
     {
-      icon: TestTube,
+      icon: FlaskConical,
       title: "Lab Tests",
       description: "Book lab tests and get results delivered to your home",
       color: "text-emerald-600",
@@ -140,7 +152,7 @@ const HomePage = () => {
       hoverGradient: "hover:from-emerald-300 hover:via-teal-300 hover:to-green-400"
     },
     {
-      icon: Heart,
+      icon: MedicalPlusIcon,
       title: "Health Checkups",
       description: "Comprehensive health screenings and preventive care",
       color: "text-red-600",

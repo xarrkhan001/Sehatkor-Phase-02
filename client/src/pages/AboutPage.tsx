@@ -9,7 +9,7 @@ import {
   Users, 
   Stethoscope, 
   Hospital, 
-  TestTube, 
+  FlaskConical, 
   Pill, 
   MapPin, 
   Clock, 
@@ -26,7 +26,6 @@ import {
   Calendar,
   UserCheck,
   Building,
-  FlaskConical,
   ShoppingBag,
   ArrowRight,
   Target,
@@ -126,7 +125,7 @@ const AboutPage = () => {
       color: "bg-green-50 border-green-200"
     },
     {
-      icon: TestTube,
+      icon: FlaskConical,
       title: "Laboratory Tests",
       description: "Book diagnostic tests and lab services with home sample collection",
       types: ["Blood Tests", "Imaging Services", "Pathology", "Home Collection"],

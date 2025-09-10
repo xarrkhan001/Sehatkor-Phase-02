@@ -20,7 +20,7 @@ import {
   Eye,
   UserCheck,
   Building,
-  TestTube,
+  FlaskConical,
   ShoppingBag,
   AlertTriangle,
   TrendingUp,
@@ -166,9 +166,9 @@ const AdminPanel = () => {
   const [stats, setStats] = useState<any>({
     verifiedUsers: 0,
     totalDoctors: 0,
+    totalHospitals: 0,
     totalPharmacies: 0,
-    totalLabs: 0,
-    totalHospitals: 0
+    totalLabs: 0
   });
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
@@ -242,7 +242,7 @@ const AdminPanel = () => {
     { title: "Total Doctors", value: stats.totalDoctors?.toString() || "0", icon: UserCheck, change: "", color: "text-green-500" },
     { title: "Total Hospitals/Clinics", value: stats.totalHospitals?.toString() || "0", icon: Building, change: "", color: "text-indigo-500" },
     { title: "Total Pharmacies", value: stats.totalPharmacies?.toString() || "0", icon: ShoppingBag, change: "", color: "text-purple-500" },
-    { title: "Total Laboratories", value: stats.totalLabs?.toString() || "0", icon: TestTube, change: "", color: "text-orange-500" }
+    { title: "Total Laboratories", value: stats.totalLabs?.toString() || "0", icon: FlaskConical, change: "", color: "text-orange-500" }
   ];
 
   const pendingUsers = users.filter((user: any) => !user.isVerified && user.role !== 'patient');
@@ -434,7 +434,7 @@ const AdminPanel = () => {
       case "clinic":
         return <Building className="w-4 h-4" />;
       case "laboratory":
-        return <TestTube className="w-4 h-4" />;
+        return <FlaskConical className="w-4 h-4" />;
       case "pharmacy":
         return <ShoppingBag className="w-4 h-4" />;
       default:
