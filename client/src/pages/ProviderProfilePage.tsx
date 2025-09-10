@@ -1055,6 +1055,8 @@ const ProviderProfilePage = () => {
                                 serviceType: (service as any).serviceType,
                                 // Pass clinic category to detail page if clinic
                                 clinicCategory: ((service as any).providerType || providerType) === 'clinic' ? ((service as any).category || undefined) : undefined,
+                                // Pass department field to detail page for clinic/hospital services
+                                department: ((service as any).providerType || providerType) === 'clinic' ? ((service as any).department || undefined) : undefined,
                                 variants: (service as any).variants || [],
                               },
                               initialVariantIndex: activeIdx,

@@ -726,6 +726,24 @@ const ServiceDetailPage = () => {
                     {(item.serviceType ?? resolvedServiceType) && (
                       <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
                     )}
+                    {/* Department badge for clinic services */}
+                    {item.providerType === 'clinic' && (item as any).department && (
+                      <Badge className="flex items-center gap-1 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="12"
+                          height="12"
+                          aria-hidden="true"
+                          className="shrink-0"
+                        >
+                          <circle cx="12" cy="12" r="11" fill="#8b5cf6" />
+                          <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                          <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                        </svg>
+                        {(item as any).department}
+                      </Badge>
+                    )}
                     {(() => {
                       const list = (hydratedDiseases ?? ((item as any).diseases || [])) as string[];
                       return Array.isArray(list) && list.length > 0;
