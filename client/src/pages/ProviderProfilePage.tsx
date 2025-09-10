@@ -760,7 +760,7 @@ const ProviderProfilePage = () => {
                 className="group relative z-10 shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl border border-gray-100 bg-white hover:border-blue-200 flex flex-col overflow-visible hover:-translate-y-[3px] ring-1 ring-transparent hover:ring-blue-200/70 hover:z-50"
               >
                 {/* Top-left recommended overlay - made smaller */}
-                {(service as any).recommended && (
+                {(service as any).recommended === true && (
                   <div className="absolute top-1.5 left-1.5 z-10">
                     <div className="px-2 py-1 text-[9px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1 backdrop-blur-sm">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="10" height="10" fill="currentColor" className="text-amber-900">

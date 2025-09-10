@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { X, Upload, Camera, ImageIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { X, Upload, Camera, ImageIcon, Crop, RotateCcw, Minus, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Cropper, { Area, MediaSize } from 'react-easy-crop';
 
 interface ImageUploadProps {
   onImageSelect: (file: File, preview: string) => void;
@@ -22,6 +24,44 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Cropping state
+  const [isCropOpen, setIsCropOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const ASPECT = 16 / 9; // Fixed aspect ratio for service cards
+
+  // Transform controls
+  const [zoom, setZoom] = useState(1);
+  const [minZoom, setMinZoom] = useState(1);
+  const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [mediaSize, setMediaSize] = useState<MediaSize | null>(null);
+  const [mediaReady, setMediaReady] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      // Fallback to a sensible width if not measured yet
+      const baseW = rect?.width && rect.width > 0 ? rect.width : 720;
+      const w = Math.min(760, baseW);
+      const h = Math.max(320, Math.round(w / ASPECT));
+      setContainerSize({ w, h });
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isCropOpen]);
+
+  // Compute minZoom on media load so the image always covers the crop area
+  useEffect(() => {
+    if (!mediaSize || !containerSize.w || !containerSize.h) return;
+    const coverZoom = Math.max(containerSize.w / mediaSize.naturalWidth, containerSize.h / mediaSize.naturalHeight);
+    const mz = Math.min(Math.max(coverZoom, 0.1), 3);
+    setMinZoom(mz);
+    setZoom((prev) => Math.max(prev, mz));
+  }, [mediaSize, containerSize.w, containerSize.h]);
+
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -39,7 +79,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
     const files = e.dataTransfer.files;
     if (files && files[0]) {
-      handleFile(files[0]);
+      startCropForFile(files[0]);
     }
   };
 
@@ -47,70 +87,77 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     e.preventDefault();
     const files = e.target.files;
     if (files && files[0]) {
-      handleFile(files[0]);
+      startCropForFile(files[0]);
     }
   };
 
-  const handleFile = (file: File) => {
+  const startCropForFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
     }
-
-    // Compress and resize image
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-
-    img.onload = () => {
-      // Set maximum dimensions
-      const maxWidth = 800;
-      const maxHeight = 600;
-      const quality = 0.8;
-
-      let { width, height } = img;
-
-      // Calculate new dimensions
-      if (width > height) {
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-      } else {
-        if (height > maxHeight) {
-          width = (width * maxHeight) / height;
-          height = maxHeight;
-        }
-      }
-
-      // Resize canvas
-      canvas.width = width;
-      canvas.height = height;
-
-      // Draw and compress
-      ctx?.drawImage(img, 0, 0, width, height);
-      
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const preview = e.target?.result as string;
-              onImageSelect(file, preview);
-            };
-            reader.readAsDataURL(blob);
-          }
-        },
-        'image/jpeg',
-        quality
-      );
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setRawImageSrc(dataUrl);
+      setZoom(1);
+      setCrop({ x: 0, y: 0 });
+      setIsCropOpen(true);
     };
-
-    img.src = URL.createObjectURL(file);
+    reader.readAsDataURL(file);
   };
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const clampZoom = (z: number) => Math.max(minZoom, Math.min(3, z));
+
+  const renderCropped = async () => {
+    if (!rawImageSrc || !croppedAreaPixels) return;
+    // Load image from data URL
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject as any;
+      img.src = rawImageSrc;
+    });
+
+    // Target output size (consistent card quality)
+    const outW = 1600;
+    const outH = Math.round(outW / ASPECT);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = outW;
+    canvas.height = outH;
+
+    const { x, y, width, height } = croppedAreaPixels;
+    if (ctx) {
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(
+        image,
+        x, // source x
+        y, // source y
+        width, // source width
+        height, // source height
+        0, // dest x
+        0, // dest y
+        outW, // dest width
+        outH // dest height
+      );
+    }
+
+    return new Promise<{ file: File; preview: string }>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const file = new File([blob], `service-image-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve({ file, preview: (e.target?.result as string) || '' });
+        };
+        reader.readAsDataURL(blob);
+      }, 'image/jpeg', 0.9);
+    });
   };
 
   return (
@@ -142,6 +189,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   <Camera className="w-3 h-3 mr-1" />
                   Change
                 </Button>
+                {/* Open crop dialog by selecting a new image; editing existing web image isn't supported without raw file */}
                 <Button
                   size="sm"
                   variant="destructive"
@@ -188,6 +236,107 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           </div>
         </Card>
       )}
+
+      {/* Cropper Dialog */}
+      <Dialog open={isCropOpen} onOpenChange={setIsCropOpen}>
+        <DialogContent className="sm:max-w-[900px] w-[96vw] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border border-slate-700/60 rounded-2xl shadow-2xl backdrop-blur-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Crop className="w-4 h-4" />
+              Adjust image (16:9)
+            </DialogTitle>
+            <p className="text-xs text-slate-300 mt-1">Zoom and drag to frame your service image. The exact cropped area will be uploaded.</p>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div
+              ref={containerRef}
+              className="w-full"
+            >
+              <div
+                className="relative rounded-xl overflow-hidden select-none shadow-inner ring-1 ring-white/15"
+                style={{ width: '100%', maxWidth: 860, height: containerSize.h }}
+              >
+                {!mediaReady && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 animate-pulse" />
+                )}
+                {rawImageSrc && (
+                  <Cropper
+                    image={rawImageSrc}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={ASPECT}
+                    zoomWithScroll
+                    minZoom={minZoom}
+                    maxZoom={3}
+                    showGrid
+                    cropShape="rect"
+                    objectFit="contain"
+                    onCropChange={setCrop}
+                    onZoomChange={(z) => setZoom(clampZoom(z))}
+                    onCropComplete={(area, areaPx) => setCroppedAreaPixels(areaPx)}
+                    onMediaLoaded={(ms) => { setMediaSize(ms); setMediaReady(true); }}
+                    style={{ containerStyle: { width: '100%', height: containerSize.h } as any }}
+                  />
+                )}
+                {/* Elegant frame */}
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-white/25 rounded-xl" />
+              </div>
+            </div>
+            {/* Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3 flex-1">
+                <span className="text-xs text-slate-300">Zoom</span>
+                <Button type="button" variant="outline" size="sm" className="border-slate-600 text-white bg-slate-800/60 hover:bg-slate-800" onClick={() => setZoom(clampZoom(zoom - 0.1))}>
+                  <Minus className="w-3.5 h-3.5" />
+                </Button>
+                <input
+                  type="range"
+                  min={minZoom}
+                  max={3}
+                  step={0.01}
+                  value={zoom}
+                  onChange={(e) => setZoom(Math.max(minZoom, parseFloat(e.target.value)))}
+                  className="flex-1 accent-red-500"
+                />
+                <Button type="button" variant="outline" size="sm" className="border-slate-600 text-white bg-slate-800/60 hover:bg-slate-800" onClick={() => setZoom(clampZoom(zoom + 0.1))}>
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+                <span className="text-xs text-slate-300 w-12 text-right">{zoom.toFixed(2)}x</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-slate-200 hover:bg-white/5"
+                  onClick={() => {
+                    setZoom(minZoom);
+                    setCrop({ x: 0, y: 0 });
+                  }}
+                >
+                  <RotateCcw className="w-4 h-4 mr-1" /> Reset
+                </Button>
+                <Button type="button" variant="outline" className="border-slate-600 text-white bg-slate-800/60 hover:bg-slate-800" onClick={() => setIsCropOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  disabled={!mediaReady || !croppedAreaPixels}
+                  className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/30 border-0"
+                  onClick={async () => {
+                    const result = await renderCropped();
+                    if (result) {
+                      onImageSelect(result.file, result.preview);
+                    }
+                    setIsCropOpen(false);
+                  }}
+                >
+                  Apply
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
