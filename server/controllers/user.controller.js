@@ -133,6 +133,8 @@ export const getAllPublicServices = async (req, res) => {
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
         recommended: Boolean(service.recommended) || false,
+        // Department field for hospital services
+        department: service.department || null,
         // expose main service schedule fields
         timeLabel: service.timeLabel || null,
         startTime: service.startTime || null,
@@ -318,6 +320,8 @@ export const getPublicServiceById = async (req, res) => {
       ratingCounts: counts,
       // Hospital/Clinic name
       hospitalClinicName: service.hospitalClinicName || null,
+      // Department field for clinic services
+      ...(type === 'clinic' && service.department && { department: service.department }),
       // expose main service schedule fields
       timeLabel: service.timeLabel || null,
       startTime: service.startTime || null,

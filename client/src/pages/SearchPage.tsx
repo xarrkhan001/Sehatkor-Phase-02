@@ -372,6 +372,8 @@ const SearchPage = () => {
           doctorCategory: ((service as any).providerType === 'doctor') ? ((service as any).category || undefined) : undefined,
           // Preserve real clinic/hospital category from backend for badge display
           clinicCategory: ((service as any).providerType === 'clinic') ? ((service as any).category || undefined) : undefined,
+          // Preserve department field for hospital services
+          department: ((service as any).providerType === 'clinic') ? ((service as any).department || undefined) : undefined,
           // include pharmacy service type (and pass-through if present on others)
           serviceType: (service as any).serviceType || undefined,
           // include homeDelivery from backend
@@ -1280,6 +1282,23 @@ const SearchPage = () => {
                               </div>
                             ) : null;
                           })()}
+                          {/* Department Display for Hospital Services */}
+                          {(service as any)._providerType === 'clinic' && (service as any).department && (
+                            <div className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1.5">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                aria-hidden="true"
+                                className="shrink-0"
+                              >
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/>
+                              </svg>
+                              <span className="truncate">{(service as any).department}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-bold text-blue-600">
