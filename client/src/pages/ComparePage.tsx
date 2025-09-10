@@ -162,6 +162,11 @@ const ComparePage = () => {
   const sorted = useMemo(() => {
     const copy = [...items];
     copy.sort((a, b) => {
+      // Recommended services priority (recommended services appear first)
+      const aRecommended = Boolean((a as any).recommended);
+      const bRecommended = Boolean((b as any).recommended);
+      if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
+      
       if (sortKey === "location") {
         return (getDisplayLocation(a) || "").localeCompare(getDisplayLocation(b) || "");
       }
@@ -314,9 +319,15 @@ const ComparePage = () => {
                               <div className="font-semibold leading-tight flex items-center gap-2">
                                 <span>{item.name}</span>
                                 {(item as any).recommended && (
-                                  <Badge className="text-[9px] px-1.5 py-0.5 bg-red-600 text-white border-0 shadow-sm font-medium">
-                                    ⭐ Recommended
-                                  </Badge>
+                                  <div className="px-2 py-1 text-[10px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1 backdrop-blur-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" className="text-amber-900">
+                                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                    <div className="flex flex-col leading-tight">
+                                      <span className="font-black text-amber-900 text-[10px] tracking-wider font-extrabold">RECOMMENDED</span>
+                                      <span className="font-bold text-amber-800 text-[9px]">by SehatKor</span>
+                                    </div>
+                                  </div>
                                 )}
                                 {getSlides(item).length > 1 && (
                                   <div className="inline-flex items-center gap-1">
@@ -337,19 +348,6 @@ const ComparePage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b">
-                      <td className="p-4 font-medium">Price</td>
-                      {sorted.map(item => (
-                        <td key={item.id} className="p-4 font-semibold text-blue-600">
-                          {getDisplayPrice(item) === 0 ? "Free" : (
-                            <>
-                              <span className="text-xs">PKR </span>
-                              <span className="text-sm">{getDisplayPrice(item).toLocaleString()}</span>
-                            </>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
                     <tr className="border-b">
                       <td className="p-4 font-medium">Rating</td>
                       {sorted.map(item => (
