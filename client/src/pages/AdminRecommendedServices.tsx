@@ -15,7 +15,7 @@ import {
   ArrowLeft,
   Stethoscope,
   Building,
-  TestTube,
+  FlaskConical,
   Pill,
   ChevronLeft,
   ChevronRight,
@@ -175,7 +175,7 @@ const AdminRecommendedServices = () => {
       case 'clinic':
         return <Building className="w-4 h-4" />;
       case 'laboratory':
-        return <TestTube className="w-4 h-4" />;
+        return <FlaskConical className="w-4 h-4" />;
       case 'pharmacy':
         return <Pill className="w-4 h-4" />;
       default:
@@ -227,6 +227,7 @@ const AdminRecommendedServices = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          {/* Total */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -238,6 +239,7 @@ const AdminRecommendedServices = () => {
               </div>
             </CardContent>
           </Card>
+          {/* Doctors */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -249,6 +251,7 @@ const AdminRecommendedServices = () => {
               </div>
             </CardContent>
           </Card>
+          {/* Clinics */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -260,6 +263,7 @@ const AdminRecommendedServices = () => {
               </div>
             </CardContent>
           </Card>
+          {/* Labs */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -267,10 +271,11 @@ const AdminRecommendedServices = () => {
                   <p className="text-sm text-muted-foreground">Labs</p>
                   <p className="text-2xl font-bold text-purple-600">{recommendedCount.byType.laboratory}</p>
                 </div>
-                <TestTube className="w-8 h-8 text-purple-500" />
+                <FlaskConical className="w-8 h-8 text-purple-500" />
               </div>
             </CardContent>
           </Card>
+          {/* Pharmacies */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">

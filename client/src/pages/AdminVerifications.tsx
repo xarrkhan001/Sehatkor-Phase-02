@@ -16,7 +16,7 @@ import {
   Eye,
   UserCheck,
   Building,
-  TestTube,
+  FlaskConical,
   ShoppingBag,
   ArrowLeft
 } from "lucide-react";
@@ -132,7 +132,7 @@ const AdminVerifications = () => {
       case "clinic":
         return <Building className="w-4 h-4" />;
       case "laboratory":
-        return <TestTube className="w-4 h-4" />;
+        return <FlaskConical className="w-4 h-4" />;
       case "pharmacy":
         return <ShoppingBag className="w-4 h-4" />;
       default:

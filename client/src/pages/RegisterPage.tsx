@@ -24,7 +24,7 @@ import {
   Upload, 
   UserCheck,
   Building,
-  TestTube,
+  FlaskConical,
   ShoppingBag,
   Stethoscope,
   Clock,
@@ -194,7 +194,7 @@ const RegisterPage = () => {
     { value: "patient", label: "Patient", icon: User, description: "Book appointments and manage health records", gradient: "from-blue-500 to-cyan-500", bgColor: "bg-blue-50", iconColor: "text-blue-600" },
     { value: "doctor", label: "Doctor", icon: UserCheck, description: "Provide medical consultations and treatments", gradient: "from-emerald-500 to-teal-500", bgColor: "bg-emerald-50", iconColor: "text-emerald-600" },
     { value: "clinic/hospital", label: "Clinic/Hospital", icon: Building, description: "Manage medical facility operations", gradient: "from-purple-500 to-indigo-500", bgColor: "bg-purple-50", iconColor: "text-purple-600" },
-    { value: "laboratory", label: "Laboratory", icon: TestTube, description: "Provide diagnostic and testing services", gradient: "from-orange-500 to-red-500", bgColor: "bg-orange-50", iconColor: "text-orange-600" },
+    { value: "laboratory", label: "Laboratory", icon: FlaskConical, description: "Provide diagnostic and testing services", gradient: "from-orange-500 to-red-500", bgColor: "bg-orange-50", iconColor: "text-orange-600" },
     { value: "pharmacy", label: "Pharmacy", icon: ShoppingBag, description: "Sell medicines and health products", gradient: "from-pink-500 to-rose-500", bgColor: "bg-pink-50", iconColor: "text-pink-600" }
   ];
 
