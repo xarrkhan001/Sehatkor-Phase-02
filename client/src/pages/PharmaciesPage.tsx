@@ -97,6 +97,12 @@ const PharmaciesPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            
+            // Recommended services priority (recommended services appear first)
+            const aRecommended = Boolean((a as any).recommended);
+            const bRecommended = Boolean((b as any).recommended);
+            if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
+            
             // Badge priority: excellent > good > fair > others
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
@@ -145,6 +151,12 @@ const PharmaciesPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          
+          // Recommended services priority (recommended services appear first)
+          const aRecommended = Boolean((a as any).recommended);
+          const bRecommended = Boolean((b as any).recommended);
+          if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
+          
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -276,6 +288,12 @@ const PharmaciesPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
+          
+          // Recommended services priority (recommended services appear first)
+          const aRecommended = Boolean((a as any).recommended);
+          const bRecommended = Boolean((b as any).recommended);
+          if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
+          
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -478,13 +496,13 @@ const PharmaciesPage = () => {
                   {/* Top-left recommended overlay */}
                   {(service as any).recommended && (
                     <div className="absolute top-1.5 left-1.5 z-10">
-                      <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-slate-400 via-gray-300 to-slate-500 border border-slate-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-slate-800">
+                      <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
                         <div className="flex flex-col leading-tight">
-                          <span className="font-black text-slate-900 text-[10px] tracking-wider">RECOMMENDED</span>
-                          <span className="font-medium text-slate-700 text-[8px]">by SehatKor</span>
+                          <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
+                          <span className="font-bold text-amber-800 text-[10px]">by SehatKor</span>
                         </div>
                       </div>
                     </div>

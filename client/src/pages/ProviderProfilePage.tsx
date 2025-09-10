@@ -217,6 +217,35 @@ const ProviderProfilePage = () => {
       });
     }
 
+    // Sort filtered services: recommended first, then by rating badge priority, then by rating, then by creation date
+    filtered.sort((a: any, b: any) => {
+      // Recommended services priority (recommended services appear first)
+      const aRecommended = Boolean(a.recommended);
+      const bRecommended = Boolean(b.recommended);
+      if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
+      
+      // Badge priority: excellent > good > fair > others
+      const rank = (s: any) => {
+        const badge = (s?.ratingBadge || '').toString().toLowerCase();
+        if (badge === 'excellent') return 3;
+        if (badge === 'good') return 2;
+        if (badge === 'fair') return 1;
+        return 0;
+      };
+      const rb = rank(b) - rank(a);
+      if (rb !== 0) return rb;
+      
+      // Sort by rating (highest first)
+      const ar = a.rating ?? 0;
+      const br = b.rating ?? 0;
+      if (br !== ar) return br - ar;
+      
+      // Sort by creation date (newest first)
+      const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+      return bd - ad;
+    });
+
     return filtered;
   }, [services, searchQuery, priceFilter, minPrice, maxPrice]);
 
@@ -730,6 +759,20 @@ const ProviderProfilePage = () => {
                 key={service.id}
                 className="group relative z-10 shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl border border-gray-100 bg-white hover:border-blue-200 flex flex-col overflow-visible hover:-translate-y-[3px] ring-1 ring-transparent hover:ring-blue-200/70 hover:z-50"
               >
+                {/* Top-left recommended overlay */}
+                {(service as any).recommended && (
+                  <div className="absolute top-1.5 left-1.5 z-10">
+                    <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      <div className="flex flex-col leading-tight">
+                        <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
+                        <span className="font-bold text-amber-800 text-[10px]">by SehatKor</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <CardContent className="p-0 h-full flex flex-col overflow-visible">
                   {/* Compact header with circular service image */}
                   <div className="p-6 pb-0">
@@ -922,18 +965,6 @@ const ProviderProfilePage = () => {
                           <AvailabilityBadge availability={availability} size="md" />
                         ) : null;
                       })()}
-                      {/* Recommended badge */}
-                      <div className="absolute top-1.5 left-1.5 z-10">
-                        <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-slate-300 via-gray-200 to-slate-400 border border-slate-300/50 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-slate-700">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                          </svg>
-                          <div className="flex flex-col leading-tight">
-                            <span className="font-black text-slate-800 text-[10px] tracking-wider">RECOMMENDED</span>
-                            <span className="font-medium text-slate-600 text-[8px]">by SehatKor</span>
-                          </div>
-                        </div>
-                      </div>
                       {/* Pharmacy serviceType badge (moved from image) */}
                       {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).serviceType && (
                         <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
