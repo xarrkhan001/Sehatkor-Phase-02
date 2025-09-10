@@ -41,6 +41,8 @@ type Unified = {
   doctorCategory?: string;
   // Real clinic/hospital category when providerType is clinic
   clinicCategory?: string;
+  // Department field for hospital services
+  department?: string;
   createdAt?: string;
   updatedAt?: string;
   ratingBadge?: string | null;
@@ -167,6 +169,8 @@ const CompareExplorer = () => {
             doctorCategory: (s as any)?.providerType === 'doctor' ? ((s as any)?.category || undefined) : undefined,
             // Preserve real clinic category
             clinicCategory: (s as any)?.providerType === 'clinic' ? ((s as any)?.category || undefined) : undefined,
+            // Preserve department field for hospital services
+            department: (s as any)?.providerType === 'clinic' ? ((s as any)?.department || undefined) : undefined,
             createdAt: (s as any)?.createdAt,
             updatedAt: (s as any)?.updatedAt,
             ratingBadge: (s as any)?.ratingBadge || null,
@@ -759,6 +763,23 @@ const CompareExplorer = () => {
                             )}
                           </h3>
                           <p className="text-sm text-gray-500">{item.provider}</p>
+                          {/* Department Display for Hospital Services */}
+                          {item._providerType === 'clinic' && item.department && (
+                            <div className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1.5">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                aria-hidden="true"
+                                className="shrink-0"
+                              >
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/>
+                              </svg>
+                              <span className="truncate">{item.department}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold text-primary">

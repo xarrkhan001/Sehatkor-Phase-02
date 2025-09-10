@@ -119,6 +119,7 @@ const ClinicDashboard = () => {
       description: d.description || '',
       price: d.price || 0,
       category: d.category || d.department || 'Treatment',
+      department: d.department || null,
       providerType: 'clinic' as const,
       providerId: user.id,
       providerName: d.providerName || (user?.name || 'Clinic'),
@@ -884,7 +885,14 @@ const ClinicDashboard = () => {
                                   </div>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                                  <Badge variant="outline">{m.department || m.category || '-'}</Badge>
+                                  {m.department && (
+                                    <Badge className="bg-purple-600 text-white border-0 rounded-full px-2 py-0.5 text-[9px] leading-none whitespace-nowrap font-medium shadow-sm">
+                                      ⚕️ {m.department}
+                                    </Badge>
+                                  )}
+                                  {m.category && m.category !== m.department && (
+                                    <Badge variant="outline">{m.category}</Badge>
+                                  )}
                                   {m.availability && (
                                     <Badge
                                       className={`${

@@ -234,6 +234,8 @@ export const getAllServicesForAdmin = async (req, res) => {
         providerType: type,
         providerPhone: service.providerId?.phone || null,
         providerName: service.providerId?.name || service.providerName,
+        // Include department field for clinic services
+        ...(type === 'clinic' && service.department && { department: service.department }),
       }));
     };
 
