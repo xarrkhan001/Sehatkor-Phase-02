@@ -214,39 +214,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     }
   };
 
-  const filteredServices = realServices.filter(service => {
-    const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.providerName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "All Categories" || service.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const loadMore = async () => {
-    if (isLoading || !hasMore) return;
-    const nextPage = page + 1;
-    setIsLoading(true);
-    try {
-      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({
-        page: nextPage,
-        limit: 9,
-        query: searchTerm || undefined,
-        category: selectedCategory === "All Categories" ? undefined : selectedCategory,
-      });
-      const mapped = mapServices(services);
-      setRealServices(prev => [...prev, ...mapped]);
-      setPage(nextPage);
-      setHasMore(more);
-    } catch (e) {
-      console.error("Failed to load more services:", e);
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Variant helpers (match Compare/Search pages minimal subset)
+  // Variant helpers (match Compare/Search pages minimal subset) - Move these BEFORE filteredServices
   const getSlides = (svc: SearchService) => {
     const base = {
       imageUrl: svc.image,
@@ -276,6 +244,41 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     return p != null && !Number.isNaN(Number(p)) ? Number(p) : svc.price;
   };
   const getDisplayCity = (svc: SearchService) => getActiveSlide(svc)?.city || svc.city;
+
+  const filteredServices = realServices.filter(service => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = service.name.toLowerCase().includes(searchLower) ||
+      service.category.toLowerCase().includes(searchLower) ||
+      service.description.toLowerCase().includes(searchLower) ||
+      service.providerName.toLowerCase().includes(searchLower) ||
+      (service.city && service.city.toLowerCase().includes(searchLower)) ||
+      (getDisplayCity(service) && getDisplayCity(service)!.toLowerCase().includes(searchLower));
+    const matchesCategory = selectedCategory === "All Categories" || service.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const loadMore = async () => {
+    if (isLoading || !hasMore) return;
+    const nextPage = page + 1;
+    setIsLoading(true);
+    try {
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({
+        page: nextPage,
+        limit: 9,
+        query: searchTerm || undefined,
+        category: selectedCategory === "All Categories" ? undefined : selectedCategory,
+      });
+      const mapped = mapServices(services);
+      setRealServices(prev => [...prev, ...mapped]);
+      setPage(nextPage);
+      setHasMore(more);
+    } catch (e) {
+      console.error("Failed to load more services:", e);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   // Convert 24-hour time to 12-hour format with AM/PM
   const formatTo12Hour = (time24?: string): string => {
     if (!time24) return "";
@@ -452,6 +455,8 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           labCategory: service.providerType === 'laboratory' ? (service as any).labCategory : undefined,
           // Pass clinic category if applicable
           clinicCategory: service.providerType === 'clinic' ? (service as any).clinicCategory : undefined,
+          // Pass department field to detail page for clinic/hospital services
+          department: service.providerType === 'clinic' ? (service as any).department : undefined,
         }
       }
     });
@@ -513,11 +518,11 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
 
       {/* Dropdown Results */}
       {isOpen && (searchTerm || selectedCategory !== "All Categories") && (
-        <Card className="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-md shadow-2xl border border-gray-200 rounded-xl max-h-[28rem] overflow-hidden z-[100000]">
+        <Card className="absolute top-full left-0 right-0 mt-2 bg-white/98 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border-0 rounded-2xl max-h-[32rem] overflow-hidden z-[100000] animate-in fade-in-0 zoom-in-95 duration-200">
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-100 px-3 py-2 flex items-center justify-between">
-            <span className="text-[12px] text-gray-500">Top results</span>
-            <span className="text-[11px] text-gray-400">{filteredServices.length} found</span>
+          <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-50/90 to-purple-50/90 backdrop-blur-xl border-b border-blue-100/50 px-4 py-3 flex items-center justify-between">
+            <span className="text-sm font-medium text-blue-700">Top results</span>
+            <span className="text-xs text-blue-500 bg-blue-100/50 px-2 py-1 rounded-full">{filteredServices.length} found</span>
           </div>
           <div className="max-h-[24rem] overflow-y-auto">
             {filteredServices.length > 0 ? (
@@ -525,7 +530,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                 <div
                   key={service.id}
                   onClick={() => handleServiceClick(service)}
-                  className="px-3 py-2.5 hover:bg-gray-50/80 cursor-pointer text-sm transition-colors group active:bg-gray-100"
+                  className="px-4 py-3 hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-purple-50/80 cursor-pointer text-sm transition-all duration-300 group active:bg-blue-100/50 border-b border-gray-100/50 last:border-b-0 hover:shadow-sm"
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
@@ -533,30 +538,14 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         <img
                           src={getDisplayImage(service)!}
                           alt={service.name}
-                          className="w-12 h-12 rounded-md object-cover shadow-sm ring-1 ring-gray-100"
+                          className="w-14 h-14 rounded-xl object-cover shadow-lg ring-2 ring-white group-hover:ring-blue-200 transition-all duration-300 group-hover:scale-105"
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-md flex items-center justify-center text-base ring-1 ring-gray-100">
+                        <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center text-lg ring-2 ring-white group-hover:ring-blue-200 transition-all duration-300 group-hover:scale-105 shadow-lg">
                           {service.icon}
                         </div>
                       )}
                       
-                      {/* Top-right corner badges */}
-                      <div className="absolute -top-1 -right-1 flex flex-col gap-0.5 items-end">
-                        {service._providerVerified ? (
-                          <Badge className="text-[7px] px-1 py-0.5 bg-green-600 text-white border-0 shadow-lg">
-                            Verified
-                          </Badge>
-                        ) : (
-                          <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Unverified</Badge>
-                        )}
-                        <Badge className="text-[7px] px-1 py-0.5 bg-blue-600 text-white border-0 shadow-lg">
-                          {service.providerType === 'doctor' ? 'Doctor' : 
-                           service.providerType === 'laboratory' ? 'Lab' :
-                           service.providerType === 'pharmacy' ? 'Pharmacy' : 
-                           service.providerType === 'clinic' ? 'Hospital' : 'Service'}
-                        </Badge>
-                      </div>
                       
                       {getSlides(service).length > 1 && (
                         <div className="absolute -bottom-1 right-0 flex items-center gap-0.5">
@@ -578,65 +567,18 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <h4 className="font-medium text-gray-900 text-sm truncate" title={service.name}>{service.name}</h4>
-                        <button
-                          type="button"
-                          className="text-[10px] px-1.5 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap hover:bg-rose-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (service.providerType === 'laboratory' && service.labCategory) {
-                              navigate(`/labs?labCategory=${encodeURIComponent(service.labCategory)}`);
-                            }
-                          }}
-                          title={service.providerType === 'laboratory' && service.labCategory ? `View labs in ${service.labCategory}` : undefined}
-                        >
-                          {(service.providerType === 'pharmacy' && service.pharmacyCategory)
-                            ? service.pharmacyCategory
-                            : (service.providerType === 'laboratory' && service.labCategory)
-                              ? service.labCategory
-                              : (service.providerType === 'doctor' && service.doctorCategory)
-                                ? service.doctorCategory
-                                : (service.providerType === 'clinic' && service.clinicCategory)
-                                  ? service.clinicCategory
-                                  : service.category}
-                        </button>
-                        {(() => {
-                          // Get variant-aware availability
-                          const activeSlide = getActiveSlide(service);
-                          const availability = activeSlide?.availability || service.availability;
-                          
-                          if (!availability) return null;
-                          
-                          return (
-                            <AvailabilityBadge availability={availability} size="sm" />
-                          );
-                        })()}
-                        {(() => {
-                          console.log('Service debug:', {
-                            name: service.name,
-                            providerType: service.providerType,
-                            serviceType: service.serviceType,
-                            shouldShow: (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic') && service.serviceType
-                          });
-                          return (service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic' || service.providerType === 'doctor') && service.serviceType;
-                        })() && (
-                          <ServiceTypeBadge serviceType={service.serviceType} size="sm" />
-                        )}
-                        {(service.providerType === 'pharmacy' || service.providerType === 'laboratory' || service.providerType === 'clinic' || service.providerType === 'doctor') && service.homeDelivery && (
-                          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white border border-white whitespace-nowrap shadow-sm">
-                            🏠 Home Delivery
-                          </span>
-                        )}
-                        {service.ratingBadge && (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full border whitespace-nowrap ${getBadgeStyles(service.ratingBadge)}`}>
-                            {service.ratingBadge}
-                          </span>
-                        )}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <h4 className="font-semibold text-gray-300 text-base truncate group-hover:text-blue-700 transition-colors duration-300" title={service.name}>{service.name}</h4>
+                        <span className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm whitespace-nowrap font-medium">
+                          {service.providerType === 'doctor' ? 'Doctor' : 
+                           service.providerType === 'laboratory' ? 'Lab' :
+                           service.providerType === 'pharmacy' ? 'Pharmacy' : 
+                           service.providerType === 'clinic' ? 'Hospital' : 'Service'}
+                        </span>
                       </div>
-                      <div className="mt-0.5 text-[11px] text-gray-600 truncate">
+                      <div className="mt-1 text-sm text-gray-600 truncate">
                         <button
-                          className="text-gray-600 hover:text-primary hover:underline text-left"
+                          className="text-gray-500 hover:text-blue-600 hover:underline text-left font-medium transition-colors duration-200"
                           onClick={(e) => {
                             e.stopPropagation();
                             console.log('Provider clicked:', service.providerId, service.providerName);
@@ -647,102 +589,21 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         >
                           {service.providerName}
                         </button>
-                        {getDisplayCity(service) ? <span className="text-gray-400"> • {getDisplayCity(service)}</span> : null}
+                        {getDisplayCity(service) ? <span className="text-gray-400 ml-2">• {getDisplayCity(service)}</span> : null}
                       </div>
-                      {(() => {
-                        const activeIdx = activeIdxById[service.id] ?? 0;
-                        const variants = Array.isArray(service.variants) ? service.variants : [];
-                        const totalSlides = 1 + variants.length;
-                        const slideIdx = ((activeIdx % totalSlides) + totalSlides) % totalSlides;
-                        
-                        let hospitalClinicName = '';
-                        if (slideIdx === 0) {
-                          // Main service slide
-                          hospitalClinicName = (service as any).hospitalClinicName || '';
-                        } else if (variants[slideIdx - 1]) {
-                          // Variant slide
-                          hospitalClinicName = variants[slideIdx - 1].hospitalClinicName || '';
-                        }
-                        
-                        console.log('🔎 SearchServices hospitalClinicName render:', {
-                          serviceId: service.id,
-                          serviceName: service.name,
-                          slideIdx,
-                          hospitalClinicName,
-                          serviceHospitalClinicName: (service as any).hospitalClinicName,
-                          variantHospitalClinicName: variants[slideIdx - 1]?.hospitalClinicName
-                        });
-                        
-                        return hospitalClinicName ? (
-                          <div className="mt-0.5 text-[10px] text-blue-600 font-medium truncate flex items-center gap-1.5">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="12"
-                              height="12"
-                              aria-hidden="true"
-                              className="shrink-0"
-                            >
-                              <circle cx="12" cy="12" r="11" fill="#ef4444" />
-                              <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
-                              <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
-                            </svg>
-                            <span className="truncate">{hospitalClinicName}</span>
-                          </div>
-                        ) : null;
-                      })()}
-                      {(() => {
-                        const timeInfo = getDisplayTimeInfo(service);
-                        const activeIdx = activeIdxById[service.id] ?? 0;
-                        const variants = Array.isArray(service.variants) ? service.variants : [];
-                        const totalSlides = 1 + variants.length;
-                        const slideIdx = ((activeIdx % totalSlides) + totalSlides) % totalSlides;
-                        
-                        console.log('SearchServices Debug:', {
-                          serviceName: service.name,
-                          serviceId: service.id,
-                          providerType: service.providerType,
-                          activeIdx: activeIdx,
-                          slideIdx: slideIdx,
-                          totalSlides: totalSlides,
-                          isMainSlide: slideIdx === 0,
-                          mainSchedule: {
-                            timeLabel: (service as any).timeLabel,
-                            startTime: (service as any).startTime,
-                            endTime: (service as any).endTime,
-                            days: (service as any).days
-                          },
-                          variantSchedule: slideIdx > 0 && variants[slideIdx - 1] ? {
-                            timeLabel: variants[slideIdx - 1].timeLabel,
-                            startTime: variants[slideIdx - 1].startTime,
-                            endTime: variants[slideIdx - 1].endTime,
-                            days: variants[slideIdx - 1].days
-                          } : null,
-                          timeInfo: timeInfo,
-                          variants: service.variants
-                        });
-                        return timeInfo;
-                      })() && (
-                        <div className="mt-1 text-[10px] text-gray-500 bg-gray-50 px-2 py-1 rounded-md border">
-                          📅 {getDisplayTimeInfo(service)}
-                        </div>
-                      )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-end gap-2">
                       {getDisplayPrice(service) != null && (
-                        <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200 whitespace-nowrap">
+                        <span className="text-sm px-3 py-1.5 rounded-full bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200 whitespace-nowrap font-semibold shadow-sm">
                           {formatPrice(getDisplayPrice(service)!)}
                         </span>
                       )}
                       <button
-                        className="text-[11px] px-2 py-0.5 rounded-md bg-white border border-gray-200 hover:bg-gray-50 text-gray-700"
+                        className="text-sm px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                         onClick={(e) => { e.stopPropagation(); handleServiceClick(service); }}
                       >
                         View Details
                       </button>
-                      {!hideLocationIcon && (
-                        <MapPin className="w-4 h-4 text-gray-400 opacity-80 group-hover:text-gray-500" />
-                      )}
                     </div>
                   </div>
                 </div>
@@ -757,13 +618,13 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           </div>
           {/* Footer CTA */}
           {hasMore && (
-            <div className="border-t border-gray-100 bg-white/80 backdrop-blur px-3 py-2 text-center">
+            <div className="border-t border-blue-100/50 bg-gradient-to-r from-blue-50/80 to-purple-50/80 backdrop-blur-xl px-4 py-3 text-center">
               <button
-                className="text-[12px] text-rose-600 hover:text-rose-700 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-700 font-semibold bg-white/80 hover:bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105"
                 onClick={loadMore}
                 disabled={isLoading}
               >
-                {isLoading ? 'Loading...' : 'Load More'}
+                {isLoading ? 'Loading...' : 'Load More Services'}
               </button>
             </div>
           )}
