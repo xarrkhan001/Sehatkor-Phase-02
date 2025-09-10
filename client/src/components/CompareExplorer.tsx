@@ -567,12 +567,12 @@ const CompareExplorer = () => {
                 </div>
                 {/* Inline filters: Location + Price */}
                 {effectiveSelectedName && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end w-11/12 mx-auto">
                     {/* Location Filter */}
                     <div>
                       <label className="text-xs text-gray-600">Location</label>
                       <Select value={locFilter} onValueChange={setLocFilter}>
-                        <SelectTrigger className="mt-1 h-10 rounded-xl bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
+                        <SelectTrigger className="mt-1 h-10 w-full rounded-xl bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
                           <SelectValue placeholder="All locations" />
                         </SelectTrigger>
                         <SelectContent>
@@ -603,7 +603,7 @@ const CompareExplorer = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="mt-1 w-[140px] h-10 text-sm bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 rounded-lg shadow-sm focus:border-gray-500/70 focus:ring-0 focus-visible:ring-0 outline-none transition-all duration-200">
+                        <SelectTrigger className="mt-1 h-10 w-full rounded-xl bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
                           <SelectValue placeholder="Price Range" />
                         </SelectTrigger>
                         <SelectContent>
