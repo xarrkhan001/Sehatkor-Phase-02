@@ -120,7 +120,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
             <div className="flex items-center gap-8 sm:gap-10">
               {normalized.map((p, idx) => (
                 <div key={`${p.name}-${idx}`} className="shrink-0 flex items-center gap-5 sm:gap-6 px-4 sm:px-5 py-2 sm:py-3">
-                  <div className={`relative h-24 w-24 sm:h-28 sm:w-28 grid place-items-center`}>
+                  <div className={`relative h-40 w-40 sm:h-48 sm:w-48 grid place-items-center`}>
                     {p.logoUrl ? (
                       <img src={p.logoUrl} alt={p.name} className="h-full w-full object-contain p-1" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     ) : (
@@ -137,7 +137,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
             <div className="flex items-center gap-8 sm:gap-10" aria-hidden="true">
               {normalized.map((p, idx) => (
                 <div key={`dup-${p.name}-${idx}`} className="shrink-0 flex items-center gap-5 sm:gap-6 px-4 sm:px-5 py-2 sm:py-3">
-                  <div className={`relative h-24 w-24 sm:h-28 sm:w-28 grid place-items-center`}>
+                  <div className={`relative h-40 w-40 sm:h-48 sm:w-48 grid place-items-center`}>
                     {p.logoUrl ? (
                       <img src={p.logoUrl} alt="" className="h-full w-full object-contain p-1" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     ) : (
@@ -166,7 +166,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
 
 const getIconFor = (name: string) => {
   const lower = name.toLowerCase();
-  const commonProps = { className: "text-gray-600 w-9 h-9 sm:w-12 sm:h-12" } as const;
+  const commonProps = { className: "text-gray-600 w-20 h-20 sm:w-24 sm:h-24" } as const;
   if (lower.includes("insur")) return <ShieldCheck {...commonProps} />;
   if (lower.includes("zameen") || lower.includes("graana")) return <Home {...commonProps} />;
   if (lower.includes("tcs")) return <Truck {...commonProps} />;
