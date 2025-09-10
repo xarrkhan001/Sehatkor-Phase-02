@@ -934,6 +934,8 @@ const CompareExplorer = () => {
                                   days: item.days || null,
                                   variants: item.variants || [],
                                   diseases: Array.isArray((item as any).diseases) ? (item as any).diseases : [],
+                                  // Pass department field to detail page for clinic/hospital services
+                                  department: (item._providerType === 'clinic') ? (item.department || undefined) : undefined,
                                 }
                               }
                             });
@@ -1131,6 +1133,8 @@ const CompareExplorer = () => {
                                     startTime: s.startTime || null,
                                     endTime: s.endTime || null,
                                     days: s.days || null,
+                                    // Pass department field to detail page for clinic/hospital services
+                                    department: (s._providerType === 'clinic') ? (s.department || undefined) : undefined,
                                   }
                                 }
                               });

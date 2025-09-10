@@ -1467,6 +1467,8 @@ const SearchPage = () => {
                                     homeDelivery: Boolean((service as any).homeDelivery),
                                     // Pass clinic category to detail page for clinic/hospital services
                                     clinicCategory: ((service as any)._providerType === 'clinic') ? ((service as any).clinicCategory || undefined) : undefined,
+                                    // Pass department field to detail page for clinic/hospital services
+                                    department: ((service as any)._providerType === 'clinic') ? ((service as any).department || undefined) : undefined,
                                   }
                                 },
                               });
