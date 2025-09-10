@@ -973,9 +973,10 @@ const ProviderProfilePage = () => {
                       )}
                       {/* Home Delivery badge for pharmacy, laboratory, clinic, and doctor services */}
                       {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).homeDelivery && (
-                        <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">
-                          🏠 Home Delivery
-                        </Badge>
+                        <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
+                          <span className="leading-none">🏠</span>
+                          <span className="leading-none">Home Delivery</span>
+                        </span>
                       )}
                       {/* Removed duplicate clinic category badge to avoid double display */}
                     </div>

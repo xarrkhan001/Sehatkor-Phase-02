@@ -776,10 +776,10 @@ const ServiceDetailPage = () => {
                       </TooltipProvider>
                     )}
                     {(item.homeDelivery === true) && ((item.providerType === 'pharmacy') || (item.providerType === 'laboratory') || (item.providerType === 'clinic') || (item.type === 'Medicine') || (item.type === 'Test') || (item.type === 'Treatment')) && (
-                      <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                      <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
                         <span className="leading-none">🏠</span>
                         <span className="leading-none">Home Delivery</span>
-                      </Badge>
+                      </span>
                     )}
                     {freshCounts && (
                       <div className="flex items-center gap-2 text-xs text-gray-600">

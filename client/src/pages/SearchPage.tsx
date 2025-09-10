@@ -1391,10 +1391,10 @@ const SearchPage = () => {
                           <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
                         )}
                         {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic' || (service as any)._providerType === 'doctor') && (service as any).homeDelivery && (
-                          <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                          <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
                             <span className="leading-none">🏠</span>
                             <span className="leading-none">Home Delivery</span>
-                          </Badge>
+                          </span>
                         )}
                       </div>
                       
