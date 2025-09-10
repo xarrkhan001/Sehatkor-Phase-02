@@ -759,16 +759,16 @@ const ProviderProfilePage = () => {
                 key={service.id}
                 className="group relative z-10 shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl border border-gray-100 bg-white hover:border-blue-200 flex flex-col overflow-visible hover:-translate-y-[3px] ring-1 ring-transparent hover:ring-blue-200/70 hover:z-50"
               >
-                {/* Top-left recommended overlay */}
+                {/* Top-left recommended overlay - made smaller */}
                 {(service as any).recommended && (
                   <div className="absolute top-1.5 left-1.5 z-10">
-                    <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
+                    <div className="px-2 py-1 text-[9px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1 backdrop-blur-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="10" height="10" fill="currentColor" className="text-amber-900">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
                       <div className="flex flex-col leading-tight">
-                        <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
-                        <span className="font-bold text-amber-800 text-[10px]">by SehatKor</span>
+                        <span className="font-black text-amber-900 text-[9px] tracking-wider font-extrabold">RECOMMENDED</span>
+                        <span className="font-bold text-amber-800 text-[8px]">by SehatKor</span>
                       </div>
                     </div>
                   </div>
@@ -810,37 +810,6 @@ const ProviderProfilePage = () => {
                             </div>
                           )}
                           
-                          {/* Top-left corner badges */}
-                          <div className="absolute -top-0.5 -left-0.5 flex flex-col gap-0.5">
-                            {(service as any).isVerified ? (
-                              <Badge className="text-[7px] px-0.5 py-0.5 bg-green-400/70 text-white border-0 shadow-md backdrop-blur-sm">
-                                Verified
-                              </Badge>
-                            ) : (
-                              <Badge className="text-[7px] px-0.5 py-0.5 bg-red-400/70 text-white border-0 shadow-md backdrop-blur-sm">
-                                Not Verified
-                              </Badge>
-                            )}
-                            <Badge className="text-[7px] px-0.5 py-0.5 bg-indigo-400/70 text-white border-0 shadow-md backdrop-blur-sm">
-                              {providerType === 'doctor' && 'Doctor'}
-                              {providerType === 'clinic' && 'Hospital'}
-                              {providerType === 'laboratory' && 'Lab'}
-                              {providerType === 'pharmacy' && 'Pharmacy'}
-                              {!providerType && 'Provider'}
-                            </Badge>
-                          </div>
-
-                          {/* Top-right verification + provider-type badges for Clinic/Hospital (to match pharmacies UI) */}
-                          {providerType === 'clinic' && (
-                            <div className="absolute top-1.5 right-1.5 z-10 flex flex-col items-end gap-0.5">
-                              {(((service as any)._providerVerified) || ((service as any).providerVerified) || (providerUser?.isVerified)) ? (
-                                <Badge className="text-[9px] px-1.5 py-0.5 bg-green-500 text-white border-0 shadow-md">Verified</Badge>
-                              ) : (
-                                <Badge className="text-[9px] px-1.5 py-0.5 bg-red-500 text-white border-0 shadow-md">Not Verified</Badge>
-                              )}
-                              <Badge className="text-[9px] px-1.5 py-0.5 bg-indigo-500 text-white border-0 shadow-md">Hospital</Badge>
-                            </div>
-                          )}
 
                           {/* Badges moved to card body below */}
                         </div>
@@ -870,6 +839,22 @@ const ProviderProfilePage = () => {
                               <span className="truncate">{(service as any).department}</span>
                             </div>
                           )}
+                          
+                          {/* Verification and Provider Type Badges - moved below department */}
+                          <div className="flex items-center gap-2 mt-2">
+                            {(((service as any)._providerVerified) || ((service as any).providerVerified) || (providerUser?.isVerified) || (service as any).isVerified) ? (
+                              <Badge className="text-[9px] px-1.5 py-0.5 bg-green-500 text-white border-0 shadow-md">Verified</Badge>
+                            ) : (
+                              <Badge className="text-[9px] px-1.5 py-0.5 bg-red-500 text-white border-0 shadow-md">Unverified</Badge>
+                            )}
+                            <Badge className="text-[9px] px-1.5 py-0.5 bg-indigo-500 text-white border-0 shadow-md">
+                              {providerType === 'doctor' && 'Doctor'}
+                              {providerType === 'clinic' && 'Hospital'}
+                              {providerType === 'laboratory' && 'Lab'}
+                              {providerType === 'pharmacy' && 'Pharmacy'}
+                              {!providerType && 'Provider'}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                     </div>
