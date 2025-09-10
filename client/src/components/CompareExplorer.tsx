@@ -878,10 +878,10 @@ const CompareExplorer = () => {
                           <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
                         )}
                         {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.homeDelivery && (
-                          <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
+                          <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
                             <span className="leading-none">🏠</span>
                             <span className="leading-none">Home Delivery</span>
-                          </Badge>
+                          </span>
                         )}
                       </div>
 

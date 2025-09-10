@@ -16,6 +16,7 @@ import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import ProviderWallet from "@/components/ProviderWallet";
 import ServiceTypeBadge from '@/components/ServiceTypeBadge';
+import AvailabilityBadge from '@/components/AvailabilityBadge';
 
 import { toast } from "sonner";
 import ServiceManager from "@/lib/serviceManager";
@@ -894,17 +895,7 @@ const ClinicDashboard = () => {
                                     <Badge variant="outline">{m.category}</Badge>
                                   )}
                                   {m.availability && (
-                                    <Badge
-                                      className={`${
-                                        m.availability === 'Online'
-                                          ? 'bg-emerald-600'
-                                          : m.availability === 'Physical'
-                                          ? 'bg-purple-600'
-                                          : 'bg-teal-600'
-                                      } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                                    >
-                                      {m.availability === 'Online and Physical' ? 'Online & Physical' : m.availability}
-                                    </Badge>
+                                    <AvailabilityBadge availability={m.availability} size="sm" />
                                   )}
                                   {m.serviceType && (
                                     <ServiceTypeBadge serviceType={m.serviceType} />
@@ -985,17 +976,7 @@ const ClinicDashboard = () => {
                                     <TableCell>{m.duration ?? '-'}</TableCell>
                                     <TableCell>
                                       {m.availability ? (
-                                        <Badge
-                                          className={`${
-                                            m.availability === 'Online'
-                                              ? 'bg-emerald-600'
-                                              : m.availability === 'Physical'
-                                              ? 'bg-purple-600'
-                                              : 'bg-teal-600'
-                                          } text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap`}
-                                        >
-                                          {m.availability === 'Online and Physical' ? 'Online & Physical' : m.availability}
-                                        </Badge>
+                                        <AvailabilityBadge availability={m.availability} size="sm" />
                                       ) : (
                                         '-'
                                       )}
