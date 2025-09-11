@@ -722,6 +722,27 @@ const LaboratoryDashboard = () => {
                       className="max-w-xs"
                     />
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="editTestPrice">Price (PKR) *</Label>
+                      <Input
+                        id="editTestPrice"
+                        type="number"
+                        value={editForm.price}
+                        onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                        placeholder="e.g., 1500"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editTestDuration">Duration (hours)</Label>
+                      <Input
+                        id="editTestDuration"
+                        value={editForm.duration}
+                        onChange={(e) => setEditForm({ ...editForm, duration: e.target.value })}
+                        placeholder="e.g., 2"
+                      />
+                    </div>
+                  </div>
 
                   <div>
                     <Label htmlFor="editTestCategory">Category</Label>
