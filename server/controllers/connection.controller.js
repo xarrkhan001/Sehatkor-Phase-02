@@ -7,20 +7,12 @@ export const sendConnectionRequest = async (req, res) => {
     const { recipientId, message } = req.body;
     const senderId = req.userId;
 
-    // Check if recipient exists and is verified
+    // Check if recipient exists
     const recipient = await User.findById(recipientId);
     if (!recipient) {
       return res.status(404).json({ message: 'User not found' });
     }
-    if (!recipient.isVerified) {
-      return res.status(400).json({ message: 'Can only send requests to verified users' });
-    }
-
-    // Check if sender is verified
-    const sender = await User.findById(senderId);
-    if (!sender.isVerified) {
-      return res.status(400).json({ message: 'You must be verified to send connection requests' });
-    }
+    // Note: chat requests are allowed regardless of verification status for both sender and recipient
 
     // Check if request already exists
     const existingRequest = await ConnectionRequest.findOne({
@@ -309,7 +301,6 @@ export const searchUsersForConnection = async (req, res) => {
     // First try exact matches
     let users = await User.find({
       _id: { $ne: userId },
-      isVerified: true,
       $or: [
         { name: { $regex: `^${query}$`, $options: 'i' } },
         { email: { $regex: `^${query}$`, $options: 'i' } }
@@ -320,7 +311,6 @@ export const searchUsersForConnection = async (req, res) => {
     if (users.length === 0) {
       users = await User.find({
         _id: { $ne: userId },
-        isVerified: true,
         $or: [
           { name: { $regex: query, $options: 'i' } },
           { email: { $regex: query, $options: 'i' } }
