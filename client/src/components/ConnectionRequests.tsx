@@ -652,12 +652,12 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
         <div key={request._id} className="flex flex-col gap-1.5 lg:gap-2 p-1.5 lg:p-2 border rounded-lg">
           <div className="flex items-center gap-2">
             <Avatar className="h-6 w-6 lg:h-7 lg:w-7">
-              <AvatarImage src={request.sender.avatar} />
+              <AvatarImage src={request.sender?.avatar || ''} />
               <AvatarFallback className="text-[10px] lg:text-xs">
                 <UserCheck className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
               </AvatarFallback>
             </Avatar>
-            <div className="font-medium text-xs lg:text-sm truncate">{request.sender.name}</div>
+            <div className="font-medium text-xs lg:text-sm truncate">{request.sender?.name || 'Unknown User'}</div>
           </div>
           
           {request.message && (
@@ -741,17 +741,17 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
                   )}
                   
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6 lg:h-7 lg:w-7">
-                      <AvatarImage src={request.recipient.avatar} />
-                      <AvatarFallback className="text-[10px] lg:text-xs">
-                        <UserCheck className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="font-medium text-xs  lg:text-sm truncate">{request.recipient.name}</div>
-                    <div className="ml-auto mt-8 md:mt-0 lg:ml-0 lg:mt-0 lg:absolute lg:bottom-2 lg:right-2">
-                      {getStatusBadge(request.status)}
-                    </div>
-                  </div>
+            <Avatar className="h-6 w-6 lg:h-7 lg:w-7">
+              <AvatarImage src={request.recipient?.avatar || ''} />
+              <AvatarFallback className="text-[10px] lg:text-xs">
+                <UserCheck className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="font-medium text-xs  lg:text-sm truncate">{request.recipient?.name || 'Unknown User'}</div>
+            <div className="ml-auto mt-8 md:mt-0 lg:ml-0 lg:mt-0 lg:absolute lg:bottom-2 lg:right-2">
+              {getStatusBadge(request.status)}
+            </div>
+          </div>
                   
                   {request.message && (
                     <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10   -mt-1">

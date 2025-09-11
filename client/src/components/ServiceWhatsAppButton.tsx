@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MessageCircle, MessageSquare } from "lucide-react";
 import { openWhatsAppChat, getDefaultWhatsAppMessage } from "@/utils/whatsapp";
-import { getConnectedUsers, getSentRequests, sendConnectionRequest } from "@/lib/connectionApi";
+import { getConnectedUsers, getSentRequests, sendConnectionRequest, searchUsersForConnection } from "@/lib/connectionApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -27,7 +27,6 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
   }
 
   const { user } = useAuth();
-  const isSelf = user && providerId && (String(user.id) === String(providerId));
 
   const handleWhatsAppClick = () => {
     openWhatsAppChat(phoneNumber, getDefaultWhatsAppMessage(serviceName, providerName));
@@ -42,7 +41,7 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('sehatkor:open-chat', {
-          detail: { serviceName, providerName, providerId }
+          detail: { serviceName, providerName, providerId: providerIdUsed }
         })
       );
     }
@@ -52,6 +51,12 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
   const [connStatus, setConnStatus] = useState<'loading' | 'connected' | 'pending' | 'none'>('loading');
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
+  // Fallback resolution when providerId is missing (e.g., public cards)
+  const [resolvedProviderId, setResolvedProviderId] = useState<string | undefined>(undefined);
+
+  // Determine which providerId to use in actions
+  const providerIdUsed = providerId || resolvedProviderId;
+  const isSelf = !!(user && providerIdUsed && (String((user as any).id) === String(providerIdUsed)));
 
   const refreshStatus = async () => {
     // Only for signed-in users with a valid providerId
@@ -61,28 +66,28 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
       setConnStatus('none');
       return;
     }
-    if (!providerId || !token) {
+    if (!providerIdUsed || !token) {
       setConnStatus('none');
       return;
     }
     try {
       setConnStatus('loading');
       const [connected, sent] = await Promise.all([getConnectedUsers(), getSentRequests()]);
-      const isConnected = (connected || []).some((u: any) => String(u._id) === String(providerId));
+      const isConnected = (connected || []).some((u: any) => String(u._id) === String(providerIdUsed));
       if (isConnected) {
         setConnStatus('connected');
         return;
       }
       // Some APIs may also return accepted connections inside sent requests
       const isAcceptedInSent = (sent || []).some((r: any) =>
-        r.status === 'accepted' && (String(r.recipient?._id) === String(providerId) || String(r.sender?._id) === String(providerId))
+        r.status === 'accepted' && (String(r.recipient?._id) === String(providerIdUsed) || String(r.sender?._id) === String(providerIdUsed))
       );
       if (isAcceptedInSent) {
         setConnStatus('connected');
         return;
       }
       const hasPending = (sent || []).some((r: any) =>
-        r.status === 'pending' && (String(r.recipient?._id) === String(providerId) || String(r.sender?._id) === String(providerId))
+        r.status === 'pending' && (String(r.recipient?._id) === String(providerIdUsed) || String(r.sender?._id) === String(providerIdUsed))
       );
       setConnStatus(hasPending ? 'pending' : 'none');
     } catch {
@@ -93,17 +98,36 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
   useEffect(() => {
     refreshStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [providerId]);
+  }, [providerIdUsed]);
+
+  // Attempt to resolve providerId if missing, using providerName (limited to 1 hit by API)
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (providerId || !providerName || providerName.trim().length < 2) return;
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('sehatkor_token') : null;
+        if (!token) return;
+        const results = await searchUsersForConnection(providerName.trim());
+        const first = Array.isArray(results) && results.length > 0 ? results[0] : null;
+        if (!cancelled && first && first._id) {
+          setResolvedProviderId(String(first._id));
+        }
+      } catch {}
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [providerId, providerName]);
 
   const onRequestClick = async () => {
-    if (!providerId || sending) return;
+    if (!providerIdUsed || sending) return;
     if (isSelf) {
       toast({ title: 'Action not allowed', description: 'You cannot send a connection request to yourself.', variant: 'destructive' });
       return;
     }
     try {
       setSending(true);
-      await sendConnectionRequest(providerId, "");
+      await sendConnectionRequest(providerIdUsed, "");
       setConnStatus('pending');
       toast({ title: 'Request Sent', description: 'Your connection request was sent.' });
     } catch (e: any) {
