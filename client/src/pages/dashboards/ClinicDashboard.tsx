@@ -84,6 +84,52 @@ const ClinicDashboard = () => {
     homeDelivery: false
   });
 
+  // Inline validation limits
+  const LIMITS = {
+    name: 32,
+    department: 26,
+    description: 60,
+    city: 20,
+    address: 60,
+  } as const;
+
+  const [formErrors, setFormErrors] = useState<{ name?: string; department?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+
+  const validateField = (key: keyof typeof LIMITS, value: string) => {
+    const v = (value || '').trim();
+    const limit = LIMITS[key];
+    const overBy = Math.max(0, v.length - limit);
+    setFormErrors(prev => ({ ...prev, [key === 'address' ? 'detailAddress' : key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined }));
+  };
+
+  const isValidHttpUrl = (value: string): boolean => {
+    const v = (value || '').trim();
+    if (!v) return true; // optional
+    const re = /^(https?:\/\/)[^\s]+$/i;
+    return re.test(v);
+  };
+
+  const validateTopLink = (value: string) => {
+    setFormErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
+  };
+
+  const validateLengths = (): boolean => {
+    const trim = (s?: string) => (s || '').trim();
+    const name = trim(serviceForm.name);
+    const department = trim(serviceForm.department);
+    const description = trim(serviceForm.description);
+    const city = trim(serviceForm.city);
+    const addr = trim(serviceForm.detailAddress);
+
+    if (name.length > LIMITS.name) { toast.error(`Service Name must be at most ${LIMITS.name} characters.`); return false; }
+    if (department.length > LIMITS.department) { toast.error(`Department must be at most ${LIMITS.department} characters.`); return false; }
+    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
+    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
+    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
+    if (!isValidHttpUrl(serviceForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    return true;
+  };
+
   const clinicTypes = [
     'General Hospital', 'Specialized Hospital', 'Eye Hospital',
     'Heart Hospital', 'Children Hospital', 'Emergency Center'
@@ -336,6 +382,7 @@ const ClinicDashboard = () => {
   }, [bookings]);
 
   const handleAddService = async () => {
+    if (!validateLengths()) return;
     if (!serviceForm.name) {
       toast.error("Please fill in all required fields");
       return;
@@ -599,9 +646,11 @@ const ClinicDashboard = () => {
                               <Input
                                 id="serviceName"
                                 value={serviceForm.name}
-                                onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
+                                onChange={(e) => { setServiceForm({ ...serviceForm, name: e.target.value }); validateField('name', e.target.value); }}
                                 placeholder="e.g., X-Ray Scan"
+                                className={formErrors.name ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                               />
+                              {formErrors.name && <p className="text-xs text-red-600 mt-1">{formErrors.name}</p>}
                             </div>
 
                             <div>
@@ -658,18 +707,22 @@ const ClinicDashboard = () => {
                               <Input
                                 id="serviceDepartment"
                                 value={serviceForm.department}
-                                onChange={(e) => setServiceForm({ ...serviceForm, department: e.target.value })}
+                                onChange={(e) => { setServiceForm({ ...serviceForm, department: e.target.value }); validateField('department', e.target.value); }}
                                 placeholder="e.g., Cardiology"
+                                className={formErrors.department ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                               />
+                              {formErrors.department && <p className="text-xs text-red-600 mt-1">{formErrors.department}</p>}
                             </div>
                             <div>
                               <Label htmlFor="serviceDescription">Description</Label>
                               <Textarea
                                 id="serviceDescription"
                                 value={serviceForm.description}
-                                onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                                onChange={(e) => { setServiceForm({ ...serviceForm, description: e.target.value }); validateField('description', e.target.value); }}
                                 placeholder="Brief description of the service"
+                                className={formErrors.description ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                               />
+                              {formErrors.description && <p className="text-xs text-red-600 mt-1">{formErrors.description}</p>}
                             </div>
 
                             {/* Location Fields */}
@@ -680,28 +733,37 @@ const ClinicDashboard = () => {
                                 <Input
                                   id="serviceCity"
                                   value={serviceForm.city}
-                                  onChange={(e) => setServiceForm({ ...serviceForm, city: e.target.value })}
+                                  onChange={(e) => { setServiceForm({ ...serviceForm, city: e.target.value }); validateField('city', e.target.value); }}
                                   placeholder="e.g., Karachi"
+                                  className={formErrors.city ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {formErrors.city && <p className="text-xs text-red-600 mt-1">{formErrors.city}</p>}
                               </div>
                               <div>
                                 <Label htmlFor="serviceAddress">Detailed Address</Label>
                                 <Textarea
                                   id="serviceAddress"
                                   value={serviceForm.detailAddress}
-                                  onChange={(e) => setServiceForm({ ...serviceForm, detailAddress: e.target.value })}
+                                  onChange={(e) => { setServiceForm({ ...serviceForm, detailAddress: e.target.value }); validateField('address', e.target.value); }}
                                   placeholder="Complete address with landmarks"
                                   rows={2}
+                                  className={formErrors.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {formErrors.detailAddress && <p className="text-xs text-red-600 mt-1">{formErrors.detailAddress}</p>}
                               </div>
+
                               <div>
                                 <Label htmlFor="serviceGoogleMap">Google Maps Link (Optional)</Label>
                                 <Input
                                   id="serviceGoogleMap"
                                   value={serviceForm.googleMapLink}
-                                  onChange={(e) => setServiceForm({ ...serviceForm, googleMapLink: e.target.value })}
+                                  onChange={(e) => { setServiceForm({ ...serviceForm, googleMapLink: e.target.value }); validateTopLink(e.target.value); }}
                                   placeholder="https://maps.google.com/..."
+                                  className={formErrors.googleMapLink ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {formErrors.googleMapLink && (
+                                  <p className="text-xs text-red-600 mt-1">{formErrors.googleMapLink}</p>
+                                )}
                               </div>
                             </div>
 

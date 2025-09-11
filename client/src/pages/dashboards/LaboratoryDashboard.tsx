@@ -90,6 +90,78 @@ const LaboratoryDashboard = () => {
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [isUpdatingTest, setIsUpdatingTest] = useState(false);
 
+  // Inline validation limits and error states (Lab)
+  const LIMITS = {
+    name: 32,
+    department: 26, // using category as department in Lab context
+    description: 60,
+    city: 20,
+    address: 60,
+  } as const;
+
+  const [addErrors, setAddErrors] = useState<{ name?: string; department?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+  const [editErrors, setEditErrors] = useState<{ name?: string; department?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+
+  const isValidHttpUrl = (value: string): boolean => {
+    const v = (value || '').trim();
+    if (!v) return true; // optional
+    const re = /^(https?:\/\/)[^\s]+$/i;
+    return re.test(v);
+  };
+
+  const validateAddField = (key: keyof typeof LIMITS, value: string) => {
+    const v = (value || '').trim();
+    const limit = LIMITS[key];
+    const overBy = Math.max(0, v.length - limit);
+    setAddErrors(prev => ({ ...prev, [key === 'address' ? 'detailAddress' : key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined }));
+  };
+
+  const validateEditField = (key: keyof typeof LIMITS, value: string) => {
+    const v = (value || '').trim();
+    const limit = LIMITS[key];
+    const overBy = Math.max(0, v.length - limit);
+    setEditErrors(prev => ({ ...prev, [key === 'address' ? 'detailAddress' : key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined }));
+  };
+
+  const validateAddLengths = (): boolean => {
+    const trim = (s?: string) => (s || '').trim();
+    const name = trim(testForm.name);
+    const department = trim(testForm.category);
+    const description = trim(testForm.description);
+    const city = trim(testForm.city);
+    const addr = trim(testForm.detailAddress);
+    if (name.length > LIMITS.name) { toast.error(`Test Name must be at most ${LIMITS.name} characters.`); return false; }
+    if (department.length > LIMITS.department) { toast.error(`Category must be at most ${LIMITS.department} characters.`); return false; }
+    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
+    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
+    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
+    if (!isValidHttpUrl(testForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    return true;
+  };
+
+  const validateEditLengths = (): boolean => {
+    const trim = (s?: string) => (s || '').trim();
+    const name = trim(editForm.name);
+    const department = trim(editForm.category);
+    const description = trim(editForm.description);
+    const city = trim(editForm.city);
+    const addr = trim(editForm.detailAddress);
+    if (name.length > LIMITS.name) { toast.error(`Test Name must be at most ${LIMITS.name} characters.`); return false; }
+    if (department.length > LIMITS.department) { toast.error(`Category must be at most ${LIMITS.department} characters.`); return false; }
+    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
+    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
+    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
+    if (!isValidHttpUrl(editForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    return true;
+  };
+
+  const validateAddLink = (value: string) => {
+    setAddErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
+  };
+  const validateEditLink = (value: string) => {
+    setEditErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
+  };
+
   const [testForm, setTestForm] = useState({
     name: '',
     price: '',
@@ -176,10 +248,12 @@ const LaboratoryDashboard = () => {
     setEditImagePreview(t.image || '');
     setEditImageFile(null);
     setIsEditTestOpen(true);
+    setEditErrors({});
   };
 
   const handleUpdateTest = async () => {
     if (!editTestId) return;
+    if (!validateEditLengths()) return;
     if (!editForm.name) {
       toast.error('Please fill in required fields');
       return;
@@ -409,6 +483,7 @@ const LaboratoryDashboard = () => {
   }, [user?.id]);
 
   const handleAddTest = async () => {
+    if (!validateAddLengths()) return;
     if (!testForm.name || !user?.id) {
       toast.error("Please fill in all required fields");
       return;
@@ -472,6 +547,7 @@ const LaboratoryDashboard = () => {
 
       // Reset form
       setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: '', homeDelivery: false });
+      setAddErrors({});
 
       setTestImagePreview('');
       setTestImageFile(null);
@@ -494,11 +570,7 @@ const LaboratoryDashboard = () => {
     // setLabType(type);
   };
 
-  const pendingTests = [
-    { id: 1, patient: "Ahmad Ali", test: "Blood Test Complete", time: "9:00 AM", status: "Processing" },
-    { id: 2, patient: "Sara Khan", test: "Urine Analysis", time: "10:30 AM", status: "Pending" },
-    { id: 3, patient: "Hassan Ahmed", test: "X-Ray Chest", time: "11:00 AM", status: "Ready" },
-  ];
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -624,9 +696,13 @@ const LaboratoryDashboard = () => {
                     <Input
                       id="editTestName"
                       value={editForm.name}
-                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      onChange={(e) => { setEditForm({ ...editForm, name: e.target.value }); validateEditField('name', e.target.value); }}
                       placeholder="e.g., Complete Blood Count"
+                      className={editErrors.name ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {editErrors.name && (
+                      <p className="text-xs text-red-600 mt-1">{editErrors.name}</p>
+                    )}
                   </div>
 
                   <div>
@@ -647,31 +723,9 @@ const LaboratoryDashboard = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="editTestPrice">Price (PKR) *</Label>
-                      <Input
-                        id="editTestPrice"
-                        type="number"
-                        value={editForm.price}
-                        onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                        placeholder="e.g., 1500"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="editTestDuration">Duration (hours)</Label>
-                      <Input
-                        id="editTestDuration"
-                        value={editForm.duration}
-                        onChange={(e) => setEditForm({ ...editForm, duration: e.target.value })}
-                        placeholder="e.g., 2"
-                      />
-                    </div>
-                  </div>
-
                   <div>
                     <Label htmlFor="editTestCategory">Category</Label>
-                    <Select value={editForm.category} onValueChange={(value) => setEditForm({ ...editForm, category: value })}>
+                    <Select value={editForm.category} onValueChange={(value) => { setEditForm({ ...editForm, category: value }); validateEditField('department', value); }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select test category" />
                       </SelectTrigger>
@@ -681,6 +735,9 @@ const LaboratoryDashboard = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {editErrors.department && (
+                      <p className="text-xs text-red-600 mt-1">{editErrors.department}</p>
+                    )}
                   </div>
 
                   <div>
@@ -688,9 +745,13 @@ const LaboratoryDashboard = () => {
                     <Textarea
                       id="editTestDescription"
                       value={editForm.description}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      onChange={(e) => { setEditForm({ ...editForm, description: e.target.value }); validateEditField('description', e.target.value); }}
                       placeholder="Brief description of the test"
+                      className={editErrors.description ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {editErrors.description && (
+                      <p className="text-xs text-red-600 mt-1">{editErrors.description}</p>
+                    )}
                   </div>
 
                   {/* Location Fields */}
@@ -701,28 +762,42 @@ const LaboratoryDashboard = () => {
                       <Input
                         id="editTestCity"
                         value={editForm.city}
-                        onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                        onChange={(e) => { setEditForm({ ...editForm, city: e.target.value }); validateEditField('city', e.target.value); }}
                         placeholder="e.g., Karachi"
+                        className={editErrors.city ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                       />
+                      {editErrors.city && (
+                        <p className="text-xs text-red-600 mt-1">{editErrors.city}</p>
+                      )}
                     </div>
+
                     <div>
                       <Label htmlFor="editTestAddress">Detailed Address</Label>
                       <Textarea
                         id="editTestAddress"
                         value={editForm.detailAddress}
-                        onChange={(e) => setEditForm({ ...editForm, detailAddress: e.target.value })}
+                        onChange={(e) => { setEditForm({ ...editForm, detailAddress: e.target.value }); validateEditField('address', e.target.value); }}
                         placeholder="e.g., Floor 2, Medical Plaza, Main Road"
                         rows={2}
+                        className={editErrors.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                       />
+                      {editErrors.detailAddress && (
+                        <p className="text-xs text-red-600 mt-1">{editErrors.detailAddress}</p>
+                      )}
                     </div>
+
                     <div>
                       <Label htmlFor="editTestMapLink">Google Maps Link (Optional)</Label>
                       <Input
                         id="editTestMapLink"
                         value={editForm.googleMapLink}
-                        onChange={(e) => setEditForm({ ...editForm, googleMapLink: e.target.value })}
+                        onChange={(e) => { setEditForm({ ...editForm, googleMapLink: e.target.value }); validateEditLink(e.target.value); }}
                         placeholder="https://maps.google.com/..."
+                        className={editErrors.googleMapLink ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                       />
+                      {editErrors.googleMapLink && (
+                        <p className="text-xs text-red-600 mt-1">{editErrors.googleMapLink}</p>
+                      )}
                     </div>
                   </div>
 
@@ -880,26 +955,26 @@ const LaboratoryDashboard = () => {
 
             <Tabs defaultValue="tests">
               <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
-                <TabsTrigger 
+                <TabsTrigger
                   value="tests"
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
                 >
                   Tests
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
                   value="bookings"
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
                 >
                   Bookings
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
                   value="wallet"
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
                 >
                   Wallet
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="tests">
                 <div className="space-y-6">
                   {/* Lab Tests Management */}
@@ -930,9 +1005,13 @@ const LaboratoryDashboard = () => {
                                 <Input
                                   id="testName"
                                   value={testForm.name}
-                                  onChange={(e) => setTestForm({ ...testForm, name: e.target.value })}
+                                  onChange={(e) => { setTestForm({ ...testForm, name: e.target.value }); validateAddField('name', e.target.value); }}
                                   placeholder="e.g., Complete Blood Count"
+                                  className={addErrors.name ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {addErrors.name && (
+                                  <p className="text-xs text-red-600 mt-1">{addErrors.name}</p>
+                                )}
                               </div>
 
                               <div>
@@ -975,7 +1054,7 @@ const LaboratoryDashboard = () => {
                               </div>
                               <div>
                                 <Label htmlFor="testCategory">Category</Label>
-                                <Select value={testForm.category} onValueChange={(value) => setTestForm({ ...testForm, category: value })}>
+                                <Select value={testForm.category} onValueChange={(value) => { setTestForm({ ...testForm, category: value }); validateAddField('department', value); }}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select test category" />
                                   </SelectTrigger>
@@ -985,15 +1064,22 @@ const LaboratoryDashboard = () => {
                                     ))}
                                   </SelectContent>
                                 </Select>
+                                {addErrors.department && (
+                                  <p className="text-xs text-red-600 mt-1">{addErrors.department}</p>
+                                )}
                               </div>
                               <div>
                                 <Label htmlFor="testDescription">Description</Label>
                                 <Textarea
                                   id="testDescription"
                                   value={testForm.description}
-                                  onChange={(e) => setTestForm({ ...testForm, description: e.target.value })}
+                                  onChange={(e) => { setTestForm({ ...testForm, description: e.target.value }); validateAddField('description', e.target.value); }}
                                   placeholder="Brief description of the test"
+                                  className={addErrors.description ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {addErrors.description && (
+                                  <p className="text-xs text-red-600 mt-1">{addErrors.description}</p>
+                                )}
                               </div>
 
                               {/* Location Fields */}
@@ -1004,28 +1090,42 @@ const LaboratoryDashboard = () => {
                                   <Input
                                     id="testCity"
                                     value={testForm.city}
-                                    onChange={(e) => setTestForm({ ...testForm, city: e.target.value })}
+                                    onChange={(e) => { setTestForm({ ...testForm, city: e.target.value }); validateAddField('city', e.target.value); }}
                                     placeholder="e.g., Karachi"
+                                    className={addErrors.city ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                   />
+                                  {addErrors.city && (
+                                    <p className="text-xs text-red-600 mt-1">{addErrors.city}</p>
+                                  )}
                                 </div>
+
                                 <div>
                                   <Label htmlFor="testAddress">Detailed Address</Label>
                                   <Textarea
                                     id="testAddress"
                                     value={testForm.detailAddress}
-                                    onChange={(e) => setTestForm({ ...testForm, detailAddress: e.target.value })}
+                                    onChange={(e) => { setTestForm({ ...testForm, detailAddress: e.target.value }); validateAddField('address', e.target.value); }}
                                     placeholder="e.g., Floor 2, Medical Plaza, Main Road"
                                     rows={2}
+                                    className={addErrors.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                   />
+                                  {addErrors.detailAddress && (
+                                    <p className="text-xs text-red-600 mt-1">{addErrors.detailAddress}</p>
+                                  )}
                                 </div>
+
                                 <div>
                                   <Label htmlFor="testMapLink">Google Maps Link (Optional)</Label>
                                   <Input
                                     id="testMapLink"
                                     value={testForm.googleMapLink}
-                                    onChange={(e) => setTestForm({ ...testForm, googleMapLink: e.target.value })}
+                                    onChange={(e) => { setTestForm({ ...testForm, googleMapLink: e.target.value }); validateAddLink(e.target.value); }}
                                     placeholder="https://maps.google.com/..."
+                                    className={addErrors.googleMapLink ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                   />
+                                  {addErrors.googleMapLink && (
+                                    <p className="text-xs text-red-600 mt-1">{addErrors.googleMapLink}</p>
+                                  )}
                                 </div>
                               </div>
 
@@ -1362,7 +1462,7 @@ const LaboratoryDashboard = () => {
                         {bookings.map((booking) => (
                           <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                             <div className="flex-1 min-w-0">
-                              <h4 
+                              <h4
                                 className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline transition-colors"
                                 onClick={() => navigate(`/patient/${booking.patientId}`)}
                               >
@@ -1412,7 +1512,7 @@ const LaboratoryDashboard = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
 
               <TabsContent value="wallet">
                 <ProviderWallet />
@@ -1494,9 +1594,9 @@ const LaboratoryDashboard = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <Button 
-                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300" 
-                    variant="outline" 
+                  <Button
+                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300"
+                    variant="outline"
                     onClick={() => setIsEditProfileOpen(true)}
                   >
                     <Edit className="w-4 h-4 mr-2" />
@@ -1525,7 +1625,7 @@ const LaboratoryDashboard = () => {
               avatar={user?.avatar}
             />
 
-            
+
           </div>
         </div>
       </div>

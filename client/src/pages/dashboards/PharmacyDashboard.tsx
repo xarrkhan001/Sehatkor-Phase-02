@@ -104,6 +104,72 @@ const PharmacyDashboard = () => {
     'Tablets', 'Capsules', 'Syrups', 'Injections', 'Ointments', 'Drops'
   ];
 
+  const LIMITS = {
+    name: 32,
+    description: 60,
+    city: 20,
+    address: 60,
+  } as const;
+
+  const isValidHttpUrl = (value: string): boolean => {
+    const v = (value || '').trim();
+    if (!v) return true; // optional field
+    const re = /^(https?:\/\/)[^\s]+$/i; // basic http(s) URL check
+    return re.test(v);
+  };
+
+  const [addErrors, setAddErrors] = useState<{ name?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+  const [editErrors, setEditErrors] = useState<{ name?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+
+  const validateAddField = (key: keyof typeof LIMITS, value: string) => {
+    const v = (value || '').trim();
+    const limit = LIMITS[key];
+    const overBy = Math.max(0, v.length - limit);
+    setAddErrors(prev => ({ ...prev, [key === 'address' ? 'detailAddress' : key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined }));
+  };
+
+  const validateEditField = (key: keyof typeof LIMITS, value: string) => {
+    const v = (value || '').trim();
+    const limit = LIMITS[key];
+    const overBy = Math.max(0, v.length - limit);
+    setEditErrors(prev => ({ ...prev, [key === 'address' ? 'detailAddress' : key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined }));
+  };
+
+  const validateAddLink = (value: string) => {
+    setAddErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
+  };
+  const validateEditLink = (value: string) => {
+    setEditErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
+  };
+
+  const validateAddLengths = (): boolean => {
+    const trim = (s?: string) => (s || '').trim();
+    const name = trim(medicineForm.name);
+    const description = trim(medicineForm.description);
+    const city = trim(medicineForm.city);
+    const addr = trim(medicineForm.detailAddress);
+    if (name.length > LIMITS.name) { toast.error(`Medicine Name must be at most ${LIMITS.name} characters.`); return false; }
+    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
+    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
+    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
+    if (!isValidHttpUrl(medicineForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    return true;
+  };
+
+  const validateEditLengths = (): boolean => {
+    const trim = (s?: string) => (s || '').trim();
+    const name = trim(editForm.name);
+    const description = trim(editForm.description);
+    const city = trim(editForm.city);
+    const addr = trim(editForm.detailAddress);
+    if (name.length > LIMITS.name) { toast.error(`Medicine Name must be at most ${LIMITS.name} characters.`); return false; }
+    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
+    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
+    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
+    if (!isValidHttpUrl(editForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    return true;
+  };
+
   const syncServicesFromBackend = (docs: any[]) => {
     if (!user?.id) return;
     try {
@@ -332,6 +398,7 @@ const PharmacyDashboard = () => {
   }, [user?.id]);
 
   const handleAddMedicine = async () => {
+    if (!validateAddLengths()) return;
     if (!medicineForm.name || !user?.id) {
       toast.error("Please fill in all required fields");
       return;
@@ -396,6 +463,7 @@ const PharmacyDashboard = () => {
 
       // Reset form
       setMedicineForm({ name: '', price: '', stock: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: '', homeDelivery: false });
+      setAddErrors({});
       setMedicineImagePreview('');
       setMedicineImageFile(null);
       setIsAddMedicineOpen(false);
@@ -450,6 +518,7 @@ const PharmacyDashboard = () => {
 
   const handleSaveEdit = async () => {
     if (!editingMedicineId) return;
+    if (!validateEditLengths()) return;
     try {
       let imageUrl: string | undefined = editImagePreview || undefined;
       let imagePublicId: string | undefined = undefined;
@@ -483,6 +552,7 @@ const PharmacyDashboard = () => {
       // refresh from backend and sync ServiceManager
       await reloadMedicines();
       setIsEditOpen(false);
+      setEditErrors({});
       setEditingMedicineId(null);
       toast.success("Medicine updated successfully");
     } catch (error: any) {
@@ -632,9 +702,13 @@ const PharmacyDashboard = () => {
                               <Input
                                 id="medicineName"
                                 value={medicineForm.name}
-                                onChange={(e) => setMedicineForm({ ...medicineForm, name: e.target.value })}
+                                onChange={(e) => { setMedicineForm({ ...medicineForm, name: e.target.value }); validateAddField('name', e.target.value); }}
                                 placeholder="e.g., Panadol 500mg"
+                                className={addErrors.name ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                               />
+                              {addErrors.name && (
+                                <p className="text-xs text-red-600 mt-1">{addErrors.name}</p>
+                              )}
                             </div>
 
                             <div>
@@ -691,9 +765,13 @@ const PharmacyDashboard = () => {
                               <Textarea
                                 id="medicineDescription"
                                 value={medicineForm.description}
-                                onChange={(e) => setMedicineForm({ ...medicineForm, description: e.target.value })}
+                                onChange={(e) => { setMedicineForm({ ...medicineForm, description: e.target.value }); validateAddField('description', e.target.value); }}
                                 placeholder="Brief description of the medicine"
+                                className={addErrors.description ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                               />
+                              {addErrors.description && (
+                                <p className="text-xs text-red-600 mt-1">{addErrors.description}</p>
+                              )}
                             </div>
                             
                             {/* Availability Selection */}
@@ -855,28 +933,40 @@ const PharmacyDashboard = () => {
                                 <Input
                                   id="medicineCity"
                                   value={medicineForm.city}
-                                  onChange={(e) => setMedicineForm({ ...medicineForm, city: e.target.value })}
+                                  onChange={(e) => { setMedicineForm({ ...medicineForm, city: e.target.value }); validateAddField('city', e.target.value); }}
                                   placeholder="e.g., Karachi"
+                                  className={addErrors.city ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {addErrors.city && (
+                                  <p className="text-xs text-red-600 mt-1">{addErrors.city}</p>
+                                )}
                               </div>
                               <div>
                                 <Label htmlFor="medicineAddress">Detailed Address</Label>
                                 <Textarea
                                   id="medicineAddress"
                                   value={medicineForm.detailAddress}
-                                  onChange={(e) => setMedicineForm({ ...medicineForm, detailAddress: e.target.value })}
+                                  onChange={(e) => { setMedicineForm({ ...medicineForm, detailAddress: e.target.value }); validateAddField('address', e.target.value); }}
                                   placeholder="e.g., Shop 123, ABC Plaza, Main Road"
                                   rows={2}
+                                  className={addErrors.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {addErrors.detailAddress && (
+                                  <p className="text-xs text-red-600 mt-1">{addErrors.detailAddress}</p>
+                                )}
                               </div>
                               <div>
                                 <Label htmlFor="medicineMapLink">Google Maps Link (Optional)</Label>
                                 <Input
                                   id="medicineMapLink"
                                   value={medicineForm.googleMapLink}
-                                  onChange={(e) => setMedicineForm({ ...medicineForm, googleMapLink: e.target.value })}
+                                  onChange={(e) => { setMedicineForm({ ...medicineForm, googleMapLink: e.target.value }); validateAddLink(e.target.value); }}
                                   placeholder="https://maps.google.com/..."
+                                  className={addErrors.googleMapLink ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                                 />
+                                {addErrors.googleMapLink && (
+                                  <p className="text-xs text-red-600 mt-1">{addErrors.googleMapLink}</p>
+                                )}
                               </div>
                             </div>
                             <Button onClick={handleAddMedicine} className="w-full" disabled={isUploadingImage || isAddingMedicine}>
@@ -1140,9 +1230,13 @@ const PharmacyDashboard = () => {
                     <Input
                       id="editMedicineName"
                       value={editForm.name}
-                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      onChange={(e) => { setEditForm({ ...editForm, name: e.target.value }); validateEditField('name', e.target.value); }}
                       placeholder="e.g., Panadol 500mg"
+                      className={editErrors.name ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {editErrors.name && (
+                      <p className="text-xs text-red-600 mt-1">{editErrors.name}</p>
+                    )}
                   </div>
 
                   <div>
@@ -1182,26 +1276,17 @@ const PharmacyDashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="editMedicineCategory">Category</Label>
-                    <Select value={editForm.category} onValueChange={(value) => setEditForm({ ...editForm, category: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select medicine category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {medicineCategories.map((category) => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
                     <Label htmlFor="editMedicineDescription">Description</Label>
                     <Textarea
                       id="editMedicineDescription"
                       value={editForm.description}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      onChange={(e) => { setEditForm({ ...editForm, description: e.target.value }); validateEditField('description', e.target.value); }}
                       placeholder="Brief description of the medicine"
+                      className={editErrors.description ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {editErrors.description && (
+                      <p className="text-xs text-red-600 mt-1">{editErrors.description}</p>
+                    )}
                   </div>
                   {/* Availability Selection --> Newly Added Section */}
                   <div className="space-y-3 border-t pt-3">
@@ -1361,28 +1446,40 @@ const PharmacyDashboard = () => {
                       <Input
                         id="editMedicineCity"
                         value={editForm.city}
-                        onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                        onChange={(e) => { setEditForm({ ...editForm, city: e.target.value }); validateEditField('city', e.target.value); }}
                         placeholder="e.g., Karachi"
+                        className={editErrors.city ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                       />
+                      {editErrors.city && (
+                        <p className="text-xs text-red-600 mt-1">{editErrors.city}</p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="editMedicineAddress">Detailed Address</Label>
                       <Textarea
                         id="editMedicineAddress"
                         value={editForm.detailAddress}
-                        onChange={(e) => setEditForm({ ...editForm, detailAddress: e.target.value })}
+                        onChange={(e) => { setEditForm({ ...editForm, detailAddress: e.target.value }); validateEditField('address', e.target.value); }}
                         placeholder="e.g., Shop 123, ABC Plaza, Main Road"
                         rows={2}
+                        className={editErrors.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                       />
+                      {editErrors.detailAddress && (
+                        <p className="text-xs text-red-600 mt-1">{editErrors.detailAddress}</p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="editMedicineMapLink">Google Maps Link (Optional)</Label>
                       <Input
                         id="editMedicineMapLink"
                         value={editForm.googleMapLink}
-                        onChange={(e) => setEditForm({ ...editForm, googleMapLink: e.target.value })}
+                        onChange={(e) => { setEditForm({ ...editForm, googleMapLink: e.target.value }); validateEditLink(e.target.value); }}
                         placeholder="https://maps.google.com/..."
+                        className={editErrors.googleMapLink ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                       />
+                      {editErrors.googleMapLink && (
+                        <p className="text-xs text-red-600 mt-1">{editErrors.googleMapLink}</p>
+                      )}
                     </div>
                   </div>
                   </div>

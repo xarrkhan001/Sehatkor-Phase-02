@@ -86,6 +86,69 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     baseEndTime: '',
   });
 
+  // Validation limits
+  const LIMITS = {
+    name: 32,
+    hospital: 26,
+    city: 20,
+    address: 60,
+  } as const;
+
+  // Error states for inline feedback
+  const [serviceErrors, setServiceErrors] = useState<{ name?: string; hospitalClinicName?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+  const [variantErrors, setVariantErrors] = useState<Array<{ hospitalClinicName?: string; city?: string; detailAddress?: string }>>([]);
+
+  const ensureVariantErrorsSize = (size: number) => {
+    setVariantErrors(prev => {
+      const next = [...prev];
+      while (next.length < size) next.push({});
+      while (next.length > size) next.pop();
+      return next;
+    });
+  };
+
+  // Top-level field live validator
+  const validateTopField = (key: 'name' | 'hospitalClinicName' | 'city' | 'detailAddress', value: string) => {
+    const val = (value || '').trim();
+    let limit = 0;
+    if (key === 'name') limit = LIMITS.name;
+    if (key === 'hospitalClinicName') limit = LIMITS.hospital;
+    if (key === 'city') limit = LIMITS.city;
+    if (key === 'detailAddress') limit = LIMITS.address;
+    const overBy = Math.max(0, val.length - limit);
+    setServiceErrors(prev => ({
+      ...prev,
+      [key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined,
+    }));
+  };
+
+  const isValidHttpUrl = (value: string): boolean => {
+    const v = (value || '').trim();
+    if (!v) return true; // optional field
+    const re = /^(https?:\/\/)[^\s]+$/i;
+    return re.test(v);
+  };
+
+  const validateTopLink = (value: string) => {
+    setServiceErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
+  };
+
+  // Variant field live validator
+  const validateVariantField = (index: number, key: 'hospitalClinicName' | 'city' | 'detailAddress', value: string) => {
+    const val = (value || '').trim();
+    let limit = key === 'hospitalClinicName' ? LIMITS.hospital : key === 'city' ? LIMITS.city : LIMITS.address;
+    const overBy = Math.max(0, val.length - limit);
+    setVariantErrors(prev => {
+      const next = [...prev];
+      if (!next[index]) next[index] = {};
+      next[index] = {
+        ...next[index],
+        [key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined,
+      };
+      return next;
+    });
+  };
+
   const getServiceCategories = () => {
     switch (userRole) {
       case 'doctor':
@@ -148,10 +211,69 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     setVariants([]);
     setDiseases([]);
     setDiseaseInput('');
+    setServiceErrors({});
+    setVariantErrors([]);
+  };
+
+  // Simple length validation (requested constraints)
+  // Service Name: max 32
+  // Hospital/Clinic Name: max 26
+  // City: max 20
+  // Detailed Address: max 60
+  const validateLengths = (): boolean => {
+    const trim = (s?: string) => (s || '').trim();
+    const name = trim(serviceForm.name);
+    const city = trim(serviceForm.city);
+    const detailAddress = trim(serviceForm.detailAddress);
+    const hospitalClinicName = trim(serviceForm.hospitalClinicName);
+
+    if (name.length > LIMITS.name) {
+      toast({ title: 'Validation', description: `Service Name must be at most ${LIMITS.name} characters.`, variant: 'destructive' });
+      return false;
+    }
+    if (hospitalClinicName.length > LIMITS.hospital) {
+      toast({ title: 'Validation', description: `Hospital/Clinic Name must be at most ${LIMITS.hospital} characters.`, variant: 'destructive' });
+      return false;
+    }
+    if (city.length > LIMITS.city) {
+      toast({ title: 'Validation', description: `City must be at most ${LIMITS.city} characters.`, variant: 'destructive' });
+      return false;
+    }
+    if (detailAddress.length > LIMITS.address) {
+      toast({ title: 'Validation', description: `Detailed Address must be at most ${LIMITS.address} characters.`, variant: 'destructive' });
+      return false;
+    }
+    if (!isValidHttpUrl(serviceForm.googleMapLink)) {
+      toast({ title: 'Validation', description: 'Google Map Link must be a valid http(s) URL.', variant: 'destructive' });
+      return false;
+    }
+
+    // Validate variants (doctor only)
+    for (let i = 0; i < variants.length; i++) {
+      const v = variants[i];
+      const vCity = trim(v.city);
+      const vDetailAddress = trim(v.detailAddress);
+      const vHospital = trim(v.hospitalClinicName);
+      if (vHospital.length > LIMITS.hospital) {
+        toast({ title: 'Validation', description: `Variant #${i + 1}: Hospital/Clinic Name must be at most ${LIMITS.hospital} characters.`, variant: 'destructive' });
+        return false;
+      }
+      if (vCity.length > LIMITS.city) {
+        toast({ title: 'Validation', description: `Variant #${i + 1}: City must be at most ${LIMITS.city} characters.`, variant: 'destructive' });
+        return false;
+      }
+      if (vDetailAddress.length > LIMITS.address) {
+        toast({ title: 'Validation', description: `Variant #${i + 1}: Detailed Address must be at most ${LIMITS.address} characters.`, variant: 'destructive' });
+        return false;
+      }
+    }
+    return true;
   };
 
   const handleAddService = async () => {
     if (isSaving) return;
+    // Enforce requested length constraints before any processing
+    if (!validateLengths()) return;
     if (!serviceForm.name || !userId) {
       toast({
         title: "Error",
@@ -338,8 +460,6 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             homeDelivery: serviceForm.homeDelivery,
             providerName: userName,
             diseases,
-            // Top-level base schedule fields for main service (explicit or auto-copied from first variant)
-            ...mainScheduleFields,
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           console.log('Doctor service created:', created);
@@ -473,8 +593,10 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           imageFile: null,
         }))
       );
+      ensureVariantErrorsSize(svc.variants.length);
     } else {
       setVariants([]);
+      setVariantErrors([]);
     }
     setIsAddServiceOpen(true);
   };
@@ -547,9 +669,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   <Input
                     id="serviceName"
                     value={serviceForm.name}
-                    onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
+                    onChange={(e) => { setServiceForm({...serviceForm, name: e.target.value}); validateTopField('name', e.target.value); }}
                     placeholder="e.g., Consultation"
+                    className={serviceErrors.name ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                   />
+                  {serviceErrors.name && (
+                    <p className="text-xs text-red-600 mt-1">{serviceErrors.name}</p>
+                  )}
                 </div>
                 
                 <div>
@@ -667,9 +793,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     <Input
                       id="hospitalClinicName"
                       value={serviceForm.hospitalClinicName}
-                      onChange={(e) => setServiceForm({...serviceForm, hospitalClinicName: e.target.value})}
+                      onChange={(e) => { setServiceForm({...serviceForm, hospitalClinicName: e.target.value}); validateTopField('hospitalClinicName', e.target.value); }}
                       placeholder="e.g., Aga Khan Hospital, Shaukat Khanum"
+                      className={serviceErrors.hospitalClinicName ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {serviceErrors.hospitalClinicName && (
+                      <p className="text-xs text-red-600 mt-1">{serviceErrors.hospitalClinicName}</p>
+                    )}
                   </div>
 
                   <div>
@@ -677,9 +807,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     <Input
                       id="serviceCity"
                       value={serviceForm.city}
-                      onChange={(e) => setServiceForm({...serviceForm, city: e.target.value})}
+                      onChange={(e) => { setServiceForm({...serviceForm, city: e.target.value}); validateTopField('city', e.target.value); }}
                       placeholder="e.g., Karachi, Lahore"
+                      className={serviceErrors.city ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {serviceErrors.city && (
+                      <p className="text-xs text-red-600 mt-1">{serviceErrors.city}</p>
+                    )}
                   </div>
 
                   <div>
@@ -687,10 +821,14 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     <Textarea
                       id="serviceAddress"
                       value={serviceForm.detailAddress}
-                      onChange={(e) => setServiceForm({...serviceForm, detailAddress: e.target.value})}
+                      onChange={(e) => { setServiceForm({...serviceForm, detailAddress: e.target.value}); validateTopField('detailAddress', e.target.value); }}
                       placeholder="Complete address where service is provided"
                       rows={2}
+                      className={serviceErrors.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {serviceErrors.detailAddress && (
+                      <p className="text-xs text-red-600 mt-1">{serviceErrors.detailAddress}</p>
+                    )}
                   </div>
 
                   <div>
@@ -698,9 +836,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     <Input
                       id="serviceMapLink"
                       value={serviceForm.googleMapLink}
-                      onChange={(e) => setServiceForm({...serviceForm, googleMapLink: e.target.value})}
+                      onChange={(e) => { setServiceForm({...serviceForm, googleMapLink: e.target.value}); validateTopLink(e.target.value); }}
                       placeholder="https://maps.google.com/..."
+                      className={serviceErrors.googleMapLink ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                     />
+                    {serviceErrors.googleMapLink && (
+                      <p className="text-xs text-red-600 mt-1">{serviceErrors.googleMapLink}</p>
+                    )}
                   </div>
                 </div>
 
@@ -1043,19 +1185,31 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               <Label>Hospital/Clinic Name</Label>
                               <Input value={v.hospitalClinicName || ''} onChange={(e) => {
                                 const nv = [...variants]; nv[idx] = { ...v, hospitalClinicName: e.target.value }; setVariants(nv);
-                              }} placeholder="e.g., Aga Khan Hospital" />
+                                validateVariantField(idx, 'hospitalClinicName', e.target.value);
+                              }} placeholder="e.g., Aga Khan Hospital" className={variantErrors[idx]?.hospitalClinicName ? 'border-red-500 focus-visible:ring-red-500' : undefined} />
+                              {variantErrors[idx]?.hospitalClinicName && (
+                                <p className="text-xs text-red-600 mt-1">{variantErrors[idx]?.hospitalClinicName}</p>
+                              )}
                             </div>
                             <div>
                               <Label>City</Label>
                               <Input value={v.city || ''} onChange={(e) => {
                                 const nv = [...variants]; nv[idx] = { ...v, city: e.target.value }; setVariants(nv);
-                              }} placeholder="e.g., Karachi" />
+                                validateVariantField(idx, 'city', e.target.value);
+                              }} placeholder="e.g., Karachi" className={variantErrors[idx]?.city ? 'border-red-500 focus-visible:ring-red-500' : undefined} />
+                              {variantErrors[idx]?.city && (
+                                <p className="text-xs text-red-600 mt-1">{variantErrors[idx]?.city}</p>
+                              )}
                             </div>
                             <div className="sm:col-span-2">
                               <Label>Detailed Address</Label>
                               <Textarea value={v.detailAddress || ''} onChange={(e) => {
                                 const nv = [...variants]; nv[idx] = { ...v, detailAddress: e.target.value }; setVariants(nv);
-                              }} rows={2} placeholder="Complete address" />
+                                validateVariantField(idx, 'detailAddress', e.target.value);
+                              }} rows={2} placeholder="Complete address" className={variantErrors[idx]?.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined} />
+                              {variantErrors[idx]?.detailAddress && (
+                                <p className="text-xs text-red-600 mt-1">{variantErrors[idx]?.detailAddress}</p>
+                              )}
                             </div>
                             <div className="sm:col-span-2">
                               <Label>Google Maps Link</Label>

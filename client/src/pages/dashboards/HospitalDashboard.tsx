@@ -66,8 +66,43 @@ const HospitalDashboard = () => {
     duration: '',
     description: '',
     category: '',
-    department: ''
+    department: '',
+    city: '',
+    detailAddress: ''
   });
+
+  // Inline validation limits and errors
+  const LIMITS = {
+    name: 32,
+    department: 26,
+    description: 60,
+    city: 20,
+    address: 60,
+  } as const;
+
+  const [formErrors, setFormErrors] = useState<{ name?: string; department?: string; description?: string; city?: string; detailAddress?: string }>({});
+
+  const validateField = (key: keyof typeof LIMITS, value: string) => {
+    const v = (value || '').trim();
+    const limit = LIMITS[key];
+    const overBy = Math.max(0, v.length - limit);
+    setFormErrors(prev => ({ ...prev, [key === 'address' ? 'detailAddress' : key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined }));
+  };
+
+  const validateLengths = (): boolean => {
+    const trim = (s?: string) => (s || '').trim();
+    const name = trim(serviceForm.name);
+    const department = trim(serviceForm.department);
+    const description = trim(serviceForm.description);
+    const city = trim(serviceForm.city);
+    const addr = trim(serviceForm.detailAddress);
+    if (name.length > LIMITS.name) { toast({ title: 'Validation', description: `Service Name must be at most ${LIMITS.name} characters.`, variant: 'destructive' }); return false; }
+    if (department.length > LIMITS.department) { toast({ title: 'Validation', description: `Department must be at most ${LIMITS.department} characters.`, variant: 'destructive' }); return false; }
+    if (description.length > LIMITS.description) { toast({ title: 'Validation', description: `Description must be at most ${LIMITS.description} characters.`, variant: 'destructive' }); return false; }
+    if (city.length > LIMITS.city) { toast({ title: 'Validation', description: `City must be at most ${LIMITS.city} characters.`, variant: 'destructive' }); return false; }
+    if (addr.length > LIMITS.address) { toast({ title: 'Validation', description: `Detailed Address must be at most ${LIMITS.address} characters.`, variant: 'destructive' }); return false; }
+    return true;
+  };
 
   const hospitalTypes = [
     'General Hospital', 'Specialized Hospital', 'Teaching Hospital',
@@ -255,6 +290,7 @@ const HospitalDashboard = () => {
   }, [user?.id]);
 
   const handleAddService = async () => {
+    if (!validateLengths()) return;
     if (!serviceForm.name) {
       toast({
         title: "Error",
@@ -286,6 +322,8 @@ const HospitalDashboard = () => {
         duration: serviceForm.duration || undefined,
         imageUrl,
         imagePublicId,
+        city: serviceForm.city,
+        detailAddress: serviceForm.detailAddress,
         providerName: user?.name || 'Hospital',
       });
       await reloadServices();
@@ -295,7 +333,9 @@ const HospitalDashboard = () => {
         duration: '',
         description: '',
         category: '',
-        department: ''
+        department: '',
+        city: '',
+        detailAddress: ''
       });
       setServiceImage(''); setServiceImageFile(null);
       setIsAddServiceOpen(false);
@@ -478,9 +518,13 @@ const HospitalDashboard = () => {
                               <Input
                                 id="serviceName"
                                 value={serviceForm.name}
-                                onChange={(e) => setServiceForm({...serviceForm, name: e.target.value})}
+                                onChange={(e) => { setServiceForm({...serviceForm, name: e.target.value}); validateField('name', e.target.value); }}
                                 placeholder="e.g., Cardiac Surgery"
+                                className={formErrors.name ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                               />
+                              {formErrors.name && (
+                                <p className="text-xs text-red-600 mt-1">{formErrors.name}</p>
+                              )}
                             </div>
                             
                             <div>
@@ -534,7 +578,7 @@ const HospitalDashboard = () => {
                             </div>
                             <div>
                               <Label htmlFor="serviceDepartment">Department</Label>
-                              <Select value={serviceForm.department} onValueChange={(value) => setServiceForm({...serviceForm, department: value})}>
+                              <Select value={serviceForm.department} onValueChange={(value) => { setServiceForm({...serviceForm, department: value}); validateField('department', value); }}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select department" />
                                 </SelectTrigger>
@@ -544,15 +588,50 @@ const HospitalDashboard = () => {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              {formErrors.department && (
+                                <p className="text-xs text-red-600 mt-1">{formErrors.department}</p>
+                              )}
                             </div>
                             <div>
                               <Label htmlFor="serviceDescription">Description</Label>
                               <Textarea
                                 id="serviceDescription"
                                 value={serviceForm.description}
-                                onChange={(e) => setServiceForm({...serviceForm, description: e.target.value})}
+                                onChange={(e) => { setServiceForm({...serviceForm, description: e.target.value}); validateField('description', e.target.value); }}
                                 placeholder="Brief description of the service"
+                                className={formErrors.description ? 'border-red-500 focus-visible:ring-red-500' : undefined}
                               />
+                              {formErrors.description && (
+                                <p className="text-xs text-red-600 mt-1">{formErrors.description}</p>
+                              )}
+                            </div>
+
+                            {/* Location Fields */}
+                            <div className="space-y-3 border-t pt-3">
+                              <h4 className="font-medium text-sm">Location Information</h4>
+                              <div>
+                                <Label htmlFor="serviceCity">City</Label>
+                                <Input
+                                  id="serviceCity"
+                                  value={serviceForm.city}
+                                  onChange={(e) => { setServiceForm({ ...serviceForm, city: e.target.value }); validateField('city', e.target.value); }}
+                                  placeholder="e.g., Karachi"
+                                  className={formErrors.city ? 'border-red-500 focus-visible:ring-red-500' : undefined}
+                                />
+                                {formErrors.city && <p className="text-xs text-red-600 mt-1">{formErrors.city}</p>}
+                              </div>
+                              <div>
+                                <Label htmlFor="serviceAddress">Detailed Address</Label>
+                                <Textarea
+                                  id="serviceAddress"
+                                  value={serviceForm.detailAddress}
+                                  onChange={(e) => { setServiceForm({ ...serviceForm, detailAddress: e.target.value }); validateField('address', e.target.value); }}
+                                  placeholder="Complete address with landmarks"
+                                  rows={2}
+                                  className={formErrors.detailAddress ? 'border-red-500 focus-visible:ring-red-500' : undefined}
+                                />
+                                {formErrors.detailAddress && <p className="text-xs text-red-600 mt-1">{formErrors.detailAddress}</p>}
+                              </div>
                             </div>
                             <Button onClick={handleAddService} className="w-full">
                               Add Service
