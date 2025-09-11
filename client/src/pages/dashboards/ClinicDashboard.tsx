@@ -172,6 +172,10 @@ const ClinicDashboard = () => {
       providerName: d.providerName || (user?.name || 'Clinic'),
       image: d.imageUrl,
       duration: d.duration,
+      // Include location details for consistency across pages
+      city: d.city || '',
+      detailAddress: d.detailAddress || '',
+      googleMapLink: d.googleMapLink || '',
       availability: d.availability,
       serviceType: d.serviceType,
       homeDelivery: Boolean(d.homeDelivery) || false,
@@ -187,7 +191,30 @@ const ClinicDashboard = () => {
     if (!user?.id) return;
     try {
       const docs = await apiList();
-      setServices(docs);
+      // Normalize docs so UI always has consistent fields (including location)
+      const mapped = docs.map((d: any) => ({
+        id: String(d._id),
+        name: d.name,
+        description: d.description || '',
+        price: d.price || 0,
+        category: d.category || d.department || 'Treatment',
+        department: d.department || '',
+        imageUrl: d.imageUrl,
+        image: d.imageUrl,
+        duration: d.duration || '',
+        city: d.city || '',
+        detailAddress: d.detailAddress || '',
+        googleMapLink: d.googleMapLink || '',
+        availability: d.availability || 'Physical',
+        serviceType: d.serviceType || '',
+        homeDelivery: Boolean(d.homeDelivery) || false,
+        providerId: user.id,
+        providerName: d.providerName || (user?.name || 'Clinic'),
+        providerType: 'clinic' as const,
+        createdAt: d.createdAt || new Date().toISOString(),
+        updatedAt: d.updatedAt || d.createdAt || new Date().toISOString(),
+      }));
+      setServices(mapped);
       syncLocalFromDocs(docs);
     } catch {
       const fallback = ServiceManager.getServicesByProvider(user.id).filter((s: any) => s.providerType === 'clinic');
@@ -418,6 +445,7 @@ const ClinicDashboard = () => {
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
+          googleMapLink: serviceForm.googleMapLink,
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
@@ -437,6 +465,7 @@ const ClinicDashboard = () => {
           duration: serviceForm.duration || undefined,
           imageUrl,
           imagePublicId,
+          googleMapLink: serviceForm.googleMapLink,
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,

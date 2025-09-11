@@ -226,6 +226,10 @@ const PharmacyDashboard = () => {
         providerId: user.id,
         providerName: d.providerName || (user?.name || 'Pharmacy'),
         providerType: 'pharmacy' as const,
+        // Location fields to prefill edit dialog
+        googleMapLink: d.googleMapLink || '',
+        city: d.city || '',
+        detailAddress: d.detailAddress || '',
         availability: d.availability || 'Physical',
         serviceType: d.serviceType || undefined,
         homeDelivery: d.homeDelivery || false,
