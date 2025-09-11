@@ -109,6 +109,7 @@ const DoctorsPage = () => {
             providerPhone: (service as any).providerPhone,
             totalRatings: (service as any).totalRatings || 0,
             ratingBadge: (service as any).ratingBadge || null,
+            myBadge: (service as any).myBadge || null,
             recommended: Boolean((service as any).recommended),
             // Provider verification propagated from API or fallback to current user for own services
             _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
@@ -129,6 +130,13 @@ const DoctorsPage = () => {
             ...(service.endTime ? { endTime: service.endTime } : {}),
             ...(Array.isArray(service.days) ? { days: service.days } : {}),
           }) as Service;
+          // Restore patient's own rating badge from localStorage (survives refresh)
+          try {
+            const uid = (user as any)?.id ?? (user as any)?._id ?? 'anon';
+            const key = `myRating:${uid}:doctor:${service.id}`;
+            const my = localStorage.getItem(key);
+            if (my) (mappedItem as any).myBadge = my as any;
+          } catch {}
           console.log('🧪 DoctorsPage map:', {
             id: mappedItem.id,
             name: mappedItem.name,
@@ -148,12 +156,20 @@ const DoctorsPage = () => {
           startTime: s.startTime, 
           endTime: s.endTime,
           days: s.days,
+          ratingBadge: s.ratingBadge,
+          myBadge: s.myBadge,
+          averageRating: s.averageRating,
+          totalRatings: s.totalRatings,
           variants: s.variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days }))
         })));
         
         console.log('🔍 DoctorsPage: Mapped services (initial load):', mapped.slice(0, 2).map(s => ({ 
           id: s.id, 
           name: s.name,
+          rating: s.rating,
+          ratingBadge: (s as any).ratingBadge,
+          myBadge: (s as any).myBadge,
+          totalRatings: (s as any).totalRatings,
           mainSchedule: { timeLabel: (s as any).timeLabel, startTime: (s as any).startTime, endTime: (s as any).endTime, days: (s as any).days },
           variants: (s as any).variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days })) 
         })));
@@ -204,6 +220,18 @@ const DoctorsPage = () => {
     loadPage(1);
     return () => { isMounted = false; };
   }, [user?.id, user?.name, initialDisease]);
+
+  // Live per-user badge updates for optimistic UI after rating submit
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent' | 'good' | 'fair' | 'poor' } | undefined;
+      if (!detail) return;
+      if (String(detail.serviceType) !== 'doctor') return;
+      setDoctorServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));
+    };
+    window.addEventListener('my_rating_updated', handler as EventListener);
+    return () => window.removeEventListener('my_rating_updated', handler as EventListener);
+  }, []);
 
   useEffect(() => {
     if (!socket) return;
@@ -322,6 +350,7 @@ const DoctorsPage = () => {
           providerPhone: (service as any).providerPhone,
           totalRatings: (service as any).totalRatings || 0,
           ratingBadge: (service as any).ratingBadge || null,
+          myBadge: (service as any).myBadge || null,
           recommended: Boolean((service as any).recommended),
           // Provider verification propagated from API or fallback to current user for own services
           _providerVerified: typeof (service as any)._providerVerified !== 'undefined'
@@ -343,31 +372,37 @@ const DoctorsPage = () => {
           ...(Array.isArray(service.days) ? { days: service.days } : {}),
         }) as Service;
       });
+      // Restore user's own rating badge from localStorage for loadMore batch
+      try {
+        const uid = (user as any)?.id ?? (user as any)?._id ?? 'anon';
+        for (const item of mapped as any[]) {
+          const key = `myRating:${uid}:doctor:${item.id}`;
+          const my = localStorage.getItem(key);
+          if (my) item.myBadge = my as any;
+        }
+      } catch {}
 
-      console.log('🔍 DoctorsPage: Raw services from API:', services.slice(0, 2).map(s => ({
+      console.log('🔍 DoctorsPage: Raw services from API (loadMore):', services.slice(0, 2).map(s => ({
         id: s.id,
         name: s.name,
         availability: s.availability,
+        ratingBadge: s.ratingBadge,
+        myBadge: s.myBadge,
+        averageRating: s.averageRating,
+        totalRatings: s.totalRatings,
         variants: s.variants
       })));
       
-      console.log('🔍 DoctorsPage: Mapped services with variants:', mapped.slice(0, 3).map(s => ({ 
+      console.log('🔍 DoctorsPage: Mapped services with variants (loadMore):', mapped.slice(0, 3).map(s => ({ 
         id: s.id, 
         name: s.name,
+        rating: s.rating,
+        ratingBadge: (s as any).ratingBadge,
+        myBadge: (s as any).myBadge,
+        totalRatings: (s as any).totalRatings,
         availability: (s as any).availability,
         mainSchedule: { timeLabel: (s as any).timeLabel, startTime: (s as any).startTime, endTime: (s as any).endTime, days: (s as any).days },
         variants: (s as any).variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days })) 
-      })));
-      
-      // Also log the raw service data from API to check if main schedule fields are present
-      console.log('🔍 Raw API services (first 2):', services?.slice(0, 2).map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        timeLabel: (s as any).timeLabel,
-        startTime: (s as any).startTime, 
-        endTime: (s as any).endTime,
-        days: (s as any).days,
-        variants: (s as any).variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days }))
       })));
 
       setDoctorServices(prev => {
@@ -888,83 +923,123 @@ const DoctorsPage = () => {
                   </div>
                 )}
 
-                {/* Address only (diseases moved to tooltip icon) */}
-                <div className="mb-4">
-                  <span className="text-xs text-gray-600 truncate block">
+                {/* Address and Description */}
+                <div className="mb-4 space-y-2">
+                  <div className="text-xs text-gray-600 truncate">
                     {getDisplayForService(service).detailAddress || getDisplayForService(service).location || 'Address not specified'}
-                  </span>
+                  </div>
+                  {service.description && (
+                    <div className="text-xs text-gray-500 line-clamp-2">
+                      {service.description}
+                    </div>
+                  )}
                 </div>
 
-                {/* Rating, Location, WhatsApp, Diseases, Availability, Service Type */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 text-sm">
-                  <RatingBadge
-                    rating={service.rating}
-                    totalRatings={(service as any).totalRatings || 0}
-                    ratingBadge={(service as any).ratingBadge}
-                    yourBadge={(service as any).myBadge || null}
-                  />
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <MapPin className="w-4 h-4" />
-                    <span>{getDisplayForService(service).location}</span>
+                {/* Fixed Position Rows Layout */}
+                <div className="space-y-3 mb-4">
+                  {/* First Row: Ratings (start) and Location (end) */}
+                  <div className="flex justify-between items-center min-h-[24px]">
+                    <div className="flex-shrink-0">
+                      <RatingBadge
+                        rating={service.rating}
+                        totalRatings={(service as any).totalRatings || 0}
+                        ratingBadge={(service as any).ratingBadge}
+                        yourBadge={(service as any).myBadge || null}
+                        size="sm"
+                      />
+                      {/* Debug log for RatingBadge props */}
+                      {console.log('🎯 DoctorsPage RatingBadge props for service:', {
+                        serviceId: service.id,
+                        serviceName: service.name,
+                        rating: service.rating,
+                        totalRatings: (service as any).totalRatings || 0,
+                        ratingBadge: (service as any).ratingBadge,
+                        yourBadge: (service as any).myBadge || null,
+                        myBadgeRaw: (service as any).myBadge
+                      })}
+                    </div>
+                    <div className="flex items-center gap-1 text-gray-500 text-sm flex-shrink-0">
+                      <MapPin className="w-4 h-4" />
+                      <span className="truncate max-w-[120px]">{getDisplayForService(service).location}</span>
+                    </div>
                   </div>
-                  {(service as any).homeDelivery && (
-                    <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
-                      <span className="leading-none">🏠</span>
-                      <span className="leading-none">Home Delivery</span>
-                    </span>
-                  )}
-                  
-                  {(service as any).providerPhone && (
-                    <ServiceWhatsAppButton
-                      phoneNumber={(service as any).providerPhone}
-                      serviceName={service.name}
-                      providerName={service.provider}
-                    />
-                  )}
-                  {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            title="View diseases"
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                          >
-                            <VirusIcon className="w-4 h-4" />
-                            <span className="hidden sm:inline text-xs font-medium">Diseases</span>
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <div className="text-xs text-emerald-800">
-                            <div className="mb-1 font-medium">Diseases</div>
-                            <div className="flex flex-wrap gap-1">
-                              {((service as any).diseases as string[]).map((d, i) => (
-                                <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                  {d}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                  {(() => {
-                    const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
-                    const variants = (service as any).variants as any[] | undefined;
-                    const hasVariants = Array.isArray(variants) && variants.length > 0;
-                    let label: string | undefined;
-                    if (hasVariants && currentVariantIndex > 0) {
-                      const variant = variants[currentVariantIndex - 1];
-                      label = variant?.availability;
-                    } else {
-                      label = (service as any).availability;
-                    }
-                    return label ? (<AvailabilityBadge availability={label} size="sm" />) : null;
-                  })()}
-                  {(service as any).serviceType && (
-                    <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
-                  )}
+
+                  {/* Second Row: Service Type (start), Home Delivery (center), and Availability (end) */}
+                  <div className="flex justify-between items-center min-h-[24px]">
+                    <div className="flex-shrink-0">
+                      {(service as any).serviceType ? (
+                        <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
+                      ) : (
+                        <div className="h-6"></div>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0">
+                      {(service as any).homeDelivery && (
+                        <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
+                          <span className="leading-none">🏠</span>
+                          <span className="leading-none">Home Delivery</span>
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0">
+                      {(() => {
+                        const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
+                        const variants = (service as any).variants as any[] | undefined;
+                        const hasVariants = Array.isArray(variants) && variants.length > 0;
+                        let label: string | undefined;
+                        if (hasVariants && currentVariantIndex > 0) {
+                          const variant = variants[currentVariantIndex - 1];
+                          label = variant?.availability;
+                        } else {
+                          label = (service as any).availability;
+                        }
+                        return label ? (<AvailabilityBadge availability={label} size="sm" />) : <div className="h-6"></div>;
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Third Row: Diseases (start) and WhatsApp (end) */}
+                  <div className="flex justify-between items-center min-h-[24px]">
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                title="View diseases"
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                              >
+                                <VirusIcon className="w-4 h-4" />
+                                <span className="hidden sm:inline text-xs font-medium">Diseases</span>
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <div className="text-xs text-emerald-800">
+                                <div className="mb-1 font-medium">Diseases</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {((service as any).diseases as string[]).map((d, i) => (
+                                    <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                      {d}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0">
+                      {(service as any).providerPhone && (
+                        <ServiceWhatsAppButton
+                          phoneNumber={(service as any).providerPhone}
+                          serviceName={service.name}
+                          providerName={service.provider}
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Buttons */}

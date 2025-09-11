@@ -825,64 +825,85 @@ const CompareExplorer = () => {
                         ) : null;
                       })()}
 
-                      {/* Rating Badge, Location, WhatsApp, Diseases */}
-                      <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                        <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
-                        <div className="flex items-center gap-1 text-gray-500">
-                          <MapPin className="w-4 h-4" />
-                          <span>{getDisplayLocation(item)}</span>
+                      {/* Badges and actions – unified 3-row layout */}
+                      <div className="space-y-3 mb-4 text-sm">
+                        {/* Row 1: Rating ↔ Location */}
+                        <div className="flex justify-between items-center min-h-[24px]">
+                          <div className="flex-shrink-0">
+                            <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
+                            <MapPin className="w-4 h-4" />
+                            <span>{getDisplayLocation(item)}</span>
+                          </div>
                         </div>
-                        {item.providerPhone && (
-                          <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} providerId={item._providerId} />
-                        )}
-                        {Array.isArray((item as any).diseases) && (item as any).diseases.length > 0 && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  title="View diseases"
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                >
-                                  <VirusIcon className="w-4 h-4" />
-                                  <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
-                                <div className="text-xs text-emerald-800">
-                                  <div className="mb-1 font-medium">Diseases</div>
-                                  <div className="flex flex-wrap gap-1">
-                                    {((item as any).diseases as string[]).map((d, i) => (
-                                      <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        {d}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                        {(() => {
-                          // Get variant-aware availability
-                          const activeSlide = getActiveSlide(item);
-                          const availability = activeSlide?.availability || item.availability;
-                          
-                          if (!availability) return null;
-                          
-                          return (
-                            <AvailabilityBadge availability={availability} size="sm" />
-                          );
-                        })()}
-                        {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.serviceType && (
-                          <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
-                        )}
-                        {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.homeDelivery && (
-                          <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
-                            <span className="leading-none">🏠</span>
-                            <span className="leading-none">Home Delivery</span>
-                          </span>
-                        )}
+
+                        {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
+                        <div className="flex justify-between items-center min-h-[24px]">
+                          <div className="flex-shrink-0">
+                            {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.serviceType ? (
+                              <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
+                            ) : (
+                              <div className="h-6"></div>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.homeDelivery && (
+                              <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
+                                <span className="leading-none">🏠</span>
+                                <span className="leading-none">Home Delivery</span>
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {(() => {
+                              // Variant-aware availability
+                              const activeSlide = getActiveSlide(item);
+                              const availability = activeSlide?.availability || item.availability;
+                              if (!availability) return <div className="h-6"></div>;
+                              return <AvailabilityBadge availability={availability} size="sm" />;
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Row 3: Diseases ↔ WhatsApp */}
+                        <div className="flex justify-between items-center min-h-[24px]">
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {Array.isArray((item as any).diseases) && (item as any).diseases.length > 0 && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      title="View diseases"
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                    >
+                                      <VirusIcon className="w-4 h-4" />
+                                      <span className="hidden sm:inline text-xs font-medium">Diseases</span>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs">
+                                    <div className="text-xs text-emerald-800">
+                                      <div className="mb-1 font-medium">Diseases</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {((item as any).diseases as string[]).map((d, i) => (
+                                          <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            {d}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {item.providerPhone && (
+                              <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} providerId={item._providerId} />
+                            )}
+                          </div>
+                        </div>
                       </div>
 
                       {/* Buttons */}

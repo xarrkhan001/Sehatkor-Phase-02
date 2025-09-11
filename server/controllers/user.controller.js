@@ -4,10 +4,23 @@ import DoctorService from "../models/DoctorService.js";
 import ClinicService from "../models/ClinicService.js";
 import Medicine from "../models/Medicine.js";
 import LaboratoryTest from "../models/LaboratoryTest.js";
+import Rating from "../models/Rating.js";
+
+// Helper function to get user's rating badge for a service
+const getUserRatingBadge = (rating) => {
+  if (!rating || rating < 1) return null;
+  if (rating >= 4.5) return 'excellent';
+  if (rating >= 3.5) return 'good';
+  if (rating >= 2.5) return 'fair';
+  return 'poor';
+};
 
 // Get all public services from all providers
 export const getAllPublicServices = async (req, res) => {
   try {
+    // Get user ID from request (if authenticated)
+    const userId = req.userId || null;
+    
     // Optional filtering & pagination
     const type = (req.query.type || "").toString().toLowerCase();
     const hasType = ["doctor", "clinic", "pharmacy", "laboratory"].includes(
@@ -92,6 +105,19 @@ export const getAllPublicServices = async (req, res) => {
       ).lean();
     }
 
+    // Get user's individual ratings for all services if user is authenticated
+    let userRatings = new Map();
+    if (userId) {
+      try {
+        const ratings = await Rating.find({ patientId: userId }).lean();
+        ratings.forEach(rating => {
+          userRatings.set(rating.serviceId.toString(), rating.rating);
+        });
+      } catch (error) {
+        console.error('Error fetching user ratings:', error);
+      }
+    }
+
     // Combine all services with provider type information, phone numbers, and rating data
     const allServices = [
       ...doctorServices.map((service) => ({
@@ -106,6 +132,7 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
+        myBadge: userRatings.has(service._id.toString()) ? getUserRatingBadge(userRatings.get(service._id.toString())) : null,
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
@@ -129,6 +156,7 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
+        myBadge: userRatings.has(service._id.toString()) ? getUserRatingBadge(userRatings.get(service._id.toString())) : null,
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         homeDelivery: Boolean(service.homeDelivery) || false,
@@ -152,6 +180,7 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
+        myBadge: userRatings.has(service._id.toString()) ? getUserRatingBadge(userRatings.get(service._id.toString())) : null,
         // include standard public fields for pharmacy services too (no default)
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
@@ -176,6 +205,7 @@ export const getAllPublicServices = async (req, res) => {
         averageRating: service.rating ?? service.averageRating ?? 0,
         totalRatings: service.totalRatings ?? 0,
         ratingBadge: service.ratingBadge || null,
+        myBadge: userRatings.has(service._id.toString()) ? getUserRatingBadge(userRatings.get(service._id.toString())) : null,
         ...(service.serviceType ? { serviceType: service.serviceType } : {}),
         availability: service.availability || "Physical",
         recommended: Boolean(service.recommended) || false,

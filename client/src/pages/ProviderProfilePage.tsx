@@ -910,75 +910,95 @@ const ProviderProfilePage = () => {
                       </div>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
-                      <RatingBadge 
-                        rating={(service as any).averageRating ?? (service as any).rating ?? 0} 
-                        totalRatings={(service as any).totalRatings || 0}
-                        ratingBadge={(service as any).ratingBadge}
-                        yourBadge={(service as any).myBadge || null}
-                      />
-                      <div className="flex items-center gap-1.5 text-gray-500">
-                        <MapPin className="w-4 h-4" />
-                        <span className="font-medium">{(service as any).city || (service as any).location}</span>
-                      </div>
-                      
-                      {(service as any).providerPhone && (
-                        <div className="relative z-50">
-                          <ServiceWhatsAppButton 
-                            phoneNumber={(service as any).providerPhone}
-                            serviceName={service.name}
-                            providerName={service.providerName}
-                            providerId={(service as any).providerId}
+                    <div className="space-y-3 mb-4 text-sm">
+                      {/* Row 1: Rating ↔ Location */}
+                      <div className="flex justify-between items-center min-h-[24px]">
+                        <div className="flex-shrink-0">
+                          <RatingBadge 
+                            rating={(service as any).averageRating ?? (service as any).rating ?? 0} 
+                            totalRatings={(service as any).totalRatings || 0}
+                            ratingBadge={(service as any).ratingBadge}
+                            yourBadge={(service as any).myBadge || null}
                           />
                         </div>
-                      )}
-                      {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                title="View diseases"
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                              >
-                                <VirusIcon className="w-4 h-4" />
-                                <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <div className="text-xs text-emerald-800">
-                                <div className="mb-1 font-medium">Diseases</div>
-                                <div className="flex flex-wrap gap-1">
-                                  {((service as any).diseases as string[]).map((d, i) => (
-                                    <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                      {d}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                      {/* Availability badge (moved from image) */}
-                      {(() => {
-                        const availability = (getActiveSlide(service) as any)?.availability || (service as any).availability;
-                        return availability ? (
-                          <AvailabilityBadge availability={availability} size="md" />
-                        ) : null;
-                      })()}
-                      {/* Pharmacy serviceType badge (moved from image) */}
-                      {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).serviceType && (
-                        <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
-                      )}
-                      {/* Home Delivery badge for pharmacy, laboratory, clinic, and doctor services */}
-                      {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).homeDelivery && (
-                        <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
-                          <span className="leading-none">🏠</span>
-                          <span className="leading-none">Home Delivery</span>
-                        </span>
-                      )}
-                      {/* Removed duplicate clinic category badge to avoid double display */}
+                        <div className="flex items-center gap-1.5 text-gray-500">
+                          <MapPin className="w-4 h-4" />
+                          <span className="font-medium">{(service as any).city || (service as any).location}</span>
+                        </div>
+                      </div>
+
+                      {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
+                      <div className="flex justify-between items-center min-h-[24px]">
+                        <div className="flex-shrink-0">
+                          {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).serviceType ? (
+                            <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
+                          ) : (
+                            <div className="h-6"></div>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).homeDelivery && (
+                            <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
+                              <span className="leading-none">🏠</span>
+                              <span className="leading-none">Home Delivery</span>
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          {(() => {
+                            const availability = (getActiveSlide(service) as any)?.availability || (service as any).availability;
+                            return availability ? (
+                              <AvailabilityBadge availability={availability} size="md" />
+                            ) : (<div className="h-6"></div>);
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Row 3: Diseases ↔ WhatsApp */}
+                      <div className="flex justify-between items-center min-h-[24px]">
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    title="View diseases"
+                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                  >
+                                    <VirusIcon className="w-4 h-4" />
+                                    <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs">
+                                  <div className="text-xs text-emerald-800">
+                                    <div className="mb-1 font-medium">Diseases</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {((service as any).diseases as string[]).map((d, i) => (
+                                        <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                          {d}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          {(service as any).providerPhone && (
+                            <div className="relative z-50">
+                              <ServiceWhatsAppButton 
+                                phoneNumber={(service as any).providerPhone}
+                                serviceName={service.name}
+                                providerName={service.providerName}
+                                providerId={(service as any).providerId}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="mt-auto space-y-2">

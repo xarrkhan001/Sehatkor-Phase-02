@@ -37,6 +37,7 @@ export interface BaseService {
   updatedAt: string;
   totalRatings?: number;
   ratingBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
+  myBadge?: 'excellent' | 'good' | 'fair' | 'poor' | null;
   city?: string;
   detailAddress?: string;
   googleMapLink?: string;
@@ -208,7 +209,17 @@ class ServiceManager {
     if (params?.category) query.set('category', params.category);
 
     const url = `http://localhost:4000/api/user/services/public${query.toString() ? `?${query.toString()}` : ''}`;
-    const res = await fetch(url);
+    
+    // Get auth token from localStorage if available
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    const res = await fetch(url, { headers });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: Failed to fetch services`);
     }
@@ -246,6 +257,7 @@ class ServiceManager {
       recommended: Boolean(service.recommended) === true,
       totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
       ratingBadge: service.ratingBadge ?? null,
+      myBadge: service.myBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
       // Provider verification flag (server should compute based on isVerified and license presence)
@@ -305,7 +317,17 @@ class ServiceManager {
   // Fetch a single public service by ID
   static async fetchServiceById(serviceId: string, type: Service['providerType']): Promise<Service> {
     const url = `http://localhost:4000/api/user/services/public/${serviceId}?type=${type}`;
-    const res = await fetch(url);
+    
+    // Get auth token from localStorage if available
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    const res = await fetch(url, { headers });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: Failed to fetch service ${serviceId}`);
     }
@@ -342,6 +364,7 @@ class ServiceManager {
       homeDelivery: Boolean(service.homeDelivery) === true,
       totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
       ratingBadge: service.ratingBadge ?? null,
+      myBadge: service.myBadge ?? null,
       rating: service.averageRating ?? service.rating ?? 0,
       averageRating: service.averageRating ?? service.rating ?? 0,
       ratingCounts: service.ratingCounts ?? null,
