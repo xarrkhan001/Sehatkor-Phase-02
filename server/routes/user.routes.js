@@ -1,5 +1,5 @@
 import express from "express";
-import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { authMiddleware, optionalAuthMiddleware } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
 import {
   getUserProfile,
@@ -12,8 +12,8 @@ import {
 
 const router = express.Router();
 
-// Public endpoint to get all services from all providers
-router.get("/services/public", getAllPublicServices);
+// Public endpoint to get all services from all providers (with optional auth for personal ratings)
+router.get("/services/public", optionalAuthMiddleware, getAllPublicServices);
 router.get("/services/public/:serviceId", getPublicServiceById);
 
 // Public route to get user by ID

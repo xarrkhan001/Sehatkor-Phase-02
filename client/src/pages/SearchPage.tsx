@@ -966,8 +966,38 @@ const SearchPage = () => {
                   </Select>
                 </div>
 
-                {/* Price Range */}
+              
+
+                {/* Availability */}
                 <div>
+                  <Label className="text-base font-medium">Availability</Label>
+                  <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select availability" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="Online">Online</SelectItem>
+                      <SelectItem value="Physical">Physical</SelectItem>
+                      <SelectItem value="Online and Physical">Online and Physical</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Home Service */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="homeService"
+                    checked={homeServiceOnly}
+                    onCheckedChange={(checked) => setHomeServiceOnly(checked === true)}
+                  />
+                  <Label htmlFor="homeService" className="text-base">
+                    Home service available
+                  </Label>
+                </div>
+
+                  {/* Price Range */}
+                  <div>
                   <Label className="text-base font-medium">Price Range</Label>
                   <div className="mt-2">
                     <Select value={priceFilter} onValueChange={(value) => {
@@ -1040,59 +1070,95 @@ const SearchPage = () => {
                     )}
 
                     <div className="mt-4 px-2">
-                      <div className="relative">
-                        <Slider
-                          value={priceRange}
-                          onValueChange={setPriceRange}
-                          max={maxPrice}
-                          min={0}
-                          step={100}
-                          className="w-full [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-blue-500 [&_[role=slider]]:to-purple-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_.slider-track]:bg-gradient-to-r [&_.slider-track]:from-blue-200 [&_.slider-track]:to-purple-200 [&_.slider-range]:bg-gradient-to-r [&_.slider-range]:from-blue-500 [&_.slider-range]:to-purple-500"
-                          style={{
-                            background: `linear-gradient(to right, 
-                              #e2e8f0 0%, 
-                              #e2e8f0 ${(priceRange[0] / maxPrice) * 100}%, 
-                              #3b82f6 ${(priceRange[0] / maxPrice) * 100}%, 
-                              #8b5cf6 ${(priceRange[1] / maxPrice) * 100}%, 
-                              #e2e8f0 ${(priceRange[1] / maxPrice) * 100}%, 
-                              #e2e8f0 100%)`
-                          }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-medium">PKR {priceRange[0].toLocaleString()}</span>
-                        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-medium">PKR {priceRange[1].toLocaleString()}</span>
+                      <div className="relative group">
+                        {/* Enhanced Slider with Glow Effect */}
+                        <div className="relative p-4 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-xl border border-blue-100/50 backdrop-blur-sm transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-200/30">
+                          <Slider
+                            value={priceRange}
+                            onValueChange={setPriceRange}
+                            max={maxPrice}
+                            min={0}
+                            step={100}
+                            className="w-full relative
+                              [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 
+                              [&_[role=slider]]:bg-gradient-to-br [&_[role=slider]]:from-blue-500 [&_[role=slider]]:via-blue-600 [&_[role=slider]]:to-purple-600 
+                              [&_[role=slider]]:border-2 [&_[role=slider]]:border-white 
+                              [&_[role=slider]]:shadow-xl [&_[role=slider]]:shadow-blue-500/30
+                              [&_[role=slider]]:transition-all [&_[role=slider]]:duration-200
+                              [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:hover:shadow-2xl [&_[role=slider]]:hover:shadow-blue-500/50
+                              [&_[role=slider]]:focus:scale-110 [&_[role=slider]]:focus:shadow-2xl [&_[role=slider]]:focus:shadow-purple-500/50
+                              [&_[role=slider]]:active:scale-95
+                              [&_.slider-track]:h-2 [&_.slider-track]:bg-gradient-to-r [&_.slider-track]:from-gray-200 [&_.slider-track]:to-gray-300
+                              [&_.slider-range]:h-2 [&_.slider-range]:bg-gradient-to-r [&_.slider-range]:from-blue-500 [&_.slider-range]:to-purple-600
+                              [&_.slider-range]:shadow-md [&_.slider-range]:shadow-blue-500/20"
+                            style={{
+                              background: `linear-gradient(to right, 
+                                #e5e7eb 0%, 
+                                #e5e7eb ${(priceRange[0] / maxPrice) * 100}%, 
+                                #3b82f6 ${(priceRange[0] / maxPrice) * 100}%, 
+                                #8b5cf6 ${(priceRange[1] / maxPrice) * 100}%, 
+                                #e5e7eb ${(priceRange[1] / maxPrice) * 100}%, 
+                                #e5e7eb 100%)`,
+                              borderRadius: '6px',
+                              height: '8px',
+                              boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)'
+                            }}
+                          />
+                          
+                          {/* Animated Progress Indicators */}
+                          <div className="absolute -top-1 left-0 w-full h-full pointer-events-none">
+                            <div 
+                              className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50 transition-all duration-300"
+                              style={{ left: `${(priceRange[0] / maxPrice) * 100}%`, transform: 'translateX(-50%) translateY(-50%)' }}
+                            />
+                            <div 
+                              className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-purple-500 rounded-full animate-pulse shadow-lg shadow-purple-500/50 transition-all duration-300"
+                              style={{ left: `${(priceRange[1] / maxPrice) * 100}%`, transform: 'translateX(-50%) translateY(-50%)' }}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced Price Display with Tooltips */}
+                        <div className="flex justify-between items-center mt-4">
+                          <div className="relative group/price">
+                            <div className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105">
+                              <span className="text-sm font-semibold">PKR {priceRange[0].toLocaleString()}</span>
+                            </div>
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/price:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                              Minimum Price
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 mx-4 flex items-center justify-center">
+                            <div className="h-px bg-gradient-to-r from-blue-300 via-purple-300 to-blue-300 flex-1 relative">
+                              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 animate-pulse opacity-50"></div>
+                            </div>
+                            <span className="mx-2 text-xs text-gray-500 font-medium">to</span>
+                            <div className="h-px bg-gradient-to-r from-blue-300 via-purple-300 to-blue-300 flex-1 relative">
+                              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 animate-pulse opacity-50"></div>
+                            </div>
+                          </div>
+                          
+                          <div className="relative group/price">
+                            <div className="px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg shadow-lg shadow-purple-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-purple-500/40 hover:scale-105">
+                              <span className="text-sm font-semibold">PKR {priceRange[1].toLocaleString()}</span>
+                            </div>
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/price:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                              Maximum Price
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Price Range Info */}
+                        <div className="mt-3 text-center">
+                          <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 text-xs font-medium rounded-full border border-blue-200/50">
+                            <span className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-2 animate-pulse"></span>
+                            Range: PKR {(priceRange[1] - priceRange[0]).toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Availability */}
-                <div>
-                  <Label className="text-base font-medium">Availability</Label>
-                  <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select availability" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="Online">Online</SelectItem>
-                      <SelectItem value="Physical">Physical</SelectItem>
-                      <SelectItem value="Online and Physical">Online and Physical</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Home Service */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="homeService"
-                    checked={homeServiceOnly}
-                    onCheckedChange={(checked) => setHomeServiceOnly(checked === true)}
-                  />
-                  <Label htmlFor="homeService" className="text-base">
-                    Home service available
-                  </Label>
                 </div>
               </CardContent>
             </Card>
@@ -1327,75 +1393,94 @@ const SearchPage = () => {
                           </Badge>
                         </div>
                       </div>
-                      {/* Rating Badge, Location, Availability, Home Service, WhatsApp */}
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 text-sm">
-                        <RatingBadge
-                          rating={service.rating}
-                          ratingBadge={service.ratingBadge}
-                          totalRatings={(service as any).totalRatings}
-                          yourBadge={(service as any).myBadge || null}
-                          size="sm"
-                        />
-                        <div className="flex items-center gap-1 text-gray-500">
-                          <MapPin className="w-4 h-4" />
-                          <span>{getDisplayLocation(service)}</span>
+                      {/* Badges and actions – unified 3-row layout for all provider types */}
+                      <div className="space-y-3 mb-4 text-sm">
+                        {/* Row 1: Rating ↔ Location */}
+                        <div className="flex justify-between items-center min-h-[24px]">
+                          <div className="flex-shrink-0">
+                            <RatingBadge
+                              rating={service.rating}
+                              ratingBadge={service.ratingBadge}
+                              totalRatings={(service as any).totalRatings}
+                              yourBadge={(service as any).myBadge || null}
+                              size="sm"
+                            />
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
+                            <MapPin className="w-4 h-4" />
+                            <span>{getDisplayLocation(service)}</span>
+                          </div>
                         </div>
-                        
-                        {(service as any).providerPhone && (
-                          <ServiceWhatsAppButton
-                            phoneNumber={(service as any).providerPhone}
-                            serviceName={service.name}
-                            providerName={service.provider}
-                          />
-                        )}
-                        {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  title="View diseases"
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                >
-                                  <VirusIcon className="w-4 h-4" />
-                                  <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
-                                <div className="text-xs text-emerald-800">
-                                  <div className="mb-1 font-medium">Diseases</div>
-                                  <div className="flex flex-wrap gap-1">
-                                    {((service as any).diseases as string[]).map((d, i) => (
-                                      <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        {d}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                        {(() => {
-                          // Get variant-aware availability
-                          const activeSlide = getActiveSlide(service);
-                          const availability = activeSlide?.availability || (service as any).availability;
-                          
-                          if (!availability) return null;
-                          
-                          return (
-                            <AvailabilityBadge availability={availability} size="sm" />
-                          );
-                        })()}
-                        {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic' || (service as any)._providerType === 'doctor') && (service as any).serviceType && (
-                          <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
-                        )}
-                        {((service as any)._providerType === 'pharmacy' || (service as any)._providerType === 'laboratory' || (service as any)._providerType === 'clinic' || (service as any)._providerType === 'doctor') && (service as any).homeDelivery && (
-                          <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
-                            <span className="leading-none">🏠</span>
-                            <span className="leading-none">Home Delivery</span>
-                          </span>
-                        )}
+
+                        {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
+                        <div className="flex justify-between items-center min-h-[24px]">
+                          <div className="flex-shrink-0">
+                            {(service as any).serviceType ? (
+                              <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
+                            ) : (
+                              <div className="h-6"></div>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {(service as any).homeDelivery && (
+                              <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
+                                <span className="leading-none">🏠</span>
+                                <span className="leading-none">Home Delivery</span>
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {(() => {
+                              const activeSlide = getActiveSlide(service);
+                              const availability = activeSlide?.availability || (service as any).availability;
+                              if (!availability) return <div className="h-6"></div>;
+                              return <AvailabilityBadge availability={availability} size="sm" />;
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Row 3: Diseases ↔ WhatsApp */}
+                        <div className="flex justify-between items-center min-h-[24px]">
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      title="View diseases"
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                    >
+                                      <VirusIcon className="w-4 h-4" />
+                                      <span className="hidden sm:inline text-xs font-medium">Diseases</span>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs">
+                                    <div className="text-xs text-emerald-800">
+                                      <div className="mb-1 font-medium">Diseases</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {((service as any).diseases as string[]).map((d, i) => (
+                                          <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            {d}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {(service as any).providerPhone && (
+                              <ServiceWhatsAppButton
+                                phoneNumber={(service as any).providerPhone}
+                                serviceName={service.name}
+                                providerName={service.provider}
+                              />
+                            )}
+                          </div>
+                        </div>
                       </div>
                       
                       {/* Buttons */}

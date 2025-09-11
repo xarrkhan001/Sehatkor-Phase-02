@@ -59,4 +59,42 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-export { authMiddleware };
+// Optional auth middleware - sets user info if token is present, but doesn't fail if missing
+const optionalAuthMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split(" ")[1]; // Expecting "Bearer TOKEN"
+
+  if (!token) {
+    // No token provided - continue without authentication
+    req.userId = null;
+    req.userRole = null;
+    return next();
+  }
+
+  try {
+    if (!process.env.JWT_SECRET) {
+      req.userId = null;
+      req.userRole = null;
+      return next();
+    }
+
+    const tokenParts = token.split(".");
+    if (tokenParts.length !== 3) {
+      req.userId = null;
+      req.userRole = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.id || decoded.userId;
+    req.userRole = decoded.role;
+    next();
+  } catch (err) {
+    // Token invalid - continue without authentication
+    req.userId = null;
+    req.userRole = null;
+    next();
+  }
+};
+
+export { authMiddleware, optionalAuthMiddleware };

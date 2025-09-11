@@ -667,45 +667,38 @@ const ServiceDetailPage = () => {
             <CardContent className="px-3 sm:px-6 pt-0 pb-4 sm:pb-6">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 sm:gap-5">
                 <div className="space-y-2 min-w-0">
-                  <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="text-primary font-bold text-xl">{activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price || 0).toLocaleString()}`}</div>
-                    <RatingBadge
-                      rating={item.rating}
-                      ratingBadge={item.ratingBadge as any}
-                      totalRatings={item.totalRatings}
-                      yourBadge={(yourBadge ?? item.myBadge) || null}
-                      size="sm"
-                      layout="column-compact"
-                    />
-                    {(() => {
-                      // Prefer active slide; if empty on main slide, fallback to first variant that has a name
-                      const variantsArr: any[] = Array.isArray((item as any)?.variants) ? (item as any).variants : [];
-                      const firstVariantWithName = variantsArr.find(v => v?.hospitalClinicName);
-                      const displayHospitalClinicName = (activeSlide as any).hospitalClinicName
-                        || (item as any).hospitalClinicName
-                        || (firstVariantWithName ? firstVariantWithName.hospitalClinicName : undefined);
-                      return displayHospitalClinicName ? (
-                        <div className="text-sm text-blue-600 font-medium mb-1 flex items-center gap-2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            aria-hidden="true"
-                            className="shrink-0"
-                          >
-                            <circle cx="12" cy="12" r="11" fill="#ef4444" />
-                            <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
-                            <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
-                          </svg>
-                          <span className="truncate">{displayHospitalClinicName}</span>
-                        </div>
-                      ) : null;
-                    })()}
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      {activeSlide.location}
-                    </div>
+                  {/* Price */}
+                  <div className="text-primary font-bold text-xl mb-4">{activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price || 0).toLocaleString()}`}</div>
+                  
+                  {/* Hospital/Clinic Name */}
+                  {(() => {
+                    // Prefer active slide; if empty on main slide, fallback to first variant that has a name
+                    const variantsArr: any[] = Array.isArray((item as any)?.variants) ? (item as any).variants : [];
+                    const firstVariantWithName = variantsArr.find(v => v?.hospitalClinicName);
+                    const displayHospitalClinicName = (activeSlide as any).hospitalClinicName
+                      || (item as any).hospitalClinicName
+                      || (firstVariantWithName ? firstVariantWithName.hospitalClinicName : undefined);
+                    return displayHospitalClinicName ? (
+                      <div className="text-sm text-blue-600 font-medium mb-3 flex items-center gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          aria-hidden="true"
+                          className="shrink-0"
+                        >
+                          <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                          <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                          <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                        </svg>
+                        <span className="truncate">{displayHospitalClinicName}</span>
+                      </div>
+                    ) : null;
+                  })()}
+                  
+                  {/* Category Badge */}
+                  <div className="mb-4">
                     <Badge
                       variant="outline"
                       className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
@@ -720,15 +713,9 @@ const ServiceDetailPage = () => {
                               ? (((item as any).clinicCategory || resolvedClinicCategory) as string)
                               : item.type}
                     </Badge>
-                    {activeSlide.availability && (
-                      <AvailabilityBadge availability={activeSlide.availability} size="sm" />
-                    )}
-                    {(item.serviceType ?? resolvedServiceType) && (
-                      <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
-                    )}
                     {/* Department badge for clinic services */}
                     {item.providerType === 'clinic' && (item as any).department && (
-                      <Badge className="flex items-center gap-1 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
+                      <Badge className="ml-2 flex items-center gap-1 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -744,52 +731,110 @@ const ServiceDetailPage = () => {
                         {(item as any).department}
                       </Badge>
                     )}
-                    {(() => {
-                      const list = (hydratedDiseases ?? ((item as any).diseases || [])) as string[];
-                      return Array.isArray(list) && list.length > 0;
-                    })() && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              title="View diseases"
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                            >
-                              <VirusIcon className="w-4 h-4" />
-                              <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs">
-                            <div className="text-xs text-emerald-800">
-                              <div className="mb-1 font-medium">Diseases</div>
-                              <div className="flex flex-wrap gap-1">
-                                {((hydratedDiseases ?? ((item as any).diseases || [])) as string[]).map((d, i) => (
-                                  <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    {d}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                    {(item.homeDelivery === true) && ((item.providerType === 'pharmacy') || (item.providerType === 'laboratory') || (item.providerType === 'clinic') || (item.type === 'Medicine') || (item.type === 'Test') || (item.type === 'Treatment')) && (
-                      <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
-                        <span className="leading-none">🏠</span>
-                        <span className="leading-none">Home Delivery</span>
-                      </span>
-                    )}
-                    {freshCounts && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <span>Excellent: {freshCounts.excellent}</span>
-                        <span>Good: {freshCounts.good}</span>
-                        <span>Fair: {freshCounts.fair}</span>
-                      </div>
-                    )}
-                    
                   </div>
+
+                  {/* Unified 3-row badge layout */}
+                  <div className="space-y-3 mb-4 text-sm">
+                    {/* Row 1: Rating ↔ Location */}
+                    <div className="flex justify-between items-center min-h-[24px]">
+                      <div className="flex-shrink-0">
+                        <RatingBadge
+                          rating={item.rating}
+                          ratingBadge={item.ratingBadge as any}
+                          totalRatings={item.totalRatings}
+                          yourBadge={(yourBadge ?? item.myBadge) || null}
+                          size="sm"
+                          layout="column-compact"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
+                        <MapPin className="w-4 h-4" />
+                        <span>{activeSlide.location}</span>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
+                    <div className="flex justify-between items-center min-h-[24px]">
+                      <div className="flex-shrink-0">
+                        {(item.serviceType ?? resolvedServiceType) ? (
+                          <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
+                        ) : (
+                          <div className="h-6"></div>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        {(item.homeDelivery === true) && (
+                          <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
+                            <span className="leading-none">🏠</span>
+                            <span className="leading-none">Home Delivery</span>
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        {activeSlide.availability ? (
+                          <AvailabilityBadge availability={activeSlide.availability} size="sm" />
+                        ) : (
+                          <div className="h-6"></div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Row 3: Diseases ↔ WhatsApp */}
+                    <div className="flex justify-between items-center min-h-[24px]">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {(() => {
+                          const list = (hydratedDiseases ?? ((item as any).diseases || [])) as string[];
+                          return Array.isArray(list) && list.length > 0;
+                        })() && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  title="View diseases"
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                >
+                                  <VirusIcon className="w-4 h-4" />
+                                  <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <div className="text-xs text-emerald-800">
+                                  <div className="mb-1 font-medium">Diseases</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {((hydratedDiseases ?? ((item as any).diseases || [])) as string[]).map((d, i) => (
+                                      <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        {d}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        {item.providerPhone && (
+                          <ServiceWhatsAppButton
+                            phoneNumber={item.providerPhone}
+                            serviceName={item.name}
+                            providerName={item.provider}
+                            providerId={item.providerId}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Rating counts */}
+                  {freshCounts && (
+                    <div className="flex items-center gap-2 text-xs text-gray-600 mb-4">
+                      <span>Excellent: {freshCounts.excellent}</span>
+                      <span>Good: {freshCounts.good}</span>
+                      <span>Fair: {freshCounts.fair}</span>
+                    </div>
+                  )}
                   {activeSlide.address && (
                     <div className="text-sm text-muted-foreground">{activeSlide.address}</div>
                   )}
@@ -802,16 +847,6 @@ const ServiceDetailPage = () => {
                     >
                       <MapPin className="w-4 h-4 mr-1" /> Open in Google Maps
                     </Button>
-                  )}
-                  {item.providerPhone && (
-                    <div className="pt-1">
-                      <ServiceWhatsAppButton
-                        phoneNumber={item.providerPhone}
-                        serviceName={item.name}
-                        providerName={item.provider}
-                        providerId={item.providerId}
-                      />
-                    </div>
                   )}
                 </div>
                 <div className="flex w-full md:w-auto gap-2">
