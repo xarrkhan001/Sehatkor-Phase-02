@@ -325,6 +325,10 @@ const LaboratoryDashboard = () => {
         providerId: user.id,
         providerName: d.providerName || (user?.name || 'Laboratory'),
         providerType: 'laboratory' as const,
+        // Location fields included so Edit dialog pre-fills correctly
+        city: d.city || '',
+        detailAddress: d.detailAddress || '',
+        googleMapLink: d.googleMapLink || '',
         availability: d.availability,
         serviceType: d.serviceType,
         homeDelivery: Boolean(d.homeDelivery) || false,

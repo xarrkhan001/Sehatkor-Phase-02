@@ -15,6 +15,8 @@ export type LaboratoryTestDoc = {
   city?: string;
   detailAddress?: string;
   googleMapLink?: string;
+  // Optional service classification (e.g., Private/Public/Charity/NGO/NPO/Sehat Card)
+  serviceType?: string;
   homeDelivery?: boolean;
   createdAt: string;
   updatedAt: string;
