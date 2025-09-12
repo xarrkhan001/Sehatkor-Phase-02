@@ -389,9 +389,9 @@ const SearchPage = () => {
           _providerVerified: (typeof (service as any)._providerVerified !== 'undefined')
             ? Boolean((service as any)._providerVerified)
             : (user && String((service as any).providerId) === String(user.id)
-                && Boolean((user as any)?.isVerified)
-                && Boolean((user as any)?.licenseNumber)
-                && String((user as any)?.licenseNumber).trim() !== ''),
+              && Boolean((user as any)?.isVerified)
+              && Boolean((user as any)?.licenseNumber)
+              && String((user as any)?.licenseNumber).trim() !== ''),
         };
 
         // coordinates based on location
@@ -415,12 +415,12 @@ const SearchPage = () => {
         const aOwn = a._providerId && user?.id && String(a._providerId) === String(user.id);
         const bOwn = b._providerId && user?.id && String(b._providerId) === String(user.id);
         if (aOwn !== bOwn) return aOwn ? -1 : 1;
-        
+
         // Recommended services priority (recommended services appear first)
         const aRecommended = Boolean(a.recommended);
         const bRecommended = Boolean(b.recommended);
         if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-        
+
         // Badge priority: excellent > good > fair > others
         const rank = (s: any) => {
           const badge = (s?.ratingBadge || '').toString().toLowerCase();
@@ -966,7 +966,7 @@ const SearchPage = () => {
                   </Select>
                 </div>
 
-              
+
 
                 {/* Availability */}
                 <div>
@@ -996,8 +996,8 @@ const SearchPage = () => {
                   </Label>
                 </div>
 
-                  {/* Price Range */}
-                  <div>
+                {/* Price Range */}
+                <div>
                   <Label className="text-base font-medium">Price Range</Label>
                   <div className="mt-2">
                     <Select value={priceFilter} onValueChange={(value) => {
@@ -1104,20 +1104,20 @@ const SearchPage = () => {
                               boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)'
                             }}
                           />
-                          
+
                           {/* Animated Progress Indicators */}
                           <div className="absolute -top-1 left-0 w-full h-full pointer-events-none">
-                            <div 
+                            <div
                               className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50 transition-all duration-300"
                               style={{ left: `${(priceRange[0] / maxPrice) * 100}%`, transform: 'translateX(-50%) translateY(-50%)' }}
                             />
-                            <div 
+                            <div
                               className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-purple-500 rounded-full animate-pulse shadow-lg shadow-purple-500/50 transition-all duration-300"
                               style={{ left: `${(priceRange[1] / maxPrice) * 100}%`, transform: 'translateX(-50%) translateY(-50%)' }}
                             />
                           </div>
                         </div>
-                        
+
                         {/* Enhanced Price Display with Tooltips */}
                         <div className="flex justify-between items-center mt-4">
                           <div className="relative group/price">
@@ -1128,7 +1128,7 @@ const SearchPage = () => {
                               Minimum Price
                             </div>
                           </div>
-                          
+
                           <div className="flex-1 mx-4 flex items-center justify-center">
                             <div className="h-px bg-gradient-to-r from-blue-300 via-purple-300 to-blue-300 flex-1 relative">
                               <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 animate-pulse opacity-50"></div>
@@ -1138,7 +1138,7 @@ const SearchPage = () => {
                               <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 animate-pulse opacity-50"></div>
                             </div>
                           </div>
-                          
+
                           <div className="relative group/price">
                             <div className="px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg shadow-lg shadow-purple-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-purple-500/40 hover:scale-105">
                               <span className="text-sm font-semibold">PKR {priceRange[1].toLocaleString()}</span>
@@ -1148,7 +1148,7 @@ const SearchPage = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Price Range Info */}
                         <div className="mt-3 text-center">
                           <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 text-xs font-medium rounded-full border border-blue-200/50">
@@ -1208,13 +1208,13 @@ const SearchPage = () => {
                         ) : (
                           <span className="text-gray-400 text-4xl">{getServiceEmoji(service.type)}</span>
                         )}
-                        
+
                         {/* Top-left recommended overlay */}
                         {(service as any).recommended && (
                           <div className="absolute top-1.5 left-1.5 z-10">
                             <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                               </svg>
                               <div className="flex flex-col leading-tight">
                                 <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
@@ -1308,7 +1308,7 @@ const SearchPage = () => {
                             const variants = getVariants(service);
                             const totalSlides = 1 + variants.length;
                             const slideIdx = ((activeIdx % totalSlides) + totalSlides) % totalSlides;
-                            
+
                             const firstVariantWithName = variants.find(v => v?.hospitalClinicName);
                             let hospitalClinicName = '';
                             if (slideIdx === 0) {
@@ -1319,7 +1319,7 @@ const SearchPage = () => {
                               // Variant slide
                               hospitalClinicName = variants[slideIdx - 1].hospitalClinicName || '';
                             }
-                            
+
                             console.log('🔎 SearchPage hospitalClinicName render:', {
                               serviceId: service.id,
                               serviceName: service.name,
@@ -1329,7 +1329,7 @@ const SearchPage = () => {
                               variantHospitalClinicName: variants[slideIdx - 1]?.hospitalClinicName,
                               firstVariantWithName: firstVariantWithName?.hospitalClinicName
                             });
-                            
+
                             return hospitalClinicName ? (
                               <div className="text-xs text-blue-600 font-medium mt-1 flex items-center gap-1.5">
                                 <svg
@@ -1360,7 +1360,7 @@ const SearchPage = () => {
                                 aria-hidden="true"
                                 className="shrink-0"
                               >
-                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/>
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z" />
                               </svg>
                               <span className="truncate">{(service as any).department}</span>
                             </div>
@@ -1482,7 +1482,7 @@ const SearchPage = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Buttons */}
                       <div className="mt-auto space-y-2">
                         {/* Mobile: 2x2 grid, Desktop: flex row */}
