@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SearchIcon, MapPin, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -181,6 +181,19 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     const filtered = q ? items.filter(it => it.label.toLowerCase().includes(q)) : items;
     return filtered;
   })();
+
+  // Count how many services exist for the currently selected location (from prefetch stash)
+  const locationServiceCount = useMemo(() => {
+    if (!allFetchedServices?.length) return 0;
+    if (!selectedLocation || selectedLocation === 'all') return allFetchedServices.length;
+    const target = String(selectedLocation).toLowerCase();
+    return allFetchedServices.filter(s => {
+      const base = (s.city || '').toString().toLowerCase();
+      const variantCities = Array.isArray(s.variants) ? s.variants.map(v => (v?.city || '').toString().toLowerCase()) : [];
+      const all = [base, ...variantCities].filter(Boolean) as string[];
+      return all.some(c => c.includes(target));
+    }).length;
+  }, [allFetchedServices, selectedLocation]);
 
   // Unified badge style for counts (same color and full circle)
   const getCountBadgeClass = () => 'bg-emerald-500/30 text-emerald-50 border-emerald-400/60';
@@ -627,6 +640,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
               <span className="sr-only">{selectedLocation || 'Detecting location'}</span>
               <span className="hidden sm:inline max-w-[140px] truncate">{selectedLocation || 'Detecting...'}</span>
             </button>
+            {/* Removed count pill from the search bar as requested */}
             <Input
               type="text"
               placeholder="Search doctors, hospital/clinic, medicines, lab tests..."
@@ -763,7 +777,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       )}
 
       {/* Dropdown Results */}
-      {isOpen && (searchTerm || selectedCategory !== "All Categories") && (
+      {isOpen && (
         <Card className="absolute top-full left-0 right-0 mt-2 bg-white/98 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border-0 rounded-2xl max-h-[32rem] overflow-hidden z-[100000] animate-in fade-in-0 zoom-in-95 duration-200">
           {/* Sticky header */}
           <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-50/90 to-purple-50/90 backdrop-blur-xl border-b border-blue-100/50 px-4 py-3 flex items-center justify-between">
