@@ -73,6 +73,15 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  // Location state
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  // Keep an unfiltered copy to build location options
+  const [allFetchedServices, setAllFetchedServices] = useState<SearchService[]>([]);
+  const [locationQuery, setLocationQuery] = useState("");
+  const [customLocation, setCustomLocation] = useState("");
 
   const categories = ["All Categories", "Doctor", "Lab Test", "Medicine", "Surgery"];
 
@@ -89,7 +98,15 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           category: selectedCategory === "All Categories" ? undefined : selectedCategory,
         });
         const mapped = mapServices(services);
-        setRealServices(mapped);
+        setAllFetchedServices(mapped);
+        // If a location is selected, filter by city or variant city
+        const filteredByLoc = (selectedLocation && selectedLocation !== 'all')
+          ? mapped.filter(s => {
+              const city = (getDisplayCity(s) || s.city || '').toString().toLowerCase();
+              return city.includes(String(selectedLocation).toLowerCase());
+            })
+          : mapped;
+        setRealServices(filteredByLoc);
         setHasMore(more);
       } catch (e) {
         console.error("Failed to load services:", e);
@@ -100,7 +117,20 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       }
     };
     loadInitialServices();
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, selectedLocation]);
+
+  // Prefetch a larger pool of services once to build a complete location list (independent of search term)
+  useEffect(() => {
+    const prefetchLocations = async () => {
+      try {
+        const { services } = await ServiceManager.fetchPublicServices({ page: 1, limit: 500 });
+        const mapped = mapServices(services);
+        setAllFetchedServices(mapped);
+      } catch {}
+    };
+    prefetchLocations();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Live update provider name in dropdown when profile changes
   useEffect(() => {
@@ -119,6 +149,41 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     window.addEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
     return () => window.removeEventListener('provider_profile_updated', handleProviderProfileUpdated as EventListener);
   }, []);
+
+  // Build unique location options with counts from all fetched services (base + variants)
+  const locationOptions = (() => {
+    const counts = new Map<string, number>();
+    for (const s of allFetchedServices) {
+      const base = (s.city || '').toString().trim();
+      const vs = Array.isArray(s.variants) ? s.variants : [];
+      const variantCities = vs.map(v => (v?.city || '').toString().trim()).filter(Boolean);
+      const all = [base, ...variantCities].filter(Boolean) as string[];
+      const uniq = Array.from(new Set(all.map(x => x.toLowerCase())));
+      for (const key of uniq) {
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+    }
+    // Convert back to displayable items (capitalize as-is from one sample in list if available)
+    const items: { label: string; count: number }[] = [];
+    for (const [key, count] of counts.entries()) {
+      // find original casing example
+      const sample = allFetchedServices.find(s =>
+        (s.city && s.city.toLowerCase() === key) ||
+        (Array.isArray(s.variants) && s.variants.some(v => (v.city || '').toLowerCase() === key))
+      );
+      const label = (sample && ((sample.city && sample.city.toLowerCase() === key) ? sample.city : (sample.variants || []).find(v => (v.city || '').toLowerCase() === key)?.city)) || key;
+      items.push({ label: String(label), count });
+    }
+    // Sort by count desc then alpha
+    items.sort((a, b) => (b.count - a.count) || a.label.localeCompare(b.label));
+    // Apply search filter
+    const q = locationQuery.trim().toLowerCase();
+    const filtered = q ? items.filter(it => it.label.toLowerCase().includes(q)) : items;
+    return filtered;
+  })();
+
+  // Unified badge style for counts (same color and full circle)
+  const getCountBadgeClass = () => 'bg-emerald-500/30 text-emerald-50 border-emerald-400/60';
 
   // Fallback: if logged-in user's name changes, patch their own services in place
   useEffect(() => {
@@ -254,7 +319,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       (service.city && service.city.toLowerCase().includes(searchLower)) ||
       (getDisplayCity(service) && getDisplayCity(service)!.toLowerCase().includes(searchLower));
     const matchesCategory = selectedCategory === "All Categories" || service.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesLocation = !selectedLocation || selectedLocation === 'all' ||
+      (getDisplayCity(service) || service.city || '').toLowerCase().includes(String(selectedLocation).toLowerCase());
+    return matchesSearch && matchesCategory && matchesLocation;
   });
 
   const loadMore = async () => {
@@ -269,7 +336,15 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
         category: selectedCategory === "All Categories" ? undefined : selectedCategory,
       });
       const mapped = mapServices(services);
-      setRealServices(prev => [...prev, ...mapped]);
+      // append to unfiltered stash
+      setAllFetchedServices(prev => [...prev, ...mapped]);
+      const filteredByLoc = (selectedLocation && selectedLocation !== 'all')
+        ? mapped.filter(s => {
+            const city = (getDisplayCity(s) || s.city || '').toString().toLowerCase();
+            return city.includes(String(selectedLocation).toLowerCase());
+          })
+        : mapped;
+      setRealServices(prev => [...prev, ...filteredByLoc]);
       setPage(nextPage);
       setHasMore(more);
     } catch (e) {
@@ -463,10 +538,59 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   };
 
   const handleSearch = () => {
-    if (searchTerm.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) params.set('q', searchTerm.trim());
+    if (selectedLocation && selectedLocation !== 'all') params.set('loc', String(selectedLocation));
+    window.location.href = `/search${params.toString() ? `?${params.toString()}` : ''}`;
+  };
+
+  // Geolocation + reverse geocoding helpers
+  const reverseGeocode = async (lat: number, lon: number): Promise<string | null> => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const city = data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.suburb || data?.address?.state || null;
+      return city;
+    } catch {
+      return null;
     }
   };
+
+  const detectLocation = async () => {
+    if (!('geolocation' in navigator)) {
+      setGeoError('Geolocation not supported');
+      return;
+    }
+    setIsDetectingLocation(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      const name = await reverseGeocode(latitude, longitude);
+      const finalLoc = name || 'Karachi';
+      setSelectedLocation(finalLoc);
+      try { localStorage.setItem('selectedLocation', finalLoc); } catch {}
+      setIsLocationModalOpen(false);
+      setIsDetectingLocation(false);
+    }, (err) => {
+      setGeoError(err.message || 'Failed to detect location');
+      setIsDetectingLocation(false);
+    }, { enableHighAccuracy: true, timeout: 10000 });
+  };
+
+  // Initialize selected location from localStorage or auto-detect once
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('selectedLocation');
+      if (saved) {
+        setSelectedLocation(saved);
+        return;
+      }
+    } catch {}
+    // Auto-detect silently; do not block UI
+    detectLocation();
+  }, []);
 
   return (
     <div className="relative w-full max-w-[1100px] mx-auto z-[100000]" ref={searchRef}>
@@ -488,7 +612,21 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           )}
 
           {/* Search Input */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative flex items-center gap-2">
+            {/* Location trigger at the start (now visible on mobile too) */
+            }
+            <button
+              type="button"
+              onClick={() => setIsLocationModalOpen(true)}
+              className="flex items-center gap-1 px-2 h-9 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50 transition text-xs sm:text-sm"
+              title="Select Location"
+            >
+              {/* Mobile: show only a pin icon; Desktop: chevron + label */}
+              <MapPin className="w-4 h-4 sm:hidden text-gray-700" aria-hidden="true" />
+              <ChevronDown className="w-4 h-4 hidden sm:inline" />
+              <span className="sr-only">{selectedLocation || 'Detecting location'}</span>
+              <span className="hidden sm:inline max-w-[140px] truncate">{selectedLocation || 'Detecting...'}</span>
+            </button>
             <Input
               type="text"
               placeholder="Search doctors, hospital/clinic, medicines, lab tests..."
@@ -515,6 +653,114 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           </Button>
         </div>
       </Card>
+
+      {/* Location Modal */}
+      {isLocationModalOpen && (
+        <div className="fixed inset-0 z-[100003] flex items-start justify-center pt-20 md:pt-24 pb-8 px-4">
+          {/* Dimmed + stronger-blurred overlay for readability */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md backdrop-saturate-150" onClick={() => setIsLocationModalOpen(false)} />
+          {/* Compact glass container with better contrast */}
+          <div className="relative w-full max-w-xl mx-4">
+            <div className="relative rounded-2xl p-4 sm:p-5 bg-white/12 backdrop-blur-2xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Choose Location</h3>
+                  <p className="text-[11px] text-white/70">Filter by your city or search across Pakistan</p>
+                </div>
+                <button onClick={() => setIsLocationModalOpen(false)} className="text-white/80 hover:text-white text-lg leading-none">×</button>
+              </div>
+
+              {/* Quick actions */}
+              <div className="flex gap-2 mb-2">
+                <button
+                  onClick={detectLocation}
+                  className="flex-1 h-9 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm shadow shadow-blue-900/20 flex items-center justify-center gap-2"
+                  disabled={isDetectingLocation}
+                >
+                  {/* Mobile: icon only; Desktop: text */}
+                  <MapPin className="w-4 h-4 sm:hidden text-white" aria-hidden="true" />
+                  <span className="hidden sm:inline">{isDetectingLocation ? 'Detecting...' : 'Use Current Location'}</span>
+                  <span className="sr-only">Use Current Location</span>
+                </button>
+                <button
+                  onClick={() => { setSelectedLocation('all'); try { localStorage.setItem('selectedLocation', 'all'); } catch {}; setIsLocationModalOpen(false); }}
+                  className="flex-1 h-9 rounded-md border border-white/30 text-white/90 hover:bg-white/10 text-sm"
+                >
+                  All Pakistan
+                </button>
+              </div>
+
+              {/* Search and custom entry */}
+              <div className="grid grid-cols-1 sm:grid-cols-6 gap-2 mb-2">
+                <div className="sm:col-span-3 min-w-0">
+                  <input
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
+                    className="w-full h-11 px-3 rounded-none bg-white/20 text-white placeholder-white/80 border border-white/30 focus:outline-none"
+                    placeholder="Search cities (e.g. Karachi, Lahore)"
+                  />
+                </div>
+                <div className="sm:col-span-3 min-w-0">
+                  <div className="flex items-center min-w-0">
+                    <input
+                      value={customLocation}
+                      onChange={(e) => setCustomLocation(e.target.value)}
+                      className="flex-1 h-11 px-3 rounded-none bg-white/20 text-white placeholder-white/80 border border-white/30 focus:outline-none min-w-0"
+                      placeholder="Enter custom city"
+                    />
+                    <button
+                      onClick={() => {
+                        const v = customLocation.trim();
+                        if (!v) return;
+                        setSelectedLocation(v);
+                        try { localStorage.setItem('selectedLocation', v); } catch {}
+                        setIsLocationModalOpen(false);
+                      }}
+                      className="w-10 h-11 rounded-none text-green-600 border border-l-0 border-green-500 bg-green-700/20 hover:bg-green-700/30 flex items-center justify-center -ml-px shadow-[0_0_0_1px_rgba(16,185,129,0.35)]"
+                      aria-label="Apply custom city"
+                    >
+                      {/* Bolder check icon */}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" className="text-green-600 drop-shadow" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic locations list (slightly taller) */}
+              <div className="max-h-72 overflow-y-auto rounded-none border border-white/30 bg-white/10 glass-scroll">
+                {locationOptions.length ? (
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-2.5 p-2">
+                    {locationOptions.map(({ label, count }) => (
+                      <button
+                        key={label}
+                        onClick={() => {
+                          setSelectedLocation(label);
+                          try { localStorage.setItem('selectedLocation', label); } catch {}
+                          setIsLocationModalOpen(false);
+                        }}
+                        className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-none border text-sm transition ${selectedLocation === label ? 'bg-blue-500/30 border-blue-300/60 text-white' : 'bg-white/15 hover:bg-white/25 border-white/30 text-white'}`}
+                      >
+                        <span className="truncate">{label}</span>
+                        <span className={`inline-flex items-center justify-center w-6 h-6 text-[10px] font-semibold rounded-full border ${getCountBadgeClass()}`}>{count}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-5 text-center text-white/70 text-sm">No matching cities</div>
+                )}
+              </div>
+
+              {geoError ? (
+                <div className="mt-2 text-[11px] text-red-300">{geoError}</div>
+              ) : (
+                <div className="mt-2 text-[11px] text-white/70">Tip: Choose "All Pakistan" to see services across all cities.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Dropdown Results */}
       {isOpen && (searchTerm || selectedCategory !== "All Categories") && (
@@ -630,6 +876,30 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           )}
         </Card>
       )}
+
+      {/* Local scrollbar styling for the modal list (transparent track like modal) */}
+      <style>
+        {`
+          .glass-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.25) transparent;
+          }
+          .glass-scroll::-webkit-scrollbar {
+            width: 8px;
+          }
+          .glass-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .glass-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.25);
+            border-radius: 9999px;
+            border: 1px solid rgba(255,255,255,0.35);
+          }
+          .glass-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.35);
+          }
+        `}
+      </style>
     </div>
 
   );
