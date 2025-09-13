@@ -207,19 +207,21 @@ const AdminRecommendedServices = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/admin'); }}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Admin
-          </Button>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Recommended Services Management</h1>
-            <p className="text-muted-foreground">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/admin'); }}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Admin
+            </Button>
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Recommended Services Management</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Mark services as recommended by SehatKor to highlight them on the public website
             </p>
           </div>
@@ -340,6 +342,7 @@ const AdminRecommendedServices = () => {
               </div>
             ) : (
               <>
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -416,6 +419,7 @@ const AdminRecommendedServices = () => {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
 
                 {/* Pagination */}
                 {pagination.totalPages > 1 && (

@@ -88,13 +88,13 @@ const AdminPartners = () => {
   }, []);
 
   const handleCreatePartner = async (name: string, logo: File) => {
-    if (!logo) return toast({ title: 'Missing', description: 'PNG logo is required', variant: 'destructive' });
+    if (!logo) { toast({ title: 'Missing', description: 'PNG logo is required', variant: 'destructive' }); return; }
     const fd = new FormData();
     if (name && name.trim()) fd.append('name', name.trim());
     fd.append('logo', logo);
     const res = await fetch(apiUrl('/api/partners'), { method: 'POST', body: fd });
     const data = await res.json();
-    if (!res.ok) return toast({ title: 'Error', description: data?.message || 'Failed', variant: 'destructive' });
+    if (!res.ok) { toast({ title: 'Error', description: data?.message || 'Failed', variant: 'destructive' }); return; }
     toast({ title: 'Added', description: 'Partner created' });
     fetchPartners();
   };
@@ -106,7 +106,7 @@ const AdminPartners = () => {
     if (file) fd.append('logo', file);
     const res = await fetch(apiUrl(`/api/partners/${id}`), { method: 'PUT', body: fd });
     const data = await res.json();
-    if (!res.ok) return toast({ title: 'Update failed', description: data?.message || 'Try again', variant: 'destructive' });
+    if (!res.ok) { toast({ title: 'Update failed', description: data?.message || 'Try again', variant: 'destructive' }); return; }
     toast({ title: 'Updated', description: 'Partner updated' });
     fetchPartners();
   };
@@ -114,7 +114,7 @@ const AdminPartners = () => {
   const handleDeletePartner = async (id: string) => {
     const res = await fetch(apiUrl(`/api/partners/${id}`), { method: 'DELETE' });
     const data = await res.json();
-    if (!res.ok) return toast({ title: 'Delete failed', description: data?.message || 'Try again', variant: 'destructive' });
+    if (!res.ok) { toast({ title: 'Delete failed', description: data?.message || 'Try again', variant: 'destructive' }); return; }
     toast({ title: 'Deleted', description: 'Partner removed' });
     fetchPartners();
   };
@@ -132,31 +132,40 @@ const AdminPartners = () => {
             <AddPartnerDialog open={openAddModal} onOpenChange={setOpenAddModal} onSave={({name, logo})=>handleCreatePartner(name, logo)} />
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Logo</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(partners||[]).map((p:any)=> (
-                <TableRow key={p._id}>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Logo</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(partners||[]).map((p:any)=> (
+                <TableRow key={p._id} className="align-middle">
                   <TableCell>
                     <img src={p.logoUrl} alt={p.name} className="h-12 w-12 rounded-full object-contain" />
                   </TableCell>
                   <TableCell>
                     <UiInput defaultValue={p.name} onBlur={(e:any)=>handleReplaceLogo(p._id, null, e.target.value)} />
                   </TableCell>
-                  <TableCell className="space-x-2">
-                    <input type="file" accept="image/png" onChange={(e:any)=>handleReplaceLogo(p._id, e.target.files?.[0]||null)} />
-                    <Button variant="destructive" onClick={()=>handleDeletePartner(p._id)}>Delete</Button>
+                  <TableCell className="py-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                      <input
+                        type="file"
+                        accept="image/png"
+                        className="block w-full sm:w-auto"
+                        onChange={(e:any)=>handleReplaceLogo(p._id, e.target.files?.[0]||null)}
+                      />
+                      <Button variant="destructive" onClick={()=>handleDeletePartner(p._id)} className="w-full sm:w-auto">Delete</Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -106,30 +106,32 @@ const AdminHeroImages = () => {
             <Button onClick={handleUpload} disabled={loading}>{loading ? 'Uploading...' : 'Upload Image'}</Button>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Preview</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(images||[]).map((img:any)=> (
-                <TableRow key={img._id}>
-                  <TableCell>
-                    <img src={img.url} alt={img.title||'Hero'} className="h-16 w-28 object-cover rounded" />
-                  </TableCell>
-                  <TableCell>{img.title || '-'}</TableCell>
-                  <TableCell>{img.order ?? 0}</TableCell>
-                  <TableCell>
-                    <Button variant="destructive" onClick={()=> handleDelete(img._id)}>Delete</Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Preview</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {(images||[]).map((img:any)=> (
+                  <TableRow key={img._id}>
+                    <TableCell>
+                      <img src={img.url} alt={img.title||'Hero'} className="h-16 w-28 object-cover rounded" />
+                    </TableCell>
+                    <TableCell>{img.title || '-'}</TableCell>
+                    <TableCell>{img.order ?? 0}</TableCell>
+                    <TableCell>
+                      <Button variant="destructive" onClick={()=> handleDelete(img._id)}>Delete</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -35,7 +35,7 @@ const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoice, open
         </div>
 
         {/* PDF-Style Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white">
           <div className="space-y-6">
             {/* Header - Same as PDF */}
             <div className="text-center border-b-2 border-blue-500 pb-5 mb-6">
@@ -54,7 +54,7 @@ const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoice, open
             </div>
 
             {/* Invoice Info - Same as PDF */}
-            <div className="flex justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-6">
               <div className="flex-1">
                 <div className="font-bold text-blue-600 mb-1">Provider Information</div>
                 <div className="font-semibold mb-2">{invoice.providerName || invoice.provider?.name || 'Unknown Provider'}</div>
@@ -65,7 +65,7 @@ const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoice, open
                   Provider ID: {invoice.providerId || invoice.provider?.id || invoice._id}
                 </div>
               </div>
-              <div className="flex-1 text-right">
+              <div className="flex-1 sm:text-right">
                 <div className="font-bold text-blue-600 mb-1">Invoice Details</div>
                 <div className="mb-1"><strong>Issue Date:</strong> {new Date(invoice.issuedAt || invoice.createdAt || Date.now()).toLocaleDateString()}</div>
                 <div className="mb-1"><strong>Issue Time:</strong> {new Date(invoice.issuedAt || invoice.createdAt || Date.now()).toLocaleTimeString()}</div>
@@ -74,8 +74,8 @@ const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoice, open
             </div>
 
             {/* Items Table - Same as PDF */}
-            <div className="mb-6">
-              <table className="w-full border-collapse">
+            <div className="mb-6 overflow-x-auto">
+              <table className="w-full min-w-[640px] border-collapse">
                 <thead>
                   <tr>
                     <th className="border border-gray-300 p-3 text-left bg-gray-100 font-bold">Service</th>
@@ -111,22 +111,22 @@ const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({ invoice, open
 
             {/* Totals Section - Same as PDF */}
             <div className="border-t-2 border-blue-500 pt-5">
-              <div className="grid grid-cols-4 gap-5 mb-5">
-                <div className="text-center p-4 border rounded-lg bg-gray-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-gray-100">
                   <div className="text-xs text-gray-600 mb-1">Subtotal</div>
-                  <div className="text-lg font-bold">PKR {(invoice.totals?.subtotal || invoice.totalAmount || 0)?.toLocaleString()}</div>
+                  <div className="text-base sm:text-lg font-bold">PKR {(invoice.totals?.subtotal || invoice.totalAmount || 0)?.toLocaleString()}</div>
                 </div>
-                <div className="text-center p-4 border rounded-lg bg-yellow-100">
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-yellow-100">
                   <div className="text-xs text-gray-600 mb-1">Commission Rate</div>
-                  <div className="text-lg font-bold">{invoice.totals?.commissionPercentage || invoice.commissionRate || 10}%</div>
+                  <div className="text-base sm:text-lg font-bold">{invoice.totals?.commissionPercentage || invoice.commissionRate || 10}%</div>
                 </div>
-                <div className="text-center p-4 border rounded-lg bg-red-100">
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-red-100">
                   <div className="text-xs text-gray-600 mb-1">Commission Amount</div>
-                  <div className="text-lg font-bold">PKR {(invoice.totals?.commissionAmount || invoice.totalCommission || 0)?.toLocaleString()}</div>
+                  <div className="text-base sm:text-lg font-bold">PKR {(invoice.totals?.commissionAmount || invoice.totalCommission || 0)?.toLocaleString()}</div>
                 </div>
-                <div className="text-center p-4 border rounded-lg bg-green-100">
+                <div className="text-center p-3 sm:p-4 border rounded-lg bg-green-100">
                   <div className="text-xs text-gray-600 mb-1">Net Total</div>
-                  <div className="text-lg font-bold">PKR {(invoice.totals?.netTotal || invoice.netAmount || invoice.providerAmount || 0)?.toLocaleString()}</div>
+                  <div className="text-base sm:text-lg font-bold">PKR {(invoice.totals?.netTotal || invoice.netAmount || invoice.providerAmount || 0)?.toLocaleString()}</div>
                 </div>
               </div>
             </div>

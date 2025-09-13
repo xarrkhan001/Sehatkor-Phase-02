@@ -143,20 +143,22 @@ const AdminVerifications = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            if (window.history.length > 1) navigate(-1); else navigate('/admin');
-          }}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Admin
-        </Button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Entity Verifications</h1>
-          <p className="text-muted-foreground">Review and approve healthcare provider registrations</p>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              if (window.history.length > 1) navigate(-1); else navigate('/admin');
+            }}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Admin
+          </Button>
+        </div>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Entity Verifications</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Review and approve healthcare provider registrations</p>
         </div>
       </div>
 

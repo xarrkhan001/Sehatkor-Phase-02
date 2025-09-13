@@ -217,8 +217,8 @@ const AdminUserManagement = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div className="order-1 sm:order-none">
             <Button
               variant="outline"
               size="sm"
@@ -228,17 +228,17 @@ const AdminUserManagement = () => {
               <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-1 flex items-center gap-2">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
-                User Management
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Manage all verified users including patients - Remove users permanently from the system
-              </p>
-            </div>
           </div>
-          <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 w-fit">
+          <div className="order-2 sm:order-none">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 flex items-center gap-2">
+              <AlertTriangle className="w-7 h-7 sm:w-8 sm:h-8 text-red-600" />
+              User Management
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Manage all verified users including patients - Remove users permanently from the system
+            </p>
+          </div>
+          <Badge variant="outline" className="order-3 sm:order-none text-red-600 border-red-200 bg-red-50 w-fit">
             <Shield className="w-4 h-4 mr-1" />
             Danger Zone
           </Badge>
@@ -301,14 +301,14 @@ const AdminUserManagement = () => {
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Verified Users ({pagination.totalUsers})
-              </span>
-              <Badge variant="secondary">
-                Page {pagination.currentPage} of {pagination.totalPages}
-              </Badge>
+            <CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Verified Users ({pagination.totalUsers})
+                </span>
+                <Badge variant="secondary" className="w-fit">Page {pagination.currentPage} of {pagination.totalPages}</Badge>
+              </div>
             </CardTitle>
             <CardDescription>
               Showing {users.length} users on this page
@@ -334,7 +334,7 @@ const AdminUserManagement = () => {
                         <TableHead>User</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Contact</TableHead>
-                        <TableHead>Joined</TableHead>
+                        <TableHead className="whitespace-nowrap w-[120px]">Joined</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -388,8 +388,8 @@ const AdminUserManagement = () => {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1 text-sm">
+                          <TableCell className="whitespace-nowrap w-[120px] align-middle">
+                            <div className="flex items-center gap-1 text-xs sm:text-sm">
                               <Calendar className="w-3 h-3" />
                               {formatDate(user.createdAt)}
                             </div>
@@ -443,7 +443,7 @@ const AdminUserManagement = () => {
 
                 {/* Pagination */}
                 {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6">
                     <p className="text-sm text-muted-foreground">
                       Showing {((pagination.currentPage - 1) * 20) + 1} to {Math.min(pagination.currentPage * 20, pagination.totalUsers)} of {pagination.totalUsers} users
                     </p>

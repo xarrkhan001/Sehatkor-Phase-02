@@ -117,17 +117,19 @@ const AdminPaymentDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Payment Management</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Payment Management</h1>
       </div>
 
       <Tabs defaultValue="records" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="providers">Provider Payments</TabsTrigger>
-          <TabsTrigger value="records">Payment Records</TabsTrigger>
-          <TabsTrigger value="pending">Pending Release</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="flex w-max gap-2 min-w-full">
+            <TabsTrigger className="shrink-0 px-3 py-2 text-sm" value="providers">Provider Payments</TabsTrigger>
+            <TabsTrigger className="shrink-0 px-3 py-2 text-sm" value="records">Payment Records</TabsTrigger>
+            <TabsTrigger className="shrink-0 px-3 py-2 text-sm" value="pending">Pending Release</TabsTrigger>
+            <TabsTrigger className="shrink-0 px-3 py-2 text-sm" value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger className="shrink-0 px-3 py-2 text-sm" value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="providers">
           <AdminProviderPayments />
