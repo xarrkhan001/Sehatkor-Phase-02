@@ -45,9 +45,9 @@ const MedicineSchema = new mongoose.Schema(
       default: "Physical" 
     },
     serviceType: {
-      type: String,
+      type: [String],
       enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
-      // no default; optional field
+      default: []
     },
     homeDelivery: {
       type: Boolean,

@@ -5,7 +5,7 @@ type ServiceType = 'Private' | 'Public' | 'Charity' | 'NGO' | 'NPO' | 'Sehat Car
 type Size = 'sm' | 'md' | 'lg';
 
 interface Props {
-  serviceType?: ServiceType | null;
+  serviceType?: ServiceType | ServiceType[] | null;
   size?: Size;
   className?: string;
 }
@@ -29,6 +29,26 @@ const gradientFor = (type?: ServiceType | null) => {
 };
 
 export default function ServiceTypeBadge({ serviceType, size = 'md', className = '' }: Props) {
+  // Handle array of service types
+  if (Array.isArray(serviceType)) {
+    if (serviceType.length === 0) {
+      return null;
+    }
+    return (
+      <div className="flex flex-wrap gap-1">
+        {serviceType.map((type, index) => (
+          <ServiceTypeBadge 
+            key={index} 
+            serviceType={type} 
+            size={size} 
+            className={className} 
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Handle single service type
   const style = `${gradientFor(serviceType)} ${sizeClasses[size]} font-medium rounded-full shadow-sm`;
   const label = (() => {
     const t = String(serviceType || '').toLowerCase();

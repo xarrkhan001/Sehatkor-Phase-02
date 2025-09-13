@@ -567,7 +567,13 @@ const SearchPage = () => {
         service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
         String((service as any).labCategory || '').toLowerCase().includes(searchTerm.toLowerCase());
       // Service Type filter now uses backend serviceType (Sehat Card, Private, Charity, Public, NPO, NGO)
-      const matchesType = serviceType === "all" || String((service as any).serviceType) === serviceType;
+      const matchesType = serviceType === "all" || (() => {
+        const svcType = (service as any).serviceType;
+        if (Array.isArray(svcType)) {
+          return svcType.includes(serviceType);
+        }
+        return String(svcType) === serviceType;
+      })();
       const matchesLocation = location === "all" || service.location?.includes(location);
       const matchesPrice = service.price >= priceRange[0] && service.price <= priceRange[1];
       const matchesRating = service.rating >= minRating;

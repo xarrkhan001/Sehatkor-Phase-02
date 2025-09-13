@@ -82,7 +82,7 @@ const LaboratoryDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical' as 'Physical' | 'Online' | 'Online and Physical',
-    serviceType: '' as '' | 'Private' | 'Public' | 'Charity' | 'NGO' | 'NPO' | 'Sehat Card',
+    serviceType: [] as string[],
     imageUrl: '',
     homeDelivery: false
   });
@@ -172,7 +172,7 @@ const LaboratoryDashboard = () => {
     city: '',
     detailAddress: '',
     availability: 'Physical',
-    serviceType: '',
+    serviceType: [] as string[],
     homeDelivery: false
   });
 
@@ -877,81 +877,122 @@ const LaboratoryDashboard = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => setEditForm(prev => ({ ...prev, serviceType: '' }))}
+                        onClick={() => setEditForm(prev => ({ ...prev, serviceType: [] }))}
                         className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
                       >
                         Clear
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      <Label>What type of service is this?</Label>
+                      <Label>What type of service is this? (Select multiple if applicable)</Label>
                       <div className="grid grid-cols-2 gap-3">
-
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
-                            type="radio"
-                            name="editServiceType"
+                            type="checkbox"
                             value="Private"
-                            checked={editForm.serviceType === 'Private'}
-                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
-                            className="text-primary focus:ring-primary"
+                            checked={editForm.serviceType.includes('Private')}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditForm(prev => ({
+                                ...prev,
+                                serviceType: e.target.checked 
+                                  ? [...prev.serviceType, value]
+                                  : prev.serviceType.filter(type => type !== value)
+                              }));
+                            }}
+                            className="text-blue-600 focus:ring-blue-500"
                           />
                           <span className="text-sm">Private</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
-                            type="radio"
-                            name="editServiceType"
+                            type="checkbox"
                             value="Public"
-                            checked={editForm.serviceType === 'Public'}
-                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
-                            className="text-primary focus:ring-primary"
+                            checked={editForm.serviceType.includes('Public')}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditForm(prev => ({
+                                ...prev,
+                                serviceType: e.target.checked 
+                                  ? [...prev.serviceType, value]
+                                  : prev.serviceType.filter(type => type !== value)
+                              }));
+                            }}
+                            className="text-green-600 focus:ring-green-500"
                           />
                           <span className="text-sm">Public</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
-                            type="radio"
-                            name="editServiceType"
+                            type="checkbox"
                             value="Charity"
-                            checked={editForm.serviceType === 'Charity'}
-                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
-                            className="text-primary focus:ring-primary"
+                            checked={editForm.serviceType.includes('Charity')}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditForm(prev => ({
+                                ...prev,
+                                serviceType: e.target.checked 
+                                  ? [...prev.serviceType, value]
+                                  : prev.serviceType.filter(type => type !== value)
+                              }));
+                            }}
+                            className="text-orange-600 focus:ring-orange-500"
                           />
                           <span className="text-sm">Charity</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
-                            type="radio"
-                            name="editServiceType"
+                            type="checkbox"
                             value="NGO"
-                            checked={editForm.serviceType === 'NGO'}
-                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
-                            className="text-primary focus:ring-primary"
+                            checked={editForm.serviceType.includes('NGO')}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditForm(prev => ({
+                                ...prev,
+                                serviceType: e.target.checked 
+                                  ? [...prev.serviceType, value]
+                                  : prev.serviceType.filter(type => type !== value)
+                              }));
+                            }}
+                            className="text-pink-600 focus:ring-pink-500"
                           />
                           <span className="text-sm">NGO</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
-                            type="radio"
-                            name="editServiceType"
-                            value="Sehat Card"
-                            checked={editForm.serviceType === 'Sehat Card'}
-                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
-                            className="text-primary focus:ring-primary"
+                            type="checkbox"
+                            value="NPO"
+                            checked={editForm.serviceType.includes('NPO')}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditForm(prev => ({
+                                ...prev,
+                                serviceType: e.target.checked 
+                                  ? [...prev.serviceType, value]
+                                  : prev.serviceType.filter(type => type !== value)
+                              }));
+                            }}
+                            className="text-purple-600 focus:ring-purple-500"
                           />
-                          <span className="text-sm">Sehat Card</span>
+                          <span className="text-sm">NPO</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
-                            type="radio"
-                            name="editServiceType"
-                            value="NPO"
-                            checked={editForm.serviceType === 'NPO'}
-                            onChange={(e) => setEditForm({ ...editForm, serviceType: e.target.value as any })}
-                            className="text-primary focus:ring-primary"
+                            type="checkbox"
+                            value="Sehat Card"
+                            checked={editForm.serviceType.includes('Sehat Card')}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditForm(prev => ({
+                                ...prev,
+                                serviceType: e.target.checked 
+                                  ? [...prev.serviceType, value]
+                                  : prev.serviceType.filter(type => type !== value)
+                              }));
+                            }}
+                            className="text-indigo-600 focus:ring-indigo-500"
                           />
-                          <span className="text-sm">NPO</span>
+                          <span className="text-sm">Sehat Card</span>
                         </label>
                       </div>
                     </div>
@@ -1205,79 +1246,121 @@ const LaboratoryDashboard = () => {
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setTestForm(prev => ({ ...prev, serviceType: '' }))}
+                                    onClick={() => setTestForm(prev => ({ ...prev, serviceType: [] }))}
                                     className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
                                   >
                                     Clear
                                   </Button>
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>What type of service is this?</Label>
+                                  <Label>What type of service is this? (Select multiple if applicable)</Label>
                                   <div className="grid grid-cols-2 gap-3">
 
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
-                                        type="radio"
-                                        name="serviceType"
+                                        type="checkbox"
                                         value="Private"
-                                        checked={testForm.serviceType === 'Private'}
-                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
-                                        className="text-primary focus:ring-primary"
+                                        checked={testForm.serviceType.includes('Private')}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTestForm(prev => ({
+                                            ...prev,
+                                            serviceType: e.target.checked
+                                              ? [...prev.serviceType, value]
+                                              : prev.serviceType.filter(type => type !== value)
+                                          }));
+                                        }}
+                                        className="text-blue-600 focus:ring-blue-500"
                                       />
                                       <span className="text-sm">Private</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
-                                        type="radio"
-                                        name="serviceType"
+                                        type="checkbox"
                                         value="Public"
-                                        checked={testForm.serviceType === 'Public'}
-                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
-                                        className="text-primary focus:ring-primary"
+                                        checked={testForm.serviceType.includes('Public')}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTestForm(prev => ({
+                                            ...prev,
+                                            serviceType: e.target.checked
+                                              ? [...prev.serviceType, value]
+                                              : prev.serviceType.filter(type => type !== value)
+                                          }));
+                                        }}
+                                        className="text-blue-600 focus:ring-blue-500"
                                       />
                                       <span className="text-sm">Public</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
-                                        type="radio"
-                                        name="serviceType"
+                                        type="checkbox"
                                         value="Charity"
-                                        checked={testForm.serviceType === 'Charity'}
-                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
-                                        className="text-primary focus:ring-primary"
+                                        checked={testForm.serviceType.includes('Charity')}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTestForm(prev => ({
+                                            ...prev,
+                                            serviceType: e.target.checked
+                                              ? [...prev.serviceType, value]
+                                              : prev.serviceType.filter(type => type !== value)
+                                          }));
+                                        }}
+                                        className="text-blue-600 focus:ring-blue-500"
                                       />
                                       <span className="text-sm">Charity</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
-                                        type="radio"
-                                        name="serviceType"
+                                        type="checkbox"
                                         value="NGO"
-                                        checked={testForm.serviceType === 'NGO'}
-                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
-                                        className="text-primary focus:ring-primary"
+                                        checked={testForm.serviceType.includes('NGO')}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTestForm(prev => ({
+                                            ...prev,
+                                            serviceType: e.target.checked
+                                              ? [...prev.serviceType, value]
+                                              : prev.serviceType.filter(type => type !== value)
+                                          }));
+                                        }}
+                                        className="text-blue-600 focus:ring-blue-500"
                                       />
                                       <span className="text-sm">NGO</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
-                                        type="radio"
-                                        name="serviceType"
+                                        type="checkbox"
                                         value="Sehat Card"
-                                        checked={testForm.serviceType === 'Sehat Card'}
-                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
-                                        className="text-primary focus:ring-primary"
+                                        checked={testForm.serviceType.includes('Sehat Card')}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTestForm(prev => ({
+                                            ...prev,
+                                            serviceType: e.target.checked
+                                              ? [...prev.serviceType, value]
+                                              : prev.serviceType.filter(type => type !== value)
+                                          }));
+                                        }}
+                                        className="text-blue-600 focus:ring-blue-500"
                                       />
                                       <span className="text-sm">Sehat Card</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
-                                        type="radio"
-                                        name="serviceType"
+                                        type="checkbox"
                                         value="NPO"
-                                        checked={testForm.serviceType === 'NPO'}
-                                        onChange={(e) => setTestForm({ ...testForm, serviceType: e.target.value })}
-                                        className="text-primary focus:ring-primary"
+                                        checked={testForm.serviceType.includes('NPO')}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTestForm(prev => ({
+                                            ...prev,
+                                            serviceType: e.target.checked
+                                              ? [...prev.serviceType, value]
+                                              : prev.serviceType.filter(type => type !== value)
+                                          }));
+                                        }}
+                                        className="text-blue-600 focus:ring-blue-500"
                                       />
                                       <span className="text-sm">NPO</span>
                                     </label>

@@ -33,7 +33,7 @@ export const createMedicine = async (req, res) => {
       providerName: req.body.providerName || 'Pharmacy',
       providerType: 'pharmacy',
       availability: availability || 'Physical',
-      ...(serviceType ? { serviceType } : {}),
+      serviceType: Array.isArray(serviceType) ? serviceType : (serviceType ? [serviceType] : []),
       homeDelivery: typeof homeDelivery === 'boolean' ? homeDelivery : Boolean(homeDelivery) || false,
     });
     res.status(201).json({ medicine: doc });
@@ -63,7 +63,11 @@ export const updateMedicine = async (req, res) => {
     };
     const unsetObj = {};
     if ('serviceType' in updates) {
-      if (updates.serviceType) setObj.serviceType = updates.serviceType; else unsetObj.serviceType = "";
+      if (updates.serviceType && (Array.isArray(updates.serviceType) ? updates.serviceType.length > 0 : true)) {
+        setObj.serviceType = Array.isArray(updates.serviceType) ? updates.serviceType : [updates.serviceType];
+      } else {
+        setObj.serviceType = [];
+      }
     }
     const doc = await Medicine.findOneAndUpdate(
       { _id: id, providerId },

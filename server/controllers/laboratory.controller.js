@@ -31,7 +31,7 @@ export const createLaboratoryTest = async (req, res) => {
       providerName: providerName || 'Laboratory',
       providerType: 'laboratory',
       availability: availability || 'Physical',
-      ...(serviceType ? { serviceType } : {}),
+      serviceType: Array.isArray(serviceType) ? serviceType : (serviceType ? [serviceType] : []),
       homeDelivery: Boolean(homeDelivery) || false,
     });
     
@@ -61,7 +61,11 @@ export const updateLaboratoryTest = async (req, res) => {
     };
     const unsetObj = {};
     if ('serviceType' in updates) {
-      if (updates.serviceType) setObj.serviceType = updates.serviceType; else unsetObj.serviceType = "";
+      if (updates.serviceType && (Array.isArray(updates.serviceType) ? updates.serviceType.length > 0 : true)) {
+        setObj.serviceType = Array.isArray(updates.serviceType) ? updates.serviceType : [updates.serviceType];
+      } else {
+        setObj.serviceType = [];
+      }
     }
     const test = await LaboratoryTest.findOneAndUpdate(
       { _id: id, providerId: req.userId },
