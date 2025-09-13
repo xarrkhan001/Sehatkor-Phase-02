@@ -180,6 +180,13 @@ const LaboratoryDashboard = () => {
     'Blood Test', 'Urine Test', 'X-Ray', 'MRI', 'CT Scan', 'Ultrasound'
   ];
 
+  // Limit address display (match doctor dashboard behavior)
+  const formatAddress = (value?: string): string => {
+    const v = (value || '').trim();
+    if (!v) return 'Address not specified';
+    return v.length > 25 ? `${v.slice(0, 25)}…` : v;
+  };
+
   const syncServicesFromBackend = (docs: any[]) => {
     if (!user?.id) return;
     try {
@@ -895,7 +902,7 @@ const LaboratoryDashboard = () => {
                               const value = e.target.value;
                               setEditForm(prev => ({
                                 ...prev,
-                                serviceType: e.target.checked 
+                                serviceType: e.target.checked
                                   ? [...prev.serviceType, value]
                                   : prev.serviceType.filter(type => type !== value)
                               }));
@@ -913,7 +920,7 @@ const LaboratoryDashboard = () => {
                               const value = e.target.value;
                               setEditForm(prev => ({
                                 ...prev,
-                                serviceType: e.target.checked 
+                                serviceType: e.target.checked
                                   ? [...prev.serviceType, value]
                                   : prev.serviceType.filter(type => type !== value)
                               }));
@@ -931,7 +938,7 @@ const LaboratoryDashboard = () => {
                               const value = e.target.value;
                               setEditForm(prev => ({
                                 ...prev,
-                                serviceType: e.target.checked 
+                                serviceType: e.target.checked
                                   ? [...prev.serviceType, value]
                                   : prev.serviceType.filter(type => type !== value)
                               }));
@@ -949,7 +956,7 @@ const LaboratoryDashboard = () => {
                               const value = e.target.value;
                               setEditForm(prev => ({
                                 ...prev,
-                                serviceType: e.target.checked 
+                                serviceType: e.target.checked
                                   ? [...prev.serviceType, value]
                                   : prev.serviceType.filter(type => type !== value)
                               }));
@@ -967,7 +974,7 @@ const LaboratoryDashboard = () => {
                               const value = e.target.value;
                               setEditForm(prev => ({
                                 ...prev,
-                                serviceType: e.target.checked 
+                                serviceType: e.target.checked
                                   ? [...prev.serviceType, value]
                                   : prev.serviceType.filter(type => type !== value)
                               }));
@@ -985,7 +992,7 @@ const LaboratoryDashboard = () => {
                               const value = e.target.value;
                               setEditForm(prev => ({
                                 ...prev,
-                                serviceType: e.target.checked 
+                                serviceType: e.target.checked
                                   ? [...prev.serviceType, value]
                                   : prev.serviceType.filter(type => type !== value)
                               }));
@@ -1414,18 +1421,19 @@ const LaboratoryDashboard = () => {
                                       ) : null}
                                       <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
                                     </div>
-                                    <div className="flex-1">
-                                      <div className="font-medium">{test.name}</div>
-                                      <div className="text-sm text-muted-foreground line-clamp-2">{test.description}</div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-medium truncate">{test.name}</div>
+                                      <div className="text-sm text-muted-foreground truncate">{test.description}</div>
+                                      <div className="mt-1">
+                                        <span className="text-xs text-muted-foreground truncate block">
+                                          {formatAddress((test as any).detailAddress || (test as any).city)}
+                                        </span>
+                                      </div>
                                       <div className="mt-2 flex flex-wrap items-center gap-2">
                                         <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">{test.category}</Badge>
                                         <span className="text-sm">PKR {test.price.toLocaleString()}</span>
-                                        <span className="text-xs text-muted-foreground">{test.duration || 'N/A'}</span>
-                                        <AvailabilityBadge availability={test.availability || 'Physical'} size="sm" />
-                                        {test.serviceType && (
-                                          <ServiceTypeBadge serviceType={test.serviceType} size="sm" />
-                                        )}
-
+                                        {/* Simplified badges to match doctor dashboard layout */}
+                                      
                                         {test.homeDelivery ? (
                                           <Badge className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[11px]">🏠 Home Delivery</Badge>
                                         ) : null}
@@ -1449,14 +1457,8 @@ const LaboratoryDashboard = () => {
                               <Table>
                                 <TableHeader>
                                   <TableRow>
-                                    <TableHead>Image</TableHead>
-                                    <TableHead>Test Name</TableHead>
-                                    <TableHead>Category</TableHead>
-                                    <TableHead>Price (PKR)</TableHead>
-                                    <TableHead>Duration</TableHead>
-                                    <TableHead>Availability</TableHead>
-                                    <TableHead>Service Type</TableHead>
-                                    <TableHead>Home Delivery</TableHead>
+                                    <TableHead>Service</TableHead>
+                                    <TableHead>Price</TableHead>
                                     <TableHead>Actions</TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -1464,46 +1466,34 @@ const LaboratoryDashboard = () => {
                                   {tests.map((test) => (
                                     <TableRow key={test.id}>
                                       <TableCell>
-
-                                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                          {test.image ? (
-                                            <img
-                                              src={test.image}
-                                              alt={test.name}
-                                              className="w-full h-full object-cover"
-                                              onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
-                                                target.nextElementSibling!.classList.remove('hidden');
-                                              }}
-                                            />
-                                          ) : null}
-                                          <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            {test.image ? (
+                                              <img
+                                                src={test.image}
+                                                alt={test.name}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                  const target = e.target as HTMLImageElement;
+                                                  target.style.display = 'none';
+                                                  target.nextElementSibling!.classList.remove('hidden');
+                                                }}
+                                              />
+                                            ) : null}
+                                            <span className={`text-gray-400 text-lg ${test.image ? 'hidden' : ''}`}>🔬</span>
+                                          </div>
+                                          <div className="min-w-0">
+                                            <p className="font-medium truncate max-w-[240px]">{test.name}</p>
+                                            <p className="text-sm text-muted-foreground truncate max-w-[260px]">{test.description}</p>
+                                            <div className="space-y-1 mt-1 max-w-[420px]">
+                                              <span className="text-xs text-muted-foreground truncate block">
+                                                {formatAddress((test as any).detailAddress || (test as any).city)}
+                                              </span>
+                                            </div>
+                                          </div>
                                         </div>
                                       </TableCell>
-                                      <TableCell className="font-medium">{test.name}</TableCell>
-                                      <TableCell>
-                                        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">
-                                          {test.category}
-                                        </Badge>
-                                      </TableCell>
                                       <TableCell>PKR {test.price.toLocaleString()}</TableCell>
-                                      <TableCell>{test.duration || 'N/A'}</TableCell>
-                                      <TableCell>
-                                        <AvailabilityBadge availability={test.availability || 'Physical'} size="md" />
-                                      </TableCell>
-                                      <TableCell>
-                                        {test.serviceType && (
-                                          <ServiceTypeBadge serviceType={test.serviceType} size="md" />
-                                        )}
-                                      </TableCell>
-                                      <TableCell>
-                                        {test.homeDelivery ? (
-                                          <Badge className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-emerald-500 text-white whitespace-nowrap">🏠 Available</Badge>
-                                        ) : (
-                                          <Badge variant="secondary" className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium bg-gray-200 text-gray-700 whitespace-nowrap">Not Available</Badge>
-                                        )}
-                                      </TableCell>
                                       <TableCell>
                                         <div className="flex space-x-2">
                                           <Button size="sm" variant="outline" onClick={() => openEditDialog(test)}>

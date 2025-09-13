@@ -570,6 +570,12 @@ const PharmacyDashboard = () => {
     { id: 3, customer: "Hassan Ahmed", medicine: "Vitamin D3", quantity: "30 tablets", status: "Delivered" },
   ];
 
+  const formatAddress = (value?: string): string => {
+    const v = (value || '').trim();
+    if (!v) return 'Address not specified';
+    return v.length > 25 ? `${v.slice(0, 25)}…` : v;
+  };
+
   return (
     <div className="min-h-screen  p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -1049,24 +1055,13 @@ const PharmacyDashboard = () => {
                                     {m.description && (
                                       <p className="text-xs text-muted-foreground truncate">{m.description}</p>
                                     )}
+                                    <span className="text-[11px] text-muted-foreground truncate block mt-1">
+                                      {formatAddress((m as any).detailAddress || (m as any).city)}
+                                    </span>
                                   </div>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2 text-sm">
-                                  <Badge variant="outline">{m.category || '-'}</Badge>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                                   <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
-                                  <span className="text-muted-foreground">Stock: {m.stock ?? '-'}</span>
-                                  {m.availability && (
-                                    <AvailabilityBadge availability={m.availability} size="sm" />
-                                  )}
-                                  {m.serviceType && (
-                                    <ServiceTypeBadge serviceType={m.serviceType} size="sm" />
-                                  )}
-                                  {m.homeDelivery && (
-                                    <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs px-2.5 py-0.5 rounded-full">
-                                      <span className="leading-none">🏠</span>
-                                      <span className="leading-none">Home Delivery</span>
-                                    </Badge>
-                                  )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(m)}>
@@ -1086,14 +1081,8 @@ const PharmacyDashboard = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead className="w-20">Image</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price (PKR)</TableHead>
-                                <TableHead>Stock</TableHead>
-                                <TableHead>Availability</TableHead>
-                                <TableHead>Service Type</TableHead>
-                                <TableHead>Home Delivery</TableHead>
+                                <TableHead>Service</TableHead>
+                                <TableHead>Price</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -1103,42 +1092,26 @@ const PharmacyDashboard = () => {
                                 return (
                                   <TableRow key={String(iid)}>
                                     <TableCell>
-                                      {m.imageUrl || m.image ? (
-                                        <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
-                                      ) : (
-                                        <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">💊</div>
-                                      )}
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                          {m.imageUrl || m.image ? (
+                                            <img src={m.imageUrl || m.image} alt={m.name} className="w-full h-full object-cover" />
+                                          ) : (
+                                            <span>💊</span>
+                                          )}
+                                        </div>
+                                        <div className="min-w-0">
+                                          <p className="font-medium truncate max-w-[240px]">{m.name}</p>
+                                          {m.description && (
+                                            <p className="text-sm text-muted-foreground truncate max-w-[260px]">{m.description}</p>
+                                          )}
+                                          <span className="text-xs text-muted-foreground truncate block">
+                                            {formatAddress((m as any).detailAddress || (m as any).city)}
+                                          </span>
+                                        </div>
+                                      </div>
                                     </TableCell>
-                                    <TableCell className="font-medium">{m.name}</TableCell>
-                                    <TableCell>{m.category || '-'}</TableCell>
-                                    <TableCell>{m.price ?? 0}</TableCell>
-                                    <TableCell>{m.stock ?? '-'}</TableCell>
-                                    <TableCell>
-                                      {m.availability ? (
-                                        <AvailabilityBadge availability={m.availability} size="md" />
-                                      ) : (
-                                        '-'
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {m.serviceType ? (
-                                        <ServiceTypeBadge serviceType={m.serviceType} size="md" />
-                                      ) : (
-                                        '-'
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {m.homeDelivery ? (
-                                        <Badge className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-3 py-1 rounded-full">
-                                          <span className="leading-none">🏠</span>
-                                          <span className="leading-none">Available</span>
-                                        </Badge>
-                                      ) : (
-                                        <Badge variant="secondary" className="text-gray-600">
-                                          Not Available
-                                        </Badge>
-                                      )}
-                                    </TableCell>
+                                    <TableCell>PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</TableCell>
                                     <TableCell className="text-right space-x-2">
                                       <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
                                         <Edit className="w-4 h-4 mr-1" /> Edit

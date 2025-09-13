@@ -729,7 +729,7 @@ const ServiceDetailPage = () => {
                     </Badge>
                     {/* Department badge for clinic services */}
                     {item.providerType === 'clinic' && (item as any).department && (
-                      <Badge className="ml-2 flex items-center gap-1 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
+                      <Badge className="ml-2 flex items-center gap-3 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -767,8 +767,8 @@ const ServiceDetailPage = () => {
                       </div>
                     </div>
 
-                    {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
-                    <div className="flex justify-between items-center min-h-[24px]">
+                    {/* Row 2: Service Type only */}
+                    <div className="flex justify-start items-center min-h-[24px]">
                       <div className="flex-shrink-0">
                         {(item.serviceType ?? resolvedServiceType) ? (
                           <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
@@ -776,6 +776,10 @@ const ServiceDetailPage = () => {
                           <div className="h-6"></div>
                         )}
                       </div>
+                    </div>
+
+                    {/* Row 3: Home Delivery ↔ Availability ↔ WhatsApp */}
+                    <div className="flex justify-between items-center min-h-[24px]">
                       <div className="flex-shrink-0">
                         {(item.homeDelivery === true) && (
                           <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
@@ -791,43 +795,6 @@ const ServiceDetailPage = () => {
                           <div className="h-6"></div>
                         )}
                       </div>
-                    </div>
-
-                    {/* Row 3: Diseases ↔ WhatsApp */}
-                    <div className="flex justify-between items-center min-h-[24px]">
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {(() => {
-                          const list = (hydratedDiseases ?? ((item as any).diseases || [])) as string[];
-                          return Array.isArray(list) && list.length > 0;
-                        })() && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  title="View diseases"
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                >
-                                  <VirusIcon className="w-4 h-4" />
-                                  <span className="hidden sm:inline text-[11px] font-medium">Diseases</span>
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
-                                <div className="text-xs text-emerald-800">
-                                  <div className="mb-1 font-medium">Diseases</div>
-                                  <div className="flex flex-wrap gap-1">
-                                    {((hydratedDiseases ?? ((item as any).diseases || [])) as string[]).map((d, i) => (
-                                      <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        {d}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </div>
                       <div className="flex-shrink-0">
                         {item.providerPhone && (
                           <ServiceWhatsAppButton
@@ -839,6 +806,45 @@ const ServiceDetailPage = () => {
                         )}
                       </div>
                     </div>
+
+                    {/* Row 4: Diseases (for doctor services) */}
+                    {item.providerType === 'doctor' && (
+                      <div className="flex justify-start items-center min-h-[24px] mt-3">
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {(() => {
+                            const diseases = (hydratedDiseases ?? ((item as any)?.diseases || [])) as string[];
+                            return Array.isArray(diseases) && diseases.length > 0 ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      title="View diseases"
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                    >
+                                      <VirusIcon className="w-4 h-4" />
+                                      <span className="text-xs font-medium">Diseases</span>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs">
+                                    <div className="text-xs text-emerald-800">
+                                      <div className="mb-1 font-medium">Diseases</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {diseases.map((d, i) => (
+                                          <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            {d}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : null;
+                          })()}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Rating counts */}
