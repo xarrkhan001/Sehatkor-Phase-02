@@ -84,6 +84,9 @@ const AdminProviderPayments: React.FC = () => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteTargetProviderId, setDeleteTargetProviderId] = useState<string | null>(null);
   const [deleteTargetProviderName, setDeleteTargetProviderName] = useState<string | null>(null);
+  // Per-payment remove-from-view dialog state
+  const [confirmPaymentRemoveOpen, setConfirmPaymentRemoveOpen] = useState(false);
+  const [targetPayment, setTargetPayment] = useState<{ providerId: string; paymentId: string; serviceName?: string } | null>(null);
   // Per-payment deleting state to keep rows independent
   const [deletingPayments, setDeletingPayments] = useState<Record<string, boolean>>({});
 
@@ -188,15 +191,14 @@ const AdminProviderPayments: React.FC = () => {
   };
 
   const hidePaymentFromView = (providerId: string, paymentId: string) => {
-    if (window.confirm('Remove this payment from the current view? This will not delete any data.')) {
-      setHiddenPayments(prev => {
-        const next = { ...prev };
-        const setForProvider = new Set(next[providerId] ?? []);
-        setForProvider.add(paymentId);
-        next[providerId] = setForProvider;
-        return next;
-      });
-    }
+    // Legacy helper no longer used by UI; keeping function for reference
+    setHiddenPayments(prev => {
+      const next = { ...prev };
+      const setForProvider = new Set(next[providerId] ?? []);
+      setForProvider.add(paymentId);
+      next[providerId] = setForProvider;
+      return next;
+    });
   };
 
   // Remove a payment from admin view (soft delete for admin). We still hide locally first
@@ -204,8 +206,6 @@ const AdminProviderPayments: React.FC = () => {
   const deletePaymentForProvider = async (providerId: string, paymentId: string) => {
     const key = `${providerId}:${paymentId}`;
     try {
-      const confirmed = window.confirm('Remove this payment from the admin view? Totals will remain unchanged.');
-      if (!confirmed) return;
       setDeletingPayments(prev => ({ ...prev, [key]: true }));
       const resp = await fetch(`http://localhost:4000/api/payments/${paymentId}`, {
         method: 'DELETE',
@@ -237,6 +237,8 @@ const AdminProviderPayments: React.FC = () => {
         delete copy[key];
         return copy;
       });
+      setConfirmPaymentRemoveOpen(false);
+      setTargetPayment(null);
     }
   };
 
@@ -479,7 +481,7 @@ const AdminProviderPayments: React.FC = () => {
                             size="icon"
                             title="Remove from admin view"
                             disabled={deletingPayments[`${provider.providerId}:${payment._id}`]}
-                            onClick={() => deletePaymentForProvider(provider.providerId, payment._id)}
+                            onClick={() => { setTargetPayment({ providerId: provider.providerId, paymentId: payment._id, serviceName: payment.serviceName }); setConfirmPaymentRemoveOpen(true); }}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -683,7 +685,7 @@ const AdminProviderPayments: React.FC = () => {
                           size="icon"
                           title="Remove from admin view"
                           disabled={deletingPayments[`${selectedProviderDetails.providerId}:${payment._id}`]}
-                          onClick={() => deletePaymentForProvider(selectedProviderDetails.providerId, payment._id)}
+                          onClick={() => { setTargetPayment({ providerId: selectedProviderDetails.providerId, paymentId: payment._id, serviceName: payment.serviceName }); setConfirmPaymentRemoveOpen(true); }}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -741,6 +743,32 @@ const AdminProviderPayments: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Remove Payment (Admin View) Confirmation */}
+      <AlertDialog open={confirmPaymentRemoveOpen} onOpenChange={setConfirmPaymentRemoveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove payment from Admin view?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the payment only from Admin views. No data will be deleted, and provider totals remain unchanged.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {targetPayment && (
+            <div className="rounded-md bg-muted p-3 text-sm">
+              <span className="font-medium">Service:</span> {targetPayment.serviceName || 'Payment'}
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => targetPayment && deletePaymentForProvider(targetPayment.providerId, targetPayment.paymentId)}
+            >
+              Remove from View
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

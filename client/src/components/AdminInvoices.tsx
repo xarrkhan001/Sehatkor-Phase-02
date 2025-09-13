@@ -433,12 +433,12 @@ const AdminInvoices: React.FC = () => {
     <div className="space-y-6">
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <ClipboardList className="w-6 h-6" />
             Invoice Management
           </h2>
-          <p className="text-muted-foreground">View and manage all generated invoices</p>
+          <p className="text-sm sm:text-base text-muted-foreground">View and manage all generated invoices</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <div className="w-full sm:w-64">
@@ -607,20 +607,41 @@ const AdminInvoices: React.FC = () => {
                         PKR {invoice.totals?.netTotal?.toLocaleString() || '0'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="secondary" onClick={() => openInvoiceDetails(invoice)}>
-                            <Eye className="w-4 h-4 mr-1" />
-                            View
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => { setPreviewInvoiceData(invoice); setPreviewOpen(true); }} title="Preview Invoice">
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => generateInvoicePDF(invoice)} title="Download PDF">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleDeleteInvoice(invoice._id)} title="Delete Invoice">
-                            <Trash className="w-4 h-4" />
-                          </Button>
+                        <div className="flex gap-1 justify-end">
+                          {/* Icon-only on mobile/md */}
+                          <div className="flex items-center gap-1 lg:hidden">
+                            <Button size="icon" variant="ghost" className="h-8 w-8 p-0 rounded-full" title="View" onClick={() => openInvoiceDetails(invoice)}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 p-0 rounded-full" title="Preview" onClick={() => { setPreviewInvoiceData(invoice); setPreviewOpen(true); }}>
+                              <FileText className="w-4 h-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 p-0 rounded-full" title="Download PDF" onClick={() => generateInvoicePDF(invoice)}>
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 p-0 rounded-full text-red-600 hover:text-red-700 hover:bg-red-50" title="Delete" onClick={() => handleDeleteInvoice(invoice._id)}>
+                              <Trash className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          {/* Labeled on lg+ */}
+                          <div className="hidden lg:flex items-center gap-1">
+                            <Button size="sm" variant="secondary" className="h-8 px-3" onClick={() => openInvoiceDetails(invoice)}>
+                              <Eye className="w-4 h-4" />
+                              <span className="ml-1">View</span>
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 px-3" onClick={() => { setPreviewInvoiceData(invoice); setPreviewOpen(true); }} title="Preview Invoice">
+                              <FileText className="w-4 h-4" />
+                              <span className="ml-1">Preview</span>
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 px-3" onClick={() => generateInvoicePDF(invoice)} title="Download PDF">
+                              <Download className="w-4 h-4" />
+                              <span className="ml-1">PDF</span>
+                            </Button>
+                            <Button size="sm" variant="destructive" className="h-8 px-3" onClick={() => handleDeleteInvoice(invoice._id)} title="Delete Invoice">
+                              <Trash className="w-4 h-4" />
+                              <span className="ml-1">Delete</span>
+                            </Button>
+                          </div>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -657,84 +678,121 @@ const AdminInvoices: React.FC = () => {
 
       {/* Invoice Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto p-3 sm:p-6 rounded-md sm:rounded-lg">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="flex items-center gap-2">
+            <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 w-full px-3 sm:px-4 max-w-[480px] mx-auto sm:max-w-none sm:mx-0">
+              <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl">
                 <ClipboardList className="w-5 h-5" />
                 Invoice {selectedInvoice?.invoiceNumber}
               </DialogTitle>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => { if (selectedInvoice) { setPreviewInvoiceData(selectedInvoice); setPreviewOpen(true); } }}
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Preview
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => selectedInvoice && generateInvoicePDF(selectedInvoice)}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PDF
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  onClick={() => selectedInvoice && handleDeleteInvoice(selectedInvoice._id)}
-                >
-                  <Trash className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto">
+                {/* Icon-only on mobile/md */}
+                <div className="flex items-center gap-1 lg:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 p-0 rounded-full"
+                    title="Preview"
+                    onClick={() => { if (selectedInvoice) { setPreviewInvoiceData(selectedInvoice); setPreviewOpen(true); } }}
+                  >
+                    <FileText className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 p-0 rounded-full"
+                    title="Download PDF"
+                    onClick={() => selectedInvoice && generateInvoicePDF(selectedInvoice)}
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 p-0 rounded-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                    title="Delete"
+                    onClick={() => selectedInvoice && handleDeleteInvoice(selectedInvoice._id)}
+                  >
+                    <Trash className="w-4 h-4" />
+                  </Button>
+                </div>
+                {/* Labeled on lg+ */}
+                <div className="hidden lg:flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="justify-start h-9 px-3"
+                    onClick={() => { if (selectedInvoice) { setPreviewInvoiceData(selectedInvoice); setPreviewOpen(true); } }}
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span className="ml-2">Preview</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="justify-start h-9 px-3"
+                    onClick={() => selectedInvoice && generateInvoicePDF(selectedInvoice)}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="ml-2">Download PDF</span>
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="justify-start h-9 px-3"
+                    onClick={() => selectedInvoice && handleDeleteInvoice(selectedInvoice._id)}
+                  >
+                    <Trash className="w-4 h-4" />
+                    <span className="ml-2">Delete</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </DialogHeader>
           
           {selectedInvoice && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6 w-full px-3 sm:px-4 max-w-[480px] mx-auto sm:max-w-none sm:mx-0">
               {/* Invoice Header */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-100 shadow-sm sm:shadow-none">
                 <div>
                   <div className="text-sm text-muted-foreground">Provider</div>
-                  <div className="font-medium">{selectedInvoice.providerName}</div>
+                  <div className="font-medium text-base sm:text-lg">{selectedInvoice.providerName}</div>
                   <Badge className={getProviderTypeColor(selectedInvoice.providerType)}>
                     {selectedInvoice.providerType?.charAt(0).toUpperCase() + selectedInvoice.providerType?.slice(1)}
                   </Badge>
                 </div>
-                <div className="text-right">
+                <div className="text-left md:text-right">
                   <div className="text-sm text-muted-foreground">Issued</div>
-                  <div>{new Date(selectedInvoice.issuedAt || selectedInvoice.createdAt || '').toLocaleString()}</div>
+                  <div className="text-sm sm:text-base">{new Date(selectedInvoice.issuedAt || selectedInvoice.createdAt || '').toLocaleString()}</div>
                 </div>
               </div>
 
               {/* Invoice Totals */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">PKR {selectedInvoice.totals.subtotal.toLocaleString()}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 px-3 sm:px-0 mt-2">
+                <div className="text-left sm:text-center p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-100 shadow-sm sm:shadow-none sm:border-0">
+                  <div className="text-lg sm:text-2xl font-bold text-blue-600">PKR {selectedInvoice.totals.subtotal.toLocaleString()}</div>
                   <div className="text-sm text-muted-foreground">Subtotal</div>
                 </div>
-                <div className="text-center p-3 bg-orange-50 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{selectedInvoice.totals.commissionPercentage}%</div>
+                <div className="text-left sm:text-center p-3 sm:p-4 bg-orange-50 rounded-lg border border-orange-100 shadow-sm sm:shadow-none sm:border-0">
+                  <div className="text-lg sm:text-2xl font-bold text-orange-600">{selectedInvoice.totals.commissionPercentage}%</div>
                   <div className="text-sm text-muted-foreground">Commission Rate</div>
                 </div>
-                <div className="text-center p-3 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">PKR {selectedInvoice.totals.commissionAmount.toLocaleString()}</div>
+                <div className="text-left sm:text-center p-3 sm:p-4 bg-red-50 rounded-lg border border-red-100 shadow-sm sm:shadow-none sm:border-0">
+                  <div className="text-lg sm:text-2xl font-bold text-red-600">PKR {selectedInvoice.totals.commissionAmount.toLocaleString()}</div>
                   <div className="text-sm text-muted-foreground">Commission Amount</div>
                 </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">PKR {selectedInvoice.totals.netTotal.toLocaleString()}</div>
+                <div className="text-left sm:text-center p-3 sm:p-4 bg-green-50 rounded-lg border border-green-100 shadow-sm sm:shadow-none sm:border-0">
+                  <div className="text-lg sm:text-2xl font-bold text-green-600">PKR {selectedInvoice.totals.netTotal.toLocaleString()}</div>
                   <div className="text-sm text-muted-foreground">Net Total</div>
                 </div>
               </div>
 
               {/* Invoice Items */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Invoice Items ({selectedInvoice.items.length})</h3>
-                <div className="overflow-x-auto">
-                  <Table>
+              <div className="sm:mt-0">
+                <h3 className="text-base sm:text-lg font-semibold mb-1">Invoice Items ({selectedInvoice.items.length})</h3>
+                <p className="text-xs text-muted-foreground mb-2 sm:hidden">Swipe horizontally to view all columns</p>
+                <div className="overflow-x-auto touch-pan-x rounded-lg border border-gray-200 sm:border-0 bg-white sm:bg-transparent">
+                  <Table className="min-w-[640px] text-sm">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Service</TableHead>
