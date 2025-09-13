@@ -5,7 +5,8 @@ import { mockServices, Service as MockService } from "@/data/mockData";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, ArrowLeft, Home, Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MapPin, ArrowLeft, Home, Clock, AlertTriangle } from "lucide-react";
 import RatingModal from "@/components/RatingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import RatingBadge from "@/components/RatingBadge";
@@ -83,6 +84,7 @@ const ServiceDetailPage = () => {
   const [resolvedLabCategory, setResolvedLabCategory] = useState<string | undefined>(undefined);
   const [resolvedDoctorCategory, setResolvedDoctorCategory] = useState<string | undefined>(undefined);
   const [resolvedClinicCategory, setResolvedClinicCategory] = useState<string | undefined>(undefined);
+  const [showComingSoon, setShowComingSoon] = useState(false);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -446,19 +448,31 @@ const ServiceDetailPage = () => {
       toast.error('You cannot book your own service.');
       return;
     }
-    navigate('/payment', {
-      state: {
-        serviceId: svc.id,
-        serviceName: svc.name,
-        providerId: svc.providerId || svc.id,
-        providerName: svc.provider,
-        providerType: svc.providerType,
-        price: Number(svc.price ?? 0),
-        image: svc.image,
-        location: svc.location,
-        phone: svc.providerPhone,
-      }
-    });
+    
+    // Check if service is public type and show Coming Soon modal
+    const currentServiceType = svc.serviceType || resolvedServiceType;
+    if (currentServiceType === 'Public') {
+      setShowComingSoon(true);
+      return;
+    }
+    
+    // For non-public services, navigate to payment (commented out for now)
+    // navigate('/payment', {
+    //   state: {
+    //     serviceId: svc.id,
+    //     serviceName: svc.name,
+    //     providerId: svc.providerId || svc.id,
+    //     providerName: svc.provider,
+    //     providerType: svc.providerType,
+    //     price: Number(svc.price ?? 0),
+    //     image: svc.image,
+    //     location: svc.location,
+    //     phone: svc.providerPhone,
+    //   }
+    // });
+    
+    // Temporarily show Coming Soon for all services
+    setShowComingSoon(true);
   };
 
   if (!item) {
@@ -897,6 +911,53 @@ const ServiceDetailPage = () => {
           serviceName={item.name}
         />
       )}
+
+      {/* Coming Soon Modal */}
+      <Dialog open={showComingSoon} onOpenChange={setShowComingSoon}>
+        <DialogContent className="sm:max-w-xl bg-white border-0 shadow-2xl rounded-2xl p-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 border-b border-yellow-100">
+            <div className="mx-auto w-16 h-16 rounded-full bg-white shadow flex items-center justify-center ring-8 ring-yellow-100">
+              <AlertTriangle className="w-8 h-8 text-yellow-600" />
+            </div>
+            <DialogHeader className="text-center mt-4">
+              <DialogTitle className="text-2xl font-bold text-gray-900">Admin Payment — Coming Soon</DialogTitle>
+              <p className="text-gray-600 text-sm mt-1">JazzCash and EasyPaisa integration is under development</p>
+            </DialogHeader>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-gray-700 text-base text-center font-semibold">
+              We're finalizing secure payments via SehatKor Admin. Until then, please book manually and coordinate payment directly with the provider.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="rounded-xl border border-gray-100 p-4 bg-gray-50">
+                <p className="text-sm text-gray-800 font-semibold">Secure & Verified</p>
+                <p className="text-xs text-gray-500 mt-1">Admin payment will include receipts and verified tracking.</p>
+              </div>
+              <div className="rounded-xl border border-gray-100 p-4 bg-gray-50">
+                <p className="text-sm text-gray-800 font-semibold">JazzCash • EasyPaisa</p>
+                <p className="text-xs text-gray-500 mt-1">Local wallet support planned for fast and easy checkout.</p>
+              </div>
+              <div className="rounded-xl border border-gray-100 p-4 bg-gray-50">
+                <p className="text-sm text-gray-800 font-semibold">Timeline</p>
+                <p className="text-xs text-gray-500 mt-1">Feature will appear here automatically once live.</p>
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4 text-center">
+              <p className="text-[13px] text-gray-600 font-semibold">
+                جیز کیش/ایزی پیسہ کے ذریعے آن لائن ادائیگیاں جلد دستیاب ہوں گی۔ فی الحال براہِ کرم دستی بکنگ استعمال کریں۔
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 mt-2">
+              <Button onClick={() => setShowComingSoon(false)} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+                Got it
+              </Button>
+              <Button variant="outline" onClick={() => setShowComingSoon(false)} className="flex-1">
+                Use Manual Booking
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
