@@ -77,7 +77,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     detailAddress: '',
     hospitalClinicName: '',
     availability: 'Physical',
-    serviceType: '',
+    serviceType: [] as string[],
     homeDelivery: false,
     // Default schedule (used when no variants are added)
     baseTimeLabel: '',
@@ -198,7 +198,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       detailAddress: '',
       hospitalClinicName: '',
       availability: 'Physical',
-      serviceType: '',
+      serviceType: [],
       homeDelivery: false,
       baseTimeLabel: '',
       baseDays: '',
@@ -554,7 +554,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
       detailAddress: (service as any).detailAddress || '',
       hospitalClinicName: (service as any).hospitalClinicName || '',
       availability: (service as any).availability || 'Physical',
-      serviceType: (service as any).serviceType || '',
+      serviceType: Array.isArray((service as any).serviceType) ? (service as any).serviceType : ((service as any).serviceType ? [(service as any).serviceType] : []),
       homeDelivery: Boolean((service as any).homeDelivery) || false,
       // Prefer top-level base schedule fields if present; fallback to first variant
       baseTimeLabel: (service as any).timeLabel
@@ -855,7 +855,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => setServiceForm(prev => ({ ...prev, serviceType: '' }))}
+                        onClick={() => setServiceForm(prev => ({ ...prev, serviceType: [] }))}
                         className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
                       >
                         Clear
@@ -863,71 +863,113 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label>What type of service is this?</Label>
+                    <Label>What type of service is this? (Select multiple if applicable)</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
-                          type="radio"
-                          name="serviceType"
+                          type="checkbox"
                           value="Sehat Card"
-                          checked={serviceForm.serviceType === 'Sehat Card'}
-                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-blue-600 focus:ring-blue-500"
+                          checked={serviceForm.serviceType.includes('Sehat Card')}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setServiceForm(prev => ({
+                              ...prev,
+                              serviceType: e.target.checked 
+                                ? [...prev.serviceType, value]
+                                : prev.serviceType.filter(type => type !== value)
+                            }));
+                          }}
+                          className="text-indigo-600 focus:ring-indigo-500"
                         />
                         <span className="text-sm">Sehat Card</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
-                          type="radio"
-                          name="serviceType"
+                          type="checkbox"
                           value="Private"
-                          checked={serviceForm.serviceType === 'Private'}
-                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
+                          checked={serviceForm.serviceType.includes('Private')}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setServiceForm(prev => ({
+                              ...prev,
+                              serviceType: e.target.checked 
+                                ? [...prev.serviceType, value]
+                                : prev.serviceType.filter(type => type !== value)
+                            }));
+                          }}
                           className="text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm">Private</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
-                          type="radio"
-                          name="serviceType"
+                          type="checkbox"
                           value="Public"
-                          checked={serviceForm.serviceType === 'Public'}
-                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-blue-600 focus:ring-blue-500"
+                          checked={serviceForm.serviceType.includes('Public')}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setServiceForm(prev => ({
+                              ...prev,
+                              serviceType: e.target.checked 
+                                ? [...prev.serviceType, value]
+                                : prev.serviceType.filter(type => type !== value)
+                            }));
+                          }}
+                          className="text-green-600 focus:ring-green-500"
                         />
                         <span className="text-sm">Public</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
-                          type="radio"
-                          name="serviceType"
+                          type="checkbox"
                           value="Charity"
-                          checked={serviceForm.serviceType === 'Charity'}
-                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-blue-600 focus:ring-blue-500"
+                          checked={serviceForm.serviceType.includes('Charity')}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setServiceForm(prev => ({
+                              ...prev,
+                              serviceType: e.target.checked 
+                                ? [...prev.serviceType, value]
+                                : prev.serviceType.filter(type => type !== value)
+                            }));
+                          }}
+                          className="text-orange-600 focus:ring-orange-500"
                         />
                         <span className="text-sm">Charity</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
-                          type="radio"
-                          name="serviceType"
+                          type="checkbox"
                           value="NGO"
-                          checked={serviceForm.serviceType === 'NGO'}
-                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-blue-600 focus:ring-blue-500"
+                          checked={serviceForm.serviceType.includes('NGO')}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setServiceForm(prev => ({
+                              ...prev,
+                              serviceType: e.target.checked 
+                                ? [...prev.serviceType, value]
+                                : prev.serviceType.filter(type => type !== value)
+                            }));
+                          }}
+                          className="text-pink-600 focus:ring-pink-500"
                         />
                         <span className="text-sm">NGO</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
                         <input
-                          type="radio"
-                          name="serviceType"
+                          type="checkbox"
                           value="NPO"
-                          checked={serviceForm.serviceType === 'NPO'}
-                          onChange={(e) => setServiceForm({ ...serviceForm, serviceType: e.target.value })}
-                          className="text-blue-600 focus:ring-blue-500"
+                          checked={serviceForm.serviceType.includes('NPO')}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setServiceForm(prev => ({
+                              ...prev,
+                              serviceType: e.target.checked 
+                                ? [...prev.serviceType, value]
+                                : prev.serviceType.filter(type => type !== value)
+                            }));
+                          }}
+                          className="text-purple-600 focus:ring-purple-500"
                         />
                         <span className="text-sm">NPO</span>
                       </label>

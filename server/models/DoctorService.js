@@ -80,9 +80,9 @@ const DoctorServiceSchema = new mongoose.Schema(
       default: "Physical" 
     },
     serviceType: {
-      type: String,
+      type: [String],
       enum: ["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"],
-      
+      default: []
     },
     // Indicates if the doctor service supports home delivery/visit
     homeDelivery: { type: Boolean, default: false },
