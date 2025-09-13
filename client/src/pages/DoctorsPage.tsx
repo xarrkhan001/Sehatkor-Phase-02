@@ -964,8 +964,8 @@ const DoctorsPage = () => {
                     </div>
                   </div>
 
-                  {/* Second Row: Service Type (start), Home Delivery (center), and Availability (end) */}
-                  <div className="flex justify-between items-center min-h-[24px]">
+                  {/* Second Row: Service Type only */}
+                  <div className="flex justify-start items-center min-h-[24px]">
                     <div className="flex-shrink-0">
                       {(service as any).serviceType ? (
                         <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
@@ -973,6 +973,10 @@ const DoctorsPage = () => {
                         <div className="h-6"></div>
                       )}
                     </div>
+                  </div>
+
+                  {/* Third Row: Home Delivery (start), Availability (center), WhatsApp (end) */}
+                  <div className="flex justify-between items-center min-h-[24px]">
                     <div className="flex-shrink-0">
                       {(service as any).homeDelivery && (
                         <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
@@ -996,9 +1000,19 @@ const DoctorsPage = () => {
                         return label ? (<AvailabilityBadge availability={label} size="sm" />) : <div className="h-6"></div>;
                       })()}
                     </div>
+                    <div className="flex-shrink-0">
+                      {(service as any).providerPhone && (
+                        <ServiceWhatsAppButton
+                          phoneNumber={(service as any).providerPhone}
+                          serviceName={service.name}
+                          providerName={service.provider}
+                          providerId={(service as any)._providerId}
+                        />
+                      )}
+                    </div>
                   </div>
 
-                  {/* Third Row: Diseases (start) and WhatsApp (end) */}
+                  {/* Fourth Row: Diseases (start) and empty (end) */}
                   <div className="flex justify-between items-center min-h-[24px]">
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
@@ -1031,13 +1045,7 @@ const DoctorsPage = () => {
                       )}
                     </div>
                     <div className="flex-shrink-0">
-                      {(service as any).providerPhone && (
-                        <ServiceWhatsAppButton
-                          phoneNumber={(service as any).providerPhone}
-                          serviceName={service.name}
-                          providerName={service.provider}
-                        />
-                      )}
+                      {/* Empty space for alignment */}
                     </div>
                   </div>
                 </div>

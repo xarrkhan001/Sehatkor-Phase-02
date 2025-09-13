@@ -927,8 +927,8 @@ const ProviderProfilePage = () => {
                         </div>
                       </div>
 
-                      {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
-                      <div className="flex justify-between items-center min-h-[24px]">
+                      {/* Row 2: Service Type */}
+                      <div className="flex justify-start items-center min-h-[24px]">
                         <div className="flex-shrink-0">
                           {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).serviceType ? (
                             <ServiceTypeBadge serviceType={(service as any).serviceType} size="md" />
@@ -936,6 +936,10 @@ const ProviderProfilePage = () => {
                             <div className="h-6"></div>
                           )}
                         </div>
+                      </div>
+
+                      {/* Row 3: Home Delivery ↔ Availability */}
+                      <div className="flex justify-between items-center min-h-[24px]">
                         <div className="flex-shrink-0">
                           {((service as any).providerType === 'pharmacy' || (service as any).providerType === 'laboratory' || (service as any).providerType === 'clinic' || (service as any).providerType === 'doctor') && (service as any).homeDelivery && (
                             <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
@@ -954,7 +958,7 @@ const ProviderProfilePage = () => {
                         </div>
                       </div>
 
-                      {/* Row 3: Diseases ↔ WhatsApp */}
+                      {/* Row 4: Diseases ↔ WhatsApp */}
                       <div className="flex justify-between items-center min-h-[24px]">
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (

@@ -838,8 +838,8 @@ const CompareExplorer = () => {
                           </div>
                         </div>
 
-                        {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
-                        <div className="flex justify-between items-center min-h-[24px]">
+                        {/* Row 2: Service Type */}
+                        <div className="flex justify-start items-center min-h-[24px]">
                           <div className="flex-shrink-0">
                             {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.serviceType ? (
                               <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
@@ -847,6 +847,10 @@ const CompareExplorer = () => {
                               <div className="h-6"></div>
                             )}
                           </div>
+                        </div>
+
+                        {/* Row 3: Home Delivery ↔ Availability */}
+                        <div className="flex justify-between items-center min-h-[24px]">
                           <div className="flex-shrink-0">
                             {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.homeDelivery && (
                               <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
@@ -866,7 +870,7 @@ const CompareExplorer = () => {
                           </div>
                         </div>
 
-                        {/* Row 3: Diseases ↔ WhatsApp */}
+                        {/* Row 4: Diseases ↔ WhatsApp */}
                         <div className="flex justify-between items-center min-h-[24px]">
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {Array.isArray((item as any).diseases) && (item as any).diseases.length > 0 && (

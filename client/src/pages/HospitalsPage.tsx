@@ -608,8 +608,8 @@ const HospitalsPage = () => {
                     </div>
                   </div>
 
-                  {/* Row 2: Service Type (start), Home Delivery (center), Availability (end) */}
-                  <div className="flex justify-between items-center min-h-[24px]">
+                  {/* Row 2: Service Type only */}
+                  <div className="flex justify-start items-center min-h-[24px]">
                     <div className="flex-shrink-0">
                       {(service as any).serviceType ? (
                         <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
@@ -617,6 +617,10 @@ const HospitalsPage = () => {
                         <div className="h-6"></div>
                       )}
                     </div>
+                  </div>
+
+                  {/* Row 3: Home Delivery (start), Availability (center), WhatsApp (end) */}
+                  <div className="flex justify-between items-center min-h-[24px]">
                     <div className="flex-shrink-0">
                       {(service as any).homeDelivery && (
                         <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
@@ -630,40 +634,6 @@ const HospitalsPage = () => {
                         <AvailabilityBadge availability={(service as any).availability} size="sm" />
                       ) : (
                         <div className="h-6"></div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Row 3: Diseases (start) and WhatsApp (end) */}
-                  <div className="flex justify-between items-center min-h-[24px]">
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                title="View diseases"
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                              >
-                                <span className="text-[13px]">🧬</span>
-                                <span className="hidden sm:inline text-xs font-medium">Diseases</span>
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <div className="text-xs text-emerald-800">
-                                <div className="mb-1 font-medium">Diseases</div>
-                                <div className="flex flex-wrap gap-1">
-                                  {((service as any).diseases as string[]).map((d, i) => (
-                                    <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                      {d}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
                       )}
                     </div>
                     <div className="flex-shrink-0">

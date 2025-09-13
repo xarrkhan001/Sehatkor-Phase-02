@@ -1418,8 +1418,8 @@ const SearchPage = () => {
                           </div>
                         </div>
 
-                        {/* Row 2: Service Type ↔ Home Delivery ↔ Availability */}
-                        <div className="flex justify-between items-center min-h-[24px]">
+                        {/* Row 2: Service Type only */}
+                        <div className="flex justify-start items-center min-h-[24px]">
                           <div className="flex-shrink-0">
                             {(service as any).serviceType ? (
                               <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
@@ -1427,6 +1427,10 @@ const SearchPage = () => {
                               <div className="h-6"></div>
                             )}
                           </div>
+                        </div>
+
+                        {/* Row 3: Home Delivery ↔ Availability ↔ WhatsApp */}
+                        <div className="flex justify-between items-center min-h-[24px]">
                           <div className="flex-shrink-0">
                             {(service as any).homeDelivery && (
                               <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
@@ -1443,9 +1447,19 @@ const SearchPage = () => {
                               return <AvailabilityBadge availability={availability} size="sm" />;
                             })()}
                           </div>
+                          <div className="flex-shrink-0">
+                            {(service as any).providerPhone && (
+                              <ServiceWhatsAppButton
+                                phoneNumber={(service as any).providerPhone}
+                                serviceName={service.name}
+                                providerName={service.provider}
+                                providerId={(service as any)._providerId}
+                              />
+                            )}
+                          </div>
                         </div>
 
-                        {/* Row 3: Diseases ↔ WhatsApp */}
+                        {/* Row 4: Diseases ↔ Empty */}
                         <div className="flex justify-between items-center min-h-[24px]">
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
@@ -1478,13 +1492,7 @@ const SearchPage = () => {
                             )}
                           </div>
                           <div className="flex-shrink-0">
-                            {(service as any).providerPhone && (
-                              <ServiceWhatsAppButton
-                                phoneNumber={(service as any).providerPhone}
-                                serviceName={service.name}
-                                providerName={service.provider}
-                              />
-                            )}
+                            {/* Empty space for alignment */}
                           </div>
                         </div>
                       </div>
@@ -1560,6 +1568,8 @@ const SearchPage = () => {
                                     clinicCategory: ((service as any)._providerType === 'clinic') ? ((service as any).clinicCategory || undefined) : undefined,
                                     // Pass department field to detail page for clinic/hospital services
                                     department: ((service as any)._providerType === 'clinic') ? ((service as any).department || undefined) : undefined,
+                                    // Pass diseases field to detail page for doctor services
+                                    diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : [],
                                   }
                                 },
                               });

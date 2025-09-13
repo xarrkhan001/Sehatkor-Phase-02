@@ -113,6 +113,13 @@ const ClinicDashboard = () => {
     setFormErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
   };
 
+  // Limit address display length in lists
+  const formatAddress = (value?: string): string => {
+    const v = (value || '').trim();
+    if (!v) return 'Address not specified';
+    return v.length > 25 ? `${v.slice(0, 25)}…` : v;
+  };
+
   const validateLengths = (): boolean => {
     const trim = (s?: string) => (s || '').trim();
     const name = trim(serviceForm.name);
@@ -994,83 +1001,66 @@ const ClinicDashboard = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground py-4">Services added here will appear in search, services, and hospitals listings.</p>
                     {services.length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">No services added yet.</div>
                     ) : (
                       <>
                         {/* Mobile cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
-                          {services.map((m: any) => {
-                            const iid = m._id || m.id;
-                            return (
-                              <div key={String(iid)} className="border rounded-lg p-4 flex flex-col gap-3">
-                                <div className="flex items-center gap-3">
-                                  {m.imageUrl || m.image ? (
-                                    <img src={m.imageUrl || m.image} alt={m.name} className="w-12 h-12 rounded-lg object-cover" />
-                                  ) : (
-                                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">🏥</div>
-                                  )}
-                                  <div className="min-w-0">
-                                    <p className="font-semibold truncate">{m.name}</p>
-                                    {m.description && (
-                                      <p className="text-xs text-muted-foreground truncate">{m.description}</p>
-                                    )}
+                          {services.map((service) => (
+                            <div key={service.id} className="border rounded-lg p-4 flex flex-col gap-3">
+                              <div className="flex items-center gap-3">
+                                {service.image ? (
+                                  <img src={service.image} alt={service.name} className="w-12 h-12 rounded-lg object-cover" />
+                                ) : (
+                                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <Building className="w-6 h-6 text-primary" />
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="font-semibold truncate">{service.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{service.description}</p>
+                                  <div className="space-y-1 mt-1">
+                                    <span className="text-[11px] text-muted-foreground truncate block">
+                                      {formatAddress((service as any).detailAddress || (service as any).city)}
+                                    </span>
                                   </div>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2 text-sm">
-                                  {m.department && (
-                                    <Badge className="bg-purple-600 text-white border-0 rounded-full px-2 py-0.5 text-[9px] leading-none whitespace-nowrap font-medium shadow-sm">
-                                      ⚕️ {m.department}
-                                    </Badge>
-                                  )}
-                                  {m.category && m.category !== m.department && (
-                                    <Badge variant="outline">{m.category}</Badge>
-                                  )}
-                                  {m.availability && (
-                                    <AvailabilityBadge availability={m.availability} size="sm" />
-                                  )}
-                                  {m.serviceType && (
-                                    <ServiceTypeBadge serviceType={m.serviceType} />
-                                  )}
-                                  {m.homeDelivery && (
-                                    <Badge className="bg-emerald-600 text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">
-                                      🏠 Home Delivery
-                                    </Badge>
-                                  )}
-                                  <span className="font-medium">PKR {m.price?.toLocaleString?.() ?? m.price ?? 0}</span>
-                                  <span className="text-muted-foreground">{m.duration ? `${m.duration} min` : '-'}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button size="sm" variant="outline" className="flex-1" onClick={() => {
-                                    setEditingService(m);
-                                    setServiceForm({
-                                      name: m.name || '',
-                                      price: m.price != null ? String(m.price) : '',
-                                      duration: m.duration || '',
-                                      description: m.description || '',
-                                      department: m.department || m.category || '',
-                                      googleMapLink: m.googleMapLink || '',
-                                      city: m.city || '',
-                                      detailAddress: m.detailAddress || '',
-                                      availability: m.availability || 'Physical',
-                                      serviceType: Array.isArray(m.serviceType) ? m.serviceType : (m.serviceType ? [m.serviceType] : []),
-                                      homeDelivery: Boolean(m.homeDelivery) || false
-                                    });
-                                    setServiceImage(m.imageUrl || m.image || '');
-                                    setIsAddServiceOpen(true);
-                                  }}>
-                                    <Edit className="w-4 h-4 mr-1" /> Edit
-                                  </Button>
-                                  <Button size="sm" variant="destructive" className="flex-1" onClick={async () => {
-                                    try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
-                                  }}>
-                                    <Trash2 className="w-4 h-4 mr-1" /> Delete
-                                  </Button>
-                                </div>
                               </div>
-                            );
-                          })}
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-sm font-medium">PKR {service.price?.toLocaleString() || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button size="sm" variant="outline" className="flex-1" onClick={() => {
+                                  const m = service as any;
+                                  setEditingService(m);
+                                  setServiceForm({
+                                    name: m.name || '',
+                                    price: m.price != null ? String(m.price) : '',
+                                    duration: m.duration || '',
+                                    description: m.description || '',
+                                    category: m.category || '',
+                                    department: m.department || m.category || '',
+                                    googleMapLink: m.googleMapLink || '',
+                                    city: m.city || '',
+                                    detailAddress: m.detailAddress || '',
+                                    availability: m.availability || 'Physical',
+                                    serviceType: Array.isArray(m.serviceType) ? m.serviceType : (m.serviceType ? [m.serviceType] : []),
+                                    homeDelivery: Boolean(m.homeDelivery) || false
+                                  });
+                                  setServiceImage(m.imageUrl || m.image || '');
+                                  setIsAddServiceOpen(true);
+                                }}>
+                                  <Edit className="w-4 h-4 mr-1" /> Edit
+                                </Button>
+                                <Button size="sm" variant="destructive" className="flex-1" onClick={async () => {
+                                  try { await apiDelete(String(service.id)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
+                                }}>
+                                  <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
 
                         {/* Desktop table */}
@@ -1078,90 +1068,82 @@ const ClinicDashboard = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead className="w-20">Image</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Department</TableHead>
-                                <TableHead>Price (PKR)</TableHead>
-                                <TableHead>Duration</TableHead>
-                                <TableHead>Availability</TableHead>
-                                <TableHead>Service Type</TableHead>
-                                <TableHead>Home Delivery</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead>Service</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Actions</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {services.map((m: any) => {
-                                const iid = m._id || m.id;
-                                return (
-                                  <TableRow key={String(iid)}>
-                                    <TableCell>
-                                      {m.imageUrl || m.image ? (
-                                        <img src={m.imageUrl || m.image} alt={m.name} className="w-14 h-14 object-cover rounded" />
+                              {services.map((service) => (
+                                <TableRow key={service.id}>
+                                  <TableCell>
+                                    <div className="flex items-center space-x-3 min-w-0">
+                                      {service.image ? (
+                                        <img 
+                                          src={service.image} 
+                                          alt={service.name}
+                                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                                        />
                                       ) : (
-                                        <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">🏥</div>
+                                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                          <Building className="w-5 h-5 text-primary" />
+                                        </div>
                                       )}
-                                    </TableCell>
-                                    <TableCell className="font-medium">{m.name}</TableCell>
-                                    <TableCell>{m.category || '-'}</TableCell>
-                                    <TableCell>{m.department || m.category || '-'}</TableCell>
-                                    <TableCell>{m.price ?? 0}</TableCell>
-                                    <TableCell>{m.duration ?? '-'}</TableCell>
-                                    <TableCell>
-                                      {m.availability ? (
-                                        <AvailabilityBadge availability={m.availability} size="sm" />
-                                      ) : (
-                                        '-'
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {m.serviceType ? (
-                                        <ServiceTypeBadge serviceType={m.serviceType} />
-                                      ) : (
-                                        '-'
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {m.homeDelivery ? (
-                                        <Badge className="bg-emerald-600 text-white border-0 rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">
-                                          🏠 Available
-                                        </Badge>
-                                      ) : (
-                                        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap text-gray-500">
-                                          Not Available
-                                        </Badge>
-                                      )}
-                                    </TableCell>
-                                    <TableCell className="text-right space-x-2">
-                                      <Button size="sm" variant="outline" onClick={() => {
-                                        setEditingService(m);
-                                        setServiceForm({
-                                          name: m.name || '',
-                                          price: m.price != null ? String(m.price) : '',
-                                          duration: m.duration || '',
-                                          description: m.description || '',
-                                          department: m.department || m.category || '',
-                                          googleMapLink: m.googleMapLink || '',
-                                          city: m.city || '',
-                                          detailAddress: m.detailAddress || '',
-                                          availability: m.availability || 'Physical',
-                                          serviceType: Array.isArray(m.serviceType) ? m.serviceType : (m.serviceType ? [m.serviceType] : []),
-                                          homeDelivery: Boolean(m.homeDelivery) || false
-                                        });
-                                        setServiceImage(m.imageUrl || m.image || '');
-                                        setIsAddServiceOpen(true);
-                                      }}>
-                                        <Edit className="w-4 h-4 mr-1" /> Edit
+                                      <div className="min-w-0">
+                                        <p className="font-medium truncate max-w-[240px]">{service.name}</p>
+                                        <p className="text-sm text-muted-foreground truncate max-w-[260px]">{service.description}</p>
+                                        <div className="space-y-1 mt-1 max-w-[420px]">
+                                          <span className="text-xs text-muted-foreground truncate block">
+                                            {formatAddress((service as any).detailAddress || (service as any).city)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline"
+                                        onClick={() => {
+                                          const m = service as any;
+                                          setEditingService(m);
+                                          setServiceForm({
+                                            name: m.name || '',
+                                            price: m.price != null ? String(m.price) : '',
+                                            duration: m.duration || '',
+                                            description: m.description || '',
+                                            category: m.category || '',
+                                            department: m.department || m.category || '',
+                                            googleMapLink: m.googleMapLink || '',
+                                            city: m.city || '',
+                                            detailAddress: m.detailAddress || '',
+                                            availability: m.availability || 'Physical',
+                                            serviceType: Array.isArray(m.serviceType) ? m.serviceType : (m.serviceType ? [m.serviceType] : []),
+                                            homeDelivery: Boolean(m.homeDelivery) || false
+                                          });
+                                          setServiceImage(m.imageUrl || m.image || '');
+                                          setIsAddServiceOpen(true);
+                                        }}
+                                      >
+                                        <Edit className="w-4 h-4 mr-1" />
+                                        Edit
                                       </Button>
-                                      <Button size="sm" variant="destructive" onClick={async () => {
-                                        try { await apiDelete(String(iid)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
-                                      }}>
-                                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                      <Button 
+                                        size="sm" 
+                                        variant="destructive"
+                                        onClick={async () => {
+                                          try { await apiDelete(String(service.id)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
+                                        }}
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-1" />
+                                        Delete
                                       </Button>
-                                    </TableCell>
-                                  </TableRow>
-                                )
-                              })}
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
                             </TableBody>
                           </Table>
                         </div>

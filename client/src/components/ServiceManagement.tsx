@@ -185,6 +185,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     .filter(opt => opt.toLowerCase().includes((diseaseInput || '').toLowerCase()))
     .slice(0, 6);
 
+  // Format address to a compact string for dashboard lists
+  const formatAddress = (value?: string): string => {
+    const v = (value || '').trim();
+    if (!v) return 'Address not specified';
+    return v.length > 25 ? `${v.slice(0, 25)}…` : v;
+  };
+
   const resetForm = () => {
     setServiceForm({
       name: '',
@@ -1389,40 +1396,25 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       {userRole === 'doctor' && (
                         <div className="space-y-1 mt-1">
                           <span className="text-[11px] text-muted-foreground truncate block">
-                            {(service as any).detailAddress || (service as any).city || 'Address not specified'}
+                            {formatAddress((service as any).detailAddress || (service as any).city)}
                           </span>
-                          {renderDiseaseBadges((service as any).diseases)}
                         </div>
                       )}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline">{service.category}</Badge>
-                    {(service as any).availability && (
-                      <AvailabilityBadge availability={(service as any).availability} size="sm" />
-                    )}
-                    {(service as any).serviceType && (
-                      <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
-                    )}
-                    {userRole === 'doctor' && Boolean((service as any).homeDelivery) && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white whitespace-nowrap shadow">
-                        🏠 Home Delivery
+                    <span className="text-sm font-medium">PKR {service.price?.toLocaleString() || 0}</span>
+                    {userRole === 'pharmacy' && 'stock' in service && (
+                      <span className="text-sm text-muted-foreground">
+                        {(service as any).stock || 'N/A'} in stock
                       </span>
                     )}
-                    <span className="text-sm font-medium">PKR {service.price?.toLocaleString() || 0}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {userRole === 'pharmacy' && 'stock' in service ? (
-                        <>{(service as any).stock || 'N/A'} in stock</>
-                      ) : (
-                        <>{service.duration ? `${service.duration} min` : 'N/A'}</>
-                      )}
-                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => handleEditService(service)}>
+                  <div className="flex items-center gap-3 whitespace-nowrap justify-end">
+                    <Button size="sm" variant="outline" onClick={() => handleEditService(service)}>
                       <Edit className="w-4 h-4 mr-1" /> Edit
                     </Button>
-                    <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleDeleteService(service.id)}>
+                    <Button size="sm" variant="destructive" onClick={() => handleDeleteService(service.id)}>
                       <Trash2 className="w-4 h-4 mr-1" /> Delete
                     </Button>
                   </div>
@@ -1437,17 +1429,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Service</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Availability</TableHead>
-                      <TableHead>Service Type</TableHead>
-                      {userRole === 'doctor' && (<TableHead>Home Delivery</TableHead>)}
                       <TableHead>Price</TableHead>
                       {userRole === 'doctor' && (<TableHead>Variants</TableHead>)}
-                      {userRole === 'pharmacy' ? (
-                        <TableHead>Stock</TableHead>
-                      ) : (
-                        <TableHead>Duration</TableHead>
-                      )}
+                      {userRole === 'pharmacy' && (<TableHead>Stock</TableHead>)}
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1473,44 +1457,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               {userRole === 'doctor' && (
                                 <div className="space-y-1 mt-1 max-w-[420px]">
                                   <span className="text-xs text-muted-foreground truncate block">
-                                    {(service as any).detailAddress || (service as any).city || 'Address not specified'}
+                                    {formatAddress((service as any).detailAddress || (service as any).city)}
                                   </span>
-                                  {renderDiseaseBadges((service as any).diseases)}
                                 </div>
                               )}
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{service.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {(service as any).availability ? (
-                            <AvailabilityBadge availability={(service as any).availability} size="sm" />
-                          ) : (
-                            '-'
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {(service as any).serviceType ? (
-                            <ServiceTypeBadge serviceType={(service as any).serviceType} size="sm" />
-                          ) : (
-                            '-'
-                          )}
-                        </TableCell>
-                        {userRole === 'doctor' && (
-                          <TableCell>
-                            {Boolean((service as any).homeDelivery) ? (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white whitespace-nowrap shadow">
-                                🏠 Available
-                              </span>
-                            ) : (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 whitespace-nowrap">
-                                Not Available
-                              </span>
-                            )}
-                          </TableCell>
-                        )}
                         <TableCell>PKR {service.price?.toLocaleString() || 0}</TableCell>
                         {userRole === 'doctor' && (
                           <TableCell>
@@ -1518,45 +1471,31 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               <div className="text-sm font-medium">
                                 {(service as any).variants?.length ? `${(service as any).variants.length} variants` : (editingService && editingService.id === service.id ? `${variants.length} variants` : '0 variants')}
                               </div>
-                              {(service as any).variants?.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                  {(service as any).variants.slice(0, 3).map((variant: any, idx: number) => {
-                                    const variantAvailability = variant.availability || 'Physical';
-                                    return (
-                                      <AvailabilityBadge key={idx} availability={variantAvailability} size="sm" />
-                                    );
-                                  })}
-                                  {(service as any).variants.length > 3 && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
-                                      +{(service as any).variants.length - 3}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
                             </div>
                           </TableCell>
                         )}
-                        <TableCell>
-                          {userRole === 'pharmacy' && 'stock' in service ? 
-                            (service as any).stock || 'N/A' : 
-                            service.duration ? `${service.duration} min` : 'N/A'
-                          }
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 flex-wrap">
+                        {userRole === 'pharmacy' && (
+                          <TableCell>
+                            {(service as any).stock || 'N/A'}
+                          </TableCell>
+                        )}
+                        <TableCell className="text-right">
+                          <div className="flex items-center gap-3 justify-end whitespace-nowrap">
                             <Button 
                               size="sm" 
                               variant="outline"
                               onClick={() => handleEditService(service)}
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
                             </Button>
                             <Button 
                               size="sm" 
                               variant="destructive"
                               onClick={() => handleDeleteService(service.id)}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
                             </Button>
                           </div>
                         </TableCell>
