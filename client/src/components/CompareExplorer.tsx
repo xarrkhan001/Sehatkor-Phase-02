@@ -14,6 +14,7 @@ import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import RatingModal from "@/components/RatingModal";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import { toast } from "sonner";
@@ -96,6 +97,8 @@ const CompareExplorer = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRatingService, setSelectedRatingService] = useState<Unified | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<Unified | null>(null);
 
   // Inline Virus icon to match other pages
   const VirusIcon = ({ className }: { className?: string }) => (
@@ -465,28 +468,9 @@ const CompareExplorer = () => {
       toast.error('You cannot book your own service.');
       return;
     }
-    const slides = getSlides(service);
-    const rawIdx = activeIdxById[service.id] ?? 0;
-    const activeIdx = slides.length ? (((rawIdx % slides.length) + slides.length) % slides.length) : 0;
-    const timeLabel = getDisplayTimeInfo(service);
-    const timeRange = getDisplayTimeRange(service);
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: service._providerId || service.id,
-        providerName: service.provider,
-        providerType: service._providerType,
-        price: Number(getDisplayPrice(service) ?? service.price ?? 0),
-        currency: 'PKR',
-        image: getDisplayImage(service) || service.image,
-        location: getDisplayLocation(service) || service.city || service.location,
-        phone: service.providerPhone,
-        variantIndex: activeIdx,
-        variantLabel: timeLabel,
-        variantTimeRange: timeRange,
-      },
-    });
+    // Always open the booking options modal first
+    setSelectedBookingService(service);
+    setIsBookingModalOpen(true);
   };
 
   const handleRateService = (service: Unified) => {
@@ -1268,6 +1252,32 @@ const CompareExplorer = () => {
           serviceId={selectedRatingService.id}
           serviceType={(selectedRatingService as any)._providerType as 'doctor' | 'clinic' | 'laboratory' | 'pharmacy'}
           serviceName={selectedRatingService.name}
+        />
+      )}
+
+      {/* Booking Options Modal */}
+      {selectedBookingService && (
+        <BookingOptionsModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingService(null);
+          }}
+          service={{
+            id: selectedBookingService.id,
+            name: selectedBookingService.name,
+            provider: selectedBookingService.provider,
+            price: Number(getDisplayPrice(selectedBookingService) ?? selectedBookingService.price ?? 0),
+            image: getDisplayImage(selectedBookingService) || selectedBookingService.image,
+            location: getDisplayLocation(selectedBookingService) || selectedBookingService.city || selectedBookingService.location,
+            _providerId: selectedBookingService._providerId,
+            _providerType: selectedBookingService._providerType,
+            providerPhone: selectedBookingService.providerPhone,
+            // For search page variant support
+            variantIndex: activeIdxById[selectedBookingService.id] ?? 0,
+            variantLabel: getDisplayTimeInfo(selectedBookingService),
+            variantTimeRange: getDisplayTimeRange(selectedBookingService),
+          }}
         />
       )}
     </div>
