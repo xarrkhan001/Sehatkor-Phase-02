@@ -682,7 +682,7 @@ const CompareExplorer = () => {
                     key={item.id}
                     className={`h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 ${isSelected ? 'ring-2 ring-blue-400/60' : ''}`}
                   >
-                    <CardContent className="p-5 flex flex-col h-full cursor-pointer" onClick={() => toggleSelect(item.id)}>
+                    <CardContent className="p-5 flex flex-col h-full">
                       {/* Image with variant slider */}
                       <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-4">
                         {getDisplayImage(item) ? (
