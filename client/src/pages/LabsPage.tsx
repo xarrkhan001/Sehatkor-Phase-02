@@ -22,6 +22,8 @@ import BookingOptionsModal from "@/components/BookingOptionsModal";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import EmptyState from "@/components/EmptyState";
+import PageSearchHeader from "@/components/PageSearchHeader";
 
 const LabsPage = () => {
   const navigate = useNavigate();
@@ -468,50 +470,27 @@ const LabsPage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            {/* Left: Title + Subtitle */}
-            <div className="text-left">
-              <h1 className="text-3xl font-bold mb-1">Find Labs & Testing Centers</h1>
-              <p className="text-base md:text-lg text-gray-500">
-                Search from our network of diagnostic facilities
-              </p>
-            </div>
-            {/* Right: Search */}
-            <div className="w-full md:w-auto">
-              {/* Top row: label (left) and results (right) */}
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="text-base md:text-lg font-semibold text-gray-700">Search labs</span>
-                {filteredServices.length > 0 && (
-                  <span className="text-xs font-light text-gray-700">
-                    Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
-                  </span>
-                )}
-              </div>
-              {/* Input aligned to the right on md+ */}
-              <div className="relative md:self-end md:ml-auto">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  id="lab-search"
-                  placeholder="Search labs by name, test, or location..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full md:w-[360px] pl-9 h-11 rounded-md border border-gray-300 bg-white/90 text-gray-800 placeholder:text-gray-400 shadow-sm transition focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 hover:border-gray-400"
-                />
-              </div>
-            </div>
-          </div>
+          <PageSearchHeader
+            title="Find Labs & Testing Centers"
+            subtitle="Search from our network of diagnostic facilities"
+            label="Search labs"
+            placeholder="Search labs by name, test, or location..."
+            value={searchTerm}
+            onChange={(v) => setSearchTerm(v)}
+            resultsCount={filteredServices.length}
+          />
         </div>
 
         {/* Results */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {filteredServices.map((service) => (
             <Card
               key={service.id}
-              className="shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 h-full flex flex-col"
+              className="shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 h-full flex flex-col"
             >
-              <CardContent className="p-5 flex flex-col h-full">
+              <CardContent className="p-4 flex flex-col h-full">
                 {/* Image */}
-                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4 relative">
+                <div className="w-full h-40 md:h-48 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-3 relative">
                   {service.image ? (
                     <img
                       src={service.image}
@@ -637,7 +616,7 @@ const LabsPage = () => {
                     </div>
                   </div>
 
-                  {/* Row 3: Home Delivery (start), Availability (center), WhatsApp (end) */}
+                  {/* Row 3: Home Delivery (start), Availability (center), WhatsApp + Rate (end) */}
                   <div className="flex justify-between items-center min-h-[24px]">
                     <div className="flex-shrink-0">
                       {(service as any).homeDelivery && (
@@ -654,7 +633,7 @@ const LabsPage = () => {
                         <div className="h-6"></div>
                       )}
                     </div>
-                    <div className="flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {(service as any).providerPhone && (
                         <ServiceWhatsAppButton
                           phoneNumber={(service as any).providerPhone}
@@ -662,6 +641,17 @@ const LabsPage = () => {
                           providerName={service.provider}
                           providerId={(service as any)._providerId}
                         />
+                      )}
+                      {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRateService(service)}
+                          className="h-6 w-6 p-0 hover:bg-yellow-50 text-yellow-600 hover:text-yellow-700"
+                          title="Rate this service"
+                        >
+                          <Star className="w-4 h-4" />
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -690,12 +680,6 @@ const LabsPage = () => {
                     className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs">
                     Details
                   </Button>
-                  {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
-                    <Button size="sm" variant="outline" onClick={() => handleRateService(service)} className="col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-[80px] h-8 text-xs">
-                      <Star className="w-3 h-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Rate</span>
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -703,15 +687,13 @@ const LabsPage = () => {
         </div>
 
         {filteredServices.length === 0 && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="text-muted-foreground mb-4">
-                <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-xl">No labs found</p>
-                <p>Try adjusting your search criteria</p>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyState
+            variant="laboratory"
+            title="No labs found"
+            message="Try different keywords or adjust filters to broaden your search"
+            actionLabel={searchTerm ? "Clear search" : undefined}
+            onAction={searchTerm ? () => setSearchTerm("") : undefined}
+          />
         )}
         {filteredServices.length > 0 && hasMore && (
           <div className="col-span-full flex justify-center mt-8">

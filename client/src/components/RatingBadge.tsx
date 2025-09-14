@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Star } from "lucide-react";
+import { Star, ThumbsUp } from "lucide-react";
 
 interface RatingBadgeProps {
   rating?: number;
@@ -77,6 +77,37 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
   const normalizedYour = yourBadge ? (String(yourBadge).toLowerCase() as "excellent" | "good" | "fair" | "poor") : null;
   const your = normalizedYour ? getRatingBadge(safeRating, normalizedYour) : null;
   
+  const getYourRatingIcon = (ratingType: string) => {
+    const type = ratingType.toLowerCase();
+    switch (type) {
+      case 'excellent':
+        return {
+          bgClass: 'bg-gradient-to-r from-yellow-400 to-amber-500',
+          iconClass: 'text-white'
+        };
+      case 'good':
+        return {
+          bgClass: 'bg-gradient-to-r from-emerald-400 to-emerald-500',
+          iconClass: 'text-white'
+        };
+      case 'fair':
+        return {
+          bgClass: 'bg-gradient-to-r from-purple-400 to-violet-500',
+          iconClass: 'text-white'
+        };
+      case 'poor':
+        return {
+          bgClass: 'bg-gradient-to-r from-red-400 to-red-500',
+          iconClass: 'text-white'
+        };
+      default:
+        return {
+          bgClass: 'bg-gradient-to-r from-blue-400 to-blue-500',
+          iconClass: 'text-white'
+        };
+    }
+  };
+  
   const sizeClasses = {
     sm: "text-[8px] px-1 py-0.5 h-5 min-h-[20px] flex items-center",
     md: "text-[8px] px-1 py-0.5 h-5 min-h-[20px] flex items-center",
@@ -124,26 +155,27 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
               )}
             </Badge>
           </div>
-          <div className={`mt-1 flex items-center gap-0.5 ${starColorFor(badge.label)}`}>
-            {Array.from({ length: starsFor(badge.label) }).map((_, i) => (
-              <Star key={i} className={`${starSize.sm} fill-current`} />
-            ))}
-          </div>
-          {totalRatings > 0 && (
-            <div className="text-[11px] text-gray-500">({totalRatings})</div>
+          {/* Only show stars if user hasn't rated */}
+          {!your && (
+            <div className={`mt-1 flex items-center gap-0.5 ${starColorFor(badge.label)}`}>
+              {Array.from({ length: starsFor(badge.label) }).map((_, i) => (
+                <Star key={i} className={`${starSize.sm} fill-current`} />
+              ))}
+            </div>
           )}
         </div>
         {your && (
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-wide text-gray-500">Your</span>
             <div className="flex items-center gap-2">
-              <Badge 
-                variant={your.variant}
-                className={`${your.className} ${sizeClasses.sm} font-semibold flex items-center gap-1 rounded-full ring-1 ring-offset-1 ring-white/60`}
-              >
-                {showStars && <Star className={`${starSize.sm} fill-current`} />}
-                {your.label}
-              </Badge>
+              {(() => {
+                const iconStyle = getYourRatingIcon(your.label);
+                return (
+                  <div className={`flex items-center justify-center w-6 h-6 rounded-full ${iconStyle.bgClass} shadow-sm`}>
+                    <ThumbsUp className={`w-3 h-3 ${iconStyle.iconClass} fill-current`} />
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -163,26 +195,22 @@ const RatingBadge = ({ rating = 0, totalRatings = 0, ratingBadge, showStars = tr
           <span className="ml-1 opacity-90">{safeRating.toFixed(1)}</span>
         )}
       </Badge>
-      {your && (
-        <Badge 
-          variant={your.variant}
-          className={`${your.className} ${sizeClasses.sm} font-semibold flex items-center gap-1 rounded-full ring-1 ring-offset-1 ring-white/60`}
-        >
-          {showStars && <Star className={`${starSize.sm} fill-current`} />}
-          Your: {your.label}
-        </Badge>
+      {your && (() => {
+        const iconStyle = getYourRatingIcon(your.label);
+        return (
+          <div className={`flex items-center justify-center w-6 h-6 rounded-full ${iconStyle.bgClass} shadow-sm`}>
+            <ThumbsUp className={`w-3 h-3 ${iconStyle.iconClass} fill-current`} />
+          </div>
+        );
+      })()}
+      {/* Mini star row - only show if user hasn't rated */}
+      {!your && (
+        <div className={`flex items-center gap-0.5 ${starColorFor(badge.label)}`}>
+          {Array.from({ length: starsFor(badge.label) }).map((_, i) => (
+            <Star key={i} className={`${starSize.sm} fill-current`} />
+          ))}
+        </div>
       )}
-      {/* Mini star row */}
-      <div className={`flex items-center gap-0.5 ${starColorFor(badge.label)}`}>
-        {Array.from({ length: starsFor(badge.label) }).map((_, i) => (
-          <Star key={i} className={`${starSize.sm} fill-current`} />
-        ))}
-      </div>
-      <div className="flex items-center gap-1 text-sm text-gray-600">
-        {totalRatings > 0 && (
-          <span className="text-gray-500">({totalRatings})</span>
-        )}
-      </div>
     </div>
   );
 }
