@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MapPin, ArrowLeft, Home, Clock, AlertTriangle } from "lucide-react";
+import BookingOptionsModal from "@/components/BookingOptionsModal";
 import RatingModal from "@/components/RatingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import RatingBadge from "@/components/RatingBadge";
@@ -85,6 +86,7 @@ const ServiceDetailPage = () => {
   const [resolvedDoctorCategory, setResolvedDoctorCategory] = useState<string | undefined>(undefined);
   const [resolvedClinicCategory, setResolvedClinicCategory] = useState<string | undefined>(undefined);
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -448,31 +450,8 @@ const ServiceDetailPage = () => {
       toast.error('You cannot book your own service.');
       return;
     }
-    
-    // Check if service is public type and show Coming Soon modal
-    const currentServiceType = svc.serviceType || resolvedServiceType;
-    if (currentServiceType === 'Public') {
-      setShowComingSoon(true);
-      return;
-    }
-    
-    // For non-public services, navigate to payment (commented out for now)
-    // navigate('/payment', {
-    //   state: {
-    //     serviceId: svc.id,
-    //     serviceName: svc.name,
-    //     providerId: svc.providerId || svc.id,
-    //     providerName: svc.provider,
-    //     providerType: svc.providerType,
-    //     price: Number(svc.price ?? 0),
-    //     image: svc.image,
-    //     location: svc.location,
-    //     phone: svc.providerPhone,
-    //   }
-    // });
-    
-    // Temporarily show Coming Soon for all services
-    setShowComingSoon(true);
+    // Always open the booking options modal first
+    setIsBookingModalOpen(true);
   };
 
   if (!item) {
@@ -917,6 +896,23 @@ const ServiceDetailPage = () => {
           serviceName={item.name}
         />
       )}
+
+      {/* Booking Options Modal (opens first on Book Now) */}
+      <BookingOptionsModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        service={{
+          id: item.id,
+          name: item.name,
+          provider: item.provider,
+          price: Number(item.price ?? 0),
+          image: item.image,
+          location: item.location,
+          _providerId: item.providerId,
+          _providerType: item.providerType,
+          providerPhone: item.providerPhone,
+        }}
+      />
 
       {/* Coming Soon Modal */}
       <Dialog open={showComingSoon} onOpenChange={setShowComingSoon}>
