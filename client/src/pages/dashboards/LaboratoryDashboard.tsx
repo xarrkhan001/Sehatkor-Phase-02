@@ -584,13 +584,13 @@ const LaboratoryDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{user?.name} Laboratory</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+          <div className="text-center sm:text-left">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">{user?.name} Laboratory</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
               Manage diagnostic tests and lab operations
             </p>
           </div>
@@ -617,72 +617,73 @@ const LaboratoryDashboard = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           {/* Total Tests Card */}
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-6">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-100">Total Tests</p>
-                  <p className="text-2xl font-bold">{tests.length}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-blue-100 truncate">Total Tests</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold">{tests.length}</p>
                 </div>
-                <div className="p-3 rounded-full bg-blue-400/20">
-                  <FlaskConical className="w-6 h-6" />
+                <div className="p-2 sm:p-3 rounded-full bg-blue-400/20 flex-shrink-0">
+                  <FlaskConical className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </div>
               </div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-full -translate-y-8 translate-x-8 sm:-translate-y-10 sm:translate-x-10"></div>
             </CardContent>
           </Card>
 
           {/* Total Bookings Card */}
-          <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
-            <CardContent className="p-6">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-emerald-100">Total Bookings</p>
-                  <p className="text-2xl font-bold">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-emerald-100 truncate">Total Bookings</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold">
                     {isLoadingBookings ? '...' : bookings.length}
                   </p>
                 </div>
-                <div className="p-3 rounded-full bg-emerald-400/20">
-                  <Calendar className="w-6 h-6" />
+                <div className="p-2 sm:p-3 rounded-full bg-emerald-400/20 flex-shrink-0">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Available Balance Card */}
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-6">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-100">Available Balance</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-purple-100 truncate">Available Balance</p>
                   <CurrencyAmount
                     amount={walletData?.availableBalance ?? null}
                     loading={isLoadingWallet}
-                    className="text-2xl font-bold"
+                    className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold break-all"
                   />
                 </div>
-                <div className="p-3 rounded-full bg-purple-400/20">
-                  <Wallet className="w-6 h-6" />
+                <div className="p-2 sm:p-3 rounded-full bg-purple-400/20 flex-shrink-0">
+                  <Wallet className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Total Earnings Card */}
-          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white">
-            <CardContent className="p-6">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-amber-100">Total Earnings</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-amber-100 truncate">Total Earnings</p>
                   <CurrencyAmount
                     amount={walletData?.totalEarnings ?? null}
                     loading={isLoadingWallet}
-                    className="text-2xl font-bold"
+                    className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold break-all"
                   />
                 </div>
-                <div className="p-3 rounded-full bg-amber-400/20">
-                  <DollarSign className="w-6 h-6" />
+                <div className="p-2 sm:p-3 rounded-full bg-amber-400/20 flex-shrink-0">
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </div>
               </div>
             </CardContent>
@@ -690,8 +691,8 @@ const LaboratoryDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Edit Test Dialog */}
             <Dialog open={isEditTestOpen} onOpenChange={setIsEditTestOpen}>
               <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -1030,19 +1031,20 @@ const LaboratoryDashboard = () => {
               <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
                 <TabsTrigger
                   value="tests"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
                   Tests
                 </TabsTrigger>
                 <TabsTrigger
                   value="bookings"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
-                  Bookings
+                  <span className="hidden sm:inline">Bookings</span>
+                  <span className="sm:hidden">Orders</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="wallet"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
                   Wallet
                 </TabsTrigger>
@@ -1053,16 +1055,16 @@ const LaboratoryDashboard = () => {
                   {/* Lab Tests Management */}
                   <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl">
                     <CardHeader className="bg-gradient-to-r from-blue-400 to-indigo-500 text-white rounded-t-lg">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center justify-between gap-3">
                         <div>
                           <CardTitle className="text-white flex items-center gap-2">Lab Tests</CardTitle>
                           <CardDescription className="text-blue-100">Manage your diagnostic tests and pricing</CardDescription>
                         </div>
                         <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
                           <DialogTrigger asChild>
-                            <Button className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300">
-                              <Plus className="w-4 h-4 mr-2" />
-                              Add Test
+                            <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
+                              <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                              <span className="text-[10px] sm:text-sm font-medium">Add</span>
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -1397,16 +1399,16 @@ const LaboratoryDashboard = () => {
                         </Dialog>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="max-h-[600px] overflow-y-auto">
                       <div className="space-y-4">
                         {tests.length > 0 ? (
                           <>
                             {/* Mobile cards */}
-                            <div className="grid gap-4 md:hidden">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:hidden">
                               {tests.map((test) => (
-                                <div key={test.id} className="p-4 border rounded-lg shadow-sm">
+                                <div key={test.id} className="p-3 sm:p-4 border rounded-lg shadow-sm">
                                   <div className="flex items-center gap-3">
-                                    <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                                       {test.image ? (
                                         <img
                                           src={test.image}
@@ -1423,20 +1425,14 @@ const LaboratoryDashboard = () => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="font-medium truncate">{test.name}</div>
-                                      <div className="text-sm text-muted-foreground truncate">{test.description}</div>
+                                      <div className="text-xs sm:text-sm text-muted-foreground truncate">{test.description}</div>
                                       <div className="mt-1">
                                         <span className="text-xs text-muted-foreground truncate block">
                                           {formatAddress((test as any).detailAddress || (test as any).city)}
                                         </span>
                                       </div>
                                       <div className="mt-2 flex flex-wrap items-center gap-2">
-                                        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-[11px] leading-none whitespace-nowrap">{test.category}</Badge>
-                                        <span className="text-sm">PKR {test.price.toLocaleString()}</span>
-                                        {/* Simplified badges to match doctor dashboard layout */}
-                                      
-                                        {test.homeDelivery ? (
-                                          <Badge className="bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[11px]">🏠 Home Delivery</Badge>
-                                        ) : null}
+                                        <span className="text-xs sm:text-sm">PKR {test.price.toLocaleString()}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -1543,7 +1539,7 @@ const LaboratoryDashboard = () => {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="max-h-[600px] overflow-y-auto">
                     {isLoadingBookings ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
