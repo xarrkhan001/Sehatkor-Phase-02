@@ -26,6 +26,8 @@ import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useSocket } from "@/context/SocketContext";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
+import EmptyState from "@/components/EmptyState";
+import PageSearchHeader from "@/components/PageSearchHeader";
 
 // Map rating badge to tailwind classes used for small label chips
 const getRatingBadgeClass = (badge: "excellent" | "good" | "fair" | "poor" | null | undefined): string => {
@@ -781,46 +783,21 @@ const SearchPage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Search Header */}
         <div className="mb-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-            {/* Left: Title above + Input below */}
-            <div className="w-full md:max-w-[420px]">
-              <h1 className="text-3xl font-bold mb-2">Search Healthcare Services</h1>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Search for services, providers, or treatments..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-9 h-12 rounded-2xl bg-white/70 border border-white/60 hover:bg-white focus:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/30 shadow-sm focus:shadow-md transition-all placeholder:text-gray-400"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    aria-label="Clear search"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-              {/* Mobile: Filters toggle */}
-              <div className="flex justify-start mt-2 md:mt-3 lg:hidden">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters
-                </Button>
-              </div>
-            </div>
-            {/* Right: Results count */}
-            <div className="w-full md:w-auto md:text-right">
-              <span className="text-xs font-light text-gray-700">
-                Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
-              </span>
-            </div>
+          <PageSearchHeader
+            title="Search Healthcare Services"
+            subtitle="Find doctors, hospitals, labs, and pharmacies across Pakistan"
+            label="Search services"
+            placeholder="Search for services, providers, or treatments..."
+            value={searchTerm}
+            onChange={(v) => setSearchTerm(v)}
+            resultsCount={filteredServices.length}
+          />
+          {/* Mobile: Filters toggle */}
+          <div className="flex justify-start mt-2 md:mt-3 lg:hidden">
+            <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+              <Filter className="w-4 h-4 mr-2" />
+              Filters
+            </Button>
           </div>
         </div>
 
@@ -837,7 +814,7 @@ const SearchPage = () => {
           </button>
         </div>
 
-        <div className="grid lg:grid-cols-6 gap-8">
+        <div className="grid lg:grid-cols-8 gap-6">
           {/* Filters Sidebar */}
           <div
             className={`${showFilters ? 'block lg:hidden' : 'hidden'} ${isSidebarOpen ? 'lg:block' : 'lg:hidden'} lg:col-span-2 lg:transform lg:transition-all lg:duration-300 lg:ease-out ${sidebarReady ? 'lg:opacity-100 lg:translate-x-0' : 'lg:opacity-0 lg:-translate-x-4'}`}
@@ -1131,30 +1108,20 @@ const SearchPage = () => {
                         {/* Enhanced Price Display with Tooltips */}
                         <div className="flex justify-between items-center mt-4">
                           <div className="relative group/price">
-                            <div className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105">
-                              <span className="text-sm font-semibold">PKR {priceRange[0].toLocaleString()}</span>
-                            </div>
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/price:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                              Minimum Price
+                            <div className="px-2 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-md shadow-sm">
+                              <span className="text-xs font-medium">PKR {priceRange[0].toLocaleString()}</span>
                             </div>
                           </div>
 
-                          <div className="flex-1 mx-4 flex items-center justify-center">
-                            <div className="h-px bg-gradient-to-r from-blue-300 via-purple-300 to-blue-300 flex-1 relative">
-                              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 animate-pulse opacity-50"></div>
-                            </div>
-                            <span className="mx-2 text-xs text-gray-500 font-medium">to</span>
-                            <div className="h-px bg-gradient-to-r from-blue-300 via-purple-300 to-blue-300 flex-1 relative">
-                              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 animate-pulse opacity-50"></div>
-                            </div>
+                          <div className="flex-1 mx-2 flex items-center justify-center">
+                            <div className="h-px bg-gray-300 flex-1"></div>
+                            <span className="mx-1 text-xs text-gray-500">to</span>
+                            <div className="h-px bg-gray-300 flex-1"></div>
                           </div>
 
                           <div className="relative group/price">
-                            <div className="px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg shadow-lg shadow-purple-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-purple-500/40 hover:scale-105">
-                              <span className="text-sm font-semibold">PKR {priceRange[1].toLocaleString()}</span>
-                            </div>
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/price:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                              Maximum Price
+                            <div className="px-2 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-md shadow-sm">
+                              <span className="text-xs font-medium">PKR {priceRange[1].toLocaleString()}</span>
                             </div>
                           </div>
                         </div>
@@ -1175,7 +1142,7 @@ const SearchPage = () => {
           </div>
 
           {/* Results */}
-          <div className={`${isSidebarOpen ? 'lg:col-span-4' : 'lg:col-span-6'}`}>
+          <div className={`${isSidebarOpen ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
             <div className="flex items-center justify-between">
 
               {selectedServices.length > 0 && (
@@ -1185,7 +1152,7 @@ const SearchPage = () => {
               )}
             </div>
 
-            <div className={`grid gap-4 grid-cols-1 sm:grid-cols-2 ${isSidebarOpen ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+            <div className={`grid gap-4 grid-cols-1 sm:grid-cols-2 ${isSidebarOpen ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
               {servicesToDisplay.map((service) => {
                 const isHighlighted =
                   highlightedService &&
@@ -1194,12 +1161,13 @@ const SearchPage = () => {
                 return (
                   <Card
                     key={service.id}
-                    className={`h-full flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50 ${isHighlighted ? "ring-2 ring-primary bg-primary/5" : ""
+                    className={`h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 ${isHighlighted ? "ring-2 ring-primary" : ""
                       }`}
                   >
                     <CardContent className="p-5 flex flex-col h-full">
                       {/* Image with Variant Slider (if any) */}
-                      <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4">
+                      <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-4">
+
                         {getDisplayImage(service) ? (
                           <img
                             src={getDisplayImage(service)}
@@ -1477,7 +1445,7 @@ const SearchPage = () => {
                           </div>
                         </div>
 
-                        {/* Row 4: Diseases ↔ Empty */}
+                        {/* Row 4: Diseases ↔ Rate button */}
                         <div className="flex justify-between items-center min-h-[24px]">
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
@@ -1510,7 +1478,17 @@ const SearchPage = () => {
                             )}
                           </div>
                           <div className="flex-shrink-0">
-                            {/* Empty space for alignment */}
+                            {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleRateService(service)}
+                                className="h-6 w-6 p-0 hover:bg-yellow-50 text-yellow-600 hover:text-yellow-700"
+                                title="Rate this service"
+                              >
+                                <Star className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1596,17 +1574,6 @@ const SearchPage = () => {
                           >
                             <span className="text-xs">Details</span>
                           </Button>
-                          {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRateService(service)}
-                              className="col-span-2 flex items-center justify-center gap-1 h-9 text-xs md:col-span-1 md:flex-1 md:min-w-[80px] md:h-8"
-                            >
-                              <Star className="w-3 h-3" />
-                              <span className="text-xs">Rate</span>
-                            </Button>
-                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -1624,15 +1591,12 @@ const SearchPage = () => {
             )}
 
             {filteredServices.length === 0 && (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <div className="text-muted-foreground mb-4">
-                    <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-xl">No services found</p>
-                    <p>Try adjusting your search criteria</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <EmptyState
+                title="No services found"
+                message="Try different keywords or adjust filters to broaden your search"
+                actionLabel="Clear filters"
+                onAction={clearFilters}
+              />
             )}
           </div>
         </div>

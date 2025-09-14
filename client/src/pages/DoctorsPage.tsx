@@ -21,6 +21,8 @@ import { useSocket } from "../context/SocketContext";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import EmptyState from "@/components/EmptyState";
+import PageSearchHeader from "@/components/PageSearchHeader";
 
 const DoctorsPage = () => {
   const navigate = useNavigate();
@@ -705,66 +707,42 @@ const DoctorsPage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            {/* Left: Title + Subtitle */}
-            <div className="text-left">
-              <h1 className="text-3xl font-bold mb-1">Find Your Doctor</h1>
-              <p className="text-base md:text-lg text-gray-500">
-                Search from our network of qualified healthcare professionals
-              </p>
-              {initialDisease && (
-                <div className="mt-2 text-sm text-gray-600">
-                  Filtering for disease: <span className="font-semibold">{initialDisease}</span>
-                  <button
-                    className="ml-2 text-primary underline"
-                    onClick={() => {
-                      setSearchTerm("");
-                      searchParams.delete('disease');
-                      setSearchParams(searchParams, { replace: true });
-                    }}
-                  >
-                    Clear
-                  </button>
-                </div>
-              )}
+          <PageSearchHeader
+            title="Find Your Doctor"
+            subtitle="Search from our network of qualified healthcare professionals"
+            label="Search doctors"
+            placeholder="Search doctors by name, specialty, or location..."
+            value={searchTerm}
+            onChange={(v) => setSearchTerm(v)}
+            resultsCount={filteredServices.length}
+          />
+          {initialDisease && (
+            <div className="mt-2 text-sm text-gray-600">
+              Filtering for disease: <span className="font-semibold">{initialDisease}</span>
+              <button
+                className="ml-2 text-primary underline"
+                onClick={() => {
+                  setSearchTerm("");
+                  searchParams.delete('disease');
+                  setSearchParams(searchParams, { replace: true });
+                }}
+              >
+                Clear
+              </button>
             </div>
-
-            {/* Right: Search */}
-            <div className="w-full md:w-auto">
-              {/* Top row: label (left) and results (right) */}
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="text-base md:text-lg font-semibold text-gray-700">Search doctors</span>
-                {filteredServices.length > 0 && (
-                  <span className="text-xs font-light text-gray-700">
-                    Showing {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
-                  </span>
-                )}
-              </div>
-              {/* Input aligned to the right on md+ */}
-              <div className="relative md:self-end md:ml-auto">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  id="doctor-search"
-                  placeholder="Search doctors by name, specialty, or location..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full md:w-[360px] pl-9 h-11 rounded-md border border-gray-300 bg-white/90 text-gray-800 placeholder:text-gray-400 shadow-sm transition focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 hover:border-gray-400"
-                />
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Results */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
           {filteredServices.map((service) => (
             <Card
               key={service.id}
-              className="h-full flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200 bg-gray-50"
+              className="h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200"
             >
-              <CardContent className="p-5 flex flex-col h-full">
+              <CardContent className="p-4 flex flex-col h-full">
                 {/* Image */}
-                <div className="w-full h-48 md:h-56 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden mb-4 relative">
+                <div className="w-full h-40 md:h-48 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-3 relative">
                   {getDisplayForService(service).image ? (
                     <img
                       src={getDisplayForService(service).image}
@@ -1012,7 +990,7 @@ const DoctorsPage = () => {
                     </div>
                   </div>
 
-                  {/* Fourth Row: Diseases (start) and empty (end) */}
+                  {/* Fourth Row: Diseases (start) and Rate button (end) */}
                   <div className="flex justify-between items-center min-h-[24px]">
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
@@ -1045,7 +1023,17 @@ const DoctorsPage = () => {
                       )}
                     </div>
                     <div className="flex-shrink-0">
-                      {/* Empty space for alignment */}
+                      {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRateService(service)}
+                          className="h-6 w-6 p-0 hover:bg-yellow-50 text-yellow-600 hover:text-yellow-700"
+                          title="Rate this service"
+                        >
+                          <Star className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1118,17 +1106,6 @@ const DoctorsPage = () => {
                     >
                       <span className="text-xs">Details</span>
                     </Button>
-                    {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== (service as any)._providerId) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRateService(service)}
-                        className="col-span-2 flex items-center justify-center gap-1 h-9 text-xs md:col-span-1 md:flex-1 md:min-w-[80px] md:h-8"
-                      >
-                        <Star className="w-3 h-3" />
-                        <span className="text-xs">Rate</span>
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -1145,15 +1122,13 @@ const DoctorsPage = () => {
       )}
 
       {filteredServices.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <div className="text-muted-foreground mb-4">
-              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-xl">No doctors found</p>
-              <p>Try adjusting your search criteria</p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          variant="doctor"
+          title="No doctors found"
+          message="Try adjusting your keywords, filters, or expand the price range"
+          actionLabel={searchTerm ? "Clear search" : undefined}
+          onAction={searchTerm ? () => setSearchTerm("") : undefined}
+        />
       )}
     </div>
 
