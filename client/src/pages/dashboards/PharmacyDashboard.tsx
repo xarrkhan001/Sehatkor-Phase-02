@@ -577,46 +577,46 @@ const PharmacyDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen  p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen p-2 sm:p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{user?.name} Pharmacy</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+          <div className="text-center sm:text-left">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">{user?.name} Pharmacy</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
               Manage medicines, prescriptions, and customer orders
             </p>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           {/* Total Medicines Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-100 opacity-90">Total Medicines</p>
-                  <p className="text-3xl font-bold text-white">{medicines.length}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-blue-100 opacity-90 truncate">Total Medicines</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{medicines.length}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <Pill className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <Pill className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-full -translate-y-8 translate-x-8 sm:-translate-y-10 sm:translate-x-10"></div>
             </CardContent>
           </Card>
 
           {/* Total Bookings Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-100 opacity-90">Total Orders</p>
-                  <p className="text-3xl font-bold text-white">{bookings.length}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-green-100 opacity-90 truncate">Total Orders</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{bookings.length}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <ShoppingBag className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -624,16 +624,16 @@ const PharmacyDashboard = () => {
 
           {/* Available Balance Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-purple-100 opacity-90">Available Balance</p>
-                  <p className="text-3xl font-bold text-white">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-100 opacity-90 truncate">Available Balance</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white break-all">
                     {isLoadingWallet ? '...' : `PKR ${walletData?.availableBalance?.toLocaleString() || '0'}`}
                   </p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <Wallet className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <Wallet className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -641,16 +641,16 @@ const PharmacyDashboard = () => {
 
           {/* Total Earnings Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-amber-100 opacity-90">Total Earnings</p>
-                  <p className="text-3xl font-bold text-white">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-amber-100 opacity-90 truncate">Total Earnings</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white break-all">
                     {isLoadingWallet ? '...' : `PKR ${walletData?.totalEarnings?.toLocaleString() || '0'}`}
                   </p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <DollarSign className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -658,26 +658,28 @@ const PharmacyDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Main Tabs */}
             <Tabs defaultValue="medicines">
               <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
                 <TabsTrigger 
                   value="medicines" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
-                  Medicines
+                  <span className="hidden sm:inline">Medicines</span>
+                  <span className="sm:hidden">Meds</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="bookings" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
-                  Bookings
+                  <span className="hidden sm:inline">Bookings</span>
+                  <span className="sm:hidden">Orders</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="wallet" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
                   Wallet
                 </TabsTrigger>
@@ -694,9 +696,9 @@ const PharmacyDashboard = () => {
                       </div>
                       <Dialog open={isAddMedicineOpen} onOpenChange={setIsAddMedicineOpen}>
                         <DialogTrigger asChild>
-                          <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Medicine
+                          <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
+                            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                            <span className="text-[10px] sm:text-sm font-medium">Add</span>
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
@@ -1029,7 +1031,7 @@ const PharmacyDashboard = () => {
                       </Dialog>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="max-h-[600px] overflow-y-auto">
                     <p className="text-muted-foreground py-4">
                       Medicines added here will appear in search, services, and pharmacies listings.
                     </p>
@@ -1135,25 +1137,33 @@ const PharmacyDashboard = () => {
               <TabsContent value="bookings" className="mt-6">
                 <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-lg">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <CardTitle className="text-white flex items-center gap-2">
                           <ShoppingBag className="w-5 h-5" />
                           Medicine Orders
                         </CardTitle>
-                        <CardDescription className="text-orange-100">Manage and track customer orders</CardDescription>
+                        <CardDescription className="text-orange-100">Manage and track customer medicine orders</CardDescription>
                       </div>
+                      {bookings.length > 0 && (
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={deleteAllBookings}
+                            className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs sm:text-sm"
+                          >
+                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            Clear All Orders
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </CardHeader>
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <CardTitle>Patient Bookings</CardTitle>
-                        <CardDescription>Bookings from patients for your services</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
+                  <CardContent className="max-h-[600px] overflow-y-auto">
+                    <p className="text-muted-foreground py-4">
+                      Medicine orders from patients will appear here. You can manage order status and track deliveries.
+                    </p>
                     {isLoadingBookings ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -1166,57 +1176,190 @@ const PharmacyDashboard = () => {
                         <p className="text-sm text-muted-foreground">Patient bookings will appear here</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {bookings.map((booking) => (
-                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg">
-                            <div className="flex-1 min-w-0">
-                              <h4 
-                                className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline transition-colors"
-                                onClick={() => navigate(`/patient/${booking.patientId}`)}
-                              >
-                                {booking.patientName}
-                              </h4>
-                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
-                                <div className="flex items-center space-x-1">
-                                  <Calendar className="w-4 h-4" />
-                                  <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
+                      <>
+                        {/* Mobile cards */}
+                        <div className="grid grid-cols-1 gap-4 md:hidden">
+                          {bookings.map((booking) => (
+                            <div key={booking._id} className="border rounded-lg p-4 space-y-3 bg-white shadow-sm hover:shadow-md transition-shadow">
+                              {/* Patient Info */}
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h4 
+                                    className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer hover:underline transition-colors truncate"
+                                    onClick={() => navigate(`/patient/${booking.patientId}`)}
+                                  >
+                                    {booking.patientName}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground truncate mt-1">{booking.serviceName}</p>
+                                </div>
+                                <Badge
+                                  variant={booking.status === "Completed" ? "default" : "secondary"}
+                                  className={`ml-2 text-xs ${
+                                    booking.status === "Completed" 
+                                      ? "bg-green-600 text-white" 
+                                      : booking.status === 'Scheduled' 
+                                        ? 'bg-blue-500 text-white' 
+                                        : 'bg-yellow-500 text-white'
+                                  }`}
+                                >
+                                  {booking.status}
+                                </Badge>
+                              </div>
+
+                              {/* Booking Details */}
+                              <div className="space-y-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                                  <span className="truncate">Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 {booking.status === 'Scheduled' && booking.scheduledTime && (
-                                  <div className="flex items-center space-x-1 text-primary font-semibold">
-                                    <Clock className="w-4 h-4" />
-                                    <span>Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
+                                  <div className="flex items-center gap-2 text-primary font-medium">
+                                    <Clock className="w-4 h-4 flex-shrink-0" />
+                                    <span className="truncate">Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
                                   </div>
                                 )}
                               </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex flex-col gap-2 pt-2 border-t">
+                                {booking.status === 'Confirmed' && (
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }} 
+                                    className="w-full"
+                                  >
+                                    <Clock className="w-4 h-4 mr-2" />
+                                    Schedule Appointment
+                                  </Button>
+                                )}
+                                {booking.status === 'Scheduled' && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={() => completeBooking(booking._id)} 
+                                    className="w-full"
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Mark as Complete
+                                  </Button>
+                                )}
+                                {booking.status === 'Completed' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deleteBooking(booking._id)}
+                                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete Booking
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 sm:text-right">
-                              <Badge
-                                variant={booking.status === "Completed" ? "default" : "secondary"}
-                                className={booking.status === "Completed" ? "bg-green-600" : booking.status === 'Scheduled' ? 'bg-blue-500' : 'bg-yellow-500'}
-                              >
-                                {booking.status}
-                              </Badge>
-                              {booking.status === 'Confirmed' && (
-                                <Button size="sm" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }} className="w-full sm:w-auto">Schedule</Button>
-                              )}
-                              {booking.status === 'Scheduled' && (
-                                <Button size="sm" variant="outline" onClick={() => completeBooking(booking._id)} className="w-full sm:w-auto">Mark as Complete</Button>
-                              )}
-                              {booking.status === 'Completed' && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => deleteBooking(booking._id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
-                                >
-                                  Delete
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+
+                        {/* Desktop table */}
+                        <div className="hidden md:block">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-[200px]">Patient</TableHead>
+                                <TableHead className="w-[250px]">Service</TableHead>
+                                <TableHead className="w-[120px]">Status</TableHead>
+                                <TableHead className="w-[150px]">Booked Date</TableHead>
+                                <TableHead className="w-[180px]">Scheduled Time</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {bookings.map((booking) => (
+                                <TableRow key={booking._id} className="hover:bg-muted/50">
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      <span 
+                                        className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline transition-colors"
+                                        onClick={() => navigate(`/patient/${booking.patientId}`)}
+                                      >
+                                        {booking.patientName}
+                                      </span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="max-w-[200px]">
+                                      <p className="font-medium truncate">{booking.serviceName}</p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant={booking.status === "Completed" ? "default" : "secondary"}
+                                      className={
+                                        booking.status === "Completed" 
+                                          ? "bg-green-600 text-white" 
+                                          : booking.status === 'Scheduled' 
+                                            ? 'bg-blue-500 text-white' 
+                                            : 'bg-yellow-500 text-white'
+                                      }
+                                    >
+                                      {booking.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Calendar className="w-4 h-4" />
+                                      {new Date(booking.createdAt).toLocaleDateString()}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {booking.status === 'Scheduled' && booking.scheduledTime ? (
+                                      <div className="flex items-center gap-2 text-sm text-primary font-medium">
+                                        <Clock className="w-4 h-4" />
+                                        {new Date(booking.scheduledTime).toLocaleString()}
+                                      </div>
+                                    ) : (
+                                      <span className="text-sm text-muted-foreground">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      {booking.status === 'Confirmed' && (
+                                        <Button 
+                                          size="sm" 
+                                          onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}
+                                        >
+                                          <Clock className="w-4 h-4 mr-1" />
+                                          Schedule
+                                        </Button>
+                                      )}
+                                      {booking.status === 'Scheduled' && (
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline" 
+                                          onClick={() => completeBooking(booking._id)}
+                                        >
+                                          <CheckCircle className="w-4 h-4 mr-1" />
+                                          Complete
+                                        </Button>
+                                      )}
+                                      {booking.status === 'Completed' && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => deleteBooking(booking._id)}
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="w-4 h-4 mr-1" />
+                                          Delete
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </>
                     )}
                   </CardContent>
                 </Card>
