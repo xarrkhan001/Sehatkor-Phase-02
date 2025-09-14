@@ -696,15 +696,17 @@ const CompareExplorer = () => {
                 return (
                   <Card
                     key={item.id}
-                    className={`shadow-md hover:shadow-lg transition-shadow duration-200 rounded-xl border border-gray-200/60 bg-gradient-to-br from-slate-100 via-zinc-100 to-white ${isSelected ? 'ring-2 ring-blue-400/60' : ''}`}
+                    className={`h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 ${isSelected ? 'ring-2 ring-blue-400/60' : ''}`}
                   >
-                    <CardContent className="p-5 cursor-pointer" onClick={() => toggleSelect(item.id)}>
+                    <CardContent className="p-5 flex flex-col h-full cursor-pointer" onClick={() => toggleSelect(item.id)}>
                       {/* Image with variant slider */}
-                      <div className="relative w-full h-40 rounded-lg flex items-center justify-center overflow-hidden mb-4 bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-200/50">
+                      <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-4">
                         {getDisplayImage(item) ? (
                           <img src={getDisplayImage(item)!} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-gray-400 text-sm">No Image</span>
+                          <div className="flex items-center justify-center w-full h-full bg-gray-200">
+                            <span className="text-gray-400 text-sm">No Image Available</span>
+                          </div>
                         )}
                         
                         {/* Top-left recommended overlay */}
@@ -870,7 +872,7 @@ const CompareExplorer = () => {
                           </div>
                         </div>
 
-                        {/* Row 4: Diseases ↔ WhatsApp */}
+                        {/* Row 4: Diseases ↔ Rate Button + WhatsApp */}
                         <div className="flex justify-between items-center min-h-[24px]">
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {Array.isArray((item as any).diseases) && (item as any).diseases.length > 0 && (
@@ -902,7 +904,17 @@ const CompareExplorer = () => {
                               </TooltipProvider>
                             )}
                           </div>
-                          <div className="flex-shrink-0">
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== item._providerId) && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRateService(item); }}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm"
+                                title="Rate this service"
+                              >
+                                <Star className="w-4 h-4" />
+                                <span className="hidden sm:inline text-xs font-medium">Rate</span>
+                              </button>
+                            )}
                             {item.providerPhone && (
                               <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} providerId={item._providerId} />
                             )}
@@ -911,69 +923,76 @@ const CompareExplorer = () => {
                       </div>
 
                       {/* Buttons */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Button className="flex-1 min-w-[100px]" onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}>
-                          <ArrowRight className="w-4 h-4 mr-1" /> Book Now
-                        </Button>
-                        <Button
-                          onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}
-                          className="flex-1 min-w-[100px]"
-                        >
-                          <MapPin className="w-4 h-4 mr-1" /> Location
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const currentVariantIndex = activeIdxById[item.id] ?? 0;
-                            navigate(`/service/${item.id}`, {
-                              state: {
-                                from: window.location.pathname + window.location.search,
-                                fromCompare: true,
-                                initialVariantIndex: currentVariantIndex,
-                                service: {
-                                  id: item.id,
-                                  name: item.name,
-                                  description: item.description,
-                                  price: item.price,
-                                  rating: item.rating,
-                                  provider: item.provider,
-                                  image: item.image,
-                                  type: item.type,
-                                  providerType: item._providerType,
-                                  _providerVerified: item._providerVerified,
-                                  isReal: true,
-                                  ratingBadge: item.ratingBadge ?? null,
-                                  location: item.city ?? item.location,
-                                  address: item.detailAddress ?? undefined,
-                                  hospitalClinicName: item.hospitalClinicName ?? undefined,
-                                  providerPhone: item.providerPhone ?? undefined,
-                                  googleMapLink: item.googleMapLink ?? undefined,
-                                  availability: item.availability ?? undefined,
-                                  serviceType: item.serviceType,
-                                  homeDelivery: item.homeDelivery,
-                                  // Pass main service schedule fields so main slide shows its own schedule
-                                  timeLabel: item.timeLabel || null,
-                                  startTime: item.startTime || null,
-                                  endTime: item.endTime || null,
-                                  days: item.days || null,
-                                  variants: item.variants || [],
-                                  diseases: Array.isArray((item as any).diseases) ? (item as any).diseases : [],
-                                  // Pass department field to detail page for clinic/hospital services
-                                  department: (item._providerType === 'clinic') ? (item.department || undefined) : undefined,
-                                }
-                              }
-                            });
-                          }}
-                          className="flex-1 min-w-[100px]"
-                        >
-                          View Details
-                        </Button>
-                        {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== item._providerId) && (
-                          <Button variant="outline" onClick={(e) => { e.stopPropagation(); handleRateService(item); }} className="flex-1 min-w-[100px]">
-                            <Star className="w-4 h-4 mr-1" /> Rate
+                      <div className="mt-auto space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="flex-1 h-9 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center gap-1.5"
+                            onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10"/>
+                              <polyline points="12,6 12,12 16,14"/>
+                            </svg>
+                            Book
                           </Button>
-                        )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 h-9 text-xs border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-full flex items-center justify-center gap-1.5"
+                            onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}
+                          >
+                            <MapPin className="w-4 h-4" />
+                            Location
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="flex-1 h-9 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const currentVariantIndex = activeIdxById[item.id] ?? 0;
+                              navigate(`/service/${item.id}`, {
+                                state: {
+                                  from: window.location.pathname + window.location.search,
+                                  fromCompare: true,
+                                  initialVariantIndex: currentVariantIndex,
+                                  service: {
+                                    id: item.id,
+                                    name: item.name,
+                                    description: item.description,
+                                    price: item.price,
+                                    rating: item.rating,
+                                    provider: item.provider,
+                                    image: item.image,
+                                    type: item.type,
+                                    providerType: item._providerType,
+                                    _providerVerified: item._providerVerified,
+                                    isReal: true,
+                                    ratingBadge: item.ratingBadge ?? null,
+                                    location: item.city ?? item.location,
+                                    address: item.detailAddress ?? undefined,
+                                    hospitalClinicName: item.hospitalClinicName ?? undefined,
+                                    providerPhone: item.providerPhone ?? undefined,
+                                    googleMapLink: item.googleMapLink ?? undefined,
+                                    availability: item.availability ?? undefined,
+                                    serviceType: item.serviceType,
+                                    homeDelivery: item.homeDelivery,
+                                    timeLabel: item.timeLabel || null,
+                                    startTime: item.startTime || null,
+                                    endTime: item.endTime || null,
+                                    days: item.days || null,
+                                    variants: item.variants || [],
+                                    diseases: Array.isArray((item as any).diseases) ? (item as any).diseases : [],
+                                    department: (item._providerType === 'clinic') ? (item.department || undefined) : undefined,
+                                  }
+                                }
+                              });
+                            }}
+                          >
+                            Details
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

@@ -82,7 +82,7 @@ const DoctorsPage = () => {
         const { services, hasMore: more } = await ServiceManager.fetchPublicServices({
           type: 'doctor',
           page: nextPage,
-          limit: 6,
+          limit: 12,
           disease: initialDisease || undefined,
         });
         if (!isMounted) return;
@@ -326,7 +326,7 @@ const DoctorsPage = () => {
     // reuse effect's loader logic inline
     setIsLoading(true);
     try {
-      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 9, disease: initialDisease || undefined });
+      const { services, hasMore: more } = await ServiceManager.fetchPublicServices({ type: 'doctor', page: next, limit: 12, disease: initialDisease || undefined });
       const mapped = services.map((service: any) => {
         const isOwn = String((service as any).providerId) === String(user?.id || '');
         const resolvedProviderName = isOwn ? (user?.name || (service as any).providerName || 'Doctor') : ((service as any).providerName || 'Doctor');
@@ -740,9 +740,9 @@ const DoctorsPage = () => {
               key={service.id}
               className="h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200"
             >
-              <CardContent className="p-4 flex flex-col h-full">
+              <CardContent className="p-3 flex flex-col h-full">
                 {/* Image */}
-                <div className="w-full h-40 md:h-48 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-3 relative">
+                <div className="w-full h-40 md:h-48 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-2 relative">
                   {getDisplayForService(service).image ? (
                     <img
                       src={getDisplayForService(service).image}
@@ -902,7 +902,7 @@ const DoctorsPage = () => {
                 )}
 
                 {/* Address and Description */}
-                <div className="mb-4 space-y-2">
+                <div className="mb-3 space-y-1">
                   <div className="text-xs text-gray-600 truncate">
                     {getDisplayForService(service).detailAddress || getDisplayForService(service).location || 'Address not specified'}
                   </div>
@@ -914,7 +914,7 @@ const DoctorsPage = () => {
                 </div>
 
                 {/* Fixed Position Rows Layout */}
-                <div className="space-y-3 mb-4">
+                <div className="space-y-2 mb-3">
                   {/* First Row: Ratings (start) and Location (end) */}
                   <div className="flex justify-between items-center min-h-[24px]">
                     <div className="flex-shrink-0">
@@ -1115,8 +1115,20 @@ const DoctorsPage = () => {
 
       {hasMore && (
         <div className="flex justify-center mt-8">
-          <Button onClick={loadMore} disabled={isLoading} variant="outline">
-            {isLoading ? 'Loading...' : 'Load More'}
+          <Button
+            onClick={loadMore}
+            disabled={isLoading}
+            className="relative overflow-hidden rounded-full px-6 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-purple-500/40 ring-2 ring-white/20 hover:ring-white/30 transition-all duration-300 group"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <span className="font-semibold tracking-wide">{isLoading ? 'Loading...' : 'Load More'}</span>
+              {!isLoading && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" className="opacity-90 animate-bounce">
+                  <path d="M12 16l-5-5h10l-5 5z"></path>
+                </svg>
+              )}
+            </span>
+            <span className="absolute inset-0 bg-white/10 blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></span>
           </Button>
         </div>
       )}
