@@ -355,6 +355,10 @@ const SearchPage = () => {
           provider: (service as any).providerName || "Provider",
           image: (service as any).image,
           location: (service as any).location || (service as any).city || "Karachi",
+          // Address and Maps support for Location modal
+          address: (service as any).detailAddress || undefined,
+          googleMapLink: (service as any).googleMapLink || undefined,
+          hospitalClinicName: (service as any).hospitalClinicName || undefined,
           rating: Number((service as any).rating) || 0,
           ratingBadge: (service as any).ratingBadge ?? null,
           diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : undefined,
@@ -1412,10 +1416,24 @@ const SearchPage = () => {
                               size="sm"
                             />
                           </div>
-                          <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const augmented: any = {
+                                ...service,
+                                location: getDisplayLocation(service),
+                                address: getDisplayAddress(service),
+                                googleMapLink: getDisplayMapLink(service)
+                              };
+                              setCurrentMapService(augmented);
+                              setShowLocationMap(service.id);
+                            }}
+                            title="View location"
+                            className="flex items-center gap-1 text-gray-500 flex-shrink-0 hover:text-gray-700 transition-colors cursor-pointer"
+                          >
                             <MapPin className="w-4 h-4" />
-                            <span>{getDisplayLocation(service)}</span>
-                          </div>
+                            <span className="underline-offset-2 hover:underline">{getDisplayLocation(service)}</span>
+                          </button>
                         </div>
 
                         {/* Row 2: Service Type only */}
@@ -1758,25 +1776,30 @@ const SearchPage = () => {
             <div className="space-y-3">
               <div>
                 <p className="text-sm font-medium text-gray-600">Location</p>
-                <p className="text-base">{currentMapService.location}</p>
+                <p className="text-base">{currentMapService.location || '—'}</p>
               </div>
 
-              {currentMapService.address && (
+              {(currentMapService as any).address || (currentMapService as any).detailAddress ? (
                 <div>
                   <p className="text-sm font-medium text-gray-600">Address</p>
-                  <p className="text-base">{currentMapService.address}</p>
+                  <p className="text-base">{(currentMapService as any).address || (currentMapService as any).detailAddress}</p>
                 </div>
-              )}
+              ) : null}
 
-              {currentMapService.googleMapLink && (
-                <Button
-                  className="w-full mt-4"
-                  onClick={() => window.open(currentMapService.googleMapLink, '_blank')}
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Open in Google Maps
-                </Button>
-              )}
+              <Button
+                className="w-full mt-4"
+                onClick={() => {
+                  const addr = (currentMapService as any).address || (currentMapService as any).detailAddress;
+                  const loc = (currentMapService as any).location;
+                  const link = (currentMapService as any).googleMapLink
+                    || (addr ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(addr))}`
+                             : (loc ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(loc))}` : null));
+                  if (link) window.open(link, '_blank');
+                }}
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Open in Google Maps
+              </Button>
             </div>
           </div>
         </div>
