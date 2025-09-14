@@ -648,7 +648,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   return (
     <Card className={userRole === 'doctor' ? "relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl" : "card-healthcare"}>
       <CardHeader className={userRole === 'doctor' ? "bg-gradient-to-r from-blue-400 to-indigo-500 text-white rounded-t-lg" : undefined}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className={userRole === 'doctor' ? "flex items-center justify-between gap-3" : "flex flex-col sm:flex-row sm:items-center justify-between gap-2"}>
           <div>
             <CardTitle className={userRole === 'doctor' ? "text-white flex items-center gap-2" : undefined}>
               {userRole === 'doctor' && <Stethoscope className="w-5 h-5" />}
@@ -658,9 +658,20 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           </div>
           <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm} className={userRole === 'doctor' ? "shrink-0 self-start sm:self-auto w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300" : "shrink-0 self-start sm:self-auto w-full sm:w-auto"}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Service
+              <Button onClick={resetForm} className={userRole === 'doctor' 
+                ? "bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10"
+                : "shrink-0 self-start sm:self-auto w-full sm:w-auto"}>
+                {userRole === 'doctor' ? (
+                  <>
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="text-[10px] sm:text-sm font-medium">Add</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Service
+                  </>
+                )}
               </Button>
             </DialogTrigger>
             <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -1371,7 +1382,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           </Dialog>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className={userRole === 'doctor' ? "max-h-[600px] overflow-y-auto" : undefined}>
         {services.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
             No services added yet. Click "Add Service" to get started.

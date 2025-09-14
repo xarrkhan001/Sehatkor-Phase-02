@@ -301,13 +301,13 @@ const DoctorDashboard = () => {
   // Note: Removed legacy handleSpecialtyChange; specialization is edited via EditProfileDialog now.
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen p-2 sm:p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Dr. {user?.name}</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+          <div className="text-center sm:text-left">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">Dr. {user?.name}</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
               Welcome to your medical practice dashboard
             </p>
           </div>
@@ -334,47 +334,46 @@ const DoctorDashboard = () => {
         )}
 
         {/* Stats Cards - Pharmacy style gradients and overlays */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           {/* Total Services Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-100 opacity-90">Total Services</p>
-                  <p className="text-3xl font-bold text-white">{services.length}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-blue-100 opacity-90 truncate">Total Services</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{services.length}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <Stethoscope className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
 
           {/* Total Bookings Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-100 opacity-90">Total Bookings</p>
-                  <p className="text-3xl font-bold text-white">{bookings.length}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-green-100 opacity-90 truncate">Total Bookings</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{bookings.length}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <Calendar className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
 
           {/* Available Balance Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-purple-100 opacity-90">Available Balance</p>
-                  <p className="text-3xl font-bold text-white">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-purple-100 opacity-90 truncate">Available Balance</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white break-all">
                     <CurrencyAmount
                       amount={walletData?.availableBalance}
                       loading={isLoadingWallet}
@@ -382,21 +381,21 @@ const DoctorDashboard = () => {
                     />
                   </p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <Wallet className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <Wallet className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
 
           {/* Total Earnings Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-amber-100 opacity-90">Total Earnings</p>
-                  <p className="text-3xl font-bold text-white">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-amber-100 opacity-90 truncate">Total Earnings</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white break-all">
                     <CurrencyAmount
                       amount={walletData?.totalEarnings}
                       loading={isLoadingWallet}
@@ -404,35 +403,36 @@ const DoctorDashboard = () => {
                     />
                   </p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <DollarSign className="w-6 h-6 text-white" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-full backdrop-blur-sm flex-shrink-0">
+                  <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <Tabs defaultValue="services" className="space-y-6">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <Tabs defaultValue="services" className="space-y-4 sm:space-y-6">
               <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
                 <TabsTrigger 
                   value="services" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
                   Services
                 </TabsTrigger>
                 <TabsTrigger 
                   value="bookings" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
-                  Bookings
+                  <span className="hidden sm:inline">Bookings</span>
+                  <span className="sm:hidden">Orders</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="wallet" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm md:text-base px-2 py-2 sm:px-3 sm:py-2"
                 >
                   Wallet
                 </TabsTrigger>
@@ -460,7 +460,7 @@ const DoctorDashboard = () => {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="max-h-[600px] overflow-y-auto">
                     {isLoadingBookings ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
