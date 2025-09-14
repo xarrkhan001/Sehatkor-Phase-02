@@ -64,7 +64,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
         if (!cancelled && data?.success && Array.isArray(data.partners)) {
           setRemotePartners(data.partners);
         }
-      } catch {}
+      } catch { }
       finally { if (!cancelled) setLoaded(true); }
     })();
     return () => { cancelled = true; };
@@ -72,13 +72,13 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
 
   // Remote partners first, then presets as fallback to fill space
   const gradients = [
-    ["from-emerald-500","to-teal-500"],
-    ["from-green-500","to-lime-500"],
-    ["from-sky-500","to-blue-500"],
-    ["from-indigo-500","to-sky-500"],
-    ["from-violet-500","to-fuchsia-500"],
-    ["from-amber-500","to-yellow-500"],
-    ["from-rose-500","to-orange-500"],
+    ["from-emerald-500", "to-teal-500"],
+    ["from-green-500", "to-lime-500"],
+    ["from-sky-500", "to-blue-500"],
+    ["from-indigo-500", "to-sky-500"],
+    ["from-violet-500", "to-fuchsia-500"],
+    ["from-amber-500", "to-yellow-500"],
+    ["from-rose-500", "to-orange-500"],
   ];
   const priorityList: Partner[] = (remotePartners || []).map((p, i) => ({
     name: p.name,
@@ -89,7 +89,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
   const normalized = normalizePartners(priorityList.length > 0 ? priorityList : partners);
   // If partners are coming from admin panel (remote), hide text labels and show only logos
   const hideNames = priorityList.length > 0;
-  
+
   // Animation duration based on speed prop
   const animationDuration = {
     slow: "50s",
@@ -101,8 +101,13 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
     <section className="py-12 sm:py-16 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 text-center">
+
+          <Badge variant="secondary" className="mt-2 mb-2 sm:mb-3 text-[10px] bg-red-100 text-red-700 border-red-200">Join Us</Badge>
           <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold">{title}</h3>
-          <Badge variant="secondary" className="mt-2 text-[10px] bg-red-100 text-red-700 border-red-200">Join Us</Badge>
+
+          <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+            Partner with SehatKor to advance accessible, high-quality healthcare and reach millions nationwide.
+          </p>
         </div>
       </div>
 
@@ -112,7 +117,7 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
           <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-white to-transparent z-10" />
           <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-white to-transparent z-10" />
 
-          <div 
+          <div
             className="flex items-center py-9 sm:py-11 w-max will-change-transform"
             style={{ animation: `marquee ${animationDuration} linear infinite` }}
           >
