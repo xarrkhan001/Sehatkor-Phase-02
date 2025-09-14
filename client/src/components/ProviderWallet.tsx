@@ -673,41 +673,47 @@ const ProviderWallet = () => {
       {/* Payment History */}
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-slate-600 to-gray-700 text-white">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2 text-white">
               <CreditCard className="w-5 h-5" />
               Payment History ({wallet.payments.length})
             </CardTitle>
-            <div className="flex items-center gap-2 bg-white/10 p-1 rounded-lg">
-              <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 ${paymentFilter==='all' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('all')}>
-                All ({wallet.payments.length})
-              </Button>
-              <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 ${paymentFilter==='pending' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('pending')}>
-                Pending ({pendingCount})
-              </Button>
-              <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 ${paymentFilter==='released' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('released')}>
-                Released ({releasedCount})
-              </Button>
-            </div>
-            <div className="flex items-center gap-2 bg-white/10 p-1 rounded-lg">
-              <Button size="sm" variant="ghost" className="text-white hover:bg-white/20" onClick={selectAllVisiblePayments}>
-                {allPaymentsSelected ? 'Clear visible' : 'Select visible'}
-              </Button>
-              <Button
-                size="sm"
-                variant={anyPaymentsSelected ? 'destructive' : 'ghost'}
-                className={`${anyPaymentsSelected ? 'bg-red-600 text-white hover:bg-red-700' : 'text-white hover:bg-white/20'}`}
-                disabled={!anyPaymentsSelected}
-                onClick={() => setConfirmBulkPaymentsOpen(true)}
-                title="Delete selected from history"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Bulk Delete
-              </Button>
+            
+            {/* Filter Buttons - Responsive */}
+            <div className="flex flex-col sm:flex-row gap-2 lg:gap-4">
+              <div className="flex items-center gap-1 bg-white/10 p-1 rounded-lg overflow-x-auto">
+                <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 whitespace-nowrap text-xs sm:text-sm ${paymentFilter==='all' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('all')}>
+                  All ({wallet.payments.length})
+                </Button>
+                <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 whitespace-nowrap text-xs sm:text-sm ${paymentFilter==='pending' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('pending')}>
+                  Pending ({pendingCount})
+                </Button>
+                <Button size="sm" variant="ghost" className={`text-white hover:bg-white/20 whitespace-nowrap text-xs sm:text-sm ${paymentFilter==='released' ? 'bg-white/20' : ''}`} onClick={() => setPaymentFilter('released')}>
+                  Released ({releasedCount})
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-1 bg-white/10 p-1 rounded-lg">
+                <Button size="sm" variant="ghost" className="text-white hover:bg-white/20 whitespace-nowrap text-xs sm:text-sm" onClick={selectAllVisiblePayments}>
+                  {allPaymentsSelected ? 'Clear visible' : 'Select visible'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={anyPaymentsSelected ? 'destructive' : 'ghost'}
+                  className={`whitespace-nowrap text-xs sm:text-sm ${anyPaymentsSelected ? 'bg-red-600 text-white hover:bg-red-700' : 'text-white hover:bg-white/20'}`}
+                  disabled={!anyPaymentsSelected}
+                  onClick={() => setConfirmBulkPaymentsOpen(true)}
+                  title="Delete selected from history"
+                >
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="hidden sm:inline">Bulk Delete</span>
+                  <span className="sm:hidden">Delete</span>
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-h-[600px] overflow-y-auto">
           {wallet.payments.length === 0 ? (
             <div className="text-center py-8">
               <Wallet className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -715,74 +721,141 @@ const ProviderWallet = () => {
               <p className="text-sm text-muted-foreground">Your payment history will appear here</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredPayments.map((payment) => (
-                <div key={payment._id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-start gap-3 flex-1">
-                    <Checkbox
-                      checked={selectedPayments.includes(payment._id)}
-                      onCheckedChange={(v) => togglePaymentSelected(payment._id, v)}
-                      className="mt-1"
-                      aria-label="Select payment"
-                    />
-                    <div className="font-medium">{payment.serviceName}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-lg">
-                      {payment.currency} {payment.amount.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-4 flex-wrap">
-                      <div className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        <span 
-                          className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline"
-                          onClick={() => window.open(`/patient/${payment.patientId || 'unknown'}`, '_blank')}
-                        >
-                          {payment.patientName}
-                        </span>
+            <>
+              {/* Mobile Cards */}
+              <div className="grid grid-cols-1 gap-4 lg:hidden">
+                {filteredPayments.map((payment) => (
+                  <div key={payment._id} className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-4 space-y-3">
+                    {/* Header with checkbox and service name */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <Checkbox
+                          checked={selectedPayments.includes(payment._id)}
+                          onCheckedChange={(v) => togglePaymentSelected(payment._id, v)}
+                          className="mt-1 flex-shrink-0"
+                          aria-label="Select payment"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold truncate">{payment.serviceName}</div>
+                          <div className="text-sm text-muted-foreground truncate mt-1">
+                            <span 
+                              className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline"
+                              onClick={() => window.open(`/patient/${payment.patientId || 'unknown'}`, '_blank')}
+                            >
+                              {payment.patientName}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <ClipboardList className="w-3 h-3" />
-                        <span className="text-slate-700">Service: {payment.serviceName}</span>
+                      <div className="text-right flex-shrink-0 ml-3">
+                        <div className="font-bold text-lg">
+                          {payment.currency} {payment.amount.toLocaleString()}
+                        </div>
                         <Badge
-                          className={`ml-2 h-5 px-2 text-[10px] font-semibold rounded-full shadow-sm ${payment.releasedToProvider
+                          className={`text-[10px] font-semibold rounded-full shadow-sm ${payment.releasedToProvider
                             ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
                             : 'bg-gradient-to-r from-orange-500 to-amber-600 text-white'}`}
                         >
                           {payment.releasedToProvider ? 'Released' : (payment.serviceCompleted ? 'Pending Release' : 'Service Pending')}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(payment.createdAt).toLocaleDateString()}
-                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-lg">
-                      {payment.currency} {payment.amount.toLocaleString()}
-                    </div>
-                    {payment.releaseDate && (
-                      <div className="text-xs text-muted-foreground">
-                        Released: {new Date(payment.releaseDate).toLocaleDateString()}
+                    
+                    {/* Payment Details */}
+                    <div className="space-y-2 text-sm text-muted-foreground border-t pt-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <span>Payment Date: {new Date(payment.createdAt).toLocaleDateString()}</span>
                       </div>
-                    )}
-                    <div className="mt-2 flex justify-end">
+                      {payment.releaseDate && (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 flex-shrink-0 text-green-600" />
+                          <span>Released: {new Date(payment.releaseDate).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Action Button */}
+                    <div className="flex justify-end pt-2 border-t">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
                         onClick={() => { setPendingPaymentId(payment._id); setConfirmPaymentOpen(true); }}
-                        title="Delete from history"
                       >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete from History
                       </Button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              
+              {/* Desktop Layout */}
+              <div className="hidden lg:block space-y-4">
+                {filteredPayments.map((payment) => (
+                  <div key={payment._id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-start gap-3 flex-1">
+                      <Checkbox
+                        checked={selectedPayments.includes(payment._id)}
+                        onCheckedChange={(v) => togglePaymentSelected(payment._id, v)}
+                        className="mt-1"
+                        aria-label="Select payment"
+                      />
+                      <div className="font-medium">{payment.serviceName}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium text-lg">
+                        {payment.currency} {payment.amount.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          <span 
+                            className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline"
+                            onClick={() => window.open(`/patient/${payment.patientId || 'unknown'}`, '_blank')}
+                          >
+                            {payment.patientName}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <ClipboardList className="w-3 h-3" />
+                          <span className="text-slate-700">Service: {payment.serviceName}</span>
+                          <Badge
+                            className={`ml-2 h-5 px-2 text-[10px] font-semibold rounded-full shadow-sm ${payment.releasedToProvider
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                              : 'bg-gradient-to-r from-orange-500 to-amber-600 text-white'}`}
+                          >
+                            {payment.releasedToProvider ? 'Released' : (payment.serviceCompleted ? 'Pending Release' : 'Service Pending')}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(payment.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      {payment.releaseDate && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Released: {new Date(payment.releaseDate).toLocaleDateString()}
+                        </div>
+                      )}
+                      <div className="mt-2 flex justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => { setPendingPaymentId(payment._id); setConfirmPaymentOpen(true); }}
+                          title="Delete from history"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -901,7 +974,7 @@ const ProviderWallet = () => {
       {/* Invoices */}
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2 text-white">
               <ClipboardList className="w-5 h-5" />
               Invoices ({invoices.length})
@@ -910,7 +983,7 @@ const ProviderWallet = () => {
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 text-xs sm:text-sm whitespace-nowrap"
                 onClick={() => {
                   if (invoices.length === 0) return;
                   const allSelected = selectedInvoices.length === invoices.length;
@@ -922,18 +995,19 @@ const ProviderWallet = () => {
               <Button
                 size="sm"
                 variant={selectedInvoices.length > 0 ? 'destructive' : 'ghost'}
-                className={`${selectedInvoices.length > 0 ? 'bg-red-600 text-white hover:bg-red-700' : 'text-white hover:bg-white/20'}`}
+                className={`text-xs sm:text-sm whitespace-nowrap ${selectedInvoices.length > 0 ? 'bg-red-600 text-white hover:bg-red-700' : 'text-white hover:bg-white/20'}`}
                 disabled={selectedInvoices.length === 0}
                 onClick={() => setConfirmBulkInvoicesOpen(true)}
                 title="Delete selected invoices from your list"
               >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Bulk Delete
+                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Bulk Delete</span>
+                <span className="sm:hidden">Delete</span>
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-h-[600px] overflow-y-auto">
           {loadingInvoices ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -945,24 +1019,14 @@ const ProviderWallet = () => {
               <p className="text-muted-foreground">No invoices yet</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead>
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Subtotal (PKR)</TableHead>
-                    <TableHead className="text-right">Commission</TableHead>
-                    <TableHead className="text-right">Net Total (PKR)</TableHead>
-                    <TableHead className="text-right">Items</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoices.map((inv) => (
-                    <TableRow key={inv._id}>
-                      <TableCell className="w-10">
+            <>
+              {/* Mobile Cards */}
+              <div className="grid grid-cols-1 gap-4 lg:hidden">
+                {invoices.map((inv) => (
+                  <div key={inv._id} className="bg-white/80 backdrop-blur-sm border border-amber-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-4 space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
                         <Checkbox
                           checked={selectedInvoices.includes(inv._id)}
                           onCheckedChange={(v) => {
@@ -972,46 +1036,143 @@ const ProviderWallet = () => {
                               return Array.from(set);
                             });
                           }}
+                          className="mt-1 flex-shrink-0"
                           aria-label={`Select invoice ${inv.invoiceNumber}`}
                         />
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">{inv.invoiceNumber}</div>
-                        <div className="text-sm text-muted-foreground">{new Date(inv.issuedAt || inv.createdAt || Date.now()).toLocaleDateString()}</div>
-                      </TableCell>
-                      <TableCell className="text-right">{inv.totals?.subtotal?.toLocaleString?.() ?? '-'}</TableCell>
-                      <TableCell className="text-right">{inv.totals?.commissionAmount?.toLocaleString?.() ?? '-'}</TableCell>
-                      <TableCell className="text-right">{inv.totals?.netTotal?.toLocaleString?.() ?? '-'}</TableCell>
-                      <TableCell className="text-right">{inv.items?.length ?? 0}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button size="sm" variant="secondary" onClick={() => navigate(`/invoice/${inv._id}`)}>
-                            <Eye className="w-4 h-4 mr-1" />
-                            View Details
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => { setPreviewInvoiceData(inv); setPreviewOpen(true); }} title="Preview Invoice">
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => generateInvoicePDF(inv)} title="Download PDF">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => { setPendingInvoiceId(inv._id); setConfirmInvoiceOpen(true); }}
-                            title="Delete invoice from your list"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold truncate">{inv.invoiceNumber}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {new Date(inv.issuedAt || inv.createdAt || Date.now()).toLocaleDateString()}
+                          </div>
                         </div>
-                      </TableCell>
+                      </div>
+                      <div className="text-right flex-shrink-0 ml-3">
+                        <div className="font-bold text-lg text-green-600">
+                          PKR {inv.totals?.netTotal?.toLocaleString?.() ?? '-'}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {inv.items?.length ?? 0} items
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Invoice Details */}
+                    <div className="space-y-2 text-sm border-t pt-3">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Subtotal:</span>
+                        <span className="font-medium">PKR {inv.totals?.subtotal?.toLocaleString?.() ?? '-'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Commission:</span>
+                        <span className="font-medium text-red-600">PKR {inv.totals?.commissionAmount?.toLocaleString?.() ?? '-'}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-semibold">Net Total:</span>
+                        <span className="font-bold text-green-600">PKR {inv.totals?.netTotal?.toLocaleString?.() ?? '-'}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 pt-2 border-t">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button size="sm" variant="outline" onClick={() => navigate(`/invoice/${inv._id}`)} className="text-xs">
+                          <Eye className="w-3 h-3 mr-1" />
+                          View Details
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => { setPreviewInvoiceData(inv); setPreviewOpen(true); }} className="text-xs">
+                          <FileText className="w-3 h-3 mr-1" />
+                          Preview
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button size="sm" variant="outline" onClick={() => generateInvoicePDF(inv)} className="text-xs">
+                          <Download className="w-3 h-3 mr-1" />
+                          Download PDF
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
+                          onClick={() => { setPendingInvoiceId(inv._id); setConfirmInvoiceOpen(true); }}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead>Invoice #</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Subtotal (PKR)</TableHead>
+                      <TableHead className="text-right">Commission</TableHead>
+                      <TableHead className="text-right">Net Total (PKR)</TableHead>
+                      <TableHead className="text-right">Items</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {invoices.map((inv) => (
+                      <TableRow key={inv._id}>
+                        <TableCell className="w-10">
+                          <Checkbox
+                            checked={selectedInvoices.includes(inv._id)}
+                            onCheckedChange={(v) => {
+                              setSelectedInvoices((prev) => {
+                                const set = new Set(prev);
+                                if (v) set.add(inv._id); else set.delete(inv._id);
+                                return Array.from(set);
+                              });
+                            }}
+                            aria-label={`Select invoice ${inv.invoiceNumber}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{inv.invoiceNumber}</div>
+                          <div className="text-sm text-muted-foreground">{new Date(inv.issuedAt || inv.createdAt || Date.now()).toLocaleDateString()}</div>
+                        </TableCell>
+                        <TableCell className="text-right">{inv.totals?.subtotal?.toLocaleString?.() ?? '-'}</TableCell>
+                        <TableCell className="text-right">{inv.totals?.commissionAmount?.toLocaleString?.() ?? '-'}</TableCell>
+                        <TableCell className="text-right">{inv.totals?.netTotal?.toLocaleString?.() ?? '-'}</TableCell>
+                        <TableCell className="text-right">{inv.items?.length ?? 0}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button size="sm" variant="secondary" onClick={() => navigate(`/invoice/${inv._id}`)}>
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Details
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => { setPreviewInvoiceData(inv); setPreviewOpen(true); }} title="Preview Invoice">
+                              <FileText className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => generateInvoicePDF(inv)} title="Download PDF">
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => { setPendingInvoiceId(inv._id); setConfirmInvoiceOpen(true); }}
+                              title="Delete invoice from your list"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -1090,7 +1251,7 @@ const ProviderWallet = () => {
       {/* Withdrawal History */}
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2 text-white">
               <ArrowUpRight className="w-5 h-5" />
               Withdrawal History ({withdrawals.length})
@@ -1105,7 +1266,7 @@ const ProviderWallet = () => {
                 aria-label="Select all"
               />
               <Button
-                className="bg-white text-red-600 hover:bg-red-50 shadow-lg transition-all duration-300"
+                className="bg-white text-red-600 hover:bg-red-50 shadow-lg transition-all duration-300 text-xs sm:text-sm whitespace-nowrap"
                 size="sm"
                 disabled={!anySelected}
                 onClick={() => {
@@ -1115,12 +1276,13 @@ const ProviderWallet = () => {
                   setConfirmOpen(true);
                 }}
               >
-                Delete Selected
+                <span className="hidden sm:inline">Delete Selected</span>
+                <span className="sm:hidden">Delete</span>
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-h-[600px] overflow-y-auto">
           {loadingWithdrawals ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -1132,58 +1294,135 @@ const ProviderWallet = () => {
               <p className="text-muted-foreground">No withdrawals yet</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {withdrawals.map((w) => (
-                <div key={w._id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="flex-1">
-                    <div className="mb-2">
-                      <Checkbox
-                        checked={selectedWithdrawals.includes(w._id)}
-                        onCheckedChange={(val) => toggleSelected(w._id, !!val)}
-                        aria-label={`Select ${w._id}`}
-                      />
-                    </div>
-                    <div className="font-medium">{w.paymentMethod?.toUpperCase()} Withdrawal</div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        {w.accountName} • {w.accountNumber}
+            <>
+              {/* Mobile Cards */}
+              <div className="grid grid-cols-1 gap-4 lg:hidden">
+                {withdrawals.map((w) => (
+                  <div key={w._id} className="bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-4 space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <Checkbox
+                          checked={selectedWithdrawals.includes(w._id)}
+                          onCheckedChange={(val) => toggleSelected(w._id, !!val)}
+                          className="mt-1 flex-shrink-0"
+                          aria-label={`Select ${w._id}`}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold truncate">{w.paymentMethod?.toUpperCase()} Withdrawal</div>
+                          <div className="text-sm text-muted-foreground truncate mt-1">
+                            {w.accountName} • {w.accountNumber}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(w.createdAt).toLocaleDateString()}
+                      <div className="text-right flex-shrink-0 ml-3">
+                        <div className="font-bold text-lg">PKR {w.amount.toLocaleString()}</div>
+                        <div className="mt-1">
+                          {w.status === 'completed' && (
+                            <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md text-xs">Completed</Badge>
+                          )}
+                          {w.status === 'approved' && (
+                            <Badge variant="default" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md text-xs">Approved</Badge>
+                          )}
+                          {w.status === 'rejected' && (
+                            <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md text-xs">Rejected</Badge>
+                          )}
+                          {w.status === 'pending' && (
+                            <Badge variant="outline" className="text-xs">Pending</Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-lg">PKR {w.amount.toLocaleString()}</div>
-                    <div className="flex items-center justify-end gap-2">
-                      {w.status === 'completed' && (
-                        <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md">Completed</Badge>
-                      )}
-                      {w.status === 'approved' && (
-                        <Badge variant="default" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">Approved</Badge>
-                      )}
-                      {w.status === 'rejected' && (
-                        <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md">Rejected</Badge>
-                      )}
+                    
+                    {/* Withdrawal Details */}
+                    <div className="space-y-2 text-sm text-muted-foreground border-t pt-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <span>Requested: {new Date(w.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 flex-shrink-0" />
+                        <span>Method: {w.paymentMethod?.toUpperCase()}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Action Button */}
+                    <div className="flex justify-end pt-2 border-t">
                       <Button
                         variant="ghost"
-                        size="icon"
-                        title={'Delete this withdrawal'}
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
                         onClick={() => {
                           setConfirmMode('single');
                           setPendingId(w._id);
                           setConfirmOpen(true);
                         }}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Withdrawal
                       </Button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              
+              {/* Desktop Layout */}
+              <div className="hidden lg:block space-y-4">
+                {withdrawals.map((w) => (
+                  <div key={w._id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                    <div className="flex-1">
+                      <div className="mb-2">
+                        <Checkbox
+                          checked={selectedWithdrawals.includes(w._id)}
+                          onCheckedChange={(val) => toggleSelected(w._id, !!val)}
+                          aria-label={`Select ${w._id}`}
+                        />
+                      </div>
+                      <div className="font-medium">{w.paymentMethod?.toUpperCase()} Withdrawal</div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {w.accountName} • {w.accountNumber}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(w.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium text-lg">PKR {w.amount.toLocaleString()}</div>
+                      <div className="flex items-center justify-end gap-2">
+                        {w.status === 'completed' && (
+                          <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md">Completed</Badge>
+                        )}
+                        {w.status === 'approved' && (
+                          <Badge variant="default" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">Approved</Badge>
+                        )}
+                        {w.status === 'rejected' && (
+                          <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md">Rejected</Badge>
+                        )}
+                        {w.status === 'pending' && (
+                          <Badge variant="outline">Pending</Badge>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={'Delete this withdrawal'}
+                          onClick={() => {
+                            setConfirmMode('single');
+                            setPendingId(w._id);
+                            setConfirmOpen(true);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -1222,24 +1461,24 @@ const ProviderWallet = () => {
       </AlertDialog>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 shadow-xl">
           <CardHeader className="bg-gradient-to-r from-violet-500 to-purple-600 text-white">
-            <CardTitle className="text-white">Service Statistics</CardTitle>
+            <CardTitle className="text-white text-sm sm:text-base">Service Statistics</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span>Total Services</span>
-                <span className="font-medium">{wallet.totalServices}</span>
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm sm:text-base">Total Services</span>
+                <span className="font-medium text-sm sm:text-base">{wallet.totalServices}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Completed Services</span>
-                <span className="font-medium text-green-600">{wallet.completedServices}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-sm sm:text-base">Completed Services</span>
+                <span className="font-medium text-green-600 text-sm sm:text-base">{wallet.completedServices}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Completion Rate</span>
-                <span className="font-medium">
+              <div className="flex justify-between items-center">
+                <span className="text-sm sm:text-base">Completion Rate</span>
+                <span className="font-medium text-sm sm:text-base">
                   {wallet.totalServices > 0 
                     ? Math.round((wallet.completedServices / wallet.totalServices) * 100)
                     : 0}%
@@ -1251,23 +1490,23 @@ const ProviderWallet = () => {
 
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-cyan-50 via-teal-50 to-emerald-50 shadow-xl">
           <CardHeader className="bg-gradient-to-r from-cyan-500 to-teal-600 text-white">
-            <CardTitle className="text-white">Payment Methods</CardTitle>
+            <CardTitle className="text-white text-sm sm:text-base">Payment Methods</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-green-600" />
-                  <span>EasyPaisa</span>
+                  <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">EasyPaisa</span>
                 </div>
-                <Badge variant="outline">Available</Badge>
+                <Badge variant="outline" className="text-xs sm:text-sm">Available</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-red-600" />
-                  <span>JazzCash</span>
+                  <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">JazzCash</span>
                 </div>
-                <Badge variant="outline">Available</Badge>
+                <Badge variant="outline" className="text-xs sm:text-sm">Available</Badge>
               </div>
             </div>
           </CardContent>
