@@ -476,7 +476,7 @@ const ClinicDashboard = () => {
           city: serviceForm.city,
           detailAddress: serviceForm.detailAddress,
           availability: serviceForm.availability,
-          serviceType: serviceForm.serviceType || undefined,
+          serviceType: (Array.isArray(serviceForm.serviceType) && serviceForm.serviceType.length > 0) ? serviceForm.serviceType : undefined,
           homeDelivery: serviceForm.homeDelivery,
           providerName: user?.name || 'Clinic',
         });
@@ -495,7 +495,7 @@ const ClinicDashboard = () => {
         city: '',
         detailAddress: '',
         availability: 'Physical',
-        serviceType: '',
+        serviceType: [],
         homeDelivery: false
       });
       setServiceImage('');
@@ -540,7 +540,10 @@ const ClinicDashboard = () => {
         </div>
 
         {/* Verification Banner */}
-        {!user?.isVerified && (
+        {user?.role === 'clinic/hospital' &&
+         !user?.isVerified &&
+         user?.verificationStatus === 'pending' &&
+         Boolean(user?.licenseNumber && String(user.licenseNumber).trim().length > 0) && (
           <Card className="mb-8 border-warning bg-warning/5">
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
@@ -572,7 +575,6 @@ const ClinicDashboard = () => {
                   <Activity className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
 
@@ -587,7 +589,6 @@ const ClinicDashboard = () => {
                   <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
 
@@ -604,7 +605,6 @@ const ClinicDashboard = () => {
                   <Wallet className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
 
@@ -621,7 +621,6 @@ const ClinicDashboard = () => {
                   <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 rounded-full -translate-y-10 sm:-translate-y-14 md:-translate-y-16 translate-x-10 sm:translate-x-14 md:translate-x-16"></div>
             </CardContent>
           </Card>
         </div>
@@ -630,6 +629,7 @@ const ClinicDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <Tabs defaultValue="services">
+              {/* ... */}
               <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
                 <TabsTrigger 
                   value="services" 
@@ -1182,61 +1182,68 @@ const ClinicDashboard = () => {
                         <p className="text-sm text-muted-foreground">Patient bookings will appear here</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {bookings.map((booking) => (
-                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                            <div className="flex-1 min-w-0">
-                              <h4 
-                                className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline transition-colors"
-                                onClick={() => navigate(`/patient/${booking.patientId}`)}
-                              >
-                                {booking.patientName}
-                              </h4>
-                              <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
-                                <div className="flex items-center space-x-1">
-                                  <Calendar className="w-4 h-4" />
-                                  <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
-                                </div>
-                                {booking.status === 'Scheduled' && booking.scheduledTime && (
-                                  <div className="flex items-center space-x-1 text-primary font-semibold">
-                                    <Clock className="w-4 h-4" />
-                                    <span>Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
+                      bookings.length === 0 ? (
+                        <div className="text-center py-10 text-muted-foreground">
+                          <p className="text-sm font-medium">No bookings yet.</p>
+                          <p className="text-xs">When patients book your services, they will appear here.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {bookings.map((booking) => (
+                            <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                              <div className="flex-1 min-w-0">
+                                <h4 
+                                  className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline transition-colors"
+                                  onClick={() => navigate(`/patient/${booking.patientId}`)}
+                                >
+                                  {booking.patientName}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+                                  <div className="flex items-center space-x-1">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
                                   </div>
+                                  {booking.status === 'Scheduled' && booking.scheduledTime && (
+                                    <div className="flex items-center space-x-1 text-primary font-semibold">
+                                      <Clock className="w-4 h-4" />
+                                      <span>Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="sm:text-right flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-medium mt-1">
+                                  {resolveBookingPrice(booking) === 0
+                                    ? 'Free'
+                                    : `PKR ${resolveBookingPrice(booking).toLocaleString()}`}
+                                </p>
+                                <Badge
+                                  variant={booking.status === "Completed" ? "default" : "secondary"}
+                                  className={booking.status === "Completed" ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white" : booking.status === 'Scheduled' ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white' : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white'}
+                                >
+                                  {booking.status}
+                                </Badge>
+                                {booking.status === 'Confirmed' && (
+                                  <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white shadow-md" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
+                                )}
+                                {booking.status === 'Scheduled' && (
+                                  <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
+                                )}
+                                {booking.status === 'Completed' && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => deleteBooking(booking._id)}
+                                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md"
+                                  >
+                                    Delete
+                                  </Button>
                                 )}
                               </div>
                             </div>
-                            <div className="sm:text-right flex items-center gap-2 flex-wrap">
-                              <p className="text-sm font-medium mt-1">
-                                {resolveBookingPrice(booking) === 0
-                                  ? 'Free'
-                                  : `PKR ${resolveBookingPrice(booking).toLocaleString()}`}
-                              </p>
-                              <Badge
-                                variant={booking.status === "Completed" ? "default" : "secondary"}
-                                className={booking.status === "Completed" ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white" : booking.status === 'Scheduled' ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white' : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white'}
-                              >
-                                {booking.status}
-                              </Badge>
-                              {booking.status === 'Confirmed' && (
-                                <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white shadow-md" onClick={() => { setSelectedBooking(booking); setIsScheduling(true); }}>Schedule</Button>
-                              )}
-                              {booking.status === 'Scheduled' && (
-                                <Button size="sm" className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md" onClick={() => completeBooking(booking._id)}>Mark as Complete</Button>
-                              )}
-                              {booking.status === 'Completed' && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => deleteBooking(booking._id)}
-                                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-md"
-                                >
-                                  Delete
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )
                     )}
                   </CardContent>
                 </Card>

@@ -314,7 +314,10 @@ const DoctorDashboard = () => {
         </div>
 
         {/* Verification Banner */}
-        {!user?.isVerified && (
+        {user?.role === 'doctor' &&
+         !user?.isVerified &&
+         (user as any)?.verificationStatus === 'pending' &&
+         Boolean(String((user as any)?.licenseNumber || '').trim().length) && (
           <Card className="mb-8 border-warning bg-warning/5">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-4 space-y-3 sm:space-y-0">

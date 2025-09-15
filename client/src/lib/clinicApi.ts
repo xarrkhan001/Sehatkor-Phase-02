@@ -8,6 +8,13 @@ export type ClinicServiceDoc = {
   duration?: string;
   imageUrl?: string;
   imagePublicId?: string;
+  // Optional location and availability fields used in ClinicDashboard
+  googleMapLink?: string;
+  city?: string;
+  detailAddress?: string;
+  availability?: string;
+  serviceType?: string[];
+  homeDelivery?: boolean;
   providerId: string;
   providerName: string;
   providerType: 'clinic';

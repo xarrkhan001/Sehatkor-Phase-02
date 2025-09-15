@@ -376,7 +376,10 @@ const HospitalDashboard = () => {
         </div>
 
         {/* Verification Banner */}
-        {!user?.isVerified && (
+        {user?.role === 'clinic/hospital' &&
+         !user?.isVerified &&
+         (user as any)?.verificationStatus === 'pending' &&
+         Boolean(String((user as any)?.licenseNumber || '').trim().length) && (
           <Card className="mb-8 border-warning bg-warning/5">
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">

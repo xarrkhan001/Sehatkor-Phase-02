@@ -248,7 +248,7 @@ const LaboratoryDashboard = () => {
       city: t.city || '',
       detailAddress: t.detailAddress || '',
       availability: (t.availability as any) || 'Physical',
-      serviceType: (t.serviceType as any) || '',
+      serviceType: Array.isArray(t.serviceType) ? t.serviceType : (t.serviceType ? [t.serviceType] : []),
       imageUrl: t.image || '',
       homeDelivery: Boolean(t.homeDelivery) || false
     });
@@ -557,7 +557,7 @@ const LaboratoryDashboard = () => {
       ServiceManager.addService(newTest);
 
       // Reset form
-      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: '', homeDelivery: false });
+      setTestForm({ name: '', price: '', duration: '', description: '', category: '', googleMapLink: '', city: '', detailAddress: '', availability: 'Physical', serviceType: [], homeDelivery: false });
       setAddErrors({});
 
       setTestImagePreview('');
@@ -597,7 +597,10 @@ const LaboratoryDashboard = () => {
         </div>
 
         {/* Verification Banner */}
-        {!user?.isVerified && (
+        {user?.role === 'laboratory' &&
+         !user?.isVerified &&
+         (user as any)?.verificationStatus === 'pending' &&
+         Boolean(String((user as any)?.licenseNumber || '').trim().length) && (
           <Card className="mb-8 border-warning bg-warning/5">
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
