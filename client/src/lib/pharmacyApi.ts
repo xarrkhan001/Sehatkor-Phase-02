@@ -13,6 +13,9 @@ export type MedicineDoc = {
   googleMapLink?: string;
   city?: string;
   detailAddress?: string;
+  availability?: string;
+  serviceType?: string[];
+  homeDelivery?: boolean;
   createdAt: string;
   updatedAt: string;
 };

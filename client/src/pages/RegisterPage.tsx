@@ -141,6 +141,49 @@ const getValidationSchema = (role: string) => {
   return Yup.object({ ...baseSchema, ...roleSpecificSchema });
 };
 
+// Validation schema for Google additional-fields flow
+const getGoogleValidationSchema = (role: string) => {
+  // Base validations required for all roles in Google completion flow
+  const base: Record<string, any> = {
+    name: Yup.string().min(2).max(50).required(),
+    email: Yup.string().email().required(),
+    role: Yup.string().required(),
+    phone: Yup.string()
+      .matches(/^[0-9]{10}$/i, 'Phone number must be 10 digits')
+      .required('Phone number is required'),
+    cnic: Yup.string()
+      .matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1')
+      .required('CNIC number is required'),
+    city: Yup.string().required('Please select your city'),
+  };
+
+  // Role-specific requirements
+  const roleSpecific: Record<string, any> = {};
+  if (role === 'doctor') {
+    roleSpecific.licenseNumber = Yup.string()
+      .min(3, 'License number must be at least 3 characters')
+      .required('License number is required');
+    roleSpecific.designation = Yup.string()
+      .min(2, 'Designation must be at least 2 characters')
+      .required('Designation is required');
+  }
+
+  if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(role)) {
+    roleSpecific.businessName = Yup.string()
+      .min(2, 'Business name must be at least 2 characters')
+      .required('Business name is required');
+    roleSpecific.licenseNumber = Yup.string()
+      .min(3, 'License number must be at least 3 characters')
+      .required('License number is required');
+    roleSpecific.address = Yup.string()
+      .min(10, 'Address must be at least 10 characters')
+      .required('Complete address is required');
+    roleSpecific.province = Yup.string().required('Please select your province');
+  }
+
+  return Yup.object({ ...base, ...roleSpecific });
+};
+
 const RegisterPage = () => {
   const initialValues = {
     role: "patient",
@@ -189,6 +232,7 @@ const RegisterPage = () => {
   const [providerDoc, setProviderDoc] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showDocModal, setShowDocModal] = useState(false);
+  const [googleErrors, setGoogleErrors] = useState<Record<string, string>>({});
 
   const roles = [
     { value: "patient", label: "Patient", icon: User, description: "Book appointments and manage health records", gradient: "from-blue-500 to-cyan-500", bgColor: "bg-blue-50", iconColor: "text-blue-600" },
@@ -197,6 +241,12 @@ const RegisterPage = () => {
     { value: "laboratory", label: "Laboratory", icon: FlaskConical, description: "Provide diagnostic and testing services", gradient: "from-orange-500 to-red-500", bgColor: "bg-orange-50", iconColor: "text-orange-600" },
     { value: "pharmacy", label: "Pharmacy", icon: ShoppingBag, description: "Sell medicines and health products", gradient: "from-pink-500 to-rose-500", bgColor: "bg-pink-50", iconColor: "text-pink-600" }
   ];
+
+  // Whitelist of Google additional fields per role for per-field validation
+  const GOOGLE_BASE_FIELDS = ['name', 'email', 'role', 'phone', 'cnic', 'city'] as const;
+  const GOOGLE_DOCTOR_FIELDS = ['licenseNumber', 'designation'] as const;
+  const GOOGLE_PROVIDER_FIELDS = ['businessName', 'address', 'province', 'licenseNumber'] as const;
+  const isProviderRole = (role: string) => ['clinic/hospital', 'laboratory', 'pharmacy'].includes(role);
 
   const servicesOptions = [
     "OPD Consultation", "IPD / Admissions", "Emergency Services", "Lab Tests", 
@@ -281,30 +331,21 @@ const RegisterPage = () => {
       return;
     }
 
-    // Validate required fields
-    const requiredFields = ['phone', 'cnic', 'address', 'city', 'province'];
-    const missingFields = requiredFields.filter((field) => {
-      const v = (currentFormValues as any)[field];
-      return !v || (typeof v === 'string' && v.trim() === '');
-    });
-    
-    // Role-specific required fields
-    if (currentFormValues.role === 'doctor' && (!currentFormValues.licenseNumber || currentFormValues.licenseNumber.trim() === '')) {
-      missingFields.push('licenseNumber');
-    }
-    if (currentFormValues.role === 'doctor' && (!currentFormValues.designation || currentFormValues.designation.trim() === '')) {
-      missingFields.push('designation');
-    }
-    if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) && (!currentFormValues.businessName || currentFormValues.businessName.trim() === '')) {
-      missingFields.push('businessName');
-    }
-
-    if (missingFields.length > 0) {
-      toast({
-        title: "Missing Required Fields",
-        description: `Please fill in: ${missingFields.join(', ')}`,
-        variant: "destructive"
-      });
+    // Schema validation for Google additional fields
+    try {
+      setGoogleErrors({});
+      await getGoogleValidationSchema(currentFormValues.role).validate(currentFormValues, { abortEarly: false });
+    } catch (err: any) {
+      const errs: Record<string, string> = {};
+      if (err?.inner && Array.isArray(err.inner)) {
+        err.inner.forEach((e: any) => {
+          if (e.path && !errs[e.path]) errs[e.path] = e.message;
+        });
+      } else if (err?.path && err?.message) {
+        errs[err.path] = err.message;
+      }
+      setGoogleErrors(errs);
+      toast({ title: 'Missing Required Fields', description: 'Please correct the highlighted fields.', variant: 'destructive' });
       return;
     }
 
@@ -333,13 +374,13 @@ const RegisterPage = () => {
       };
 
       // Complete Google registration with additional fields
-      const res = await fetch('http://localhost:4000/api/auth/google/register', {
+      const res = await fetch('http://localhost:4000/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           idToken: googleIdToken,
           role: currentFormValues.role || 'patient',
-          ...additionalFields,
+          additionalFields,
         }),
       });
       const data = await res.json();
@@ -897,6 +938,70 @@ const RegisterPage = () => {
     );
   };
 
+  const handleGoogleFieldChange = (field: string, value: any) => {
+    setCurrentFormValues((prev) => {
+      // Deep-set clone
+      const next = { ...prev } as any;
+      if (field.includes('.')) {
+        const parts = field.split('.');
+        let ref = next;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const p = parts[i];
+          ref[p] = ref[p] ?? {};
+          ref = ref[p];
+        }
+        ref[parts[parts.length - 1]] = value;
+      } else {
+        (next as any)[field] = value;
+      }
+
+      // Validate this specific field with the Google schema and clear/set error
+      const schema = getGoogleValidationSchema(next.role);
+      // Only validate fields that are in our whitelist for the current role
+      const allowed = new Set<string>([
+        ...GOOGLE_BASE_FIELDS,
+        ...(next.role === 'doctor' ? GOOGLE_DOCTOR_FIELDS : []),
+        ...(isProviderRole(next.role) ? GOOGLE_PROVIDER_FIELDS : []),
+      ] as readonly string[]);
+      if (!allowed.has(field)) {
+        setGoogleErrors((errs) => {
+          if (!(field in errs)) return errs;
+          const { [field]: _, ...rest } = errs;
+          return rest;
+        });
+        return next;
+      }
+
+      try {
+        const result = (schema as any).validateAt(field, next);
+        if (result && typeof (result as any).then === 'function') {
+          (result as Promise<any>)
+            .then(() => {
+              setGoogleErrors((errs) => {
+                if (!(field in errs)) return errs;
+                const { [field]: _, ...rest } = errs;
+                return rest;
+              });
+            })
+            .catch((e: any) => {
+              if (e?.message) {
+                setGoogleErrors((errs) => ({ ...errs, [field]: e.message }));
+              }
+            });
+        }
+      } catch (e: any) {
+        // Path not in schema or other sync error: clear any existing error and continue
+        setGoogleErrors((errs) => {
+          if (!(field in errs)) return errs;
+          const { [field]: _, ...rest } = errs;
+          return rest;
+        });
+      }
+
+      return next;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
       <div className="container mx-auto max-w-4xl">
@@ -1038,7 +1143,10 @@ const RegisterPage = () => {
                             className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${
                               isSelected ? "scale-105" : ""
                             }`}
-                            onClick={() => handleInputChange("role", role.value)}
+                            onClick={() => {
+                            setGoogleErrors({});
+                            handleGoogleFieldChange("role", role.value);
+                          }}
                           >
                             <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[120px] ${
                               isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
@@ -1084,7 +1192,7 @@ const RegisterPage = () => {
                         <Label htmlFor="google-phone">Phone Number *</Label>
                         <div className="flex gap-2">
                           <div className="w-32">
-                            <Select value={currentFormValues.phoneCountryCode} onValueChange={(value) => handleInputChange("phoneCountryCode", value)}>
+                            <Select value={currentFormValues.phoneCountryCode} onValueChange={(value) => handleGoogleFieldChange("phoneCountryCode", value)}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Code" />
                               </SelectTrigger>
@@ -1104,23 +1212,30 @@ const RegisterPage = () => {
                             <Input
                               id="google-phone"
                               value={currentFormValues.phone}
-                              onChange={(e) => handleInputChange("phone", e.target.value)}
+                              onChange={(e) => handleGoogleFieldChange("phone", e.target.value)}
                               placeholder="300 1234567"
                               required
                             />
+                            {googleErrors.phone && (
+                              <p className="text-xs text-red-600 mt-1">{googleErrors.phone}</p>
+                            )}
                           </div>
                         </div>
                       </div>
-                      <div>
-                        <Label htmlFor="google-cnic">CNIC Number *</Label>
-                        <Input
-                          id="google-cnic"
-                          value={currentFormValues.cnic}
-                          onChange={(e) => handleInputChange("cnic", e.target.value)}
-                          placeholder="12345-1234567-1"
-                          required
-                        />
-                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="google-cnic">CNIC Number *</Label>
+                      <Input
+                        id="google-cnic"
+                        value={currentFormValues.cnic}
+                        onChange={(e) => handleGoogleFieldChange("cnic", e.target.value)}
+                        placeholder="12345-1234567-1"
+                        required
+                      />
+                      {googleErrors.cnic && (
+                        <p className="text-xs text-red-600 mt-1">{googleErrors.cnic}</p>
+                      )}
                     </div>
 
                     <div>
@@ -1130,17 +1245,20 @@ const RegisterPage = () => {
                       <Textarea
                         id="google-address"
                         value={currentFormValues.address}
-                        onChange={(e) => handleInputChange("address", e.target.value)}
+                        onChange={(e) => handleGoogleFieldChange("address", e.target.value)}
                         placeholder="Enter complete address"
                         rows={3}
                         required={['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role)}
                       />
+                      {googleErrors.address && (
+                        <p className="text-xs text-red-600 mt-1">{googleErrors.address}</p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="google-city">City *</Label>
-                        <Select value={currentFormValues.city} onValueChange={(value) => handleInputChange("city", value)}>
+                        <Select value={currentFormValues.city} onValueChange={(value) => handleGoogleFieldChange("city", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select your city" />
                           </SelectTrigger>
@@ -1155,12 +1273,15 @@ const RegisterPage = () => {
                             <SelectItem value="Quetta">Quetta</SelectItem>
                           </SelectContent>
                         </Select>
+                        {googleErrors.city && (
+                          <p className="text-xs text-red-600 mt-1">{googleErrors.city}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="google-province">
                           Province *{['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) ? '*' : ''}
                         </Label>
-                        <Select value={currentFormValues.province} onValueChange={(value) => handleInputChange("province", value)}>
+                        <Select value={currentFormValues.province} onValueChange={(value) => handleGoogleFieldChange("province", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select province" />
                           </SelectTrigger>
@@ -1170,6 +1291,9 @@ const RegisterPage = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {googleErrors.province && (
+                          <p className="text-xs text-red-600 mt-1">{googleErrors.province}</p>
+                        )}
                       </div>
                     </div>
 
@@ -1181,34 +1305,58 @@ const RegisterPage = () => {
                           <Input
                             id="google-license"
                             value={currentFormValues.licenseNumber}
-                            onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
+                            onChange={(e) => handleGoogleFieldChange("licenseNumber", e.target.value)}
                             placeholder="Enter license number"
                             required
                           />
+                          {googleErrors.licenseNumber && (
+                            <p className="text-xs text-red-600 mt-1">{googleErrors.licenseNumber}</p>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="google-designation">Designation *</Label>
                           <Input
                             id="google-designation"
                             value={currentFormValues.designation}
-                            onChange={(e) => handleInputChange("designation", e.target.value)}
+                            onChange={(e) => handleGoogleFieldChange("designation", e.target.value)}
                             placeholder="e.g., Medical Officer, Consultant"
                             required
                           />
+                          {googleErrors.designation && (
+                            <p className="text-xs text-red-600 mt-1">{googleErrors.designation}</p>
+                          )}
                         </div>
                       </div>
                     )}
 
                     {['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) && (
-                      <div>
-                        <Label htmlFor="google-business">Business Name *</Label>
-                        <Input
-                          id="google-business"
-                          value={currentFormValues.businessName}
-                          onChange={(e) => handleInputChange("businessName", e.target.value)}
-                          placeholder="Enter business/facility name"
-                          required
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="google-business">Business Name *</Label>
+                          <Input
+                            id="google-business"
+                            value={currentFormValues.businessName}
+                            onChange={(e) => handleGoogleFieldChange("businessName", e.target.value)}
+                            placeholder="Enter business/facility name"
+                            required
+                          />
+                          {googleErrors.businessName && (
+                            <p className="text-xs text-red-600 mt-1">{googleErrors.businessName}</p>
+                          )}
+                        </div>
+                        <div>
+                          <Label htmlFor="google-license-provider">License Number *</Label>
+                          <Input
+                            id="google-license-provider"
+                            value={currentFormValues.licenseNumber}
+                            onChange={(e) => handleGoogleFieldChange("licenseNumber", e.target.value)}
+                            placeholder="Enter license number"
+                            required
+                          />
+                          {googleErrors.licenseNumber && (
+                            <p className="text-xs text-red-600 mt-1">{googleErrors.licenseNumber}</p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
