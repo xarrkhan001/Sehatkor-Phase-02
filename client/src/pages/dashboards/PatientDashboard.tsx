@@ -164,10 +164,10 @@ const PatientDashboard = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-0">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage your health services and appointments from your dashboard
             </p>
           </div>
@@ -194,14 +194,14 @@ const PatientDashboard = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Total Bookings Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-100 opacity-90">Total Bookings</p>
-                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : stats.totalBookings}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{isLoading ? "..." : stats.totalBookings}</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
                   <Calendar className="w-6 h-6 text-white" />
@@ -213,11 +213,11 @@ const PatientDashboard = () => {
 
           {/* Completed Bookings Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-green-100 opacity-90">Completed</p>
-                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : stats.completedBookings}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{isLoading ? "..." : stats.completedBookings}</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
                   <CheckCircle className="w-6 h-6 text-white" />
@@ -229,11 +229,11 @@ const PatientDashboard = () => {
 
           {/* Pending Bookings Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-purple-100 opacity-90">Pending</p>
-                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : stats.pendingBookings}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{isLoading ? "..." : stats.pendingBookings}</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
                   <Clock className="w-6 h-6 text-white" />
@@ -245,11 +245,11 @@ const PatientDashboard = () => {
 
           {/* Total Spent Card */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-amber-100 opacity-90">Total Spent</p>
-                  <p className="text-3xl font-bold text-white">{isLoading ? "..." : `PKR ${stats.totalSpent.toLocaleString()}`}</p>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{isLoading ? "..." : `PKR ${stats.totalSpent.toLocaleString()}`}</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
                   <CreditCard className="w-6 h-6 text-white" />
@@ -261,20 +261,20 @@ const PatientDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Tabs Section */}
           <div className="lg:col-span-2">
-            <Tabs defaultValue="bookings" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
+            <Tabs defaultValue="bookings" className="space-y-4 sm:space-y-6">
+              <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner h-10 sm:h-12">
                 <TabsTrigger 
                   value="bookings" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-400 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm"
                 >
                   My Bookings
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-lg font-medium text-xs sm:text-sm"
                 >
                   Booking History
                 </TabsTrigger>
@@ -289,14 +289,14 @@ const PatientDashboard = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
                       {bookings.filter(b => b.status !== 'Completed').length > 0 ? (
                         bookings.filter(b => b.status !== 'Completed').map((booking) => (
-                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-0">
                             <div className="flex-1">
-                              <h4 className="font-medium">{booking.serviceName}</h4>
-                              <p className="text-sm text-muted-foreground">{booking.providerName}</p>
-                              <div className="flex flex-col space-y-2 mt-2 text-sm text-muted-foreground">
+                              <h4 className="font-medium text-sm sm:text-base">{booking.serviceName}</h4>
+                              <p className="text-xs sm:text-sm text-muted-foreground">{booking.providerName}</p>
+                              <div className="flex flex-col space-y-1 sm:space-y-2 mt-2 text-xs sm:text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-2">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked on: {new Date(booking.createdAt).toLocaleDateString()}</span>
@@ -315,7 +315,7 @@ const PatientDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right sm:text-right text-left">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
                                 className={
@@ -326,7 +326,7 @@ const PatientDashboard = () => {
                               >
                                 {booking.status}
                               </Badge>
-                              <p className="text-sm font-medium mt-1">
+                              <p className="text-xs sm:text-sm font-medium mt-1">
                                 {resolveBookingPrice(booking) === 0
                                   ? 'Free'
                                   : `PKR ${resolveBookingPrice(booking).toLocaleString()}`}
@@ -360,6 +360,7 @@ const PatientDashboard = () => {
                           variant="destructive" 
                           size="sm"
                           onClick={deleteAllBookings}
+                          className="text-xs sm:text-sm"
                         >
                           Delete All
                         </Button>
@@ -379,15 +380,13 @@ const PatientDashboard = () => {
                         <p className="text-sm text-muted-foreground">Your booking history will appear here</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
                         {bookings.map((booking) => (
-                          <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div key={booking._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-0">
                             <div className="flex-1">
-                              <h4 className="font-medium">{booking.serviceName}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {booking.providerName} ({booking.providerType})
-                              </p>
-                              <div className="flex flex-col space-y-2 mt-2 text-sm text-muted-foreground">
+                              <h4 className="font-medium text-sm sm:text-base">{booking.serviceName}</h4>
+                              <p className="text-xs sm:text-sm text-muted-foreground">{booking.providerName}</p>
+                              <div className="flex flex-col space-y-1 sm:space-y-2 mt-2 text-xs sm:text-sm text-muted-foreground">
                                 <div className="flex items-center space-x-2">
                                   <Calendar className="w-4 h-4" />
                                   <span>Booked on: {new Date(booking.createdAt).toLocaleDateString()}</span>
@@ -406,7 +405,7 @@ const PatientDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right flex flex-col items-end space-y-2">
+                            <div className="text-right sm:text-right text-left flex flex-col sm:items-end items-start space-y-2">
                               <Badge
                                 variant={booking.status === "Completed" ? "default" : "secondary"}
                                 className={
@@ -417,7 +416,7 @@ const PatientDashboard = () => {
                               >
                                 {booking.status}
                               </Badge>
-                              <p className="text-sm font-medium mt-1">
+                              <p className="text-xs sm:text-sm font-medium mt-1">
                                 {resolveBookingPrice(booking) === 0
                                   ? 'Free'
                                   : `PKR ${resolveBookingPrice(booking).toLocaleString()}`}
@@ -426,7 +425,7 @@ const PatientDashboard = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => deleteBooking(booking._id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
                               >
                                 Delete
                               </Button>
@@ -479,19 +478,19 @@ const PatientDashboard = () => {
 
                 <div className="space-y-2 mt-4">
                   <Button 
-                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm" 
+                    className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm text-xs sm:text-sm" 
                     variant="outline"
                     onClick={() => setEditDialogOpen(true)}
                   >
-                    <Edit className="w-4 h-4 mr-2" />
+                    <Edit className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
                     Edit Profile
                   </Button>
                   <Button 
-                    className="w-full bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+                    className="w-full bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm text-xs sm:text-sm"
                     variant="outline"
                     onClick={() => navigate(`/patient/${user?.id}`)}
                   >
-                    <User className="w-4 h-4 mr-2" />
+                    <User className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
                     See Public Profile
                   </Button>
                 </div>
