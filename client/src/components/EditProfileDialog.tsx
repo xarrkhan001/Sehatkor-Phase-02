@@ -112,6 +112,7 @@ const EditProfileDialog: React.FC<Props> = ({ open, onOpenChange, role, name, sp
               onImageRemove={() => { setImageFile(null); setImagePreview(''); }}
               placeholder="Upload profile image"
               className="max-w-xs"
+              aspectRatio={1}
             />
           </div>
           <Button className="w-full" onClick={onSave} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>

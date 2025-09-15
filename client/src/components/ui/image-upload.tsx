@@ -12,6 +12,7 @@ interface ImageUploadProps {
   currentImage?: string;
   className?: string;
   placeholder?: string;
+  aspectRatio?: number; // New prop for aspect ratio (width/height)
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -19,7 +20,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageRemove,
   currentImage,
   className,
-  placeholder = "Upload service image"
+  placeholder = "Upload service image",
+  aspectRatio = 16 / 9
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,7 +31,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
-  const ASPECT = 16 / 9; // Fixed aspect ratio for service cards
+  const ASPECT = aspectRatio; // Configurable aspect ratio
 
   // Transform controls
   const [zoom, setZoom] = useState(1);
@@ -45,13 +47,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       // Fallback to a sensible width if not measured yet
       const baseW = rect?.width && rect.width > 0 ? rect.width : 720;
       const w = Math.min(760, baseW);
-      const h = Math.max(320, Math.round(w / ASPECT));
+      const h = Math.max(ASPECT === 1 ? 400 : 320, Math.round(w / ASPECT));
       setContainerSize({ w, h });
     };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isCropOpen]);
+  }, [isCropOpen, ASPECT]);
 
   // Compute minZoom on media load so the image always covers the crop area
   useEffect(() => {
@@ -150,7 +152,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     return new Promise<{ file: File; preview: string }>((resolve) => {
       canvas.toBlob((blob) => {
         if (!blob) return;
-        const file = new File([blob], `service-image-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const file = new File([blob], `${ASPECT === 1 ? 'profile' : 'service'}-image-${Date.now()}.jpg`, { type: 'image/jpeg' });
         const reader = new FileReader();
         reader.onload = (e) => {
           resolve({ file, preview: (e.target?.result as string) || '' });
@@ -172,7 +174,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {currentImage ? (
         <Card className="relative group">
-          <div className="relative aspect-video w-full max-w-xs overflow-hidden rounded-lg">
+          <div className={`relative w-full max-w-xs overflow-hidden rounded-lg ${ASPECT === 1 ? 'aspect-square' : 'aspect-video'}`}>
             <img
               src={currentImage}
               alt="Service preview"
@@ -243,9 +245,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
               <Crop className="w-4 h-4" />
-              Adjust image (16:9)
+              Adjust image ({ASPECT === 1 ? '1:1' : '16:9'})
             </DialogTitle>
-            <p className="text-xs text-slate-300 mt-1">Zoom and drag to frame your service image. The exact cropped area will be uploaded.</p>
+            <p className="text-xs text-slate-300 mt-1">Zoom and drag to frame your {ASPECT === 1 ? 'profile' : 'service'} image. The exact cropped area will be uploaded.</p>
           </DialogHeader>
           <div className="space-y-4">
             <div
