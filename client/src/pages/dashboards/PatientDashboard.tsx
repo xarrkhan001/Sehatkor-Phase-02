@@ -174,7 +174,7 @@ const PatientDashboard = () => {
         </div>
 
         {/* Verification Banner */}
-        {!user?.isVerified && (
+        {user?.role === 'patient' && !user?.isVerified && (user as any)?.verificationStatus === 'pending' && (
           <Card className="mb-8 border-warning bg-warning/5">
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
