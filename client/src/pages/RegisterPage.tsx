@@ -1222,20 +1222,19 @@ const RegisterPage = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="google-cnic">CNIC Number *</Label>
-                      <Input
-                        id="google-cnic"
-                        value={currentFormValues.cnic}
-                        onChange={(e) => handleGoogleFieldChange("cnic", e.target.value)}
-                        placeholder="12345-1234567-1"
-                        required
-                      />
-                      {googleErrors.cnic && (
-                        <p className="text-xs text-red-600 mt-1">{googleErrors.cnic}</p>
-                      )}
+                      <div>
+                        <Label htmlFor="google-cnic">CNIC Number *</Label>
+                        <Input
+                          id="google-cnic"
+                          value={currentFormValues.cnic}
+                          onChange={(e) => handleGoogleFieldChange("cnic", e.target.value)}
+                          placeholder="12345-1234567-1"
+                          required
+                        />
+                        {googleErrors.cnic && (
+                          <p className="text-xs text-red-600 mt-1">{googleErrors.cnic}</p>
+                        )}
+                      </div>
                     </div>
 
                     <div>
