@@ -132,8 +132,12 @@ export const googleLogin = async (req, res) => {
       }
     } else {
       // Gate unverified providers (only for existing users)
-      if (user.role !== 'patient' && !user.isVerified) {
-        return res.status(403).json({ message: 'Account not verified by admin' });
+      // Align behavior with login.api.js: allow if verified OR explicitly allowed to operate
+      if (user.role !== 'patient') {
+        const canLogin = Boolean(user.isVerified) || Boolean(user.allowedToOperate);
+        if (!canLogin) {
+          return res.status(403).json({ message: 'Account not verified or allowed by admin' });
+        }
       }
     }
 
