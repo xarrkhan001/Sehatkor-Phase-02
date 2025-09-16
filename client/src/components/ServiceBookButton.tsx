@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, CreditCard } from 'lucide-react';
 import ServiceBookingModal from './ServiceBookingModal';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface ServiceBookButtonProps {
   service: {
@@ -44,12 +45,14 @@ const ServiceBookButton: React.FC<ServiceBookButtonProps> = ({
   className = ''
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleBookClick = () => {
     if (!currentUser) {
       toast.error('Please login to book services', {
         description: 'You need to be logged in to book and pay for services'
       });
+      navigate('/login');
       return;
     }
 

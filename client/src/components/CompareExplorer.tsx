@@ -458,6 +458,11 @@ const CompareExplorer = () => {
   };
 
   const handleBookNow = (service: Unified) => {
+    if (!user) {
+      toast.error('Please login to book services');
+      navigate('/login');
+      return;
+    }
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
         description: 'Click your profile icon and use the toggle to switch modes.',

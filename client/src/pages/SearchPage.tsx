@@ -65,6 +65,11 @@ interface SearchService extends Service {
   doctorCategory?: string;
   // For clinic/hospital cards: real category from backend (e.g., Emergency Care, Blood Bank)
   clinicCategory?: string;
+  // Optional fields referenced in sorting or mapping
+  createdAt?: string;
+  category?: string;
+  providerName?: string;
+  providerId?: string;
 }
 
 const SearchPage = () => {
@@ -652,6 +657,11 @@ const SearchPage = () => {
 
   // ...
   const handleBookNow = (service: SearchService) => {
+    if (!user) {
+      toast.error('Please login to book services');
+      navigate('/login');
+      return;
+    }
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
         description: 'Click your profile icon and use the toggle to switch modes.',
