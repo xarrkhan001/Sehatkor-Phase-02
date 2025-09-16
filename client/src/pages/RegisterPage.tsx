@@ -631,7 +631,7 @@ const RegisterPage = () => {
     required?: boolean;
   }) => (
     <div className="flex gap-2">
-      <div className="w-32">
+      <div className="w-24 sm:w-28 md:w-32">
         <FormikSelect name={countryCodeName} placeholder="Code">
           {countryCodes.map((country) => (
             <SelectItem key={country.code} value={country.code}>
@@ -772,7 +772,7 @@ const RegisterPage = () => {
           
           <Field name="servicesOffered">
             {({ field, form }: any) => (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {servicesOptions.map((service) => (
                   <div key={service} className="flex items-center space-x-2">
                     <Checkbox
@@ -1028,7 +1028,7 @@ const RegisterPage = () => {
             {/* Social signup */}
             <div className="mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <div className="w-[260px] sm:w-[280px]">
+                <div className="w-full sm:w-[280px]">
                   <GoogleLogin
                   onSuccess={async (cred) => {
                     try {
@@ -1083,7 +1083,7 @@ const RegisterPage = () => {
                 <Button
                   type="button"
                   variant="default"
-                  className="w-[260px] sm:w-[280px] flex items-center justify-center rounded-md bg-[#145DBF] hover:bg-[#0F4CA1] text-white shadow-sm"
+                  className="w-full sm:w-[280px] flex items-center justify-center rounded-md bg-[#145DBF] hover:bg-[#0F4CA1] text-white shadow-sm"
                   disabled={facebookLoading}
                   onClick={() => {
                     try {
@@ -1116,7 +1116,7 @@ const RegisterPage = () => {
 
             {/* Google Additional Fields Form */}
             {showGoogleAdditionalFields && (
-              <div className="mb-8 p-6 border-2 border-blue-200 rounded-lg bg-blue-50">
+              <div className="mb-8 p-4 sm:p-6 border-2 border-blue-200 rounded-lg bg-blue-50">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     <User className="w-5 h-5 text-blue-600" />
@@ -1133,7 +1133,7 @@ const RegisterPage = () => {
                   {/* Role Selection for Google Users */}
                   <div>
                     <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
                       {roles.map((role) => {
                         const Icon = role.icon;
                         const isSelected = currentFormValues.role === role.value;
@@ -1148,10 +1148,10 @@ const RegisterPage = () => {
                             handleGoogleFieldChange("role", role.value);
                           }}
                           >
-                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[120px] ${
+                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-auto sm:h-[120px] ${
                               isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
                             }`}>
-                              <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${
+                              <div className={`bg-white rounded-lg p-2 sm:p-3 w-full h-full flex flex-col items-center justify-center ${
                                 isSelected ? role.bgColor : "hover:" + role.bgColor
                               } transition-all duration-300`}>
                                 <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${
@@ -1160,7 +1160,7 @@ const RegisterPage = () => {
                                   <Icon className="w-4 h-4 text-white" />
                                 </div>
                                 
-                                <h3 className={`text-sm font-bold text-center mb-1 ${role.iconColor} transition-colors duration-300`}>
+                                <h3 className={`text-sm font-bold text-center mb-1 break-words ${role.iconColor} transition-colors duration-300`}>
                                   {role.label}
                                 </h3>
                                 
@@ -1191,7 +1191,7 @@ const RegisterPage = () => {
                       <div>
                         <Label htmlFor="google-phone">Phone Number *</Label>
                         <div className="flex gap-2">
-                          <div className="w-32">
+                          <div className="w-24 sm:w-28 md:w-32">
                             <Select value={currentFormValues.phoneCountryCode} onValueChange={(value) => handleGoogleFieldChange("phoneCountryCode", value)}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Code" />
@@ -1380,7 +1380,7 @@ const RegisterPage = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       type="button"
                       variant="outline"
@@ -1389,7 +1389,7 @@ const RegisterPage = () => {
                         setGoogleProfile(null);
                         setGoogleIdToken('');
                       }}
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                     >
                       Cancel
                     </Button>
@@ -1397,7 +1397,7 @@ const RegisterPage = () => {
                       type="button"
                       onClick={handleGoogleRegistrationComplete}
                       disabled={googleLoading}
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                     >
                       {googleLoading ? "Completing Registration..." : "Complete Registration"}
                     </Button>
@@ -1452,7 +1452,7 @@ const RegisterPage = () => {
                               }, 0);
                             }}
                           >
-                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[120px] ${
+                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[110px] sm:h-[120px] ${
                               isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
                             }`}>
                               <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${
