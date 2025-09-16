@@ -462,6 +462,11 @@ const DoctorsPage = () => {
   }, [doctorServices, searchTerm]);
 
   const handleBookNow = (service: Service) => {
+    if (!user) {
+      toast.error('Please login to book services');
+      navigate('/login');
+      return;
+    }
     if (user && user.role !== 'patient' && mode !== 'patient') {
       toast.error('Providers must switch to Patient Mode to book services.', {
         description: 'Click your profile icon and use the toggle to switch modes.',
@@ -925,16 +930,6 @@ const DoctorsPage = () => {
                         yourBadge={(service as any).myBadge || null}
                         size="sm"
                       />
-                      {/* Debug log for RatingBadge props */}
-                      {console.log('🎯 DoctorsPage RatingBadge props for service:', {
-                        serviceId: service.id,
-                        serviceName: service.name,
-                        rating: service.rating,
-                        totalRatings: (service as any).totalRatings || 0,
-                        ratingBadge: (service as any).ratingBadge,
-                        yourBadge: (service as any).myBadge || null,
-                        myBadgeRaw: (service as any).myBadge
-                      })}
                     </div>
                     <div className="flex items-center gap-1 text-gray-500 text-sm flex-shrink-0">
                       <MapPin className="w-4 h-4" />
