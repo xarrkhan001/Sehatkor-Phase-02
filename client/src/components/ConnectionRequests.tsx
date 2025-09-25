@@ -27,6 +27,7 @@ import {
   getSentRequests,
   acceptConnectionRequest, 
   rejectConnectionRequest,
+  cancelConnectionRequest,
   deleteConnectionRequest 
 } from "@/lib/connectionApi";
 
@@ -71,6 +72,7 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
   const [sendingRequest, setSendingRequest] = useState(false);
   const [acceptingIds, setAcceptingIds] = useState<Set<string>>(new Set());
   const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
+  const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -113,12 +115,20 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
       });
     };
 
+    // Listen for connection request cancellations
+    const onConnectionRequestCancelled = (data: any) => {
+      // Refresh pending requests when a request is cancelled
+      loadPendingRequests();
+    };
+
     socket.on('new_connection_request', onNewConnectionRequest);
     socket.on('connection_accepted', onConnectionAccepted);
+    socket.on('connection_request_cancelled', onConnectionRequestCancelled);
 
     return () => {
       socket?.off('new_connection_request', onNewConnectionRequest);
       socket?.off('connection_accepted', onConnectionAccepted);
+      socket?.off('connection_request_cancelled', onConnectionRequestCancelled);
     };
   }, []);
 
@@ -396,6 +406,31 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
       });
     } finally {
       setRejectingIds(prev => {
+        const s = new Set(prev);
+        s.delete(requestId);
+        return s;
+      });
+    }
+  };
+
+  const handleCancelRequest = async (requestId: string) => {
+    if (cancellingIds.has(requestId)) return;
+    try {
+      setCancellingIds(prev => new Set(prev).add(requestId));
+      await cancelConnectionRequest(requestId);
+      toast({
+        title: "Success",
+        description: "Connection request cancelled successfully"
+      });
+      loadSentRequests();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel request",
+        variant: "destructive"
+      });
+    } finally {
+      setCancellingIds(prev => {
         const s = new Set(prev);
         s.delete(requestId);
         return s;
@@ -747,18 +782,45 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
                 <UserCheck className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
               </AvatarFallback>
             </Avatar>
-            <div className="font-medium text-xs  lg:text-sm truncate">{request.recipient?.name || 'Unknown User'}</div>
-            <div className="ml-auto mt-8 md:mt-0 lg:ml-0 lg:mt-0 lg:absolute lg:bottom-2 lg:right-2">
-              {getStatusBadge(request.status)}
+            <div className="flex-1">
+              <div className="font-medium text-xs lg:text-sm truncate">{request.recipient?.name || 'Unknown User'}</div>
+              {/* Status badge below name */}
+              <div className="mt-0.5">
+                {getStatusBadge(request.status)}
+              </div>
             </div>
           </div>
                   
                   {request.message && (
-                    <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10   -mt-1">
+                    <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
                       "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
                     </div>
                   )}
 
+                  {/* Cancel button for pending requests - separate row */}
+                  {request.status === 'pending' && (
+                    <div className="flex justify-center mt-2 pt-1 border-t border-gray-100">
+                      <button
+                        onClick={() => handleCancelRequest(request._id)}
+                        disabled={cancellingIds.has(request._id)}
+                        className="inline-flex items-center justify-center gap-0.5 px-2 py-0.5 text-[9px] lg:text-[10px] font-medium rounded-full border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300 hover:shadow-sm active:scale-95"
+                      >
+                        {cancellingIds.has(request._id) ? (
+                          <>
+                            <Loader2 className="w-2 h-2 lg:w-2.5 lg:h-2.5 animate-spin" />
+                            <span className="hidden sm:inline">Cancelling...</span>
+                            <span className="sm:hidden">...</span>
+                          </>
+                        ) : (
+                          <>
+                            <X className="w-2 h-2 lg:w-2.5 lg:h-2.5" />
+                            <span className="hidden sm:inline">Cancel Request</span>
+                            <span className="sm:hidden">Cancel</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
 
                 </div>
               ))}
