@@ -697,6 +697,19 @@ const CompareExplorer = () => {
                             <span className="text-gray-400 text-sm">No Image Available</span>
                           </div>
                         )}
+                        {/* Top-right time/date overlay to match doctors services style */}
+                        {(() => {
+                          const info = getDisplayTimeInfo(item);
+                          return info ? (
+                            <div className="absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] bg-black/60 text-white shadow-md backdrop-blur-sm flex items-center gap-1.5">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden className="shrink-0">
+                                <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.25" />
+                                <path d="M12 7v5l4 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              <span className="leading-none">{info}</span>
+                            </div>
+                          ) : null;
+                        })()}
                         
                         {/* Top-left recommended overlay */}
                         {item.recommended && (
@@ -732,9 +745,7 @@ const CompareExplorer = () => {
                             >
                               ›
                             </button>
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur px-2 py-0.5 rounded text-[11px] text-gray-700">
-                              {getDisplayTimeInfo(item) || 'Variant'}
-                            </div>
+                           
                           </>
                         )}
                       </div>

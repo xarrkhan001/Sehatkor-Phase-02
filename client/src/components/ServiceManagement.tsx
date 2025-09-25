@@ -467,6 +467,8 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             homeDelivery: serviceForm.homeDelivery,
             providerName: userName,
             diseases,
+            // Include main schedule fields for the service
+            ...mainScheduleFields,
             ...(payloadVariants ? { variants: payloadVariants } : {}),
           });
           console.log('Doctor service created:', created);
