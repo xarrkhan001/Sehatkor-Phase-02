@@ -6,6 +6,7 @@ import {
   getSentRequests,
   acceptConnectionRequest, 
   rejectConnectionRequest, 
+  cancelConnectionRequest,
   deleteConnectionRequest,
   getConnectedUsers,
   removeUserConnection,
@@ -31,6 +32,9 @@ router.put('/accept/:requestId', acceptConnectionRequest);
 
 // Reject connection request
 router.put('/reject/:requestId', rejectConnectionRequest);
+
+// Cancel pending connection request (for sender only)
+router.delete('/cancel/:requestId', cancelConnectionRequest);
 
 // Delete connection request
 router.delete('/delete/:requestId', deleteConnectionRequest);

@@ -180,6 +180,41 @@ export const rejectConnectionRequest = async (req, res) => {
   }
 };
 
+// Cancel pending connection request (for sender only)
+export const cancelConnectionRequest = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const userId = req.userId;
+
+    // Find the pending request sent by current user
+    const request = await ConnectionRequest.findOne({
+      _id: requestId,
+      sender: userId,
+      status: 'pending'
+    });
+
+    if (!request) {
+      return res.status(404).json({ message: 'Pending request not found or you are not authorized to cancel it' });
+    }
+
+    // Delete the pending request
+    await ConnectionRequest.findByIdAndDelete(requestId);
+
+    // Emit socket event to recipient to update their received requests
+    const io = req.app.get('io');
+    if (io) {
+      io.to(request.recipient.toString()).emit('connection_request_cancelled', {
+        requestId: requestId,
+        message: 'A connection request was cancelled'
+      });
+    }
+
+    res.status(200).json({ message: 'Connection request cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error cancelling request', error: error.message });
+  }
+};
+
 // Delete connection request (for dismissing cards)
 export const deleteConnectionRequest = async (req, res) => {
   try {

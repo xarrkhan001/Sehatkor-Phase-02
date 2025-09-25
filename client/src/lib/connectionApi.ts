@@ -79,6 +79,22 @@ export async function rejectConnectionRequest(requestId: string) {
   return res.json();
 }
 
+export async function cancelConnectionRequest(requestId: string) {
+  const token = localStorage.getItem('sehatkor_token');
+  const res = await fetch(`${API_BASE}/cancel/${requestId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || 'Failed to cancel request');
+  }
+  return res.json();
+}
+
 export async function deleteConnectionRequest(requestId: string) {
   const token = localStorage.getItem('sehatkor_token');
   const res = await fetch(`${API_BASE}/delete/${requestId}`, {
