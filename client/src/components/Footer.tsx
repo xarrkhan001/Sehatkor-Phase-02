@@ -18,6 +18,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+// Custom TikTok Icon Component
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    className={className}
+    fill="currentColor"
+  >
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
+
 const Footer = () => {
   const services = [
     { name: "Find Doctors", href: "/doctors", icon: Stethoscope },
@@ -75,17 +86,20 @@ const Footer = () => {
 
             {/* Social Media */}
             <div className="flex space-x-3">
-              <Button size="sm" variant="ghost" className="w-10 h-10 p-0 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300">
-                <Facebook className="w-4 h-4" />
+              <Button size="sm" variant="ghost" className="w-10 h-10 p-0 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300" asChild>
+                <a href="https://www.facebook.com/share/1AtdCgZYf2/" target="_blank" rel="noopener noreferrer">
+                  <Facebook className="w-4 h-4" />
+                </a>
               </Button>
-              <Button size="sm" variant="ghost" className="w-10 h-10 p-0 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300">
-                <Twitter className="w-4 h-4" />
+              <Button size="sm" variant="ghost" className="w-10 h-10 p-0 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300" asChild>
+                <a href="https://www.tiktok.com/@sehatkor115?_t=ZS-904So2oteBM&_r=1" target="_blank" rel="noopener noreferrer">
+                  <TikTokIcon className="w-4 h-4" />
+                </a>
               </Button>
-              <Button size="sm" variant="ghost" className="w-10 h-10 p-0 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300">
-                <Instagram className="w-4 h-4" />
-              </Button>
-              <Button size="sm" variant="ghost" className="w-10 h-10 p-0 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300">
-                <Linkedin className="w-4 h-4" />
+              <Button size="sm" variant="ghost" className="w-10 h-10 p-0 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300" asChild>
+                <a href="https://www.linkedin.com/in/sehat-kor-61008a323?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer">
+                  <Linkedin className="w-4 h-4" />
+                </a>
               </Button>
             </div>
           </div>
@@ -145,33 +159,19 @@ const Footer = () => {
             <div className="space-y-4 mb-6">
               <div className="flex items-center space-x-3 text-gray-300">
                 <Phone className="w-4 h-4 text-green-400" />
-                <span>+92 300 1234567</span>
+                <span>+923141521115</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-300">
                 <Mail className="w-4 h-4 text-blue-400" />
-                <span>support@sehatkor.com</span>
+                <span>Sehatkor15@gmail.com</span>
               </div>
               <div className="flex items-start space-x-3 text-gray-300">
                 <MapPin className="w-4 h-4 text-red-400 mt-1" />
-                <span>Lahore, Karachi, Islamabad<br />& 47+ cities across Pakistan</span>
+                <span>Charsdha Road Near Mervas Mandi  Mardan</span>
               </div>
             </div>
 
-            {/* Newsletter */}
-            <div className="space-y-3">
-              <h4 className="font-medium text-white">Health Newsletter</h4>
-              <p className="text-sm text-gray-400">Get health tips & updates</p>
-              <div className="flex space-x-2">
-                <Input 
-                  type="email" 
-                  placeholder="Your email"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/20"
-                />
-                <Button size="sm" className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-4">
-                  Subscribe
-                </Button>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
