@@ -47,28 +47,28 @@ const BookingOptionsModal: React.FC<BookingOptionsModalProps> = ({
 
   const handleAdminPayment = () => {
     // // Temporarily show a Coming Soon modal instead of navigating to payment page
-    // setShowComingSoon(true);
+    setShowComingSoon(true);
     // Keep the original navigate code for future enablement (uncomment to enable)
 
-    navigate('/payment', {
-      state: {
-        serviceId: service.id,
-        serviceName: service.name,
-        providerId: service._providerId || service.id,
-        providerName: service.provider,
-        providerType: service._providerType,
-        price: Number(service.price ?? 0),
-        currency: 'PKR',
-        image: service.image,
-        location: service.location,
-        phone: service.providerPhone,
-        // variant context for search page
-        variantIndex: service.variantIndex,
-        variantLabel: service.variantLabel,
-        variantTimeRange: service.variantTimeRange,
-      }
-    });
-    onClose();
+    // navigate('/payment', {
+    //   state: {
+    //     serviceId: service.id,
+    //     serviceName: service.name,
+    //     providerId: service._providerId || service.id,
+    //     providerName: service.provider,
+    //     providerType: service._providerType,
+    //     price: Number(service.price ?? 0),
+    //     currency: 'PKR',
+    //     image: service.image,
+    //     location: service.location,
+    //     phone: service.providerPhone,
+    //     // variant context for search page
+    //     variantIndex: service.variantIndex,
+    //     variantLabel: service.variantLabel,
+    //     variantTimeRange: service.variantTimeRange,
+    //   }
+    // });
+    // onClose();
 
   };
 
