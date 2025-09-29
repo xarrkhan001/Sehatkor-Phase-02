@@ -11,6 +11,7 @@ import {
   FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from '@/config/api';
 
 const AdminDocuments = () => {
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
@@ -26,7 +27,7 @@ const AdminDocuments = () => {
   // Documents: fetch pending
   const fetchPendingDocuments = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/documents/pending', {
+      const res = await fetch(apiUrl('/api/documents/pending'), {
         headers: { 'Content-Type': 'application/json' }
       });
       const data = await res.json();
@@ -41,7 +42,7 @@ const AdminDocuments = () => {
 
   const handleDeleteDocument = async (docId: string) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/documents/${docId}`, {
+      const res = await fetch(apiUrl(`/api/documents/${docId}`), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });

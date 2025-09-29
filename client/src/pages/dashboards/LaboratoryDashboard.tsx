@@ -47,6 +47,7 @@ import {
   Truck
 } from "lucide-react";
 import CurrencyAmount from "@/components/CurrencyAmount";
+import { apiUrl } from '@/config/api';
 
 const LaboratoryDashboard = () => {
   const { user, logout } = useAuth();
@@ -468,11 +469,12 @@ const LaboratoryDashboard = () => {
   const fetchWalletData = async () => {
     if (!user?.id) return;
     try {
-      const response = await fetch(`http://localhost:4000/api/payments/wallet/${user.id}`, {
+      const response = await fetch(apiUrl(`/api/payments/wallet/${user.id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
         },
       });
+
       if (response.ok) {
         const data = await response.json();
         setWalletData(data.wallet);

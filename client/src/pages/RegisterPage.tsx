@@ -34,6 +34,7 @@ import {
   X
 } from "lucide-react";
 import { generateUserId } from "@/data/mockData";
+import { apiUrl } from '@/config/api';
 
 // Validation Schema
 const getValidationSchema = (role: string) => {
@@ -374,7 +375,7 @@ const RegisterPage = () => {
       };
 
       // Complete Google registration with additional fields
-      const res = await fetch('http://localhost:4000/api/auth/google', {
+      const res = await fetch(apiUrl('/api/auth/google'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -395,7 +396,7 @@ const RegisterPage = () => {
           try {
             const fd = new FormData();
             fd.append('file', providerDoc);
-            const upRes = await fetch('http://localhost:4000/api/documents/upload', {
+            const upRes = await fetch(apiUrl('/api/documents/upload'), {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${data.token}` },
               body: fd,
@@ -474,7 +475,7 @@ const RegisterPage = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/register', {
+      const response = await fetch(apiUrl('/api/auth/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -500,7 +501,7 @@ const RegisterPage = () => {
           try {
             const fd = new FormData();
             fd.append('file', providerDoc);
-            const upRes = await fetch('http://localhost:4000/api/documents/upload', {
+            const upRes = await fetch(apiUrl('/api/documents/upload'), {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${data.token}` },
               body: fd,
@@ -1036,14 +1037,16 @@ const RegisterPage = () => {
                       const idToken = cred?.credential as string;
                       if (!idToken) throw new Error('Missing Google credential');
                       
+
                       // First, try to authenticate with Google (without additional fields)
-                      const res = await fetch('http://localhost:4000/api/auth/google', {
+                      const res = await fetch(apiUrl('/api/auth/google'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ idToken, role: currentFormValues.role || 'patient' })
                       });
                       const data = await res.json();
                       
+
                       if (res.ok) {
                         // User already exists, log them in
                         await login({ ...data.user, id: data.user._id }, data.token);
@@ -1090,7 +1093,7 @@ const RegisterPage = () => {
                       setFacebookLoading(true);
                       const role = currentFormValues.role || 'patient';
                       // Start OAuth flow on backend; backend will redirect to Facebook and then back to client callback
-                      window.location.href = `http://localhost:4000/api/auth/facebook?role=${encodeURIComponent(role)}`;
+                      window.location.href = apiUrl(`/api/auth/facebook?role=${encodeURIComponent(role)}`);
                     } finally {
                       // loading state will be cleared after redirect; this is a safety noop
                     }

@@ -39,6 +39,7 @@ import {
   Wallet,
   DollarSign
 } from "lucide-react";
+import { apiUrl } from '@/config/api';
 
 const DoctorDashboard = () => {
   const { user, logout } = useAuth();
@@ -276,7 +277,7 @@ const DoctorDashboard = () => {
   const fetchWalletData = async () => {
     if (!user?.id) return;
     try {
-      const response = await fetch(`http://localhost:4000/api/payments/wallet/${user.id}`, {
+      const response = await fetch(apiUrl(`/api/payments/wallet/${user.id}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
         },

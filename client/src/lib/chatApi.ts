@@ -1,6 +1,8 @@
+import { apiFetch, ENDPOINTS, apiUrl } from '@/config/api';
+
 export async function fetchVerifiedUsers() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/users/verified', {
+  const res = await apiFetch(ENDPOINTS.chat.verifiedUsers, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -15,7 +17,7 @@ export async function fetchVerifiedUsers() {
 
 export async function getOrCreateConversation(recipientId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/conversations', {
+  const res = await apiFetch(ENDPOINTS.chat.conversations, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -31,7 +33,7 @@ export async function getOrCreateConversation(recipientId: string) {
 
 export async function fetchMessages(conversationId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch(`http://localhost:4000/api/chat/messages/${conversationId}`, {
+  const res = await apiFetch(ENDPOINTS.chat.messages(conversationId), {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -43,7 +45,8 @@ export async function fetchMessages(conversationId: string) {
 
 export async function deleteMessage(messageId: string, scope: 'me' | 'everyone' = 'me') {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch(`http://localhost:4000/api/chat/messages/${messageId}?scope=${scope}`, {
+  const url = `${ENDPOINTS.chat.messages(messageId)}?scope=${scope}`;
+  const res = await apiFetch(url, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +64,7 @@ export async function uploadFile(file: File) {
   const formData = new FormData();
   formData.append('file', file);
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/upload', {
+  const res = await apiFetch(ENDPOINTS.upload, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     body: formData,
@@ -77,7 +80,7 @@ export async function uploadProfileImage(file: File) {
   const formData = new FormData();
   formData.append('image', file);
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/profile/upload-image', {
+  const res = await apiFetch(ENDPOINTS.profile.uploadImage, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     body: formData,
@@ -91,7 +94,7 @@ export async function uploadProfileImage(file: File) {
 
 export async function fetchConversations() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/conversations', {
+  const res = await apiFetch(ENDPOINTS.chat.conversations, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -103,7 +106,7 @@ export async function fetchConversations() {
 
 export async function markAsRead(conversationId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/chat/conversations/read', {
+  const res = await apiFetch(ENDPOINTS.chat.markRead, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -117,7 +120,7 @@ export async function markAsRead(conversationId: string) {
 
 export async function clearConversation(conversationId: string) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch(`http://localhost:4000/api/chat/conversations/${conversationId}/messages`, {
+  const res = await apiFetch(ENDPOINTS.chat.conversationMessages(conversationId), {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -133,7 +136,7 @@ export async function clearConversation(conversationId: string) {
 
 export async function fetchMyProfile() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/profile', {
+  const res = await apiFetch(ENDPOINTS.profile.root, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
@@ -145,7 +148,7 @@ export async function fetchMyProfile() {
 
 export async function updateMyProfile(updates: Record<string, any>) {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/profile', {
+  const res = await apiFetch(ENDPOINTS.profile.root, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -162,7 +165,7 @@ export async function updateMyProfile(updates: Record<string, any>) {
 
 export async function removeProfileImage() {
   const token = localStorage.getItem('sehatkor_token');
-  const res = await fetch('http://localhost:4000/api/profile/image', {
+  const res = await apiFetch(ENDPOINTS.profile.image, {
     method: 'DELETE',
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
@@ -174,5 +177,3 @@ export async function removeProfileImage() {
   }
   return data;
 }
-
-

@@ -1,3 +1,5 @@
+import { apiUrl } from '@/config/api';
+
 export type LaboratoryTestDoc = {
   _id: string;
   name: string;
@@ -27,7 +29,7 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const BASE = 'http://localhost:4000/api/laboratory';
+const BASE = apiUrl('/api/laboratory');
 
 export async function listTests(): Promise<LaboratoryTestDoc[]> {
   try {

@@ -1,3 +1,5 @@
+import { apiUrl } from '@/config/api';
+
 export type ClinicServiceDoc = {
   _id: string;
   name: string;
@@ -27,7 +29,7 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const BASE = 'http://localhost:4000/api/clinic';
+const BASE = apiUrl('/api/clinic');
 
 export async function listServices(): Promise<ClinicServiceDoc[]> {
   const res = await fetch(`${BASE}/services`, { headers: { 'Content-Type': 'application/json', ...authHeaders() } });

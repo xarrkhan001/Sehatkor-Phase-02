@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import io from 'socket.io-client';
+import { apiUrl, ENDPOINTS, SOCKET_BASE_URL } from '@/config/api';
 import { generateInvoicePDF, downloadInvoiceHTML } from '@/utils/pdfGenerator';
 import InvoicePreviewModal from './InvoicePreviewModal';
 import CurrencyAmount from '@/components/CurrencyAmount';
@@ -158,7 +159,7 @@ const ProviderWallet = () => {
     if (!user?.id) return;
     setLoadingInvoices(true);
     try {
-      const res = await fetch(`http://localhost:4000/api/payments/invoices/provider/${user.id}`, {
+      const res = await fetch(apiUrl(ENDPOINTS.payments.invoicesProvider(user.id)), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
         },
@@ -183,7 +184,7 @@ const ProviderWallet = () => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:4000/api/payments/provider/${user.id}/payments/bulk-delete`, {
+      const res = await fetch(apiUrl(ENDPOINTS.payments.bulkDeletePayments(user.id)), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +206,7 @@ const ProviderWallet = () => {
   const handleDeletePayment = async () => {
     if (!user?.id || !pendingPaymentId) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/payments/provider/${user.id}/payment/${pendingPaymentId}` , {
+      const res = await fetch(apiUrl(ENDPOINTS.payments.deletePayment(user.id, pendingPaymentId)) , {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
@@ -227,7 +228,7 @@ const ProviderWallet = () => {
 
     // Initialize WebSocket connection
     const token = localStorage.getItem('sehatkor_token');
-    const socketConnection = io('http://localhost:4000', {
+    const socketConnection = io(SOCKET_BASE_URL, {
       auth: { token }
     });
 
@@ -271,7 +272,7 @@ const ProviderWallet = () => {
     
     try {
       console.log('💳 Fetching wallet data for provider:', user.id);
-      const response = await fetch(`http://localhost:4000/api/payments/wallet/${user.id}`, {
+      const response = await fetch(apiUrl(ENDPOINTS.payments.wallet(user.id)), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
         },
@@ -297,7 +298,7 @@ const ProviderWallet = () => {
     if (!user?.id) return;
     setLoadingWithdrawals(true);
     try {
-      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/${user.id}` , {
+      const res = await fetch(apiUrl(ENDPOINTS.payments.withdrawals(user.id)) , {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
         },
@@ -339,7 +340,7 @@ const ProviderWallet = () => {
 
     try {
       console.log('💸 Processing withdrawal request:', withdrawalData);
-      const response = await fetch(`http://localhost:4000/api/payments/withdraw/${user.id}`, {
+      const response = await fetch(apiUrl(ENDPOINTS.payments.withdraw(user.id)), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -380,7 +381,7 @@ const ProviderWallet = () => {
   const handleDeleteWithdrawal = async (withdrawalId: string) => {
     if (!user?.id) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/${user.id}/${withdrawalId}`, {
+      const res = await fetch(apiUrl(ENDPOINTS.payments.deleteWithdrawal(user.id, withdrawalId)), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
@@ -401,7 +402,7 @@ const ProviderWallet = () => {
     if (!user?.id) return;
     if (selectedWithdrawals.length === 0) return toast.error('No items selected');
     try {
-      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/bulk-delete`, {
+      const res = await fetch(apiUrl(ENDPOINTS.payments.bulkWithdrawalsDelete), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -425,7 +426,7 @@ const ProviderWallet = () => {
     const ok = window.confirm(`Delete ALL ${withdrawals.length} withdrawals for this provider?`);
     if (!ok) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/payments/withdrawals/provider/${user.id}`, {
+      const res = await fetch(apiUrl(ENDPOINTS.payments.deleteAllWithdrawalsForProvider(user.id)), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
@@ -893,7 +894,7 @@ const ProviderWallet = () => {
               if (!user?.id) return;
               if (selectedInvoices.length === 0) { toast.error('No invoices selected'); return; }
               try {
-                const res = await fetch(`http://localhost:4000/api/payments/invoices/provider/${user.id}/bulk-delete`, {
+                const res = await fetch(apiUrl(`/api/payments/invoices/provider/${user.id}/bulk-delete`), {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -931,7 +932,7 @@ const ProviderWallet = () => {
             <AlertDialogAction onClick={async () => {
               if (!user?.id || !pendingInvoiceId) return;
               try {
-                const res = await fetch(`http://localhost:4000/api/payments/invoices/provider/${user.id}/${pendingInvoiceId}`, {
+                const res = await fetch(apiUrl(`/api/payments/invoices/provider/${user.id}/${pendingInvoiceId}`), {
                   method: 'DELETE',
                   headers: {
                     'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,

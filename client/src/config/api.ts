@@ -14,7 +14,49 @@ export const apiUrl = (path: string) => {
   return `${API_BASE_URL}${path}`;
 };
 
+// Socket configuration: prefer explicit VITE_SOCKET_URL, otherwise reuse API base
+const socketRaw = (import.meta as any)?.env?.VITE_SOCKET_URL || API_BASE_URL;
+export const SOCKET_BASE_URL = typeof socketRaw === 'string' && socketRaw
+  ? socketRaw.replace(/\/$/, '')
+  : 'http://localhost:4000';
+
+// Helper to call API using the base URL
+export async function apiFetch(inputPath: string, init?: RequestInit) {
+  return fetch(apiUrl(inputPath), init);
+}
+
+// Centralized endpoints. Only define what the app uses; add more as needed.
+export const ENDPOINTS = {
+  chat: {
+    verifiedUsers: '/api/chat/users/verified',
+    conversations: '/api/chat/conversations',
+    messages: (conversationId: string) => `/api/chat/messages/${conversationId}`,
+    conversationMessages: (conversationId: string) => `/api/chat/conversations/${conversationId}/messages`,
+    markRead: '/api/chat/conversations/read',
+  },
+  upload: '/api/upload',
+  profile: {
+    root: '/api/profile',
+    image: '/api/profile/image',
+    uploadImage: '/api/profile/upload-image',
+  },
+  payments: {
+    invoicesProvider: (providerId: string) => `/api/payments/invoices/provider/${providerId}`,
+    bulkDeletePayments: (providerId: string) => `/api/payments/provider/${providerId}/payments/bulk-delete`,
+    deletePayment: (providerId: string, paymentId: string) => `/api/payments/provider/${providerId}/payment/${paymentId}`,
+    wallet: (providerId: string) => `/api/payments/wallet/${providerId}`,
+    withdrawals: (providerId: string) => `/api/payments/withdrawals/${providerId}`,
+    withdraw: (providerId: string) => `/api/payments/withdraw/${providerId}`,
+    deleteWithdrawal: (providerId: string, withdrawalId: string) => `/api/payments/withdrawals/${providerId}/${withdrawalId}`,
+    bulkWithdrawalsDelete: '/api/payments/withdrawals/bulk-delete',
+    deleteAllWithdrawalsForProvider: (providerId: string) => `/api/payments/withdrawals/provider/${providerId}`,
+  },
+} as const;
+
 export default {
   API_BASE_URL,
+  SOCKET_BASE_URL,
   apiUrl,
+  apiFetch,
+  ENDPOINTS,
 };

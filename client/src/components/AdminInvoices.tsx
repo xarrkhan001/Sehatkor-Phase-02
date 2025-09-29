@@ -31,6 +31,7 @@ import {
   Download
 } from 'lucide-react';
 import { Trash } from 'lucide-react';
+import { apiUrl } from '@/config/api';
 import { generateInvoicePDF } from '@/utils/pdfGenerator';
 import InvoicePreviewModal from './InvoicePreviewModal';
 import { getSocket } from '@/lib/socket';
@@ -204,7 +205,7 @@ const AdminInvoices: React.FC = () => {
         params.append('provider', filterProvider);
       }
 
-      const response = await fetch(`http://localhost:4000/api/payments/invoices?${params}`, {
+      const response = await fetch(apiUrl(`/api/payments/invoices?${params}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
         },
@@ -260,7 +261,7 @@ const AdminInvoices: React.FC = () => {
       // 1) Total Released via providers summary
       let totalReleased = 0;
       try {
-        const respProv = await fetch(`http://localhost:4000/api/payments/providers-summary`, {
+        const respProv = await fetch(apiUrl('/api/payments/providers-summary'), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}` },
         });
         if (respProv.ok) {
@@ -284,7 +285,7 @@ const AdminInvoices: React.FC = () => {
       const MAX_PAGES = 25;
       try {
         do {
-          const resp = await fetch(`http://localhost:4000/api/payments?status=released&page=${page}&limit=${limit}${providerTypeParam}`, {
+          const resp = await fetch(apiUrl(`/api/payments?status=released&page=${page}&limit=${limit}${providerTypeParam}`), {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
             },
@@ -323,7 +324,7 @@ const AdminInvoices: React.FC = () => {
     if (!singleDeleteId) return;
     try {
       setDeleting(true);
-      const response = await fetch(`http://localhost:4000/api/payments/invoices/${singleDeleteId}`, {
+      const response = await fetch(apiUrl(`/api/payments/invoices/${singleDeleteId}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
@@ -360,7 +361,7 @@ const AdminInvoices: React.FC = () => {
     if (selectedIds.size === 0) return;
     try {
       setDeleting(true);
-      const response = await fetch(`http://localhost:4000/api/payments/invoices/bulk-delete`, {
+      const response = await fetch(apiUrl('/api/payments/invoices/bulk-delete'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,3 +1,5 @@
+import { apiUrl } from '@/config/api';
+
 export interface VariantDoc {
   _id: string;
   timeLabel?: string;
@@ -51,7 +53,7 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const BASE = 'http://localhost:4000/api/doctor';
+const BASE = apiUrl('/api/doctor');
 
 export async function listServices(): Promise<DoctorServiceDoc[]> {
   try {

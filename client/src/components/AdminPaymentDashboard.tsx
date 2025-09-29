@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiUrl } from '@/config/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, TrendingUp, Users, Clock, DollarSign } from 'lucide-react';
@@ -30,7 +31,7 @@ const AdminPaymentDashboard: React.FC = () => {
     try {
       console.log('🔍 Fetching payment analytics...');
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/api/payments/stats', {
+      const response = await fetch(apiUrl('/api/payments/stats'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
@@ -57,7 +58,7 @@ const AdminPaymentDashboard: React.FC = () => {
     try {
       console.log('⏳ Fetching pending release payments...');
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/api/payments/pending-release', {
+      const response = await fetch(apiUrl('/api/payments/pending-release'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
@@ -86,7 +87,7 @@ const AdminPaymentDashboard: React.FC = () => {
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
       const adminId = localStorage.getItem('userId') || 'admin-user';
       
-      const response = await fetch(`http://localhost:4000/api/payments/${paymentId}/release`, {
+      const response = await fetch(apiUrl(`/api/payments/${paymentId}/release`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
