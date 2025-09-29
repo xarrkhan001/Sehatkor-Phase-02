@@ -21,6 +21,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from '@/config/api';
 
 const AdminVerifications = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ const AdminVerifications = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/api/admin/pending', {
+      const res = await fetch(apiUrl('/api/admin/pending'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
@@ -77,7 +78,7 @@ const AdminVerifications = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/admin/verify/${userId}`, {
+      const res = await fetch(apiUrl(`/api/admin/verify/${userId}`), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ const AdminVerifications = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/admin/verify/${userId}`, {
+      const res = await fetch(apiUrl(`/api/admin/verify/${userId}`), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',

@@ -26,6 +26,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from '@/config/api';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,7 +81,7 @@ const AdminUserManagement = () => {
         limit: "20"
       });
 
-      const response = await fetch(`http://localhost:4000/api/admin/verified-users?${params}`);
+      const response = await fetch(apiUrl(`/api/admin/verified-users?${params}`));
       
       if (!response.ok) {
         throw new Error('Failed to fetch users');
@@ -123,7 +124,7 @@ const AdminUserManagement = () => {
 
   const handleDeleteUser = async (userId: string, userName: string) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/admin/users/${userId}`, {
+      const response = await fetch(apiUrl(`/api/admin/users/${userId}`), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'

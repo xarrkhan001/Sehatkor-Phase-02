@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { SOCKET_BASE_URL } from '@/config/api';
 
 let socket: Socket | null = null;
 let lastToken: string | null = null;
@@ -15,7 +16,7 @@ export function getSocket(): Socket {
       socket = null;
     }
     lastToken = token;
-    const baseUrl = (import.meta as any).env?.VITE_SOCKET_URL || (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:4000';
+    const baseUrl = SOCKET_BASE_URL;
     const socketPath = (import.meta as any).env?.VITE_SOCKET_PATH; // optional
     socket = io(baseUrl, {
       // Send token in both places to match different server handlers

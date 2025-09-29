@@ -22,6 +22,7 @@ import {
   HeartPulse,
   Stethoscope
 } from "lucide-react";
+import { apiUrl } from '@/config/api';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -75,8 +76,7 @@ const ContactPage = () => {
 
     setIsSubmitting(true);
     try {
-      const API_BASE = (import.meta as any)?.env?.VITE_API_URL || "http://localhost:4000";
-      const res = await fetch(`${API_BASE}/api/contact`, {
+      const res = await fetch(apiUrl('/api/contact'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

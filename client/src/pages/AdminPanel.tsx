@@ -178,8 +178,8 @@ const AdminPanel = () => {
   const fetchPendingUsers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/api/admin/pending', {
+      const token = getAuthToken();
+      const res = await fetch(apiUrl('/api/admin/pending'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
@@ -206,8 +206,8 @@ const AdminPanel = () => {
   // Fetch admin stats from backend
   const fetchAdminStats = async () => {
     try {
-      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/api/admin/stats', {
+      const token = getAuthToken();
+      const res = await fetch(apiUrl('/api/admin/stats'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
@@ -345,7 +345,7 @@ const AdminPanel = () => {
   // Documents: fetch pending
   const fetchPendingDocuments = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/documents/pending', {
+      const res = await fetch(apiUrl('/api/documents/pending'), {
         headers: { 'Content-Type': 'application/json' }
       });
       const data = await res.json();
@@ -358,7 +358,7 @@ const AdminPanel = () => {
 
   const handleDeleteDocument = async (docId: string) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/documents/${docId}`, {
+      const res = await fetch(apiUrl(`/api/documents/${docId}`), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -374,8 +374,8 @@ const AdminPanel = () => {
   const handleApprove = async (userId: string) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/admin/verify/${userId}`, {
+      const token = getAuthToken();
+      const res = await fetch(apiUrl(`/api/admin/verify/${userId}`), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -401,8 +401,8 @@ const AdminPanel = () => {
   const handleReject = async (userId: string) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/admin/verify/${userId}`, {
+      const token = getAuthToken();
+      const res = await fetch(apiUrl(`/api/admin/verify/${userId}`), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',

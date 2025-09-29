@@ -21,6 +21,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiUrl } from '@/config/api';
 
 interface Payment {
   _id: string;
@@ -80,7 +81,7 @@ const AdminPaymentRecords: React.FC = () => {
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (providerTypeFilter !== 'all') params.append('providerType', providerTypeFilter);
 
-      const response = await fetch(`http://localhost:4000/api/payments?${params.toString()}`);
+      const response = await fetch(apiUrl(`/api/payments?${params.toString()}`));
       console.log('📊 Payment records response status:', response.status);
       
       const data = await response.json();
@@ -103,7 +104,7 @@ const AdminPaymentRecords: React.FC = () => {
   const fetchStats = async () => {
     try {
       console.log('📈 Fetching payment statistics...');
-      const response = await fetch('http://localhost:4000/api/payments/stats');
+      const response = await fetch(apiUrl('/api/payments/stats'));
       console.log('📊 Payment stats response status:', response.status);
       
       const data = await response.json();
@@ -122,7 +123,7 @@ const AdminPaymentRecords: React.FC = () => {
   const markServiceCompleted = async (paymentId: string) => {
     try {
       console.log('✅ Marking service as completed:', paymentId);
-      const response = await fetch(`http://localhost:4000/api/payments/${paymentId}/complete`, {
+      const response = await fetch(apiUrl(`/api/payments/${paymentId}/complete`), {
         method: 'PUT',
       });
 
@@ -153,7 +154,7 @@ const AdminPaymentRecords: React.FC = () => {
       console.log('💰 Releasing payment to provider:', selectedPayment._id);
       const adminId = localStorage.getItem('userId') || 'admin-user';
       
-      const response = await fetch(`http://localhost:4000/api/payments/${selectedPayment._id}/release`, {
+      const response = await fetch(apiUrl(`/api/payments/${selectedPayment._id}/release`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

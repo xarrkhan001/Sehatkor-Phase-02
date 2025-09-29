@@ -11,6 +11,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { apiUrl } from '@/config/api';
 
 interface VerifiedUsersData {
   verifiedUsersCount: number;
@@ -31,7 +32,7 @@ const VerifiedUsersCard = () => {
       // Get token from localStorage or context
       const token = localStorage.getItem('token');
       
-      const response = await fetch('http://localhost:4000/api/admin/verified-users-count', {
+      const response = await fetch(apiUrl('/api/admin/verified-users-count'), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

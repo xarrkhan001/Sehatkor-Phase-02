@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { generateInvoicePDF } from '@/utils/pdfGenerator';
 import InvoicePreviewModal from '@/components/InvoicePreviewModal';
+import { apiUrl } from '@/config/api';
 
 interface InvoiceItem {
   paymentId: string;
@@ -64,7 +65,7 @@ const InvoiceDetailPage: React.FC = () => {
     
     try {
       const token = localStorage.getItem('sehatkor_token');
-      const response = await fetch(`http://localhost:4000/api/payments/invoices/${invoiceId}`, {
+      const response = await fetch(apiUrl(`/api/payments/invoices/${invoiceId}`), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

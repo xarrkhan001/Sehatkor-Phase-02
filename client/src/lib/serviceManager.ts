@@ -1,4 +1,5 @@
 // Centralized service management system
+import { apiUrl } from '@/config/api';
 
 export interface ServiceImage {
   file: File;
@@ -208,7 +209,7 @@ class ServiceManager {
     if (params?.query) query.set('q', params.query);
     if (params?.category) query.set('category', params.category);
 
-    const url = `http://localhost:4000/api/user/services/public${query.toString() ? `?${query.toString()}` : ''}`;
+    const url = apiUrl(`/api/user/services/public${query.toString() ? `?${query.toString()}` : ''}`);
     
     // Get auth token from localStorage if available
     const token = localStorage.getItem('token');
@@ -316,7 +317,7 @@ class ServiceManager {
 
   // Fetch a single public service by ID
   static async fetchServiceById(serviceId: string, type: Service['providerType']): Promise<Service> {
-    const url = `http://localhost:4000/api/user/services/public/${serviceId}?type=${type}`;
+    const url = apiUrl(`/api/user/services/public/${serviceId}?type=${type}`);
     
     // Get auth token from localStorage if available
     const token = localStorage.getItem('token');
@@ -416,7 +417,8 @@ class ServiceManager {
   static async syncServicesFromServer(): Promise<Service[]> {
     try {
       console.log('Fetching services from server...');
-      const response = await fetch('http://localhost:4000/api/user/services/public');
+      const response = await fetch(apiUrl('/api/user/services/public'));
+
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: Failed to fetch services`);

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from '@/config/api';
 import {
   Star,
   StarOff,
@@ -80,7 +81,7 @@ const AdminRecommendedServices = () => {
         ...(providerType !== "all" && { providerType })
       });
 
-      const response = await fetch(`http://localhost:4000/api/admin/services?${params}`, {
+      const response = await fetch(apiUrl(`/api/admin/services?${params}`), {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -106,7 +107,7 @@ const AdminRecommendedServices = () => {
 
   const fetchRecommendedCount = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/admin/recommended-services-count', {
+      const response = await fetch(apiUrl('/api/admin/recommended-services-count'), {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -123,7 +124,7 @@ const AdminRecommendedServices = () => {
 
   const toggleRecommendation = async (serviceId: string, providerType: string, currentRecommended: boolean) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/admin/services/${serviceId}/${providerType}/recommend`, {
+      const response = await fetch(apiUrl(`/api/admin/services/${serviceId}/${providerType}/recommend`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

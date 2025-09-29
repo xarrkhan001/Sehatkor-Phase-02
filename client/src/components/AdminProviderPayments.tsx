@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { toast } from 'sonner';
+import { apiUrl } from '@/config/api';
 import {
   User,
   Search,
@@ -108,7 +108,7 @@ const AdminProviderPayments: React.FC = () => {
   const fetchProviderPayments = async () => {
     try {
       console.log('📊 Fetching provider payments data...');
-      const response = await fetch('http://localhost:4000/api/payments/providers-summary', {
+      const response = await fetch(apiUrl('/api/payments/providers-summary'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
         },
@@ -157,7 +157,7 @@ const AdminProviderPayments: React.FC = () => {
 
   const performHideProvider = async (providerId: string) => {
     try {
-      const resp = await fetch(`http://localhost:4000/api/payments/providers/${providerId}/hide`, {
+      const resp = await fetch(apiUrl(`/api/payments/providers/${providerId}/hide`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
@@ -207,7 +207,7 @@ const AdminProviderPayments: React.FC = () => {
     const key = `${providerId}:${paymentId}`;
     try {
       setDeletingPayments(prev => ({ ...prev, [key]: true }));
-      const resp = await fetch(`http://localhost:4000/api/payments/${paymentId}`, {
+      const resp = await fetch(apiUrl(`/api/payments/${paymentId}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sehatkor_token')}`,
@@ -261,7 +261,7 @@ const AdminProviderPayments: React.FC = () => {
     try {
       console.log('💸 Processing bulk payment release for provider:', selectedProvider.providerId);
       
-      const response = await fetch(`http://localhost:4000/api/payments/bulk-release/${selectedProvider.providerId}`, {
+      const response = await fetch(apiUrl(`/api/payments/bulk-release/${selectedProvider.providerId}`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
