@@ -35,7 +35,14 @@ import Message from "./models/Message.js";
 import { facebookCallback } from "./apis/index.js";
 import { getModelForServiceType } from "./utils/serviceModelMapper.js";
 
-dotenv.config();
+// Load environment: prefer .env.production when NODE_ENV=production
+try {
+  const envFile = process.env.NODE_ENV === "production" ? ".env.production" : ".env";
+  dotenv.config({ path: envFile });
+  console.log(`🔧 Loaded environment file: ${envFile}`);
+} catch {
+  dotenv.config();
+}
 connectDB();
 
 const app = express();
@@ -44,7 +51,17 @@ const allowedOrigins = [
   "http://localhost:8081",
   "http://localhost:5173",
 ];
+// Accept production origins from env
 if (process.env.CLIENT_URL) allowedOrigins.push(process.env.CLIENT_URL);
+if (process.env.FRONTEND_URL) allowedOrigins.push(process.env.FRONTEND_URL);
+if (process.env.CORS_ORIGINS) {
+  try {
+    const extra = process.env.CORS_ORIGINS.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    allowedOrigins.push(...extra);
+  } catch {}
+}
 
 app.use(
   cors({
@@ -84,6 +101,15 @@ app.use("/api", heroRoutes);
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
 app.get("/auth/facebook/callback", facebookCallback);
 
+// Root health/status endpoint
+app.get("/", (req, res) => {
+  res.status(200).json({
+    activeStatus: true,
+    error: false,
+    message: "Server is running",
+  });
+});
+
 console.log("🟢 server.js starting...");
 let PORT = process.env.PORT;
 if (!PORT || isNaN(Number(PORT))) {
@@ -97,11 +123,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:8080",
-      "http://localhost:8081",
-      "http://localhost:5173",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   },
   path: "/socket.io",
