@@ -95,6 +95,9 @@ const ClinicDashboard = () => {
   } as const;
 
   const [formErrors, setFormErrors] = useState<{ name?: string; department?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+  
+  // Track if location fields are pre-filled from first service
+  const [locationPreFilled, setLocationPreFilled] = useState(false);
 
   const validateField = (key: keyof typeof LIMITS, value: string) => {
     const v = (value || '').trim();
@@ -119,6 +122,74 @@ const ClinicDashboard = () => {
     const v = (value || '').trim();
     if (!v) return 'Address not specified';
     return v.length > 25 ? `${v.slice(0, 25)}…` : v;
+  };
+
+  // Get first service location data for pre-filling
+  const getFirstServiceLocationData = () => {
+    if (services.length === 0) return null;
+    
+    const firstService = services[0] as any;
+    return {
+      city: firstService.city || '',
+      detailAddress: firstService.detailAddress || '',
+      googleMapLink: firstService.googleMapLink || ''
+    };
+  };
+
+  // Pre-fill location fields from first service
+  const preFillFromFirstService = () => {
+    const firstServiceLocation = getFirstServiceLocationData();
+    if (!firstServiceLocation) return false;
+    
+    // Only pre-fill if at least one location field has data
+    const hasLocationData = firstServiceLocation.city || 
+                           firstServiceLocation.detailAddress || 
+                           firstServiceLocation.googleMapLink;
+    
+    if (hasLocationData) {
+      setServiceForm(prev => ({
+        ...prev,
+        city: firstServiceLocation.city,
+        detailAddress: firstServiceLocation.detailAddress,
+        googleMapLink: firstServiceLocation.googleMapLink
+      }));
+      return true;
+    }
+    return false;
+  };
+
+  // Reset form
+  const resetServiceForm = () => {
+    setServiceForm({
+      name: '',
+      price: '',
+      duration: '',
+      description: '',
+      category: '',
+      department: '',
+      googleMapLink: '',
+      city: '',
+      detailAddress: '',
+      availability: 'Physical',
+      serviceType: [],
+      homeDelivery: false
+    });
+    setServiceImage('');
+    setServiceImageFile(null);
+    setEditingService(null);
+    setFormErrors({});
+    setLocationPreFilled(false);
+  };
+
+  // Initialize form for new service with location pre-fill
+  const initializeNewServiceForm = () => {
+    resetServiceForm();
+    
+    // Pre-fill location fields from first service if this is not the first service
+    if (services.length > 0 && !editingService) {
+      const wasPreFilled = preFillFromFirstService();
+      setLocationPreFilled(wasPreFilled);
+    }
   };
 
   const validateLengths = (): boolean => {
@@ -667,7 +738,7 @@ const ClinicDashboard = () => {
                       </div>
                       <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
                         <DialogTrigger asChild>
-                          <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
+                          <Button onClick={initializeNewServiceForm} className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                             <span className="text-[10px] sm:text-sm font-medium">Add</span>
                           </Button>
