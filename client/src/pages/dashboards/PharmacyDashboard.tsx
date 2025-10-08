@@ -121,6 +121,9 @@ const PharmacyDashboard = () => {
 
   const [addErrors, setAddErrors] = useState<{ name?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
   const [editErrors, setEditErrors] = useState<{ name?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
+  
+  // Track if location fields are pre-filled from first medicine
+  const [locationPreFilled, setLocationPreFilled] = useState(false);
 
   const validateAddField = (key: keyof typeof LIMITS, value: string) => {
     const v = (value || '').trim();
@@ -205,6 +208,72 @@ const PharmacyDashboard = () => {
       window.dispatchEvent(new StorageEvent('storage', { key: 'sehatkor_services' }));
     } catch (error) {
       console.error('Error syncing services from backend:', error);
+    }
+  };
+
+  // Get first medicine location data for pre-filling
+  const getFirstMedicineLocationData = () => {
+    if (medicines.length === 0) return null;
+    
+    const firstMedicine = medicines[0] as any;
+    return {
+      city: firstMedicine.city || '',
+      detailAddress: firstMedicine.detailAddress || '',
+      googleMapLink: firstMedicine.googleMapLink || ''
+    };
+  };
+
+  // Pre-fill location fields from first medicine
+  const preFillFromFirstMedicine = () => {
+    const firstMedicineLocation = getFirstMedicineLocationData();
+    if (!firstMedicineLocation) return false;
+    
+    // Only pre-fill if at least one location field has data
+    const hasLocationData = firstMedicineLocation.city || 
+                           firstMedicineLocation.detailAddress || 
+                           firstMedicineLocation.googleMapLink;
+    
+    if (hasLocationData) {
+      setMedicineForm(prev => ({
+        ...prev,
+        city: firstMedicineLocation.city,
+        detailAddress: firstMedicineLocation.detailAddress,
+        googleMapLink: firstMedicineLocation.googleMapLink
+      }));
+      return true;
+    }
+    return false;
+  };
+
+  // Reset form
+  const resetMedicineForm = () => {
+    setMedicineForm({
+      name: '',
+      price: '',
+      stock: '',
+      description: '',
+      category: '',
+      googleMapLink: '',
+      city: '',
+      detailAddress: '',
+      availability: 'Physical',
+      serviceType: [],
+      homeDelivery: false
+    });
+    setMedicineImagePreview('');
+    setMedicineImageFile(null);
+    setAddErrors({});
+    setLocationPreFilled(false);
+  };
+
+  // Initialize form for new medicine with location pre-fill
+  const initializeNewMedicineForm = () => {
+    resetMedicineForm();
+    
+    // Pre-fill location fields from first medicine if this is not the first medicine
+    if (medicines.length > 0) {
+      const wasPreFilled = preFillFromFirstMedicine();
+      setLocationPreFilled(wasPreFilled);
     }
   };
 
@@ -697,7 +766,7 @@ const PharmacyDashboard = () => {
                       </div>
                       <Dialog open={isAddMedicineOpen} onOpenChange={setIsAddMedicineOpen}>
                         <DialogTrigger asChild>
-                          <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
+                          <Button onClick={initializeNewMedicineForm} className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                             <span className="text-[10px] sm:text-sm font-medium">Add</span>
                           </Button>

@@ -97,6 +97,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   // Error states for inline feedback
   const [serviceErrors, setServiceErrors] = useState<{ name?: string; hospitalClinicName?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
   const [variantErrors, setVariantErrors] = useState<Array<{ hospitalClinicName?: string; city?: string; detailAddress?: string }>>([]);
+  
+  // Track if address fields are pre-filled from first service
+  const [addressPreFilled, setAddressPreFilled] = useState(false);
 
   const ensureVariantErrorsSize = (size: number) => {
     setVariantErrors(prev => {
@@ -192,6 +195,83 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     return v.length > 25 ? `${v.slice(0, 25)}…` : v;
   };
 
+  // Get first service address and schedule data for pre-filling
+  const getFirstServiceData = () => {
+    if (services.length === 0) return null;
+    
+    const firstService = services[0] as any;
+    return {
+      // Address fields
+      hospitalClinicName: firstService.hospitalClinicName || '',
+      city: firstService.city || '',
+      detailAddress: firstService.detailAddress || '',
+      googleMapLink: firstService.googleMapLink || '',
+      // Schedule fields
+      baseTimeLabel: firstService.timeLabel || '',
+      baseStartTime: firstService.startTime || '',
+      baseEndTime: firstService.endTime || '',
+      baseDays: Array.isArray(firstService.days) ? firstService.days.join(', ') : (firstService.days || '')
+    };
+  };
+
+  // Pre-fill address and schedule fields from first service
+  const preFillFromFirstService = () => {
+    const firstServiceData = getFirstServiceData();
+    if (!firstServiceData) return false;
+    
+    // Check if there's any data to pre-fill (address or schedule)
+    const hasAddressData = firstServiceData.hospitalClinicName || 
+                          firstServiceData.city || 
+                          firstServiceData.detailAddress || 
+                          firstServiceData.googleMapLink;
+    
+    const hasScheduleData = firstServiceData.baseTimeLabel ||
+                           firstServiceData.baseStartTime ||
+                           firstServiceData.baseEndTime ||
+                           firstServiceData.baseDays;
+    
+    if (hasAddressData || hasScheduleData) {
+      setServiceForm(prev => ({
+        ...prev,
+        // Address fields
+        hospitalClinicName: firstServiceData.hospitalClinicName,
+        city: firstServiceData.city,
+        detailAddress: firstServiceData.detailAddress,
+        googleMapLink: firstServiceData.googleMapLink,
+        // Schedule fields
+        baseTimeLabel: firstServiceData.baseTimeLabel,
+        baseStartTime: firstServiceData.baseStartTime,
+        baseEndTime: firstServiceData.baseEndTime,
+        baseDays: firstServiceData.baseDays
+      }));
+      return true;
+    }
+    return false;
+  };
+
+  // Add new variant with pre-filled address and schedule data from main service form
+  const addNewVariant = () => {
+    const newVariant = {
+      id: Math.random().toString(36).slice(2),
+      availability: 'Physical',
+      isActive: true,
+      imageFile: null,
+      // Pre-fill address fields from main service form
+      hospitalClinicName: serviceForm.hospitalClinicName || '',
+      city: serviceForm.city || '',
+      detailAddress: serviceForm.detailAddress || '',
+      googleMapLink: serviceForm.googleMapLink || '',
+      // Pre-fill schedule fields from main service form
+      timeLabel: serviceForm.baseTimeLabel || '',
+      startTime: serviceForm.baseStartTime || '',
+      endTime: serviceForm.baseEndTime || '',
+      days: serviceForm.baseDays || ''
+    };
+    
+    setVariants([...variants, newVariant]);
+    ensureVariantErrorsSize(variants.length + 1);
+  };
+
   const resetForm = () => {
     setServiceForm({
       name: '',
@@ -220,6 +300,18 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     setDiseaseInput('');
     setServiceErrors({});
     setVariantErrors([]);
+    setAddressPreFilled(false);
+  };
+
+  // Initialize form for new service with address and schedule pre-fill
+  const initializeNewServiceForm = () => {
+    resetForm();
+    
+    // Pre-fill address and schedule fields from first service if this is not the first service
+    if (services.length > 0 && !editingService) {
+      const wasPreFilled = preFillFromFirstService();
+      setAddressPreFilled(wasPreFilled);
+    }
   };
 
   // Simple length validation (requested constraints)
@@ -660,7 +752,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
           </div>
           <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm} className={userRole === 'doctor' 
+              <Button onClick={initializeNewServiceForm} className={userRole === 'doctor' 
                 ? "bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10"
                 : "shrink-0 self-start sm:self-auto w-full sm:w-auto"}>
                 {userRole === 'doctor' ? (
@@ -806,7 +898,15 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
                 {/* Location Fields */}
                 <div className="space-y-3 border-t pt-3">
-                  <h4 className="font-medium text-sm">Location Information</h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Location Information</h4>
+                    {addressPreFilled && !editingService && (
+                      <div className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                        <span>📍</span>
+                        <span>Pre-filled from first service</span>
+                      </div>
+                    )}
+                  </div>
                   
                   <div>
                     <Label htmlFor="hospitalClinicName">Hospital/Clinic Name</Label>
@@ -1244,7 +1344,14 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               }} placeholder="e.g., 2500" />
                             </div>
                             <div>
-                              <Label>Hospital/Clinic Name</Label>
+                              <div className="flex items-center justify-between">
+                                <Label>Hospital/Clinic Name</Label>
+                                {!editingService && v.hospitalClinicName === serviceForm.hospitalClinicName && serviceForm.hospitalClinicName && (
+                                  <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                                    📍 Pre-filled
+                                  </span>
+                                )}
+                              </div>
                               <Input value={v.hospitalClinicName || ''} onChange={(e) => {
                                 const nv = [...variants]; nv[idx] = { ...v, hospitalClinicName: e.target.value }; setVariants(nv);
                                 validateVariantField(idx, 'hospitalClinicName', e.target.value);
@@ -1360,10 +1467,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       ))}
                     </div>
 
-                    <Button type="button" variant="outline" onClick={() => setVariants([
-                      ...variants,
-                      { id: Math.random().toString(36).slice(2), availability: 'Physical', isActive: true, imageFile: null }
-                    ])}>
+                    <Button type="button" variant="outline" onClick={addNewVariant} disabled={isSaving || isUploadingImage}>
                       <Plus className="w-4 h-4 mr-2" /> Add Variant
                     </Button>
                   </div>

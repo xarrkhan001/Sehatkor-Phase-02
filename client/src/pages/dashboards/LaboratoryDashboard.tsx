@@ -103,6 +103,9 @@ const LaboratoryDashboard = () => {
   const [addErrors, setAddErrors] = useState<{ name?: string; department?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
   const [editErrors, setEditErrors] = useState<{ name?: string; department?: string; description?: string; city?: string; detailAddress?: string; googleMapLink?: string }>({});
 
+  // Track if location fields are pre-filled from first test
+  const [locationPreFilled, setLocationPreFilled] = useState(false);
+
   const isValidHttpUrl = (value: string): boolean => {
     const v = (value || '').trim();
     if (!v) return true; // optional
@@ -186,6 +189,72 @@ const LaboratoryDashboard = () => {
     const v = (value || '').trim();
     if (!v) return 'Address not specified';
     return v.length > 25 ? `${v.slice(0, 25)}…` : v;
+  };
+
+  // Get first test location data for pre-filling
+  const getFirstTestLocationData = () => {
+    if (tests.length === 0) return null;
+    
+    const firstTest = tests[0] as any;
+    return {
+      city: firstTest.city || '',
+      detailAddress: firstTest.detailAddress || '',
+      googleMapLink: firstTest.googleMapLink || ''
+    };
+  };
+
+  // Pre-fill location fields from first test
+  const preFillFromFirstTest = () => {
+    const firstTestLocation = getFirstTestLocationData();
+    if (!firstTestLocation) return false;
+    
+    // Only pre-fill if at least one location field has data
+    const hasLocationData = firstTestLocation.city || 
+                           firstTestLocation.detailAddress || 
+                           firstTestLocation.googleMapLink;
+    
+    if (hasLocationData) {
+      setTestForm(prev => ({
+        ...prev,
+        city: firstTestLocation.city,
+        detailAddress: firstTestLocation.detailAddress,
+        googleMapLink: firstTestLocation.googleMapLink
+      }));
+      return true;
+    }
+    return false;
+  };
+
+  // Reset form
+  const resetTestForm = () => {
+    setTestForm({
+      name: '',
+      price: '',
+      duration: '',
+      description: '',
+      category: '',
+      googleMapLink: '',
+      city: '',
+      detailAddress: '',
+      availability: 'Physical',
+      serviceType: [],
+      homeDelivery: false
+    });
+    setTestImagePreview('');
+    setTestImageFile(null);
+    setAddErrors({});
+    setLocationPreFilled(false);
+  };
+
+  // Initialize form for new test with location pre-fill
+  const initializeNewTestForm = () => {
+    resetTestForm();
+    
+    // Pre-fill location fields from first test if this is not the first test
+    if (tests.length > 0) {
+      const wasPreFilled = preFillFromFirstTest();
+      setLocationPreFilled(wasPreFilled);
+    }
   };
 
   const syncServicesFromBackend = (docs: any[]) => {
@@ -1067,7 +1136,7 @@ const LaboratoryDashboard = () => {
                         </div>
                         <Dialog open={isAddTestOpen} onOpenChange={setIsAddTestOpen}>
                           <DialogTrigger asChild>
-                            <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
+                            <Button onClick={initializeNewTestForm} className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
                               <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                               <span className="text-[10px] sm:text-sm font-medium">Add</span>
                             </Button>
