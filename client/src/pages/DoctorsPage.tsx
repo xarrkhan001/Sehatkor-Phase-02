@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
@@ -637,7 +637,7 @@ const DoctorsPage = () => {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  // Build display time label for current slide - for variants show days only
+  // Build display time label for current slide
   const getTimeInfoForService = (service: any): string | null => {
     const variants = (service as any).variants as any[] | undefined;
     const vlen = Array.isArray(variants) ? variants.length : 0;
@@ -652,10 +652,12 @@ const DoctorsPage = () => {
       return parts.length ? parts.join(" · ") : null;
     }
 
-    // For variants, show only days in the left badge
     const v = variants && variants[idx - 1];
     if (!v) return null;
-    return v.days ? String(v.days) : null;
+    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}` : "");
+    const days = v.days ? String(v.days) : "";
+    const parts = [label, days].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
   };
 
   // Build numeric time range for current slide
@@ -838,47 +840,66 @@ const DoctorsPage = () => {
                       </button>
                     </div>
                   )}
-                  {/* Time info badge */}
-                  {getTimeInfoForService(service) && (
-                    <div className="absolute left-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{getTimeInfoForService(service)}</span>
-                    </div>
-                  )}
-                  {/* For variants, show start and end times separately */}
+                  {/* Schedule overlays: days (top-left) and time (bottom-left) */}
                   {(() => {
+                    // Determine slide index and variant
                     const variants = (service as any).variants as any[] | undefined;
                     const vlen = Array.isArray(variants) ? variants.length : 0;
                     const totalSlides = 1 + vlen;
                     const rawIdx = activeVariantIndex[service.id] ?? 0;
                     const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
-                    
-                    if (idx > 0) {
-                      // For variants, show separate start/end times
-                      const v = variants && variants[idx - 1];
-                      if (v && v.startTime && v.endTime) {
-                        return (
-                          <div className="absolute right-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                            <div className="flex items-center gap-1 mb-1">
-                              <Clock className="w-3 h-3" />
-                              <span>Start: {formatTo12Hour(v.startTime)}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>End: {formatTo12Hour(v.endTime)}</span>
-                            </div>
-                          </div>
-                        );
+
+                    // Extract days
+                    const daysText = (() => {
+                      if (idx === 0) {
+                        return (service as any).days ? String((service as any).days) : "";
                       }
-                    }
-                    
-                    // For main service, show normal time range
-                    const timeRange = getTimeRangeForService(service);
-                    return timeRange && (
-                      <div className="absolute right-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{timeRange}</span>
-                      </div>
+                      const v = variants && variants[idx - 1];
+                      return v?.days ? String(v.days) : "";
+                    })();
+
+                    // Build time text from label and numeric range
+                    const formatTo12Hour = (time24?: string): string => {
+                      if (!time24) return "";
+                      const [hours, minutes] = time24.split(':');
+                      const hour24 = parseInt(hours, 10);
+                      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+                      const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                      return `${hour12}:${minutes} ${ampm}`;
+                    };
+                    const timeText = (() => {
+                      if (idx === 0) {
+                        const timeLabel = (service as any).timeLabel;
+                        const startTime = (service as any).startTime;
+                        const endTime = (service as any).endTime;
+                        const range = startTime && endTime ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
+                        if (timeLabel && range) return `${String(timeLabel)} — ${range}`;
+                        return String(timeLabel || range || "");
+                      }
+                      const v = variants && variants[idx - 1];
+                      const timeLabel = v?.timeLabel;
+                      const startTime = v?.startTime;
+                      const endTime = v?.endTime;
+                      const range = startTime && endTime ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
+                      if (timeLabel && range) return `${String(timeLabel)} — ${range}`;
+                      return String(timeLabel || range || "");
+                    })();
+
+                    return (
+                      <>
+                        {daysText && (
+                          <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            <span className="truncate max-w-[220px] sm:max-w-[280px]">{daysText}</span>
+                          </div>
+                        )}
+                        {timeText && (
+                          <div className="absolute left-2 bottom-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span className="truncate max-w-[220px] sm:max-w-[280px]">{timeText}</span>
+                          </div>
+                        )}
+                      </>
                     );
                   })()}
                 </div>

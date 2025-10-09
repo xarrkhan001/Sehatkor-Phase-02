@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MapPin, ArrowLeft, Home, Clock, AlertTriangle } from "lucide-react";
+import { MapPin, ArrowLeft, Home, Clock, AlertTriangle, Calendar } from "lucide-react";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 import RatingModal from "@/components/RatingModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -76,7 +76,9 @@ const ServiceDetailPage = () => {
   const [activeVariantIndex, setActiveVariantIndex] = useState(() => {
     // Initialize with variant index from navigation state if available
     const initialIndex = (locationHook.state as any)?.initialVariantIndex;
-    const validIndex = typeof initialIndex === 'number' ? Math.max(0, Math.min(initialIndex, 1)) : 0;
+    const validIndex = typeof initialIndex === 'number' && Number.isFinite(initialIndex)
+      ? Math.max(0, Math.floor(initialIndex))
+      : 0;
     console.log('🔧 ServiceDetailPage: Initializing activeVariantIndex:', validIndex, 'from initialIndex:', initialIndex);
     return validIndex;
   });
@@ -518,7 +520,7 @@ const ServiceDetailPage = () => {
                   <span className="text-muted-foreground">No Image</span>
                 )}
                 
-                {/* Schedule label overlay */}
+                {/* Schedule overlays: days (top-left) and time (bottom-left) */}
                 {(() => {
                   const formatTo12Hour = (time24?: string): string => {
                     if (!time24) return "";
@@ -529,106 +531,68 @@ const ServiceDetailPage = () => {
                     return `${hour12}:${minutes} ${ampm}`;
                   };
 
-                  const getScheduleLabel = () => {
-                    console.log('ServiceDetailPage Debug:', {
-                      activeVariantIndex,
-                      itemSchedule: {
-                        timeLabel: (item as any).timeLabel,
-                        startTime: (item as any).startTime,
-                        endTime: (item as any).endTime,
-                        days: (item as any).days
-                      },
-                      variants: (item as any).variants
-                    });
+                  // Treat as main when index is 0 OR there is no variant for the current index
+                  const rawVariant = (item as any)?.variants?.[activeVariantIndex - 1];
+                  const isMain = activeVariantIndex === 0 || !Array.isArray((item as any)?.variants) || !rawVariant;
+                  const variant = !isMain ? rawVariant : undefined;
 
-                    if (activeVariantIndex === 0) {
-                      // Main service schedule - use item directly (not activeSlide to avoid confusion)
-                      const timeLabel = (item as any).timeLabel;
-                      const startTime = (item as any).startTime;
-                      const endTime = (item as any).endTime;
-                      const days = (item as any).days;
-                      
-                      console.log('🔍 Main Service Schedule Debug:');
-                      console.log('  - timeLabel:', timeLabel);
-                      console.log('  - startTime:', startTime);
-                      console.log('  - endTime:', endTime);
-                      console.log('  - days:', days);
-                      console.log('  - Full item object:', item);
-                      
-                      const range = startTime && endTime ? `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}` : "";
-                      const baseLabel = timeLabel ? String(timeLabel) : "";
-                      const label = baseLabel && range ? `${baseLabel} — ${range}` : (baseLabel || range);
-                      const daysStr = days ? String(days) : "";
-                      const parts = [label, daysStr].filter(Boolean);
-                      let result = parts.length ? parts.join(" · ") : null;
-                      
-                      console.log('  - range:', range);
-                      console.log('  - baseLabel:', baseLabel);
-                      console.log('  - label:', label);
-                      console.log('  - daysStr:', daysStr);
-                      console.log('  - parts:', parts);
-                      console.log('  - Final result:', result);
-                      
-                      // NEVER show variant schedule on main service slide - show null instead
-                      if (!result && !timeLabel && !startTime && !endTime && !days) {
-                        console.log('Main service has no schedule data - showing null instead of variant fallback');
-                        result = null;
-                      } else if (timeLabel || startTime || endTime || days) {
-                        console.log('Main service has its own schedule data, not using fallback');
-                      }
-                      
-                      return result;
-                    } else {
-                      // Variant schedule
-                      const variant = (item as any).variants?.[activeVariantIndex - 1];
-                      if (!variant) return null;
-                      const range = variant.startTime && variant.endTime ? `${formatTo12Hour(variant.startTime)} - ${formatTo12Hour(variant.endTime)}` : "";
-                      const baseLabel = variant.timeLabel ? String(variant.timeLabel) : "";
-                      const label = baseLabel && range ? `${baseLabel} — ${range}` : (baseLabel || range);
-                      const days = variant.days ? String(variant.days) : "";
-                      const parts = [label, days].filter(Boolean);
-                      const result = parts.length ? parts.join(" · ") : null;
-                      console.log('Variant schedule result:', result);
-                      return result;
-                    }
-                  };
+                  // Days text
+                  const daysText = (() => {
+                    const d = isMain ? (item as any).days : (variant as any)?.days;
+                    return d ? String(d) : "";
+                  })();
 
-                  const scheduleLabel = getScheduleLabel();
-                  console.log('Final scheduleLabel:', scheduleLabel);
-                  
-                  // Only show overlay if there's a schedule
-                  if (!scheduleLabel) return null;
+                  // Time text (label and/or numeric range)
+                  const timeText = (() => {
+                    const timeLabel = isMain ? (item as any).timeLabel : (variant as any)?.timeLabel;
+                    const startTime = isMain ? (item as any).startTime : (variant as any)?.startTime;
+                    const endTime = isMain ? (item as any).endTime : (variant as any)?.endTime;
+                    const range = startTime && endTime ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
 
-                  // For variants, show days on upper row and times on lower rows
-                  if (activeVariantIndex > 0) {
-                    const variant = (item as any).variants?.[activeVariantIndex - 1];
-                    if (variant && variant.startTime && variant.endTime) {
-                      return (
-                        <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                          {variant.days && (
-                            <div className="text-center mb-1 text-[10px] opacity-90">
-                              {String(variant.days)}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1 mb-1">
-                            <Clock className="w-3 h-3" />
-                            <span>Start: {formatTo12Hour(variant.startTime)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>End: {formatTo12Hour(variant.endTime)}</span>
-                          </div>
-                        </div>
-                      );
-                    }
-                  }
+                    // Derive a reliable period from start/end time to avoid wrong labels from backend
+                    const derivePeriod = (t?: string) => {
+                      if (!t) return "";
+                      const h = parseInt(String(t).split(":")[0] || "0", 10);
+                      if (h >= 20 || h < 4) return "Night";      // 8 PM - 3:59 AM
+                      if (h >= 16) return "Evening";             // 4 PM - 7:59 PM
+                      if (h >= 12) return "Afternoon";           // 12 PM - 3:59 PM
+                      return "Morning";                           // 4 AM - 11:59 AM
+                    };
+                    const derived = startTime ? derivePeriod(String(startTime)) : (endTime ? derivePeriod(String(endTime)) : "");
+                    // Prefer the label coming from the slide (variant/main); fallback to derived if missing
+                    const effectiveLabel = (timeLabel ? String(timeLabel) : (derived || ""));
 
-                  // Default display for main service or variants without separate times
+                    try {
+                      console.log('Detail schedule debug:', {
+                        isMain,
+                        timeLabel,
+                        startTime,
+                        endTime,
+                        derived,
+                        effectiveLabel,
+                        range,
+                      });
+                    } catch {}
+
+                    if (effectiveLabel && range) return `${effectiveLabel} — ${range}`;
+                    return String(effectiveLabel || range || "");
+                  })();
+
                   return (
-                    <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{scheduleLabel}</span>
-                    </div>
+                    <>
+                      {daysText && (
+                        <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span className="truncate max-w-[220px] sm:max-w-[280px]">{daysText}</span>
+                        </div>
+                      )}
+                      {timeText && (
+                        <div className="absolute left-2 bottom-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span className="truncate max-w-[220px] sm:max-w-[280px]">{timeText}</span>
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
 
