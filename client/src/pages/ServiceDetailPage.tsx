@@ -87,6 +87,7 @@ const ServiceDetailPage = () => {
   const [resolvedClinicCategory, setResolvedClinicCategory] = useState<string | undefined>(undefined);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [expandedDiseases, setExpandedDiseases] = useState<string | null>(null);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -798,32 +799,54 @@ const ServiceDetailPage = () => {
                           {(() => {
                             const diseases = (hydratedDiseases ?? ((item as any)?.diseases || [])) as string[];
                             return Array.isArray(diseases) && diseases.length > 0 ? (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      title="View diseases"
-                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                    >
-                                      <VirusIcon className="w-4 h-4" />
-                                      <span className="text-xs font-medium">Diseases</span>
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs">
+                              <div className="relative">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        title="View diseases"
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          // Toggle diseases visibility for small screens
+                                          setExpandedDiseases(expandedDiseases === item.id ? null : item.id);
+                                        }}
+                                      >
+                                        <VirusIcon className="w-4 h-4" />
+                                        <span className="text-xs font-medium">Diseases</span>
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="max-w-xs hidden sm:block">
+                                      <div className="text-xs text-emerald-800">
+                                        <div className="mb-1 font-medium">Diseases</div>
+                                        <div className="flex flex-col gap-1">
+                                          {diseases.map((d, i) => (
+                                            <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                              {d}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                {/* Mobile click-to-show diseases list as tooltip/popover */}
+                                {expandedDiseases === item.id && (
+                                  <div className="absolute sm:hidden left-0 top-[110%] z-50 w-56 p-2 bg-white border border-emerald-200 rounded-md shadow-lg">
                                     <div className="text-xs text-emerald-800">
                                       <div className="mb-1 font-medium">Diseases</div>
-                                      <div className="flex flex-wrap gap-1">
+                                      <div className="flex flex-col gap-1">
                                         {diseases.map((d, i) => (
-                                          <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                          <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             {d}
                                           </span>
                                         ))}
                                       </div>
                                     </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                                  </div>
+                                )}
+                              </div>
                             ) : null;
                           })()}
                         </div>
