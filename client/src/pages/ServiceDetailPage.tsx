@@ -597,7 +597,34 @@ const ServiceDetailPage = () => {
                   console.log('Final scheduleLabel:', scheduleLabel);
                   
                   // Only show overlay if there's a schedule
-                  return scheduleLabel && (
+                  if (!scheduleLabel) return null;
+
+                  // For variants, show days on upper row and times on lower rows
+                  if (activeVariantIndex > 0) {
+                    const variant = (item as any).variants?.[activeVariantIndex - 1];
+                    if (variant && variant.startTime && variant.endTime) {
+                      return (
+                        <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                          {variant.days && (
+                            <div className="text-center mb-1 text-[10px] opacity-90">
+                              {String(variant.days)}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 mb-1">
+                            <Clock className="w-3 h-3" />
+                            <span>Start: {formatTo12Hour(variant.startTime)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>End: {formatTo12Hour(variant.endTime)}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                  }
+
+                  // Default display for main service or variants without separate times
+                  return (
                     <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       <span>{scheduleLabel}</span>

@@ -637,7 +637,7 @@ const DoctorsPage = () => {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  // Build display time label for current slide
+  // Build display time label for current slide - for variants show days only
   const getTimeInfoForService = (service: any): string | null => {
     const variants = (service as any).variants as any[] | undefined;
     const vlen = Array.isArray(variants) ? variants.length : 0;
@@ -652,12 +652,10 @@ const DoctorsPage = () => {
       return parts.length ? parts.join(" · ") : null;
     }
 
+    // For variants, show only days in the left badge
     const v = variants && variants[idx - 1];
     if (!v) return null;
-    const label = v.timeLabel || (v.startTime && v.endTime ? `${formatTo12Hour(v.startTime)} - ${formatTo12Hour(v.endTime)}` : "");
-    const days = v.days ? String(v.days) : "";
-    const parts = [label, days].filter(Boolean);
-    return parts.length ? parts.join(" · ") : null;
+    return v.days ? String(v.days) : null;
   };
 
   // Build numeric time range for current slide
@@ -847,12 +845,42 @@ const DoctorsPage = () => {
                       <span>{getTimeInfoForService(service)}</span>
                     </div>
                   )}
-                  {getTimeRangeForService(service) && (
-                    <div className="absolute right-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{getTimeRangeForService(service)}</span>
-                    </div>
-                  )}
+                  {/* For variants, show start and end times separately */}
+                  {(() => {
+                    const variants = (service as any).variants as any[] | undefined;
+                    const vlen = Array.isArray(variants) ? variants.length : 0;
+                    const totalSlides = 1 + vlen;
+                    const rawIdx = activeVariantIndex[service.id] ?? 0;
+                    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
+                    
+                    if (idx > 0) {
+                      // For variants, show separate start/end times
+                      const v = variants && variants[idx - 1];
+                      if (v && v.startTime && v.endTime) {
+                        return (
+                          <div className="absolute right-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            <div className="flex items-center gap-1 mb-1">
+                              <Clock className="w-3 h-3" />
+                              <span>Start: {formatTo12Hour(v.startTime)}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>End: {formatTo12Hour(v.endTime)}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                    }
+                    
+                    // For main service, show normal time range
+                    const timeRange = getTimeRangeForService(service);
+                    return timeRange && (
+                      <div className="absolute right-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        <span>{timeRange}</span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Title and Provider */}
