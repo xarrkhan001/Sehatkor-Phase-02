@@ -215,6 +215,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
+          onClick={handleButtonClick}
         >
           <div className="p-4 text-center">
             <div className="flex flex-col items-center space-y-2">
