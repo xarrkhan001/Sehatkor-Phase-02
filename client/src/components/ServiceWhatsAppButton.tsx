@@ -48,6 +48,7 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
   };
 
   const [open, setOpen] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
   const [connStatus, setConnStatus] = useState<'loading' | 'connected' | 'pending' | 'none'>('loading');
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
@@ -99,6 +100,23 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
     refreshStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [providerIdUsed]);
+
+  // Detect small screens (below Tailwind's sm breakpoint ~640px)
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mql = window.matchMedia('(max-width: 639px)');
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsSmallScreen(('matches' in e ? e.matches : (e as MediaQueryList).matches));
+    };
+    // Initialize and subscribe
+    handler(mql as any);
+    if (typeof mql.addEventListener === 'function') mql.addEventListener('change', handler as any);
+    else if (typeof (mql as any).addListener === 'function') (mql as any).addListener(handler as any);
+    return () => {
+      if (typeof mql.removeEventListener === 'function') mql.removeEventListener('change', handler as any);
+      else if (typeof (mql as any).removeListener === 'function') (mql as any).removeListener(handler as any);
+    };
+  }, []);
 
   // Attempt to resolve providerId if missing, using providerName (limited to 1 hit by API)
   useEffect(() => {
@@ -161,16 +179,21 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
             size="icon"
             className="rounded-full w-8 h-8 p-[1px] bg-gradient-to-br from-sky-500/35 via-violet-500/35 to-fuchsia-500/35 hover:from-sky-500/50 hover:via-violet-500/50 hover:to-fuchsia-500/50 transition-colors"
             aria-label="Contact options"
-            onMouseEnter={() => setOpen(true)}
-            onFocus={() => setOpen(true)}
-            onClick={() => setOpen((v) => !v)}
+            onMouseEnter={() => { if (!isSmallScreen) setOpen(true); }}
+            onFocus={() => { if (!isSmallScreen) setOpen(true); }}
+            onClick={(e) => { e.preventDefault(); setOpen((v) => !v); }}
           >
             <span className="flex items-center justify-center w-full h-full rounded-full bg-background text-blue-600 hover:text-blue-700">
               <MessageCircle className="w-4 h-4" />
             </span>
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="top" className="p-1.5" onPointerEnter={() => setOpen(true)} onPointerLeave={() => setOpen(false)}>
+      <TooltipContent
+        side="top"
+        className="p-1.5"
+        onPointerEnter={() => { if (!isSmallScreen) setOpen(true); }}
+        onPointerLeave={() => { if (!isSmallScreen) setOpen(false); }}
+      >
         <TooltipArrow className="fill-popover" />
         <div className="flex flex-col gap-1.5">
           <Button
