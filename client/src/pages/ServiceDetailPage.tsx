@@ -714,7 +714,7 @@ const ServiceDetailPage = () => {
                     </Badge>
                     {/* Department badge for clinic services */}
                     {item.providerType === 'clinic' && (item as any).department && (
-                      <Badge className="ml-2 flex items-center gap-3 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
+                      <Badge className="mt-2 w-1/2 flex items-center gap-3 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"

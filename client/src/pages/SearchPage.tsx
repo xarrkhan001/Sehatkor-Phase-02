@@ -1567,13 +1567,16 @@ const SearchPage = () => {
                                     description: service.description,
                                     price: getDisplayPrice(service) ?? service.price,
                                     rating: service.rating ?? 0,
-                                    provider: service.providerName,
-                                    providerId: service.providerId,
+                                    provider: service.provider,
+                                    // Ensure the detail page receives the provider's user id for messaging/requests
+                                    providerId: (service as any)._providerId || (service as any).providerId,
                                     image: getDisplayImage(service) ?? (service as any).image,
                                     type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
                                     providerType: (service as any)._providerType || (service as any).providerType || 'doctor',
                                     // Ensure detail page shows the same verification badge
                                     _providerVerified: Boolean((service as any)._providerVerified),
+                                    // Also pass through the internal key for compatibility
+                                    _providerId: (service as any)._providerId,
                                     isReal: true,
                                     // Location/address helpers
                                     location: getDisplayLocation(service) || (service as any).location,
