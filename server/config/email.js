@@ -3,15 +3,24 @@ import nodemailer from 'nodemailer';
 // Create email transporter
 const createTransporter = () => {
   if (process.env.DEBUG_EMAIL === 'true') {
-    console.log('Initializing email transporter (gmail service)');
+    console.log('Initializing email transporter');
+    console.log('EMAIL_HOST:', process.env.EMAIL_HOST);
+    console.log('EMAIL_PORT:', process.env.EMAIL_PORT);
+    console.log('EMAIL_USER:', process.env.EMAIL_USER);
+    console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '***SET***' : 'NOT SET');
   }
   
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    tls: {
+      rejectUnauthorized: false // Allow self-signed certificates (for production)
+    }
   });
 };
 
@@ -73,10 +82,14 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
   try {
     const transporter = createTransporter();
     
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
     
     if (process.env.DEBUG_EMAIL === 'true') {
       console.log('Sending password reset email');
+      console.log('To:', email);
+      console.log('Reset URL:', resetUrl);
+      console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
     }
     
     const mailOptions = {
@@ -124,10 +137,24 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    
+    if (process.env.DEBUG_EMAIL === 'true') {
+      console.log('Email sent successfully');
+      console.log('Message ID:', info.messageId);
+      console.log('Response:', info.response);
+    }
+    
     return { success: true };
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error('❌ Password reset email sending failed:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode
+    });
     return { success: false, error: error.message };
   }
 };
