@@ -314,6 +314,59 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
     }
   };
 
+  // Comprehensive validation for all required fields
+  const validateRequiredFields = (): { isValid: boolean; missingFields: string[] } => {
+    const missingFields: string[] = [];
+    const trim = (s?: string) => (s || '').trim();
+
+    // Check required basic fields
+    if (!trim(serviceForm.name)) {
+      missingFields.push('Service Name');
+    }
+    if (!trim(serviceForm.price)) {
+      missingFields.push('Price');
+    }
+    if (!trim(serviceForm.category)) {
+      missingFields.push('Category');
+    }
+
+    // Check required location fields
+    if (!trim(serviceForm.hospitalClinicName)) {
+      missingFields.push('Hospital/Clinic Name');
+    }
+    if (!trim(serviceForm.city)) {
+      missingFields.push('City');
+    }
+    if (!trim(serviceForm.detailAddress)) {
+      missingFields.push('Detailed Address');
+    }
+
+    // Check required image field
+    if (!serviceImage && !serviceImageFile) {
+      missingFields.push('Service Image');
+    }
+
+    // For doctors, check if any variants have missing required fields
+    if (userRole === 'doctor' && variants.length > 0) {
+      variants.forEach((variant, index) => {
+        if (!trim(variant.hospitalClinicName)) {
+          missingFields.push(`Variant #${index + 1} Hospital/Clinic Name`);
+        }
+        if (!trim(variant.city)) {
+          missingFields.push(`Variant #${index + 1} City`);
+        }
+        if (!trim(variant.detailAddress)) {
+          missingFields.push(`Variant #${index + 1} Detailed Address`);
+        }
+      });
+    }
+
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  };
+
   // Simple length validation (requested constraints)
   // Service Name: max 32
   // Hospital/Clinic Name: max 26
@@ -371,12 +424,26 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
   const handleAddService = async () => {
     if (isSaving) return;
+    
+    // Check all required fields first
+    const validation = validateRequiredFields();
+    if (!validation.isValid) {
+      const fieldList = validation.missingFields.join(', ');
+      toast({
+        title: "Required Fields Missing",
+        description: `Please fill in the following required fields: ${fieldList}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Enforce requested length constraints before any processing
     if (!validateLengths()) return;
-    if (!serviceForm.name || !userId) {
+    
+    if (!userId) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "User ID is missing",
         variant: "destructive"
       });
       return;
@@ -768,11 +835,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 )}
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
-                <DialogDescription>
-                  {editingService ? 'Update your service details' : 'Add a new service to your practice'}
+            <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl">
+              <DialogHeader className="border-b border-slate-700 pb-4">
+                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                  {editingService ? '✏️ Edit Service' : '✨ Add New Service'}
+                </DialogTitle>
+                <DialogDescription className="text-slate-300 text-base">
+                  {editingService ? 'Update your service details with precision' : 'Create a new professional service offering'}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
@@ -791,7 +860,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 </div>
                 
                 <div>
-                  <Label>Service Image</Label>
+                  <Label>Service Image <span className="text-red-500">*</span></Label>
                   <ImageUpload
                     onImageSelect={(file, preview) => { setServiceImageFile(file); setServiceImage(preview); }}
                     onImageRemove={() => { setServiceImageFile(null); setServiceImage(''); }}
@@ -840,7 +909,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 </div>
 
                 <div>
-                  <Label htmlFor="serviceCategory">Category</Label>
+                  <Label htmlFor="serviceCategory">Category <span className="text-red-500">*</span></Label>
                   <Select value={serviceForm.category} onValueChange={(value) => setServiceForm({...serviceForm, category: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select service category" />
@@ -909,7 +978,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
                   
                   <div>
-                    <Label htmlFor="hospitalClinicName">Hospital/Clinic Name</Label>
+                    <Label htmlFor="hospitalClinicName">Hospital/Clinic Name <span className="text-red-500">*</span></Label>
                     <Input
                       id="hospitalClinicName"
                       value={serviceForm.hospitalClinicName}
@@ -923,7 +992,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
 
                   <div>
-                    <Label htmlFor="serviceCity">City</Label>
+                    <Label htmlFor="serviceCity">City <span className="text-red-500">*</span></Label>
                     <Input
                       id="serviceCity"
                       value={serviceForm.city}
@@ -937,7 +1006,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   </div>
 
                   <div>
-                    <Label htmlFor="serviceAddress">Detailed Address</Label>
+                    <Label htmlFor="serviceAddress">Detailed Address <span className="text-red-500">*</span></Label>
                     <Textarea
                       id="serviceAddress"
                       value={serviceForm.detailAddress}
@@ -985,7 +1054,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   <div className="space-y-2">
                     <Label>What type of service is this? (Select multiple if applicable)</Label>
                     <div className="grid grid-cols-2 gap-2">
-                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                         <input
                           type="checkbox"
                           value="Sehat Card"
@@ -1001,9 +1070,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           }}
                           className="text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span className="text-sm">Sehat Card</span>
+                        <span className="text-sm text-white">Sehat Card</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                         <input
                           type="checkbox"
                           value="Private"
@@ -1019,9 +1088,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           }}
                           className="text-blue-600 focus:ring-blue-500"
                         />
-                        <span className="text-sm">Private</span>
+                        <span className="text-sm text-white">Private</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                         <input
                           type="checkbox"
                           value="Public"
@@ -1037,9 +1106,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           }}
                           className="text-green-600 focus:ring-green-500"
                         />
-                        <span className="text-sm">Public</span>
+                        <span className="text-sm text-white">Public</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                         <input
                           type="checkbox"
                           value="Charity"
@@ -1055,9 +1124,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           }}
                           className="text-orange-600 focus:ring-orange-500"
                         />
-                        <span className="text-sm">Charity</span>
+                        <span className="text-sm text-white">Charity</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                         <input
                           type="checkbox"
                           value="NGO"
@@ -1073,9 +1142,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           }}
                           className="text-pink-600 focus:ring-pink-500"
                         />
-                        <span className="text-sm">NGO</span>
+                        <span className="text-sm text-white">NGO</span>
                       </label>
-                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                      <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                         <input
                           type="checkbox"
                           value="NPO"
@@ -1091,7 +1160,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                           }}
                           className="text-purple-600 focus:ring-purple-500"
                         />
-                        <span className="text-sm">NPO</span>
+                        <span className="text-sm text-white">NPO</span>
                       </label>
                     </div>
                   </div>
@@ -1224,13 +1293,13 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         )}
                       </div>
                       {filteredDiseaseSuggestions.length > 0 && diseaseInput && (
-                        <div className="mt-1 border rounded-md max-w-md bg-white shadow-sm">
+                        <div className="mt-1 border rounded-md max-w-md bg-slate-800 shadow-sm">
                           {filteredDiseaseSuggestions.map(opt => (
                             <button
                               type="button"
                               key={opt}
                               onClick={() => addDisease(opt)}
-                              className="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50"
+                              className="w-full text-left px-3 py-1.5 text-sm text-white hover:bg-slate-700"
                             >
                               {opt}
                             </button>
@@ -1361,7 +1430,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               )}
                             </div>
                             <div>
-                              <Label>City</Label>
+                              <Label>City <span className="text-red-500">*</span></Label>
                               <Input value={v.city || ''} onChange={(e) => {
                                 const nv = [...variants]; nv[idx] = { ...v, city: e.target.value }; setVariants(nv);
                                 validateVariantField(idx, 'city', e.target.value);
@@ -1371,7 +1440,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                               )}
                             </div>
                             <div className="sm:col-span-2">
-                              <Label>Detailed Address</Label>
+                              <Label>Detailed Address <span className="text-red-500">*</span></Label>
                               <Textarea value={v.detailAddress || ''} onChange={(e) => {
                                 const nv = [...variants]; nv[idx] = { ...v, detailAddress: e.target.value }; setVariants(nv);
                                 validateVariantField(idx, 'detailAddress', e.target.value);
@@ -1404,7 +1473,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                                     }}
                                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                                   />
-                                  <label htmlFor={`variant-physical-${idx}`} className="text-sm font-medium text-gray-900">
+                                  <label htmlFor={`variant-physical-${idx}`} className="text-sm font-medium text-white">
                                     Physical - In-person service only
                                   </label>
                                 </div>
@@ -1422,7 +1491,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                                     }}
                                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                                   />
-                                  <label htmlFor={`variant-online-${idx}`} className="text-sm font-medium text-gray-900">
+                                  <label htmlFor={`variant-online-${idx}`} className="text-sm font-medium text-white">
                                     Online - Remote consultation/delivery available
                                   </label>
                                 </div>
@@ -1440,7 +1509,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                                     }}
                                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                                   />
-                                  <label htmlFor={`variant-both-${idx}`} className="text-sm font-medium text-gray-900">
+                                  <label htmlFor={`variant-both-${idx}`} className="text-sm font-medium text-white">
                                     Online and Physical - Both options available
                                   </label>
                                 </div>
@@ -1467,22 +1536,25 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       ))}
                     </div>
 
-                    <Button type="button" variant="outline" onClick={addNewVariant} disabled={isSaving || isUploadingImage}>
-                      <Plus className="w-4 h-4 mr-2" /> Add Variant
-                    </Button>
                   </div>
                 )}
 
-                <Button onClick={handleAddService} className="w-full" disabled={isSaving || isUploadingImage}>
-                  {isSaving ? (
-                    <span className="inline-flex items-center">
-                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                      {editingService ? 'Updating...' : 'Adding...'}
-                    </span>
-                  ) : (
-                    editingService ? 'Update Service' : 'Add Service'
-                  )}
-                </Button>
+                {/* Button Container - Bottom Right */}
+                <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-slate-700">
+                  <Button type="button" variant="outline" onClick={addNewVariant} disabled={isSaving || isUploadingImage} className="!bg-slate-800 !text-white !border-slate-300 hover:!bg-slate-700 hover:!text-white hover:!border-slate-200 min-w-[140px]">
+                    <Plus className="w-4 h-4 mr-2" /> Add Variant
+                  </Button>
+                  <Button onClick={handleAddService} disabled={isSaving || isUploadingImage} className="bg-red-500 hover:bg-red-600 text-white min-w-[140px]">
+                    {isSaving ? (
+                      <span className="inline-flex items-center">
+                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                        {editingService ? 'Updating...' : 'Adding...'}
+                      </span>
+                    ) : (
+                      editingService ? 'Update Service' : 'Add Service'
+                    )}
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>

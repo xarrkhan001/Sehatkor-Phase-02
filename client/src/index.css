@@ -217,3 +217,39 @@
     100% { transform: translateX(-50%); }
   }
 }
+
+/* ServiceManagement Form Styling */
+@layer components {
+  /* Button container alignment - right side */
+  .service-form-buttons {
+    @apply flex justify-end gap-3 mt-6;
+  }
+
+  /* Add Variant button styling */
+  .add-variant-btn {
+    @apply min-w-[140px] h-11 bg-slate-100 border-2 border-slate-400 text-slate-800 font-semibold text-sm;
+  }
+
+  .add-variant-btn:hover {
+    @apply bg-slate-200 text-slate-900 border-slate-500;
+  }
+
+  /* Add Service button styling - red background like image */
+  .add-service-btn {
+    @apply min-w-[120px] h-10 bg-red-500 text-white font-medium text-sm rounded-lg shadow-md transition-all duration-200;
+  }
+
+  .add-service-btn:hover {
+    @apply bg-red-600 shadow-lg;
+  }
+
+  /* Ensure button text is always visible */
+  .service-form-buttons button {
+    @apply flex items-center justify-center whitespace-nowrap;
+  }
+
+  .service-form-buttons button span,
+  .service-form-buttons button svg {
+    @apply opacity-100 visible;
+  }
+}

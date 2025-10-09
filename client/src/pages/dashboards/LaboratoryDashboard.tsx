@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import ProviderWallet from "@/components/ProviderWallet";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listTests as apiList, createTest as apiCreate, updateTest as apiUpdate, deleteTest as apiDelete } from "@/lib/laboratoryApi";
@@ -51,6 +51,7 @@ import { apiUrl } from '@/config/api';
 
 const LaboratoryDashboard = () => {
   const { user, logout } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [tests, setTests] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -127,6 +128,44 @@ const LaboratoryDashboard = () => {
     setEditErrors(prev => ({ ...prev, [key === 'address' ? 'detailAddress' : key]: overBy > 0 ? `Allowed ${limit} characters. You are over by ${overBy}.` : undefined }));
   };
 
+  // Comprehensive validation for all required fields
+  const validateRequiredFields = (): { isValid: boolean; missingFields: string[] } => {
+    const missingFields: string[] = [];
+    const trim = (s?: string) => (s || '').trim();
+
+    // Check required basic fields
+    if (!trim(testForm.name)) {
+      missingFields.push('Test Name');
+    }
+    if (!trim(testForm.price)) {
+      missingFields.push('Price');
+    }
+    if (!trim(testForm.category)) {
+      missingFields.push('Category');
+    }
+    if (!trim(testForm.description)) {
+      missingFields.push('Description');
+    }
+
+    // Check required location fields
+    if (!trim(testForm.city)) {
+      missingFields.push('City');
+    }
+    if (!trim(testForm.detailAddress)) {
+      missingFields.push('Detailed Address');
+    }
+
+    // Check required image field
+    if (!testImagePreview && !testImageFile) {
+      missingFields.push('Test Image');
+    }
+
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  };
+
   const validateAddLengths = (): boolean => {
     const trim = (s?: string) => (s || '').trim();
     const name = trim(testForm.name);
@@ -134,12 +173,30 @@ const LaboratoryDashboard = () => {
     const description = trim(testForm.description);
     const city = trim(testForm.city);
     const addr = trim(testForm.detailAddress);
-    if (name.length > LIMITS.name) { toast.error(`Test Name must be at most ${LIMITS.name} characters.`); return false; }
-    if (department.length > LIMITS.department) { toast.error(`Category must be at most ${LIMITS.department} characters.`); return false; }
-    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
-    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
-    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
-    if (!isValidHttpUrl(testForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    if (name.length > LIMITS.name) { 
+      toast({ title: 'Validation Error', description: `Test Name must be at most ${LIMITS.name} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (department.length > LIMITS.department) { 
+      toast({ title: 'Validation Error', description: `Category must be at most ${LIMITS.department} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (description.length > LIMITS.description) { 
+      toast({ title: 'Validation Error', description: `Description must be at most ${LIMITS.description} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (city.length > LIMITS.city) { 
+      toast({ title: 'Validation Error', description: `City must be at most ${LIMITS.city} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (addr.length > LIMITS.address) { 
+      toast({ title: 'Validation Error', description: `Detailed Address must be at most ${LIMITS.address} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (!isValidHttpUrl(testForm.googleMapLink)) { 
+      toast({ title: 'Validation Error', description: 'Google Map Link must be a valid http(s) URL.', variant: 'destructive' }); 
+      return false; 
+    }
     return true;
   };
 
@@ -335,8 +392,22 @@ const LaboratoryDashboard = () => {
       toast.error('Please fill in required fields');
       return;
     }
+    
+    // Enforce length constraints
+    if (!validateEditLengths()) return;
+    
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "User ID is missing",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsUpdatingTest(true);
     const parsedPrice = editForm.price ? parseFloat(editForm.price) : 0;
+
     try {
       let imageUrl: string | undefined = editForm.imageUrl || undefined;
       let imagePublicId: string | undefined = undefined;
@@ -565,9 +636,27 @@ const LaboratoryDashboard = () => {
   }, [user?.id]);
 
   const handleAddTest = async () => {
+    // Check all required fields first
+    const validation = validateRequiredFields();
+    if (!validation.isValid) {
+      const fieldList = validation.missingFields.join(', ');
+      toast({
+        title: "Required Fields Missing",
+        description: `Please fill in the following required fields: ${fieldList}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Enforce length constraints
     if (!validateAddLengths()) return;
-    if (!testForm.name || !user?.id) {
-      toast.error("Please fill in all required fields");
+    
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "User ID is missing",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -586,7 +675,11 @@ const LaboratoryDashboard = () => {
           imagePublicId = result?.public_id;
         } catch (uploadError) {
           console.error('Image upload failed:', uploadError);
-          toast.warning("Image upload failed, but test will be added without image");
+          toast({
+            title: "Warning",
+            description: "Image upload failed, but test will be added without image",
+            variant: "destructive"
+          });
         } finally {
           setIsUploadingImage(false);
         }
@@ -638,10 +731,17 @@ const LaboratoryDashboard = () => {
       // Reload tests from backend
       await reloadTests();
 
-      toast.success("Test added successfully and is now available to all users");
+      toast({
+        title: "Success",
+        description: "Test added successfully and is now available to all users"
+      });
     } catch (error: any) {
       console.error('Error adding test:', error);
-      toast.error(error?.message || "Failed to add test. Please try again.");
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to add test. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsAddingTest(false);
     }

@@ -1,0 +1,74 @@
+/* ServiceManagement Form Styling */
+
+/* Button container alignment - right side */
+.service-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Add Variant button styling */
+.add-variant-btn {
+  min-width: 140px;
+  height: 44px;
+  background: #f1f5f9 !important;
+  border: 2px solid #64748b !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.add-variant-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: #475569 !important;
+}
+
+/* Add Service button styling - light red background */
+.add-service-btn {
+  min-width: 140px;
+  height: 44px;
+  background: #fecaca !important; /* light red */
+  border: 2px solid #f87171 !important;
+  color: #7f1d1d !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.add-service-btn:hover {
+  background: #fca5a5 !important;
+  color: #991b1b !important;
+  border-color: #ef4444 !important;
+}
+
+/* Disease dropdown styling */
+.disease-dropdown .select-content {
+  background: #1e293b !important;
+  border: 1px solid #475569 !important;
+}
+
+.disease-dropdown .select-item {
+  color: #f1f5f9 !important;
+  padding: 8px 12px !important;
+}
+
+.disease-dropdown .select-item:hover,
+.disease-dropdown .select-item:focus {
+  background: #334155 !important;
+  color: #ffffff !important;
+}
+
+/* Ensure button text is always visible */
+.service-form-buttons button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+.service-form-buttons button span,
+.service-form-buttons button svg {
+  opacity: 1 !important;
+  visibility: visible !important;
+}

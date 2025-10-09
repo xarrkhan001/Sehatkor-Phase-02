@@ -18,7 +18,7 @@ import ProviderWallet from "@/components/ProviderWallet";
 import ServiceTypeBadge from '@/components/ServiceTypeBadge';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
 
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listServices as apiList, createService as apiCreate, updateService as apiUpdate, deleteService as apiDelete } from "@/lib/clinicApi";
@@ -48,6 +48,7 @@ import { apiUrl } from '@/config/api';
 
 const ClinicDashboard = () => {
   const { user, logout } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [services, setServices] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -121,7 +122,7 @@ const ClinicDashboard = () => {
   const formatAddress = (value?: string): string => {
     const v = (value || '').trim();
     if (!v) return 'Address not specified';
-    return v.length > 25 ? `${v.slice(0, 25)}…` : v;
+    return v.length > 25 ? `${v.slice(0, 25)}â€¦` : v;
   };
 
   // Get first service location data for pre-filling
@@ -192,6 +193,47 @@ const ClinicDashboard = () => {
     }
   };
 
+  // Comprehensive validation for all required fields
+  const validateRequiredFields = (): { isValid: boolean; missingFields: string[] } => {
+    const missingFields: string[] = [];
+    const trim = (s?: string) => (s || '').trim();
+
+    // Check required basic fields
+    if (!trim(serviceForm.name)) {
+      missingFields.push('Service Name');
+    }
+    if (!trim(serviceForm.price)) {
+      missingFields.push('Price');
+    }
+    if (!trim(serviceForm.category)) {
+      missingFields.push('Category');
+    }
+    if (!trim(serviceForm.department)) {
+      missingFields.push('Department');
+    }
+    if (!trim(serviceForm.description)) {
+      missingFields.push('Description');
+    }
+
+    // Check required location fields
+    if (!trim(serviceForm.city)) {
+      missingFields.push('City');
+    }
+    if (!trim(serviceForm.detailAddress)) {
+      missingFields.push('Detailed Address');
+    }
+
+    // Check required image field
+    if (!serviceImage && !serviceImageFile) {
+      missingFields.push('Service Image');
+    }
+
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  };
+
   const validateLengths = (): boolean => {
     const trim = (s?: string) => (s || '').trim();
     const name = trim(serviceForm.name);
@@ -200,12 +242,30 @@ const ClinicDashboard = () => {
     const city = trim(serviceForm.city);
     const addr = trim(serviceForm.detailAddress);
 
-    if (name.length > LIMITS.name) { toast.error(`Service Name must be at most ${LIMITS.name} characters.`); return false; }
-    if (department.length > LIMITS.department) { toast.error(`Department must be at most ${LIMITS.department} characters.`); return false; }
-    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
-    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
-    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
-    if (!isValidHttpUrl(serviceForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    if (name.length > LIMITS.name) { 
+      toast({ title: 'Validation Error', description: `Service Name must be at most ${LIMITS.name} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (department.length > LIMITS.department) { 
+      toast({ title: 'Validation Error', description: `Department must be at most ${LIMITS.department} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (description.length > LIMITS.description) { 
+      toast({ title: 'Validation Error', description: `Description must be at most ${LIMITS.description} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (city.length > LIMITS.city) { 
+      toast({ title: 'Validation Error', description: `City must be at most ${LIMITS.city} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (addr.length > LIMITS.address) { 
+      toast({ title: 'Validation Error', description: `Detailed Address must be at most ${LIMITS.address} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (!isValidHttpUrl(serviceForm.googleMapLink)) { 
+      toast({ title: 'Validation Error', description: 'Google Map Link must be a valid http(s) URL.', variant: 'destructive' }); 
+      return false; 
+    }
     return true;
   };
 
@@ -489,11 +549,20 @@ const ClinicDashboard = () => {
   }, [bookings]);
 
   const handleAddService = async () => {
-    if (!validateLengths()) return;
-    if (!serviceForm.name) {
-      toast.error("Please fill in all required fields");
+    // Check all required fields first
+    const validation = validateRequiredFields();
+    if (!validation.isValid) {
+      const fieldList = validation.missingFields.join(', ');
+      toast({
+        title: "Required Fields Missing",
+        description: `Please fill in the following required fields: ${fieldList}`,
+        variant: "destructive"
+      });
       return;
     }
+
+    // Enforce length constraints
+    if (!validateLengths()) return;
 
     setIsAddingService(true);
     const parsedPrice = serviceForm.price ? parseFloat(serviceForm.price) : 0;
@@ -508,7 +577,11 @@ const ClinicDashboard = () => {
           imageUrl = up?.url;
           imagePublicId = up?.public_id;
         } catch (e) {
-          toast.warning("Image upload failed, adding service without image");
+          toast({
+            title: "Warning",
+            description: "Image upload failed, adding service without image",
+            variant: "destructive"
+          });
         } finally {
           setIsUploadingImage(false);
         }
@@ -534,7 +607,10 @@ const ClinicDashboard = () => {
           homeDelivery: serviceForm.homeDelivery,
           providerName: user?.name || 'Clinic',
         });
-        toast.success("Service updated successfully");
+        toast({
+          title: "Success",
+          description: "Service updated successfully"
+        });
       } else {
         await apiCreate({
           name: serviceForm.name,
@@ -553,7 +629,10 @@ const ClinicDashboard = () => {
           homeDelivery: serviceForm.homeDelivery,
           providerName: user?.name || 'Clinic',
         });
-        toast.success("Service added successfully");
+        toast({
+          title: "Success",
+          description: "Service added successfully"
+        });
       }
 
       await reloadServices();
@@ -576,7 +655,11 @@ const ClinicDashboard = () => {
       setEditingService(null);
       setIsAddServiceOpen(false);
     } catch (error) {
-      toast.error(editingService ? "Failed to update service" : "Failed to add service");
+      toast({
+        title: "Error",
+        description: editingService ? "Failed to update service" : "Failed to add service",
+        variant: "destructive"
+      });
     } finally {
       setIsAddingService(false);
     }
@@ -585,13 +668,19 @@ const ClinicDashboard = () => {
   const handleDeleteService = (serviceId: string) => {
     const updatedServices = services.filter(service => service.id !== serviceId);
     saveServices(updatedServices);
-    toast.success("Service deleted successfully");
+    toast({
+      title: "Success",
+      description: "Service deleted successfully"
+    });
   };
 
   const handleTypeChange = (type: string) => {
     setClinicType(type);
     localStorage.setItem(`clinic_type_${user?.id}`, type);
-    toast.success("Clinic type updated successfully");
+    toast({
+      title: "Success",
+      description: "Clinic type updated successfully"
+    });
   };
 
   // Calculate statistics
@@ -740,10 +829,10 @@ const ClinicDashboard = () => {
                         <DialogTrigger asChild>
                           <Button onClick={initializeNewServiceForm} className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all duration-300 px-2 py-1 sm:px-3 sm:py-2 h-8 sm:h-10">
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                            <span className="text-[10px] sm:text-sm font-medium">Add</span>
+                            <span className="text-[10px] sm:text-sm font-medium">Add Service</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl">
                           <DialogHeader>
                             <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
                             <DialogDescription>
@@ -764,7 +853,7 @@ const ClinicDashboard = () => {
                             </div>
 
                             <div>
-                              <Label>Service Image</Label>
+                              <Label>Service Image <span className="text-red-500">*</span></Label>
                               <ImageUpload
                                 onImageSelect={(file, preview) => { setServiceImageFile(file); setServiceImage(preview); }}
                                 onImageRemove={() => { setServiceImageFile(null); setServiceImage(''); }}
@@ -800,7 +889,7 @@ const ClinicDashboard = () => {
                             </div>
                             {/* Category Dropdown */}
                             <div>
-                              <Label htmlFor="serviceCategory">Category</Label>
+                              <Label htmlFor="serviceCategory">Category <span className="text-red-500">*</span></Label>
                               <Select value={serviceForm.category} onValueChange={(value) => setServiceForm({ ...serviceForm, category: value })}>
                                 <SelectTrigger id="serviceCategory">
                                   <SelectValue placeholder="Select service category" />
@@ -813,7 +902,7 @@ const ClinicDashboard = () => {
                               </Select>
                             </div>
                             <div>
-                              <Label htmlFor="serviceDepartment">Department</Label>
+                              <Label htmlFor="serviceDepartment">Department <span className="text-red-500">*</span></Label>
                               <Input
                                 id="serviceDepartment"
                                 value={serviceForm.department}
@@ -824,7 +913,7 @@ const ClinicDashboard = () => {
                               {formErrors.department && <p className="text-xs text-red-600 mt-1">{formErrors.department}</p>}
                             </div>
                             <div>
-                              <Label htmlFor="serviceDescription">Description</Label>
+                              <Label htmlFor="serviceDescription">Description <span className="text-red-500">*</span></Label>
                               <Textarea
                                 id="serviceDescription"
                                 value={serviceForm.description}
@@ -839,7 +928,7 @@ const ClinicDashboard = () => {
                             <div className="space-y-3 border-t pt-3">
                               <h4 className="font-medium text-sm">Location Information</h4>
                               <div>
-                                <Label htmlFor="serviceCity">City</Label>
+                                <Label htmlFor="serviceCity">City <span className="text-red-500">*</span></Label>
                                 <Input
                                   id="serviceCity"
                                   value={serviceForm.city}
@@ -850,7 +939,7 @@ const ClinicDashboard = () => {
                                 {formErrors.city && <p className="text-xs text-red-600 mt-1">{formErrors.city}</p>}
                               </div>
                               <div>
-                                <Label htmlFor="serviceAddress">Detailed Address</Label>
+                                <Label htmlFor="serviceAddress">Detailed Address <span className="text-red-500">*</span></Label>
                                 <Textarea
                                   id="serviceAddress"
                                   value={serviceForm.detailAddress}
@@ -936,7 +1025,7 @@ const ClinicDashboard = () => {
                               <div className="space-y-2">
                                 <Label>What type of service is this? (Select multiple if applicable)</Label>
                                 <div className="grid grid-cols-2 gap-2">
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                                     <input
                                       type="checkbox"
                                       value="Private"
@@ -952,9 +1041,9 @@ const ClinicDashboard = () => {
                                       }}
                                       className="text-blue-600 focus:ring-blue-500"
                                     />
-                                    <span className="text-sm">Private</span>
+                                    <span className="text-sm text-white">Private</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                                     <input
                                       type="checkbox"
                                       value="Public"
@@ -970,9 +1059,9 @@ const ClinicDashboard = () => {
                                       }}
                                       className="text-green-600 focus:ring-green-500"
                                     />
-                                    <span className="text-sm">Public</span>
+                                    <span className="text-sm text-white">Public</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                                     <input
                                       type="checkbox"
                                       value="Charity"
@@ -988,9 +1077,9 @@ const ClinicDashboard = () => {
                                       }}
                                       className="text-orange-600 focus:ring-orange-500"
                                     />
-                                    <span className="text-sm">Charity</span>
+                                    <span className="text-sm text-white">Charity</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                                     <input
                                       type="checkbox"
                                       value="NGO"
@@ -1006,9 +1095,9 @@ const ClinicDashboard = () => {
                                       }}
                                       className="text-pink-600 focus:ring-pink-500"
                                     />
-                                    <span className="text-sm">NGO</span>
+                                    <span className="text-sm text-white">NGO</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                                     <input
                                       type="checkbox"
                                       value="NPO"
@@ -1024,9 +1113,9 @@ const ClinicDashboard = () => {
                                       }}
                                       className="text-purple-600 focus:ring-purple-500"
                                     />
-                                    <span className="text-sm">NPO</span>
+                                    <span className="text-sm text-white">NPO</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg bg-blue-900">
                                     <input
                                       type="checkbox"
                                       value="Sehat Card"
@@ -1042,7 +1131,7 @@ const ClinicDashboard = () => {
                                       }}
                                       className="text-indigo-600 focus:ring-indigo-500"
                                     />
-                                    <span className="text-sm">Sehat Card</span>
+                                    <span className="text-sm text-white">Sehat Card</span>
                                   </label>
                                 </div>
                               </div>
@@ -1058,7 +1147,7 @@ const ClinicDashboard = () => {
                                   className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                                 />
                                 <Label htmlFor="homeDelivery" className="flex items-center gap-2 cursor-pointer">
-                                  🏠 Home Delivery Available
+                                  ðŸ  Home Delivery Available
                                 </Label>
                               </div>
                               <p className="text-xs text-muted-foreground">
