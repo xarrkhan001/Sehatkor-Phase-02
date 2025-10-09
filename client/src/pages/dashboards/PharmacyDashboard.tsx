@@ -867,16 +867,16 @@ const PharmacyDashboard = () => {
                             <span className="text-[10px] sm:text-sm font-medium">Add</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+                        <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-4 sm:mx-0">
                           <DialogHeader>
-                            <DialogTitle>Add New Medicine</DialogTitle>
-                            <DialogDescription>
+                            <DialogTitle className="text-white text-xl font-semibold">Add New Medicine</DialogTitle>
+                            <DialogDescription className="text-slate-300">
                               Add a new medicine to your inventory
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-3">
                             <div>
-                              <Label htmlFor="medicineName">Medicine Name *</Label>
+                              <Label htmlFor="medicineName" className="text-white">Medicine Name <span className="text-red-400">*</span></Label>
                               <Input
                                 id="medicineName"
                                 value={medicineForm.name}
@@ -890,7 +890,7 @@ const PharmacyDashboard = () => {
                             </div>
 
                             <div>
-                              <Label>Medicine Image</Label>
+                              <Label className="text-white">Medicine Image <span className="text-red-400">*</span></Label>
                               <ImageUpload
                                 onImageSelect={(file, preview) => { setMedicineImageFile(file); setMedicineImagePreview(preview); }}
                                 onImageRemove={() => { setMedicineImageFile(null); setMedicineImagePreview(''); }}
@@ -905,7 +905,7 @@ const PharmacyDashboard = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <Label htmlFor="medicinePrice">Price (PKR) *</Label>
+                                <Label htmlFor="medicinePrice" className="text-white">Price (PKR) <span className="text-red-400">*</span></Label>
                                 <Input
                                   id="medicinePrice"
                                   type="number"
@@ -915,7 +915,7 @@ const PharmacyDashboard = () => {
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="medicineStock">Stock Quantity</Label>
+                                <Label htmlFor="medicineStock" className="text-white">Stock Quantity <span className="text-red-400">*</span></Label>
                                 <Input
                                   id="medicineStock"
                                   type="number"
@@ -926,7 +926,7 @@ const PharmacyDashboard = () => {
                               </div>
                             </div>
                             <div>
-                              <Label htmlFor="medicineCategory">Category</Label>
+                              <Label htmlFor="medicineCategory" className="text-white">Category <span className="text-red-400">*</span></Label>
                               <Select value={medicineForm.category} onValueChange={(value) => setMedicineForm({ ...medicineForm, category: value })}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select medicine category" />
@@ -939,7 +939,7 @@ const PharmacyDashboard = () => {
                               </Select>
                             </div>
                             <div>
-                              <Label htmlFor="medicineDescription">Description</Label>
+                              <Label htmlFor="medicineDescription" className="text-white">Description <span className="text-red-400">*</span></Label>
                               <Textarea
                                 id="medicineDescription"
                                 value={medicineForm.description}
@@ -954,9 +954,9 @@ const PharmacyDashboard = () => {
                             
                             {/* Availability Selection */}
                             <div className="space-y-3 border-t pt-3">
-                              <h4 className="font-medium text-sm">Service Availability</h4>
+                              <h4 className="font-medium text-sm text-white">Service Availability</h4>
                               <div className="space-y-2">
-                                <Label>How is this medicine available? *</Label>
+                                <Label className="text-white">How is this medicine available? <span className="text-red-400">*</span></Label>
                                 <div className="flex flex-col space-y-2">
                                   <label className="flex items-center space-x-2 cursor-pointer">
                                     <input
@@ -967,7 +967,7 @@ const PharmacyDashboard = () => {
                                       onChange={(e) => setMedicineForm({ ...medicineForm, availability: e.target.value })}
                                       className="text-primary focus:ring-primary"
                                     />
-                                    <span className="text-sm">Physical - In-person pickup only</span>
+                                    <span className="text-sm text-white">Physical - In-person pickup only</span>
                                   </label>
                                   <label className="flex items-center space-x-2 cursor-pointer">
                                     <input
@@ -978,7 +978,7 @@ const PharmacyDashboard = () => {
                                       onChange={(e) => setMedicineForm({ ...medicineForm, availability: e.target.value })}
                                       className="text-primary focus:ring-primary"
                                     />
-                                    <span className="text-sm">Online - Delivery/consultation available</span>
+                                    <span className="text-sm text-white">Online - Delivery/consultation available</span>
                                   </label>
                                   <label className="flex items-center space-x-2 cursor-pointer">
                                     <input
@@ -989,7 +989,7 @@ const PharmacyDashboard = () => {
                                       onChange={(e) => setMedicineForm({ ...medicineForm, availability: e.target.value })}
                                       className="text-primary focus:ring-primary"
                                     />
-                                    <span className="text-sm">Online and Physical - Both options available</span>
+                                    <span className="text-sm text-white">Online and Physical - Both options available</span>
                                   </label>
                                 </div>
                               </div>
@@ -998,21 +998,21 @@ const PharmacyDashboard = () => {
                             {/* Service Type Selection (Optional) */}
                             <div className="space-y-3 border-t pt-3">
                               <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                                <h4 className="font-medium text-sm text-white">Service Type (Optional)</h4>
                                 <Button
                                   type="button"
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setMedicineForm(prev => ({ ...prev, serviceType: [] }))}
-                                  className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                                  className="h-8 px-2 text-xs text-slate-300 hover:text-red-400"
                                 >
                                   Clear
                                 </Button>
                               </div>
                               <div className="space-y-2">
-                                <Label>What type of service is this? (Select multiple if applicable)</Label>
+                                <Label className="text-white">What type of service is this? (Select multiple if applicable)</Label>
                                 <div className="grid grid-cols-2 gap-2">
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                                     <input
                                       type="checkbox"
                                       value="Private"
@@ -1028,9 +1028,9 @@ const PharmacyDashboard = () => {
                                       }}
                                       className="text-blue-600 focus:ring-blue-500"
                                     />
-                                    <span className="text-sm font-medium">Private</span>
+                                    <span className="text-sm font-medium text-white">Private</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                                     <input
                                       type="checkbox"
                                       value="Public"
@@ -1046,9 +1046,9 @@ const PharmacyDashboard = () => {
                                       }}
                                       className="text-green-600 focus:ring-green-500"
                                     />
-                                    <span className="text-sm font-medium">Public</span>
+                                    <span className="text-sm font-medium text-white">Public</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                                     <input
                                       type="checkbox"
                                       value="Charity"
@@ -1064,9 +1064,9 @@ const PharmacyDashboard = () => {
                                       }}
                                       className="text-orange-600 focus:ring-orange-500"
                                     />
-                                    <span className="text-sm font-medium">Charity</span>
+                                    <span className="text-sm font-medium text-white">Charity</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                                     <input
                                       type="checkbox"
                                       value="NGO"
@@ -1082,9 +1082,9 @@ const PharmacyDashboard = () => {
                                       }}
                                       className="text-pink-600 focus:ring-pink-500"
                                     />
-                                    <span className="text-sm font-medium">NGO</span>
+                                    <span className="text-sm font-medium text-white">NGO</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                                     <input
                                       type="checkbox"
                                       value="Sehat Card"
@@ -1100,9 +1100,9 @@ const PharmacyDashboard = () => {
                                       }}
                                       className="text-purple-600 focus:ring-purple-500"
                                     />
-                                    <span className="text-sm font-medium">Sehat Card</span>
+                                    <span className="text-sm font-medium text-white">Sehat Card</span>
                                   </label>
-                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                                  <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                                     <input
                                       type="checkbox"
                                       value="NPO"
@@ -1118,7 +1118,7 @@ const PharmacyDashboard = () => {
                                       }}
                                       className="text-teal-600 focus:ring-teal-500"
                                     />
-                                    <span className="text-sm font-medium">NPO</span>
+                                    <span className="text-sm font-medium text-white">NPO</span>
                                   </label>
                                 </div>
                               </div>
@@ -1126,7 +1126,7 @@ const PharmacyDashboard = () => {
                             
                             {/* Home Delivery Option */}
                             <div className="space-y-3 border-t pt-3">
-                              <h4 className="font-medium text-sm">Delivery Options</h4>
+                              <h4 className="font-medium text-sm text-white">Delivery Options</h4>
                               <div className="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
@@ -1135,9 +1135,9 @@ const PharmacyDashboard = () => {
                                   onChange={(e) => setMedicineForm({ ...medicineForm, homeDelivery: e.target.checked })}
                                   className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
                                 />
-                                <Label htmlFor="homeDelivery" className="flex items-center space-x-2 cursor-pointer">
+                                <Label htmlFor="homeDelivery" className="flex items-center space-x-2 cursor-pointer text-white">
                                   <span>🏠</span>
-                                  <span>Home Delivery Available</span>
+                                  <span className="text-white">Home Delivery Available</span>
                                 </Label>
                               </div>
                               <p className="text-xs text-muted-foreground">
@@ -1147,9 +1147,9 @@ const PharmacyDashboard = () => {
                             
                             {/* Location Fields */}
                             <div className="space-y-3 border-t pt-3">
-                              <h4 className="font-medium text-sm">Location Information</h4>
+                              <h4 className="font-medium text-sm text-white">Location Information</h4>
                               <div>
-                                <Label htmlFor="medicineCity">City</Label>
+                                <Label htmlFor="medicineCity" className="text-white">City <span className="text-red-400">*</span></Label>
                                 <Input
                                   id="medicineCity"
                                   value={medicineForm.city}
@@ -1162,7 +1162,7 @@ const PharmacyDashboard = () => {
                                 )}
                               </div>
                               <div>
-                                <Label htmlFor="medicineAddress">Detailed Address</Label>
+                                <Label htmlFor="medicineAddress" className="text-white">Detailed Address <span className="text-red-400">*</span></Label>
                                 <Textarea
                                   id="medicineAddress"
                                   value={medicineForm.detailAddress}
@@ -1176,7 +1176,7 @@ const PharmacyDashboard = () => {
                                 )}
                               </div>
                               <div>
-                                <Label htmlFor="medicineMapLink">Google Maps Link (Optional)</Label>
+                                <Label htmlFor="medicineMapLink" className="text-white">Google Maps Link (Optional)</Label>
                                 <Input
                                   id="medicineMapLink"
                                   value={medicineForm.googleMapLink}
@@ -1189,7 +1189,7 @@ const PharmacyDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <Button onClick={handleAddMedicine} className="w-full" disabled={isUploadingImage || isAddingMedicine}>
+                            <Button onClick={handleAddMedicine} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage || isAddingMedicine}>
                               {isAddingMedicine ? 'Adding Medicine...' : 'Add Medicine'}
                             </Button>
                           </div>
@@ -1534,16 +1534,16 @@ const PharmacyDashboard = () => {
 
             {/* Edit Medicine Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+              <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-4 sm:mx-0">
                 <DialogHeader>
-                  <DialogTitle>Edit Medicine</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-white text-xl font-semibold">Edit Medicine</DialogTitle>
+                  <DialogDescription className="text-slate-300">
                     Update the medicine details
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="editMedicineName">Medicine Name *</Label>
+                    <Label htmlFor="editMedicineName" className="text-white">Medicine Name <span className="text-red-400">*</span></Label>
                     <Input
                       id="editMedicineName"
                       value={editForm.name}
@@ -1557,7 +1557,7 @@ const PharmacyDashboard = () => {
                   </div>
 
                   <div>
-                    <Label>Medicine Image</Label>
+                    <Label className="text-white">Medicine Image <span className="text-red-400">*</span></Label>
                     <ImageUpload
                       onImageSelect={(file, preview) => { setEditImageFile(file); setEditImagePreview(preview); }}
                       onImageRemove={() => { setEditImageFile(null); setEditImagePreview(''); }}
@@ -1572,7 +1572,7 @@ const PharmacyDashboard = () => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="editMedicinePrice">Price (PKR) *</Label>
+                      <Label htmlFor="editMedicinePrice" className="text-white">Price (PKR) <span className="text-red-400">*</span></Label>
                       <Input
                         id="editMedicinePrice"
                         type="number"
@@ -1582,7 +1582,7 @@ const PharmacyDashboard = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="editMedicineStock">Stock Quantity</Label>
+                      <Label htmlFor="editMedicineStock" className="text-white">Stock Quantity <span className="text-red-400">*</span></Label>
                       <Input
                         id="editMedicineStock"
                         type="number"
@@ -1593,7 +1593,7 @@ const PharmacyDashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="editMedicineDescription">Description</Label>
+                    <Label htmlFor="editMedicineDescription" className="text-white">Description <span className="text-red-400">*</span></Label>
                     <Textarea
                       id="editMedicineDescription"
                       value={editForm.description}
@@ -1607,9 +1607,9 @@ const PharmacyDashboard = () => {
                   </div>
                   {/* Availability Selection --> Newly Added Section */}
                   <div className="space-y-3 border-t pt-3">
-                    <h4 className="font-medium text-sm">Service Availability</h4>
+                    <h4 className="font-medium text-sm text-white">Service Availability</h4>
                     <div className="space-y-2">
-                      <Label>How is this medicine available? *</Label>
+                      <Label className="text-white">How is this medicine available? <span className="text-red-400">*</span></Label>
                       <div className="flex flex-col space-y-2">
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
@@ -1620,7 +1620,7 @@ const PharmacyDashboard = () => {
                             onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
                             className="text-primary focus:ring-primary"
                           />
-                          <span className="text-sm">Physical - In-person pickup only</span>
+                          <span className="text-sm text-white">Physical - In-person pickup only</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
@@ -1631,7 +1631,7 @@ const PharmacyDashboard = () => {
                             onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
                             className="text-primary focus:ring-primary"
                           />
-                          <span className="text-sm">Online - Delivery/consultation available</span>
+                          <span className="text-sm text-white">Online - Delivery/consultation available</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
@@ -1642,7 +1642,7 @@ const PharmacyDashboard = () => {
                             onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
                             className="text-primary focus:ring-primary"
                           />
-                          <span className="text-sm">Online and Physical - Both options available</span>
+                          <span className="text-sm text-white">Online and Physical - Both options available</span>
                         </label>
                       </div>
                     </div>
@@ -1651,21 +1651,21 @@ const PharmacyDashboard = () => {
                   {/* Service Type Selection */}
                   <div className="space-y-3 border-t pt-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                      <h4 className="font-medium text-sm text-white">Service Type (Optional)</h4>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => setEditForm(prev => ({ ...prev, serviceType: [] }))}
-                        className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                        className="h-8 px-2 text-xs text-slate-300 hover:text-red-400"
                       >
                         Clear
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      <Label>What type of service is this?</Label>
+                      <Label className="text-white">What type of service is this?</Label>
                       <div className="grid grid-cols-2 gap-2">
-                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                           <input
                             type="checkbox"
                             value="Private"
@@ -1681,9 +1681,9 @@ const PharmacyDashboard = () => {
                             }}
                             className="text-blue-600 focus:ring-blue-500"
                           />
-                          <span className="text-sm font-medium">Private</span>
+                          <span className="text-sm font-medium text-white">Private</span>
                         </label>
-                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                           <input
                             type="checkbox"
                             value="Public"
@@ -1699,9 +1699,9 @@ const PharmacyDashboard = () => {
                             }}
                             className="text-green-600 focus:ring-green-500"
                           />
-                          <span className="text-sm font-medium">Public</span>
+                          <span className="text-sm font-medium text-white">Public</span>
                         </label>
-                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                           <input
                             type="checkbox"
                             value="Charity"
@@ -1717,9 +1717,9 @@ const PharmacyDashboard = () => {
                             }}
                             className="text-orange-600 focus:ring-orange-500"
                           />
-                          <span className="text-sm font-medium">Charity</span>
+                          <span className="text-sm font-medium text-white">Charity</span>
                         </label>
-                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                           <input
                             type="checkbox"
                             value="NGO"
@@ -1735,9 +1735,9 @@ const PharmacyDashboard = () => {
                             }}
                             className="text-pink-600 focus:ring-pink-500"
                           />
-                          <span className="text-sm font-medium">NGO</span>
+                          <span className="text-sm font-medium text-white">NGO</span>
                         </label>
-                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                           <input
                             type="checkbox"
                             value="Sehat Card"
@@ -1753,9 +1753,9 @@ const PharmacyDashboard = () => {
                             }}
                             className="text-purple-600 focus:ring-purple-500"
                           />
-                          <span className="text-sm font-medium">Sehat Card</span>
+                          <span className="text-sm font-medium text-white">Sehat Card</span>
                         </label>
-                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+                        <label className="flex items-center space-x-2 cursor-pointer p-2 border rounded-lg hover:bg-slate-700/50 border-slate-600">
                           <input
                             type="checkbox"
                             name="editServiceType"
@@ -1772,7 +1772,7 @@ const PharmacyDashboard = () => {
                             }}
                             className="text-teal-600 focus:ring-teal-500"
                           />
-                          <span className="text-sm font-medium">NPO</span>
+                          <span className="text-sm font-medium text-white">NPO</span>
                         </label>
                       </div>
                     </div>
@@ -1846,7 +1846,7 @@ const PharmacyDashboard = () => {
                   
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                     <Button variant="outline" onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto">Cancel</Button>
-                    <Button onClick={handleSaveEdit} className="w-full sm:w-auto" disabled={isUploadingImage}>
+                    <Button onClick={handleSaveEdit} className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage}>
                       {isUploadingImage ? 'Updating...' : 'Update Medicine'}
                     </Button>
                   </div>
