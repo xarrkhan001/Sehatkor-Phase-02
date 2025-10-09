@@ -82,7 +82,7 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -105,7 +105,12 @@
     font-family: 'Inter', sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold;
   }
 }
@@ -114,32 +119,32 @@
   .btn-primary {
     @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300;
   }
-  
+
   .btn-success {
     @apply bg-success text-success-foreground hover:bg-success/90;
   }
-  
+
   .btn-warning {
     @apply bg-warning text-warning-foreground hover:bg-warning/90;
   }
-  
+
   .card-healthcare {
     @apply bg-card border border-border rounded-lg hover:shadow-lg transition-all duration-300;
   }
-  
+
   .gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
   }
-  
+
   .gradient-hero {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(210 84% 45%));
   }
-  
+
   /* Responsive hero background */
   .hero-section {
     background-attachment: scroll;
   }
-  
+
   /* Ensure smooth image scaling */
   .hero-background {
     background-size: cover;
@@ -147,52 +152,53 @@
     background-repeat: no-repeat;
     transition: background-position 0.3s ease;
   }
-  
+
   /* Mobile responsive adjustments */
   @media (max-width: 640px) {
     .hero-background {
       background-position: center top;
       background-size: cover;
     }
-    
+
     /* Better mobile container handling */
     .container {
       padding-left: 1rem;
       padding-right: 1rem;
     }
   }
-  
+
   /* Prevent horizontal scroll and layout shift */
-  html, body {
+  html,
+  body {
     overflow-x: hidden;
     width: 100%;
     margin: 0;
     padding: 0;
   }
-  
+
   /* Prevent dropdown from causing layout shift */
   body {
     overflow-y: auto;
   }
-  
+
   /* Ensure full width layout */
   #root {
     width: 100%;
     min-height: 100vh;
   }
-  
+
   /* Ensure full viewport width for hero sections */
   .full-width-section {
     width: 100%;
     max-width: 100%;
   }
-  
+
   /* Fix container width to prevent right side spacing */
   .container {
     width: 100%;
     max-width: 100%;
   }
-  
+
   /* Line clamp utility for text truncation */
   .line-clamp-2 {
     display: -webkit-box;
@@ -203,23 +209,32 @@
 
   /* Partners marquee */
   .partners-marquee .marquee-track {
-    animation: marquee-scroll 23s linear infinite; /* slower */
+    animation: marquee-scroll 23s linear infinite;
+    /* slower */
   }
+
   @media (prefers-reduced-motion: reduce) {
     .partners-marquee .marquee-track {
       animation: none;
       transform: translateX(0);
     }
   }
+
   /* We animate two groups of identical content; when one exits, the other follows, creating an infinite, seamless loop. */
   @keyframes marquee-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
   }
 }
 
 /* ServiceManagement Form Styling */
 @layer components {
+
   /* Button container alignment - right side */
   .service-form-buttons {
     @apply flex justify-end gap-3 mt-6;
@@ -260,18 +275,19 @@
       width: calc(100vw - 1rem) !important;
       max-width: calc(100vw - 1rem) !important;
     }
-    
-    [data-radix-dialog-content] > div {
+
+    [data-radix-dialog-content]>div {
       padding-left: 0.75rem !important;
       padding-right: 0.75rem !important;
     }
-    
+
     [data-radix-dialog-content] input,
     [data-radix-dialog-content] textarea,
     [data-radix-dialog-content] select {
       width: 100% !important;
       box-sizing: border-box !important;
-      background-color: rgb(209 213 219) !important; /* gray-300 */
+      background-color: rgb(209 213 219) !important;
+      /* gray-300 */
     }
   }
 
@@ -285,8 +301,10 @@
   [data-radix-dialog-content] .upload-area,
   [data-radix-dialog-content] [data-state="closed"],
   [data-radix-dialog-content] [data-radix-select-trigger] {
-    background-color: rgb(209 213 219) !important; /* gray-300 */
-    border-color: rgb(156 163 175) !important; /* gray-400 */
+    background-color: rgb(209 213 219) !important;
+    /* gray-300 */
+    border-color: rgb(156 163 175) !important;
+    /* gray-400 */
   }
 
   /* Focus states for dialog fields */
@@ -296,8 +314,10 @@
   [data-radix-dialog-content] [role="combobox"]:focus,
   [data-radix-dialog-content] button[role="combobox"]:focus,
   [data-radix-dialog-content] [data-radix-select-trigger]:focus {
-    background-color: rgb(209 213 219) !important; /* gray-300 */
-    border-color: rgb(59 130 246) !important; /* blue-500 */
+    background-color: rgb(209 213 219) !important;
+    /* gray-300 */
+    border-color: rgb(59 130 246) !important;
+    /* blue-500 */
   }
 
   /* Image upload areas in dialogs */
@@ -305,8 +325,10 @@
   [data-radix-dialog-content] .upload-container,
   [data-radix-dialog-content] .file-upload,
   [data-radix-dialog-content] div[class*="upload"] {
-    background-color: rgb(209 213 219) !important; /* gray-300 */
-    border-color: rgb(156 163 175) !important; /* gray-400 */
+    background-color: rgb(209 213 219) !important;
+    /* gray-300 */
+    border-color: rgb(156 163 175) !important;
+    /* gray-400 */
   }
 
   /* All white backgrounds in dialogs should be gray-300 */
@@ -314,7 +336,8 @@
   [data-radix-dialog-content] div[style*="background-color: #fff"],
   [data-radix-dialog-content] div[style*="background-color: #ffffff"],
   [data-radix-dialog-content] .bg-white {
-    background-color: rgb(209 213 219) !important; /* gray-300 */
+    background-color: rgb(209 213 219) !important;
+    /* gray-300 */
   }
 
   /* More aggressive targeting for all form elements */
@@ -332,8 +355,10 @@
   input,
   textarea,
   select {
-    background-color: rgb(209 213 219) !important; /* gray-300 */
-    border-color: rgb(156 163 175) !important; /* gray-400 */
+    background-color: rgb(209 213 219) !important;
+    /* gray-300 */
+    border-color: rgb(156 163 175) !important;
+    /* gray-400 */
   }
 
   /* Universal form field override */
@@ -342,8 +367,10 @@
   * select,
   * [role="combobox"],
   * button[role="combobox"] {
-    background-color: rgb(209 213 219) !important; /* gray-300 */
-    border-color: rgb(156 163 175) !important; /* gray-400 */
+    background-color: rgb(209 213 219) !important;
+    /* gray-300 */
+    border-color: rgb(156 163 175) !important;
+    /* gray-400 */
   }
 
   /* Specific overrides for text and non-form elements */
@@ -381,63 +408,78 @@
     border-color: rgb(209 213 219) !important;
   }
 
-  /* Exception: Keep scrollbars with original background */
+  /* Exception: Keep scrollbars with original background - DIALOG ONLY */
   [data-radix-dialog-content] ::-webkit-scrollbar,
   [data-radix-dialog-content] ::-webkit-scrollbar-track,
   [data-radix-dialog-content] ::-webkit-scrollbar-thumb,
-  [data-radix-dialog-content] ::-webkit-scrollbar-corner,
-  ::-webkit-scrollbar,
-  ::-webkit-scrollbar-track,
-  ::-webkit-scrollbar-thumb,
-  ::-webkit-scrollbar-corner {
+  [data-radix-dialog-content] ::-webkit-scrollbar-corner {
     background-color: transparent !important;
   }
 
-  /* Scrollbar styling for dialogs and global */
-  [data-radix-dialog-content] ::-webkit-scrollbar,
-  ::-webkit-scrollbar {
+  /* Scrollbar styling for dialogs ONLY */
+  [data-radix-dialog-content] ::-webkit-scrollbar {
     width: 8px;
     background-color: transparent !important;
   }
 
-  [data-radix-dialog-content] ::-webkit-scrollbar-track,
-  ::-webkit-scrollbar-track {
+  [data-radix-dialog-content] ::-webkit-scrollbar-track {
     background-color: transparent !important;
   }
 
-  [data-radix-dialog-content] ::-webkit-scrollbar-thumb,
-  ::-webkit-scrollbar-thumb {
+  [data-radix-dialog-content] ::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.3) !important;
     border-radius: 4px;
   }
 
-  [data-radix-dialog-content] ::-webkit-scrollbar-thumb:hover,
-  ::-webkit-scrollbar-thumb:hover {
+  [data-radix-dialog-content] ::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.5) !important;
   }
 
-  /* Additional scrollbar area targeting */
+  /* Additional scrollbar area targeting - DIALOG ONLY */
   [data-radix-dialog-content] div[style*="overflow"],
   [data-radix-dialog-content] .overflow-y-auto,
   [data-radix-dialog-content] .overflow-auto,
-  [data-radix-dialog-content] .max-h-,
-  .overflow-y-auto,
-  .overflow-auto {
-    background-color: transparent !important;
-  }
-
-  /* Nuclear option: Force all scrollable areas to be transparent */
-  [data-radix-dialog-content] div[class*="overflow"],
-  [data-radix-dialog-content] div[class*="scroll"],
-  [data-radix-dialog-content] div[class*="max-h"],
-  div[class*="overflow"],
-  div[class*="scroll"],
-  div[class*="max-h"] {
+  [data-radix-dialog-content] .max-h- {
     background-color: transparent !important;
   }
 
   /* Target the specific dialog content container */
   [data-radix-dialog-content] > div {
     background-color: transparent !important;
+  }
+
+  /* Search page filter dropdown styling - SPECIFIC ONLY */
+  .search-filters [data-radix-select-trigger],
+  .search-filters [role="combobox"],
+  .search-filters button[role="combobox"],
+  .search-filters .filter-dropdown {
+    background-color: rgb(229 231 235) !important; /* gray-200 */
+    border-color: rgb(209 213 219) !important; /* gray-300 */
+    color: rgb(31 41 55) !important; /* dark gray text */
+  }
+
+  /* Search page filter dropdown content */
+  .search-filters [data-radix-select-content] {
+    background-color: rgb(255 255 255) !important; /* white background for dropdown options */
+    border-color: rgb(209 213 219) !important; /* gray-300 border */
+  }
+
+  /* Search page filter dropdown items */
+  .search-filters [data-radix-select-item] {
+    background-color: rgb(255 255 255) !important; /* white background */
+    color: rgb(31 41 55) !important; /* dark gray text */
+  }
+
+  /* Search page filter dropdown items hover */
+  .search-filters [data-radix-select-item]:hover {
+    background-color: rgb(229 231 235) !important; /* gray-200 hover */
+    color: rgb(31 41 55) !important; /* dark gray text */
+  }
+
+  /* Ensure search page filter text is visible */
+  .search-filters span,
+  .search-filters div,
+  .search-filters p {
+    color: rgb(31 41 55) !important; /* dark gray text */
   }
 }

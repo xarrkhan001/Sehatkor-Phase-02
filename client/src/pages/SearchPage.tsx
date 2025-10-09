@@ -588,9 +588,9 @@ const SearchPage = () => {
         // If serviceType is undefined or null, don't show when filters are applied
         if (!svcType) return false;
         
-        // Handle array of service types
+        // Handle array of service types - require ALL selected types to be present (AND logic)
         if (Array.isArray(svcType)) {
-          return svcType.some(type => selectedServiceTypes.includes(String(type)));
+          return selectedServiceTypes.every(selectedType => svcType.includes(String(selectedType)));
         }
         
         // Handle single service type
@@ -631,13 +631,56 @@ const SearchPage = () => {
       return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesRating && matchesHomeService && matchesAvailability && matchesAllCategory;
     });
 
-    // Sort so that highlighted service appears at the top, then real services before mock services
+    // Sort so that highlighted service appears at the top, then services matching selected types, then real services before mock services
     if (highlightedService) {
       return filtered.sort((a, b) => {
         const aMatches = a.name.toLowerCase() === highlightedService.toLowerCase();
         const bMatches = b.name.toLowerCase() === highlightedService.toLowerCase();
         if (aMatches && !bMatches) return -1;
         if (!aMatches && bMatches) return 1;
+
+        // Prioritize services that match selected service types
+        if (selectedServiceTypes.length > 0) {
+          const aSvcType = (a as any).serviceType;
+          const bSvcType = (b as any).serviceType;
+
+          // Check if service matches ALL selected service types (highest priority)
+          const aMatchesAllSelected = (() => {
+            if (!aSvcType) return false;
+            const serviceTypes = Array.isArray(aSvcType) ? aSvcType : [aSvcType];
+            return selectedServiceTypes.every(selectedType => serviceTypes.includes(String(selectedType)));
+          })();
+
+          const bMatchesAllSelected = (() => {
+            if (!bSvcType) return false;
+            const serviceTypes = Array.isArray(bSvcType) ? bSvcType : [bSvcType];
+            return selectedServiceTypes.every(selectedType => serviceTypes.includes(String(selectedType)));
+          })();
+
+          // Services matching ALL selected types come first
+          if (aMatchesAllSelected && !bMatchesAllSelected) return -1;
+          if (!aMatchesAllSelected && bMatchesAllSelected) return 1;
+
+          // Then services matching ANY selected types
+          const aMatchesSelected = (() => {
+            if (!aSvcType) return false;
+            if (Array.isArray(aSvcType)) {
+              return aSvcType.some(type => selectedServiceTypes.includes(String(type)));
+            }
+            return selectedServiceTypes.includes(String(aSvcType));
+          })();
+
+          const bMatchesSelected = (() => {
+            if (!bSvcType) return false;
+            if (Array.isArray(bSvcType)) {
+              return bSvcType.some(type => selectedServiceTypes.includes(String(type)));
+            }
+            return selectedServiceTypes.includes(String(bSvcType));
+          })();
+
+          if (aMatchesSelected && !bMatchesSelected) return -1;
+          if (!aMatchesSelected && bMatchesSelected) return 1;
+        }
 
         // If neither matches highlight, prioritize real services
         if (a.isReal && !b.isReal) return -1;
