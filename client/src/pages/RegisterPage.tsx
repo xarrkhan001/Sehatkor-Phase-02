@@ -1273,6 +1273,36 @@ const RegisterPage = () => {
                             <SelectItem value="Multan">Multan</SelectItem>
                             <SelectItem value="Peshawar">Peshawar</SelectItem>
                             <SelectItem value="Quetta">Quetta</SelectItem>
+                            <SelectItem value="Mardan">Mardan</SelectItem>
+                            <SelectItem value="Abbottabad">Abbottabad</SelectItem>
+                            <SelectItem value="Bahawalpur">Bahawalpur</SelectItem>
+                            <SelectItem value="Bannu">Bannu</SelectItem>
+                            <SelectItem value="Chiniot">Chiniot</SelectItem>
+                            <SelectItem value="Dera Ghazi Khan">Dera Ghazi Khan</SelectItem>
+                            <SelectItem value="Dera Ismail Khan">Dera Ismail Khan</SelectItem>
+                            <SelectItem value="Gujranwala">Gujranwala</SelectItem>
+                            <SelectItem value="Gujrat">Gujrat</SelectItem>
+                            <SelectItem value="Hyderabad">Hyderabad</SelectItem>
+                            <SelectItem value="Jhang">Jhang</SelectItem>
+                            <SelectItem value="Jhelum">Jhelum</SelectItem>
+                            <SelectItem value="Kasur">Kasur</SelectItem>
+                            <SelectItem value="Kohat">Kohat</SelectItem>
+                            <SelectItem value="Larkana">Larkana</SelectItem>
+                            <SelectItem value="Mirpur Khas">Mirpur Khas</SelectItem>
+                            <SelectItem value="Muzaffarabad">Muzaffarabad</SelectItem>
+                            <SelectItem value="Nawabshah">Nawabshah</SelectItem>
+                            <SelectItem value="Okara">Okara</SelectItem>
+                            <SelectItem value="Pakpattan">Pakpattan</SelectItem>
+                            <SelectItem value="Sahiwal">Sahiwal</SelectItem>
+                            <SelectItem value="Sargodha">Sargodha</SelectItem>
+                            <SelectItem value="Sheikhupura">Sheikhupura</SelectItem>
+                            <SelectItem value="Sialkot">Sialkot</SelectItem>
+                            <SelectItem value="Sukkur">Sukkur</SelectItem>
+                            <SelectItem value="Swat">Swat</SelectItem>
+                            <SelectItem value="Taxila">Taxila</SelectItem>
+                            <SelectItem value="Turbat">Turbat</SelectItem>
+                            <SelectItem value="Wah Cantonment">Wah Cantonment</SelectItem>
+                            <SelectItem value="Zhob">Zhob</SelectItem>
                           </SelectContent>
                         </Select>
                         {googleErrors.city && (
@@ -1583,6 +1613,36 @@ const RegisterPage = () => {
                       <SelectItem value="Multan">Multan</SelectItem>
                       <SelectItem value="Peshawar">Peshawar</SelectItem>
                       <SelectItem value="Quetta">Quetta</SelectItem>
+                            <SelectItem value="Mardan">Mardan</SelectItem>
+                            <SelectItem value="Abbottabad">Abbottabad</SelectItem>
+                            <SelectItem value="Bahawalpur">Bahawalpur</SelectItem>
+                            <SelectItem value="Bannu">Bannu</SelectItem>
+                            <SelectItem value="Chiniot">Chiniot</SelectItem>
+                            <SelectItem value="Dera Ghazi Khan">Dera Ghazi Khan</SelectItem>
+                            <SelectItem value="Dera Ismail Khan">Dera Ismail Khan</SelectItem>
+                            <SelectItem value="Gujranwala">Gujranwala</SelectItem>
+                            <SelectItem value="Gujrat">Gujrat</SelectItem>
+                            <SelectItem value="Hyderabad">Hyderabad</SelectItem>
+                            <SelectItem value="Jhang">Jhang</SelectItem>
+                            <SelectItem value="Jhelum">Jhelum</SelectItem>
+                            <SelectItem value="Kasur">Kasur</SelectItem>
+                            <SelectItem value="Kohat">Kohat</SelectItem>
+                            <SelectItem value="Larkana">Larkana</SelectItem>
+                            <SelectItem value="Mirpur Khas">Mirpur Khas</SelectItem>
+                            <SelectItem value="Muzaffarabad">Muzaffarabad</SelectItem>
+                            <SelectItem value="Nawabshah">Nawabshah</SelectItem>
+                            <SelectItem value="Okara">Okara</SelectItem>
+                            <SelectItem value="Pakpattan">Pakpattan</SelectItem>
+                            <SelectItem value="Sahiwal">Sahiwal</SelectItem>
+                            <SelectItem value="Sargodha">Sargodha</SelectItem>
+                            <SelectItem value="Sheikhupura">Sheikhupura</SelectItem>
+                            <SelectItem value="Sialkot">Sialkot</SelectItem>
+                            <SelectItem value="Sukkur">Sukkur</SelectItem>
+                            <SelectItem value="Swat">Swat</SelectItem>
+                            <SelectItem value="Taxila">Taxila</SelectItem>
+                            <SelectItem value="Turbat">Turbat</SelectItem>
+                            <SelectItem value="Wah Cantonment">Wah Cantonment</SelectItem>
+                            <SelectItem value="Zhob">Zhob</SelectItem>
                     </FormikSelect>
                   </FormField>
                 </div>

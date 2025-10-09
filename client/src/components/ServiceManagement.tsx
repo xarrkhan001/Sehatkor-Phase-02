@@ -835,7 +835,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 )}
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl">
+            <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto p-4 sm:p-6">
               <DialogHeader className="border-b border-slate-700 pb-4">
                 <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
                   {editingService ? '✏️ Edit Service' : '✨ Add New Service'}

@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
@@ -78,7 +78,7 @@ const SearchPage = () => {
   const routerLocation = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [serviceType, setServiceType] = useState<string>("all");
+  const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
   const [location, setLocation] = useState<string>("all");
   const [priceRange, setPriceRange] = useState([0, 50000]);
   const [maxPrice, setMaxPrice] = useState(50000);
@@ -112,6 +112,7 @@ const SearchPage = () => {
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
   const [priceCache, setPriceCache] = useState<Record<string, number>>({});
   const [visibleCount, setVisibleCount] = useState(12);
+  const [expandedDiseases, setExpandedDiseases] = useState<string | null>(null);
 
   // Small inline virus icon to match DoctorsPage
   const VirusIcon = ({ className }: { className?: string }) => (
@@ -578,12 +579,22 @@ const SearchPage = () => {
         service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
         String((service as any).labCategory || '').toLowerCase().includes(searchTerm.toLowerCase());
       // Service Type filter now uses backend serviceType (Sehat Card, Private, Charity, Public, NPO, NGO)
-      const matchesType = serviceType === "all" || (() => {
+      const matchesType = (() => {
+        // If no service types selected, show all services
+        if (selectedServiceTypes.length === 0) return true;
+        
         const svcType = (service as any).serviceType;
+        
+        // If serviceType is undefined or null, don't show when filters are applied
+        if (!svcType) return false;
+        
+        // Handle array of service types
         if (Array.isArray(svcType)) {
-          return svcType.includes(serviceType);
+          return svcType.some(type => selectedServiceTypes.includes(String(type)));
         }
-        return String(svcType) === serviceType;
+        
+        // Handle single service type
+        return selectedServiceTypes.includes(String(svcType));
       })();
       const matchesLocation = location === "all" || service.location?.includes(location);
       const matchesPrice = service.price >= priceRange[0] && service.price <= priceRange[1];
@@ -649,7 +660,7 @@ const SearchPage = () => {
       });
     }
     return filtered;
-  }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, availabilityFilter, categoryFilter, highlightedService, allServices, user?.id]);
+  }, [searchTerm, selectedServiceTypes, location, priceRange, minRating, homeServiceOnly, availabilityFilter, categoryFilter, highlightedService, allServices, user?.id]);
 
   const servicesToDisplay = useMemo(() => {
     return filteredServices.slice(0, visibleCount);
@@ -728,7 +739,7 @@ const SearchPage = () => {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setServiceType("all");
+    setSelectedServiceTypes([]);
     setLocation("all");
     setPriceRange([0, maxPrice]);
     setMinRating(0);
@@ -892,23 +903,101 @@ const SearchPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                {/* Service Type (backend serviceType) */}
+                {/* Service Type (backend serviceType) - Multi-select Dropdown */}
                 <div>
-                  <Label className="text-base font-medium">Service Type</Label>
-                  <Select value={serviceType} onValueChange={setServiceType}>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-base font-medium">Service Type</Label>
+                    <div className="flex items-center gap-2">
+                      {selectedServiceTypes.length > 0 && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                          {selectedServiceTypes.length} selected
+                        </span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => setSelectedServiceTypes([])}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Select>
                     <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select type" />
+                      <SelectValue placeholder={
+                        selectedServiceTypes.length === 0 
+                          ? "Select service types..." 
+                          : `${selectedServiceTypes.length} type${selectedServiceTypes.length > 1 ? 's' : ''} selected`
+                      } />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="Sehat Card">Sehat Card</SelectItem>
-                      <SelectItem value="Private">Private</SelectItem>
-                      <SelectItem value="Charity">Charity</SelectItem>
-                      <SelectItem value="Public">Public</SelectItem>
-                      <SelectItem value="NPO">NPO</SelectItem>
-                      <SelectItem value="NGO">NGO</SelectItem>
+                      <div className="p-2 space-y-2">
+                        <div className="text-xs text-gray-500 mb-2">
+                          Select multiple service types (optional)
+                        </div>
+                        
+                        {["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"].map((type) => (
+                          <div key={type} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                            <Checkbox
+                              id={`dropdown-serviceType-${type}`}
+                              checked={selectedServiceTypes.includes(type)}
+                              onCheckedChange={(checked) => {
+                                console.log(`Checkbox changed: ${type}, checked: ${checked}`);
+                                if (checked) {
+                                  const newTypes = [...selectedServiceTypes, type];
+                                  console.log('New selected types:', newTypes);
+                                  setSelectedServiceTypes(newTypes);
+                                } else {
+                                  const newTypes = selectedServiceTypes.filter(t => t !== type);
+                                  console.log('New selected types after removal:', newTypes);
+                                  setSelectedServiceTypes(newTypes);
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`dropdown-serviceType-${type}`} className="text-sm cursor-pointer flex-1">
+                              {type}
+                            </Label>
+                          </div>
+                        ))}
+                        
+                        <div className="border-t pt-2 mt-2 flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs text-blue-600 hover:text-blue-800 flex-1"
+                            onClick={() => setSelectedServiceTypes(["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"])}
+                          >
+                            Select All
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs text-red-600 hover:text-red-800 flex-1"
+                            onClick={() => setSelectedServiceTypes([])}
+                          >
+                            Clear All
+                          </Button>
+                        </div>
+                      </div>
                     </SelectContent>
                   </Select>
+                  
+                  {selectedServiceTypes.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {selectedServiceTypes.map((type) => (
+                        <Badge
+                          key={type}
+                          variant="secondary"
+                          className="text-xs px-2 py-1 cursor-pointer hover:bg-red-100 hover:text-red-700"
+                          onClick={() => setSelectedServiceTypes(prev => prev.filter(t => t !== type))}
+                        >
+                          {type} ×
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {/* Location */}
                 <div>
@@ -1153,7 +1242,24 @@ const SearchPage = () => {
 
           {/* Results */}
           <div className={`${isSidebarOpen ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                {selectedServiceTypes.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
+                      Service Type Filter: {selectedServiceTypes.length} selected ({selectedServiceTypes.join(', ')})
+                    </Badge>
+                    <div className="text-sm text-gray-600">
+                      Showing {filteredServices.length} results
+                    </div>
+                  </div>
+                )}
+                {selectedServiceTypes.length === 0 && (
+                  <div className="text-sm text-gray-600">
+                    Showing all {filteredServices.length} services (no filter applied)
+                  </div>
+                )}
+              </div>
 
               {selectedServices.length > 0 && (
                 <Badge variant="secondary" className="px-3 py-1">
@@ -1252,26 +1358,75 @@ const SearchPage = () => {
                           </div>
                         )}
 
-                        {(getSlides(service).length > 1 || getDisplayTimeInfo(service)) && (
-                          <div className="absolute left-2 bottom-2 flex items-center gap-2">
-                            {getSlides(service).length > 1 && (
-                              <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
-                                {((((activeVariantIndex[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                        {((service as any)._providerType === 'doctor') ? (
+                          (() => {
+                            const slide = getActiveSlide(service) as any;
+                            const formatTo12Hour = (time24?: string): string => {
+                              if (!time24) return "";
+                              const [hours, minutes] = String(time24).split(':');
+                              const hour24 = parseInt(hours, 10);
+                              const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+                              const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                              return `${hour12}:${minutes} ${ampm}`;
+                            };
+                            const daysText = slide?.days ? String(slide.days) : '';
+                            const timeLabel = slide?.timeLabel;
+                            const startTime = slide?.startTime;
+                            const endTime = slide?.endTime;
+                            const range = startTime && endTime ? `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}` : '';
+                            const timeText = timeLabel && range ? `${String(timeLabel)} — ${range}` : String(timeLabel || range || '');
+
+                            return (
+                              <>
+                                {daysText && (
+                                  <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    <span className="truncate max-w-[220px] sm:max-w-[280px]">{daysText}</span>
+                                  </div>
+                                )}
+                                {(getSlides(service).length > 1 || timeText) && (
+                                  <div className="absolute left-2 bottom-2 flex items-center gap-2">
+                                    {getSlides(service).length > 1 && (
+                                      <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
+                                        {((((activeVariantIndex[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                                      </div>
+                                    )}
+                                    {timeText && (
+                                      <div className="bg-black/60 text-white text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        <span className="truncate max-w-[220px] sm:max-w-[280px]">{timeText}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()
+                        ) : (
+                          // Non-doctor: keep existing simple time badges
+                          <>
+                            {(getSlides(service).length > 1 || getDisplayTimeInfo(service)) && (
+                              <div className="absolute left-2 bottom-2 flex items-center gap-2">
+                                {getSlides(service).length > 1 && (
+                                  <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
+                                    {((((activeVariantIndex[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                                  </div>
+                                )}
+                                {getDisplayTimeInfo(service) && (
+                                  <div className="bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{getDisplayTimeInfo(service)}</span>
+                                  </div>
+                                )}
                               </div>
                             )}
-                            {getDisplayTimeInfo(service) && (
-                              <div className="bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+                            {getDisplayTimeRange(service) && (
+                              <div className="absolute right-2 bottom-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                <span>{getDisplayTimeInfo(service)}</span>
+                                <span>{getDisplayTimeRange(service)}</span>
                               </div>
                             )}
-                          </div>
-                        )}
-                        {getDisplayTimeRange(service) && (
-                          <div className="absolute right-2 bottom-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{getDisplayTimeRange(service)}</span>
-                          </div>
+                          </>
                         )}
                       </div>
 
@@ -1459,32 +1614,52 @@ const SearchPage = () => {
                         <div className="flex justify-between items-center min-h-[24px]">
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {Array.isArray((service as any).diseases) && (service as any).diseases.length > 0 && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      title="View diseases"
-                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                    >
-                                      <VirusIcon className="w-4 h-4" />
-                                      <span className="hidden sm:inline text-xs font-medium">Diseases</span>
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs">
+                              <div className="relative">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        title="View diseases"
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setExpandedDiseases(expandedDiseases === service.id ? null : service.id);
+                                        }}
+                                      >
+                                        <VirusIcon className="w-4 h-4" />
+                                        <span className="hidden sm:inline text-xs font-medium">Diseases</span>
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="max-w-xs hidden sm:block">
+                                      <div className="text-xs text-emerald-800">
+                                        <div className="mb-1 font-medium">Diseases</div>
+                                        <div className="flex flex-col gap-1">
+                                          {((service as any).diseases as string[]).map((d, i) => (
+                                            <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                              {d}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                {expandedDiseases === service.id && (
+                                  <div className="absolute sm:hidden left-0 top-[110%] z-50 w-56 p-2 bg-white border border-emerald-200 rounded-md shadow-lg">
                                     <div className="text-xs text-emerald-800">
                                       <div className="mb-1 font-medium">Diseases</div>
-                                      <div className="flex flex-wrap gap-1">
+                                      <div className="flex flex-col gap-1">
                                         {((service as any).diseases as string[]).map((d, i) => (
-                                          <span key={`${d}-${i}`} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                          <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             {d}
                                           </span>
                                         ))}
                                       </div>
                                     </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                           <div className="flex-shrink-0">
@@ -1534,26 +1709,43 @@ const SearchPage = () => {
                             onClick={() => {
                               const timeInfo = getDisplayTimeInfo(service);
                               const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
-                              console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
+                              const slides = getSlides(service);
+                              const safeVariantIndex = slides.length ? (((currentVariantIndex % slides.length) + slides.length) % slides.length) : 0;
+                              const activeSlide = getActiveSlide(service) as any;
+                              const daysForSlide = activeSlide?.days ? String(activeSlide.days) : '';
+                              const tl = activeSlide?.timeLabel;
+                              const st = activeSlide?.startTime;
+                              const et = activeSlide?.endTime;
+                              console.log('Navigating to service detail:', service.id, 'safeVariantIndex:', safeVariantIndex, {
+                                days: daysForSlide,
+                                timeLabel: tl,
+                                startTime: st,
+                                endTime: et,
+                              });
                               navigate(`/service/${service.id}`, {
                                 state: {
                                   from: `${routerLocation.pathname}${routerLocation.search}`,
                                   fromSearch: true,
-                                  initialVariantIndex: currentVariantIndex,
+                                  initialVariantIndex: safeVariantIndex,
                                   service: {
                                     id: service.id,
                                     name: service.name,
                                     description: service.description,
                                     price: getDisplayPrice(service) ?? service.price,
                                     rating: service.rating ?? 0,
-                                    provider: service.providerName,
-                                    providerId: service.providerId,
+                                    provider: service.provider,
+                                    // Ensure the detail page receives the provider's user id for messaging/requests
+                                    providerId: (service as any)._providerId || (service as any).providerId,
                                     image: getDisplayImage(service) ?? (service as any).image,
                                     type: (service as any).category === 'Lab Test' ? 'Test' : (service as any).category === 'Medicine' ? 'Medicine' : (service as any).category === 'Surgery' ? 'Surgery' : 'Treatment',
                                     providerType: (service as any)._providerType || (service as any).providerType || 'doctor',
                                     // Ensure detail page shows the same verification badge
                                     _providerVerified: Boolean((service as any)._providerVerified),
+                                    // Also pass through the internal key for compatibility
+                                    _providerId: (service as any)._providerId,
                                     isReal: true,
+                                    // Pass variants so detail page can show variant-specific schedules and data
+                                    variants: Array.isArray((service as any).variants) ? (service as any).variants : [],
                                     // Location/address helpers
                                     location: getDisplayLocation(service) || (service as any).location,
                                     address: getDisplayAddress(service) || (service as any).address,
