@@ -105,20 +105,27 @@ export const login = async (req, res) => {
 export const forgotPassword = async (req, res) => {
   try {
     const debug = process.env.DEBUG_PASSWORD_RESET === 'true';
-    if (debug) console.log('Forgot password: request received');
-    const { email } = req.body;
+    if (debug) console.log('🔐 Forgot password: request received');
+    
+    const { email, sendToEmail } = req.body; // Support optional different email
 
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    if (debug) console.log('Forgot password: looking up user');
+    if (debug) console.log('🔍 Forgot password: looking up user with email:', email);
     const user = await User.findOne({ email });
     if (!user) {
-      if (debug) console.log('Forgot password: user not found');
+      if (debug) console.log('❌ Forgot password: user not found');
       return res.status(404).json({ message: 'User not found with this email' });
     }
-    if (debug) console.log('Forgot password: user found');
+    if (debug) console.log('✅ Forgot password: user found -', user.name);
+
+    // Determine which email to send to (support alternative email)
+    const targetEmail = sendToEmail || email;
+    if (debug && sendToEmail) {
+      console.log('📧 Sending to alternative email:', sendToEmail);
+    }
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -130,28 +137,32 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordToken = hashedToken;
     user.resetPasswordExpire = Date.now() + 60 * 60 * 1000; // 1 hour
     
-    if (debug) console.log('Forgot password: saving user with reset token');
+    if (debug) console.log('💾 Forgot password: saving user with reset token');
     await user.save();
 
-    if (debug) console.log('Forgot password: attempting to send email');
-    // Send email
-    const emailResult = await sendPasswordResetEmail(email, resetToken);
+    if (debug) console.log('📨 Forgot password: attempting to send email to:', targetEmail);
+    // Send email to target address
+    const emailResult = await sendPasswordResetEmail(targetEmail, resetToken, user.name);
     
     if (!emailResult.success) {
-      if (debug) console.log('Forgot password: email sending failed');
+      if (debug) console.log('❌ Forgot password: email sending failed -', emailResult.error);
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save();
-      return res.status(500).json({ message: 'Email could not be sent', error: emailResult.error });
+      return res.status(500).json({ 
+        message: 'Email could not be sent. Please try again or contact support.', 
+        error: emailResult.error 
+      });
     }
 
-    if (debug) console.log('Forgot password: email sent successfully');
+    if (debug) console.log('✅ Forgot password: email sent successfully');
     res.status(200).json({ 
-      message: 'Password reset email sent successfully. Please check your email.' 
+      message: `Password reset email sent successfully to ${targetEmail}. Please check your email.`,
+      sentTo: targetEmail
     });
 
   } catch (err) {
-    console.error('Forgot password error:', err.message);
+    console.error('❌ Forgot password error:', err.message);
     if (process.env.DEBUG_PASSWORD_RESET === 'true') {
       console.error('Error stack:', err.stack);
     }
