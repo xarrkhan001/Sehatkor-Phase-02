@@ -78,18 +78,19 @@ export const sendContactEmail = async ({
 };
 
 // Send password reset email
-export const sendPasswordResetEmail = async (email, resetToken) => {
+export const sendPasswordResetEmail = async (email, resetToken, userName = 'User') => {
   try {
     const transporter = createTransporter();
     
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://sehatkor.cloud';
     const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
     
     if (process.env.DEBUG_EMAIL === 'true') {
-      console.log('Sending password reset email');
-      console.log('To:', email);
-      console.log('Reset URL:', resetUrl);
-      console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
+      console.log('📧 Sending password reset email');
+      console.log('📬 To:', email);
+      console.log('👤 User:', userName);
+      console.log('🔗 Reset URL:', resetUrl);
+      console.log('🌐 FRONTEND_URL:', process.env.FRONTEND_URL);
     }
     
     const mailOptions = {
@@ -106,6 +107,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
           <div style="background: #f8fafc; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
             <h2 style="color: #1e293b; margin-top: 0;">Password Reset Request</h2>
             <p style="color: #475569; line-height: 1.6;">
+              Hello <strong>${userName}</strong>,<br><br>
               We received a request to reset your password for your SehatKor account. 
               If you made this request, please click the button below to reset your password.
             </p>
