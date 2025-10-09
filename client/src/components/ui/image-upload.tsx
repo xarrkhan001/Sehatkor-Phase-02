@@ -208,14 +208,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       ) : (
         <Card
           className={cn(
-            "border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer",
+            "border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer bg-gray-300",
             dragActive && "border-primary bg-primary/5"
           )}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          onClick={handleButtonClick}
         >
           <div className="p-4 text-center">
             <div className="flex flex-col items-center space-y-2">

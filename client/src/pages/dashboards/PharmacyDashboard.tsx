@@ -867,7 +867,7 @@ const PharmacyDashboard = () => {
                             <span className="text-[10px] sm:text-sm font-medium">Add</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-4 sm:mx-0">
+                        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto">
                           <DialogHeader>
                             <DialogTitle className="text-white text-xl font-semibold">Add New Medicine</DialogTitle>
                             <DialogDescription className="text-slate-300">
@@ -1534,7 +1534,7 @@ const PharmacyDashboard = () => {
 
             {/* Edit Medicine Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-              <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-4 sm:mx-0">
+              <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto">
                 <DialogHeader>
                   <DialogTitle className="text-white text-xl font-semibold">Edit Medicine</DialogTitle>
                   <DialogDescription className="text-slate-300">
@@ -1854,7 +1854,7 @@ const PharmacyDashboard = () => {
             </Dialog>
 
             <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
-              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+              <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md max-h-[90vh] overflow-y-auto mx-auto">
                 <DialogHeader>
                   <DialogTitle>Schedule Appointment</DialogTitle>
                   <DialogDescription>

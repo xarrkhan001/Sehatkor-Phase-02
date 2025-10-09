@@ -78,7 +78,7 @@ const SearchPage = () => {
   const routerLocation = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [serviceType, setServiceType] = useState<string>("all");
+  const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
   const [location, setLocation] = useState<string>("all");
   const [priceRange, setPriceRange] = useState([0, 50000]);
   const [maxPrice, setMaxPrice] = useState(50000);
@@ -579,12 +579,22 @@ const SearchPage = () => {
         service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
         String((service as any).labCategory || '').toLowerCase().includes(searchTerm.toLowerCase());
       // Service Type filter now uses backend serviceType (Sehat Card, Private, Charity, Public, NPO, NGO)
-      const matchesType = serviceType === "all" || (() => {
+      const matchesType = (() => {
+        // If no service types selected, show all services
+        if (selectedServiceTypes.length === 0) return true;
+        
         const svcType = (service as any).serviceType;
+        
+        // If serviceType is undefined or null, don't show when filters are applied
+        if (!svcType) return false;
+        
+        // Handle array of service types
         if (Array.isArray(svcType)) {
-          return svcType.includes(serviceType);
+          return svcType.some(type => selectedServiceTypes.includes(String(type)));
         }
-        return String(svcType) === serviceType;
+        
+        // Handle single service type
+        return selectedServiceTypes.includes(String(svcType));
       })();
       const matchesLocation = location === "all" || service.location?.includes(location);
       const matchesPrice = service.price >= priceRange[0] && service.price <= priceRange[1];
@@ -650,7 +660,7 @@ const SearchPage = () => {
       });
     }
     return filtered;
-  }, [searchTerm, serviceType, location, priceRange, minRating, homeServiceOnly, availabilityFilter, categoryFilter, highlightedService, allServices, user?.id]);
+  }, [searchTerm, selectedServiceTypes, location, priceRange, minRating, homeServiceOnly, availabilityFilter, categoryFilter, highlightedService, allServices, user?.id]);
 
   const servicesToDisplay = useMemo(() => {
     return filteredServices.slice(0, visibleCount);
@@ -729,7 +739,7 @@ const SearchPage = () => {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setServiceType("all");
+    setSelectedServiceTypes([]);
     setLocation("all");
     setPriceRange([0, maxPrice]);
     setMinRating(0);
@@ -893,23 +903,101 @@ const SearchPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                {/* Service Type (backend serviceType) */}
+                {/* Service Type (backend serviceType) - Multi-select Dropdown */}
                 <div>
-                  <Label className="text-base font-medium">Service Type</Label>
-                  <Select value={serviceType} onValueChange={setServiceType}>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-base font-medium">Service Type</Label>
+                    <div className="flex items-center gap-2">
+                      {selectedServiceTypes.length > 0 && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                          {selectedServiceTypes.length} selected
+                        </span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => setSelectedServiceTypes([])}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Select>
                     <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select type" />
+                      <SelectValue placeholder={
+                        selectedServiceTypes.length === 0 
+                          ? "Select service types..." 
+                          : `${selectedServiceTypes.length} type${selectedServiceTypes.length > 1 ? 's' : ''} selected`
+                      } />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="Sehat Card">Sehat Card</SelectItem>
-                      <SelectItem value="Private">Private</SelectItem>
-                      <SelectItem value="Charity">Charity</SelectItem>
-                      <SelectItem value="Public">Public</SelectItem>
-                      <SelectItem value="NPO">NPO</SelectItem>
-                      <SelectItem value="NGO">NGO</SelectItem>
+                      <div className="p-2 space-y-2">
+                        <div className="text-xs text-gray-500 mb-2">
+                          Select multiple service types (optional)
+                        </div>
+                        
+                        {["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"].map((type) => (
+                          <div key={type} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                            <Checkbox
+                              id={`dropdown-serviceType-${type}`}
+                              checked={selectedServiceTypes.includes(type)}
+                              onCheckedChange={(checked) => {
+                                console.log(`Checkbox changed: ${type}, checked: ${checked}`);
+                                if (checked) {
+                                  const newTypes = [...selectedServiceTypes, type];
+                                  console.log('New selected types:', newTypes);
+                                  setSelectedServiceTypes(newTypes);
+                                } else {
+                                  const newTypes = selectedServiceTypes.filter(t => t !== type);
+                                  console.log('New selected types after removal:', newTypes);
+                                  setSelectedServiceTypes(newTypes);
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`dropdown-serviceType-${type}`} className="text-sm cursor-pointer flex-1">
+                              {type}
+                            </Label>
+                          </div>
+                        ))}
+                        
+                        <div className="border-t pt-2 mt-2 flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs text-blue-600 hover:text-blue-800 flex-1"
+                            onClick={() => setSelectedServiceTypes(["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"])}
+                          >
+                            Select All
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs text-red-600 hover:text-red-800 flex-1"
+                            onClick={() => setSelectedServiceTypes([])}
+                          >
+                            Clear All
+                          </Button>
+                        </div>
+                      </div>
                     </SelectContent>
                   </Select>
+                  
+                  {selectedServiceTypes.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {selectedServiceTypes.map((type) => (
+                        <Badge
+                          key={type}
+                          variant="secondary"
+                          className="text-xs px-2 py-1 cursor-pointer hover:bg-red-100 hover:text-red-700"
+                          onClick={() => setSelectedServiceTypes(prev => prev.filter(t => t !== type))}
+                        >
+                          {type} ×
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {/* Location */}
                 <div>
@@ -1154,7 +1242,24 @@ const SearchPage = () => {
 
           {/* Results */}
           <div className={`${isSidebarOpen ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                {selectedServiceTypes.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
+                      Service Type Filter: {selectedServiceTypes.length} selected ({selectedServiceTypes.join(', ')})
+                    </Badge>
+                    <div className="text-sm text-gray-600">
+                      Showing {filteredServices.length} results
+                    </div>
+                  </div>
+                )}
+                {selectedServiceTypes.length === 0 && (
+                  <div className="text-sm text-gray-600">
+                    Showing all {filteredServices.length} services (no filter applied)
+                  </div>
+                )}
+              </div>
 
               {selectedServices.length > 0 && (
                 <Badge variant="secondary" className="px-3 py-1">

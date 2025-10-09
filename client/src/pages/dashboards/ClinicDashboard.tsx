@@ -832,7 +832,7 @@ const ClinicDashboard = () => {
                             <span className="text-[10px] sm:text-sm font-medium">Add Service</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl">
+                        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto">
                           <DialogHeader>
                             <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
                             <DialogDescription>
@@ -1417,7 +1417,7 @@ const ClinicDashboard = () => {
             </Tabs>
 
             <Dialog open={isScheduling} onOpenChange={setIsScheduling}>
-              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md max-h-[90vh] overflow-y-auto mx-auto">
                 <DialogHeader>
                   <DialogTitle>Schedule Appointment</DialogTitle>
                   <DialogDescription>
