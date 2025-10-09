@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import ProviderWallet from "@/components/ProviderWallet";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listMedicines as apiList, createMedicine as apiCreate, updateMedicine as apiUpdate, deleteMedicine as apiDelete } from "@/lib/pharmacyApi";
@@ -49,6 +49,7 @@ import { apiUrl } from '@/config/api';
 
 const PharmacyDashboard = () => {
   const { user, logout } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [medicines, setMedicines] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -146,17 +147,73 @@ const PharmacyDashboard = () => {
     setEditErrors(prev => ({ ...prev, googleMapLink: isValidHttpUrl(value) ? undefined : 'Please enter a valid http(s) link.' }));
   };
 
+  // Comprehensive validation for all required fields
+  const validateRequiredFields = (): { isValid: boolean; missingFields: string[] } => {
+    const missingFields: string[] = [];
+    const trim = (s?: string) => (s || '').trim();
+
+    // Check required basic fields
+    if (!trim(medicineForm.name)) {
+      missingFields.push('Medicine Name');
+    }
+    if (!trim(medicineForm.price)) {
+      missingFields.push('Price');
+    }
+    if (!trim(medicineForm.stock)) {
+      missingFields.push('Stock');
+    }
+    if (!trim(medicineForm.category)) {
+      missingFields.push('Category');
+    }
+    if (!trim(medicineForm.description)) {
+      missingFields.push('Description');
+    }
+
+    // Check required location fields
+    if (!trim(medicineForm.city)) {
+      missingFields.push('City');
+    }
+    if (!trim(medicineForm.detailAddress)) {
+      missingFields.push('Detailed Address');
+    }
+
+    // Check required image field
+    if (!medicineImagePreview && !medicineImageFile) {
+      missingFields.push('Medicine Image');
+    }
+
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  };
+
   const validateAddLengths = (): boolean => {
     const trim = (s?: string) => (s || '').trim();
     const name = trim(medicineForm.name);
     const description = trim(medicineForm.description);
     const city = trim(medicineForm.city);
     const addr = trim(medicineForm.detailAddress);
-    if (name.length > LIMITS.name) { toast.error(`Medicine Name must be at most ${LIMITS.name} characters.`); return false; }
-    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
-    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
-    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
-    if (!isValidHttpUrl(medicineForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    if (name.length > LIMITS.name) { 
+      toast({ title: 'Validation Error', description: `Medicine Name must be at most ${LIMITS.name} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (description.length > LIMITS.description) { 
+      toast({ title: 'Validation Error', description: `Description must be at most ${LIMITS.description} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (city.length > LIMITS.city) { 
+      toast({ title: 'Validation Error', description: `City must be at most ${LIMITS.city} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (addr.length > LIMITS.address) { 
+      toast({ title: 'Validation Error', description: `Detailed Address must be at most ${LIMITS.address} characters.`, variant: 'destructive' }); 
+      return false; 
+    }
+    if (!isValidHttpUrl(medicineForm.googleMapLink)) { 
+      toast({ title: 'Validation Error', description: 'Google Map Link must be a valid http(s) URL.', variant: 'destructive' }); 
+      return false; 
+    }
     return true;
   };
 
@@ -472,9 +529,27 @@ const PharmacyDashboard = () => {
   }, [user?.id]);
 
   const handleAddMedicine = async () => {
+    // Check all required fields first
+    const validation = validateRequiredFields();
+    if (!validation.isValid) {
+      const fieldList = validation.missingFields.join(', ');
+      toast({
+        title: "Required Fields Missing",
+        description: `Please fill in the following required fields: ${fieldList}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Enforce length constraints
     if (!validateAddLengths()) return;
-    if (!medicineForm.name || !user?.id) {
-      toast.error("Please fill in all required fields");
+    
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "User ID is missing",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -494,7 +569,11 @@ const PharmacyDashboard = () => {
           imagePublicId = result?.public_id;
         } catch (uploadError) {
           console.error('Image upload failed:', uploadError);
-          toast.warning("Image upload failed", { description: "Medicine will be added without an image." });
+          toast({
+            title: "Warning",
+            description: "Image upload failed, medicine will be added without an image.",
+            variant: "destructive"
+          });
         } finally {
           setIsUploadingImage(false);
         }
@@ -545,13 +624,16 @@ const PharmacyDashboard = () => {
       // Reload medicines from backend
       await reloadMedicines();
 
-      toast.success("Medicine added successfully", {
-        description: "The new medicine is now available to all users."
+      toast({
+        title: "Success",
+        description: "Medicine added successfully and is now available to all users."
       });
     } catch (error: any) {
       console.error('Error adding medicine:', error);
-      toast.error("Failed to add medicine", {
-        description: error?.message || "Please try again.",
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to add medicine. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsAddingMedicine(false);
@@ -563,9 +645,16 @@ const PharmacyDashboard = () => {
       await apiDelete(medicineId);
       ServiceManager.deleteService(medicineId);
       reloadMedicines();
-      toast.success("Medicine deleted successfully");
+      toast({
+        title: "Success",
+        description: "Medicine deleted successfully"
+      });
     } catch (e: any) {
-      toast.error("Failed to delete medicine", { description: e?.message });
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to delete medicine",
+        variant: "destructive"
+      });
     }
   };
 
@@ -628,9 +717,16 @@ const PharmacyDashboard = () => {
       setIsEditOpen(false);
       setEditErrors({});
       setEditingMedicineId(null);
-      toast.success("Medicine updated successfully");
+      toast({
+        title: "Success",
+        description: "Medicine updated successfully"
+      });
     } catch (error: any) {
-      toast.error("Failed to update medicine", { description: error?.message });
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to update medicine",
+        variant: "destructive"
+      });
     }
   };
 
@@ -1307,17 +1403,6 @@ const PharmacyDashboard = () => {
                                     size="sm" 
                                     variant="outline" 
                                     onClick={() => completeBooking(booking._id)} 
-                                    className="w-full"
-                                  >
-                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                    Mark as Complete
-                                  </Button>
-                                )}
-                                {booking.status === 'Completed' && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => deleteBooking(booking._id)}
                                     className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" />
