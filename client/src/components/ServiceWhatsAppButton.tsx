@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -54,6 +54,9 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
   const { toast } = useToast();
   // Fallback resolution when providerId is missing (e.g., public cards)
   const [resolvedProviderId, setResolvedProviderId] = useState<string | undefined>(undefined);
+  // Refs for outside-click handling on small screens
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   // Determine which providerId to use in actions
   const providerIdUsed = providerId || resolvedProviderId;
@@ -118,6 +121,27 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
     };
   }, []);
 
+  // Close on outside click or ESC (small screens)
+  useEffect(() => {
+    if (!isSmallScreen || !open) return;
+    const handleDocClick = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (triggerRef.current && triggerRef.current.contains(target)) return;
+      if (contentRef.current && contentRef.current.contains(target)) return;
+      setOpen(false);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('click', handleDocClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('click', handleDocClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [isSmallScreen, open]);
+
   // Attempt to resolve providerId if missing, using providerName (limited to 1 hit by API)
   useEffect(() => {
     let cancelled = false;
@@ -172,16 +196,25 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
 
   return (
     <TooltipProvider delayDuration={150}>
-      <Tooltip open={open} onOpenChange={setOpen}>
+      <Tooltip open={open} onOpenChange={isSmallScreen ? undefined : setOpen}>
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
             className="rounded-full w-8 h-8 p-[1px] bg-gradient-to-br from-sky-500/35 via-violet-500/35 to-fuchsia-500/35 hover:from-sky-500/50 hover:via-violet-500/50 hover:to-fuchsia-500/50 transition-colors"
             aria-label="Contact options"
+            ref={triggerRef}
             onMouseEnter={() => { if (!isSmallScreen) setOpen(true); }}
             onFocus={() => { if (!isSmallScreen) setOpen(true); }}
-            onClick={(e) => { e.preventDefault(); setOpen((v) => !v); }}
+            onClick={(e) => {
+              e.preventDefault();
+              if (isSmallScreen) {
+                // Toggle on small screens (first click opens, second closes)
+                setOpen((v) => !v);
+              } else {
+                setOpen((v) => !v);
+              }
+            }}
           >
             <span className="flex items-center justify-center w-full h-full rounded-full bg-background text-blue-600 hover:text-blue-700">
               <MessageCircle className="w-4 h-4" />
@@ -191,6 +224,7 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
       <TooltipContent
         side="top"
         className="p-1.5"
+        ref={contentRef}
         onPointerEnter={() => { if (!isSmallScreen) setOpen(true); }}
         onPointerLeave={() => { if (!isSmallScreen) setOpen(false); }}
       >

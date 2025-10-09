@@ -356,6 +356,7 @@ const CompareExplorer = () => {
       price: svc.price,
       city: svc.city,
       detailAddress: svc.detailAddress,
+      hospitalClinicName: svc.hospitalClinicName,
       googleMapLink: svc.googleMapLink,
       timeLabel: svc.timeLabel,
       startTime: svc.startTime,
@@ -680,7 +681,7 @@ const CompareExplorer = () => {
           </div>
           {/* Offerings shown only after selection/search */}
           {effectiveSelectedName && (
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:gap-6">
               {limitedOfferings.map((item) => {
                 const isSelected = selectedIds.includes(item.id);
                 return (
@@ -690,7 +691,7 @@ const CompareExplorer = () => {
                   >
                     <CardContent className="p-5 flex flex-col h-full">
                       {/* Image with variant slider */}
-                      <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-4">
+                      <div className="relative w-full h-40 sm:h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-4">
                         {getDisplayImage(item) ? (
                           <img src={getDisplayImage(item)!} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
@@ -752,8 +753,8 @@ const CompareExplorer = () => {
                       </div>
 
                       {/* Title and Provider */}
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+                        <div className="mb-2 sm:mb-0">
                           <h3 className="text-lg font-semibold flex items-center gap-2">
                             {item.name}
                             {item._providerVerified ? (
@@ -767,24 +768,9 @@ const CompareExplorer = () => {
                           </h3>
                           <p className="text-sm text-gray-500">{item.provider}</p>
                           {/* Department Display for Hospital Services */}
-                          {item._providerType === 'clinic' && item.department && (
-                            <div className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1.5">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="12"
-                                height="12"
-                                fill="currentColor"
-                                aria-hidden="true"
-                                className="shrink-0"
-                              >
-                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/>
-                              </svg>
-                              <span className="truncate">{item.department}</span>
-                            </div>
-                          )}
+                          {item._providerType === 'clinic' && item.department && (<div className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true" className="shrink-0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/></svg><span className="truncate">{item.department}</span></div>)}
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <div className="text-lg font-bold text-primary">
                             {getDisplayPrice(item) === 0 ? 'Free' : `PKR ${getDisplayPrice(item).toLocaleString()}`}
                           </div>
@@ -830,13 +816,13 @@ const CompareExplorer = () => {
 
                       {/* Badges and actions – unified 3-row layout */}
                       <div className="space-y-3 mb-4 text-sm">
-                        {/* Row 1: Rating ↔ Location */}
-                        <div className="flex justify-between items-center min-h-[24px]">
+                        {/* Row 1: Rating ↔ Location (desktop/tablet only) */}
+                        <div className="hidden sm:flex justify-between items-center min-h-[24px]">
                           <div className="flex-shrink-0">
                             <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
                           </div>
                           <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
-                            <MapPin className="w-4 h-4" />
+                            <MapPin className="w-3 h-3 md:w-4 md:h-4" />
                             <span>{getDisplayLocation(item)}</span>
                           </div>
                         </div>
@@ -874,8 +860,12 @@ const CompareExplorer = () => {
                         </div>
 
                         {/* Row 4: Diseases ↔ Rate Button + WhatsApp */}
-                        <div className="flex justify-between items-center min-h-[24px]">
+                        <div className="flex items-center justify-between gap-2 min-h-[24px]">
                           <div className="flex items-center gap-2 flex-shrink-0">
+                            {/* Mobile: show rating badge here */}
+                            <div className="sm:hidden">
+                              <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
+                            </div>
                             {Array.isArray((item as any).diseases) && (item as any).diseases.length > 0 && (
                               <div className="relative">
                                 <TooltipProvider>
@@ -910,31 +900,21 @@ const CompareExplorer = () => {
                                 </TooltipProvider>
                                 {/* Mobile click-to-show diseases list as tooltip/popover */}
                                 {expandedDiseases === item.id && (
-                                  <div className="absolute sm:hidden left-0 top-[110%] z-50 w-56 p-2 bg-white border border-emerald-200 rounded-md shadow-lg">
-                                    <div className="text-xs text-emerald-800">
-                                      <div className="mb-1 font-medium">Diseases</div>
-                                      <div className="flex flex-col gap-1">
-                                        {((item as any).diseases as string[]).map((d, i) => (
-                                          <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            {d}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
+                                  <div className="absolute sm:hidden left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-56 p-2 bg-white border border-emerald-200 rounded-md shadow-lg"><div className="text-xs text-emerald-800"><div className="mb-1 font-medium">Diseases</div><div className="flex flex-col gap-1">{((item as any).diseases as string[]).map((d, i) => (<span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">{d}</span>))}</div></div></div>
                                 )}
                               </div>
                             )}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
+                            {/* Desktop only: Rate button; Mobile focuses on Rating + Diseases + WhatsApp */}
                             {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== item._providerId) && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleRateService(item); }}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm"
+                                className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm"
                                 title="Rate this service"
                               >
                                 <Star className="w-4 h-4" />
-                                <span className="hidden sm:inline text-xs font-medium">Rate</span>
+                                <span className="hidden lg:inline text-xs font-medium">Rate</span>
                               </button>
                             )}
                             {item.providerPhone && (
@@ -946,13 +926,13 @@ const CompareExplorer = () => {
 
                       {/* Buttons */}
                       <div className="mt-auto space-y-2">
-                        <div className="flex gap-2">
+                        <div className="grid grid-cols-3 sm:flex gap-2">
                           <Button
                             size="sm"
-                            className="flex-1 h-9 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center gap-1.5"
+                            className="flex-1 h-8 md:h-9 text-[11px] md:text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center gap-1.5"
                             onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <circle cx="12" cy="12" r="10"/>
                               <polyline points="12,6 12,12 16,14"/>
                             </svg>
@@ -961,16 +941,14 @@ const CompareExplorer = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-9 text-xs border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-full flex items-center justify-center gap-1.5"
+                            className="flex-1 h-8 md:h-9 text-[11px] md:text-xs border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-full flex items-center justify-center gap-.5"
                             onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}
                           >
                             <MapPin className="w-4 h-4" />
                             Location
                           </Button>
                           <Button
-                            size="sm"
-                            variant="secondary"
-                            className="flex-1 h-9 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center gap-1.5"
+                            size="sm" variant="secondary" className="flex-1 h-8 md:h-9 text-[11px] md:text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center gap-1.5"
                             onClick={(e) => {
                               e.stopPropagation();
                               const currentVariantIndex = activeIdxById[item.id] ?? 0;
