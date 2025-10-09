@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
@@ -1253,26 +1253,75 @@ const SearchPage = () => {
                           </div>
                         )}
 
-                        {(getSlides(service).length > 1 || getDisplayTimeInfo(service)) && (
-                          <div className="absolute left-2 bottom-2 flex items-center gap-2">
-                            {getSlides(service).length > 1 && (
-                              <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
-                                {((((activeVariantIndex[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                        {((service as any)._providerType === 'doctor') ? (
+                          (() => {
+                            const slide = getActiveSlide(service) as any;
+                            const formatTo12Hour = (time24?: string): string => {
+                              if (!time24) return "";
+                              const [hours, minutes] = String(time24).split(':');
+                              const hour24 = parseInt(hours, 10);
+                              const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+                              const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                              return `${hour12}:${minutes} ${ampm}`;
+                            };
+                            const daysText = slide?.days ? String(slide.days) : '';
+                            const timeLabel = slide?.timeLabel;
+                            const startTime = slide?.startTime;
+                            const endTime = slide?.endTime;
+                            const range = startTime && endTime ? `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}` : '';
+                            const timeText = timeLabel && range ? `${String(timeLabel)} — ${range}` : String(timeLabel || range || '');
+
+                            return (
+                              <>
+                                {daysText && (
+                                  <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    <span className="truncate max-w-[220px] sm:max-w-[280px]">{daysText}</span>
+                                  </div>
+                                )}
+                                {(getSlides(service).length > 1 || timeText) && (
+                                  <div className="absolute left-2 bottom-2 flex items-center gap-2">
+                                    {getSlides(service).length > 1 && (
+                                      <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
+                                        {((((activeVariantIndex[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                                      </div>
+                                    )}
+                                    {timeText && (
+                                      <div className="bg-black/60 text-white text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        <span className="truncate max-w-[220px] sm:max-w-[280px]">{timeText}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()
+                        ) : (
+                          // Non-doctor: keep existing simple time badges
+                          <>
+                            {(getSlides(service).length > 1 || getDisplayTimeInfo(service)) && (
+                              <div className="absolute left-2 bottom-2 flex items-center gap-2">
+                                {getSlides(service).length > 1 && (
+                                  <div className="bg-black/50 text-white text-xs px-2 py-0.5 rounded">
+                                    {((((activeVariantIndex[service.id] ?? 0) % getSlides(service).length) + getSlides(service).length) % getSlides(service).length) + 1}/{getSlides(service).length}
+                                  </div>
+                                )}
+                                {getDisplayTimeInfo(service) && (
+                                  <div className="bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{getDisplayTimeInfo(service)}</span>
+                                  </div>
+                                )}
                               </div>
                             )}
-                            {getDisplayTimeInfo(service) && (
-                              <div className="bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
+                            {getDisplayTimeRange(service) && (
+                              <div className="absolute right-2 bottom-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                <span>{getDisplayTimeInfo(service)}</span>
+                                <span>{getDisplayTimeRange(service)}</span>
                               </div>
                             )}
-                          </div>
-                        )}
-                        {getDisplayTimeRange(service) && (
-                          <div className="absolute right-2 bottom-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{getDisplayTimeRange(service)}</span>
-                          </div>
+                          </>
                         )}
                       </div>
 
@@ -1555,12 +1604,24 @@ const SearchPage = () => {
                             onClick={() => {
                               const timeInfo = getDisplayTimeInfo(service);
                               const currentVariantIndex = activeVariantIndex[service.id] ?? 0;
-                              console.log('Navigating to service detail:', service.id, 'with variant index:', currentVariantIndex);
+                              const slides = getSlides(service);
+                              const safeVariantIndex = slides.length ? (((currentVariantIndex % slides.length) + slides.length) % slides.length) : 0;
+                              const activeSlide = getActiveSlide(service) as any;
+                              const daysForSlide = activeSlide?.days ? String(activeSlide.days) : '';
+                              const tl = activeSlide?.timeLabel;
+                              const st = activeSlide?.startTime;
+                              const et = activeSlide?.endTime;
+                              console.log('Navigating to service detail:', service.id, 'safeVariantIndex:', safeVariantIndex, {
+                                days: daysForSlide,
+                                timeLabel: tl,
+                                startTime: st,
+                                endTime: et,
+                              });
                               navigate(`/service/${service.id}`, {
                                 state: {
                                   from: `${routerLocation.pathname}${routerLocation.search}`,
                                   fromSearch: true,
-                                  initialVariantIndex: currentVariantIndex,
+                                  initialVariantIndex: safeVariantIndex,
                                   service: {
                                     id: service.id,
                                     name: service.name,
@@ -1578,6 +1639,8 @@ const SearchPage = () => {
                                     // Also pass through the internal key for compatibility
                                     _providerId: (service as any)._providerId,
                                     isReal: true,
+                                    // Pass variants so detail page can show variant-specific schedules and data
+                                    variants: Array.isArray((service as any).variants) ? (service as any).variants : [],
                                     // Location/address helpers
                                     location: getDisplayLocation(service) || (service as any).location,
                                     address: getDisplayAddress(service) || (service as any).address,

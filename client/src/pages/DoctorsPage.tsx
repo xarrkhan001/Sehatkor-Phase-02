@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
@@ -840,19 +840,68 @@ const DoctorsPage = () => {
                       </button>
                     </div>
                   )}
-                  {/* Time info badge */}
-                  {getTimeInfoForService(service) && (
-                    <div className="absolute left-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{getTimeInfoForService(service)}</span>
-                    </div>
-                  )}
-                  {getTimeRangeForService(service) && (
-                    <div className="absolute right-2 bottom-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{getTimeRangeForService(service)}</span>
-                    </div>
-                  )}
+                  {/* Schedule overlays: days (top-left) and time (bottom-left) */}
+                  {(() => {
+                    // Determine slide index and variant
+                    const variants = (service as any).variants as any[] | undefined;
+                    const vlen = Array.isArray(variants) ? variants.length : 0;
+                    const totalSlides = 1 + vlen;
+                    const rawIdx = activeVariantIndex[service.id] ?? 0;
+                    const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
+
+                    // Extract days
+                    const daysText = (() => {
+                      if (idx === 0) {
+                        return (service as any).days ? String((service as any).days) : "";
+                      }
+                      const v = variants && variants[idx - 1];
+                      return v?.days ? String(v.days) : "";
+                    })();
+
+                    // Build time text from label and numeric range
+                    const formatTo12Hour = (time24?: string): string => {
+                      if (!time24) return "";
+                      const [hours, minutes] = time24.split(':');
+                      const hour24 = parseInt(hours, 10);
+                      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+                      const ampm = hour24 >= 12 ? 'PM' : 'AM';
+                      return `${hour12}:${minutes} ${ampm}`;
+                    };
+                    const timeText = (() => {
+                      if (idx === 0) {
+                        const timeLabel = (service as any).timeLabel;
+                        const startTime = (service as any).startTime;
+                        const endTime = (service as any).endTime;
+                        const range = startTime && endTime ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
+                        if (timeLabel && range) return `${String(timeLabel)} — ${range}`;
+                        return String(timeLabel || range || "");
+                      }
+                      const v = variants && variants[idx - 1];
+                      const timeLabel = v?.timeLabel;
+                      const startTime = v?.startTime;
+                      const endTime = v?.endTime;
+                      const range = startTime && endTime ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
+                      if (timeLabel && range) return `${String(timeLabel)} — ${range}`;
+                      return String(timeLabel || range || "");
+                    })();
+
+                    return (
+                      <>
+                        {daysText && (
+                          <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            <span className="truncate max-w-[220px] sm:max-w-[280px]">{daysText}</span>
+                          </div>
+                        )}
+                        {timeText && (
+                          <div className="absolute left-2 bottom-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span className="truncate max-w-[220px] sm:max-w-[280px]">{timeText}</span>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Title and Provider */}
