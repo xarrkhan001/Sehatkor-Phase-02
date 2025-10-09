@@ -43,6 +43,10 @@ const AboutPage = () => {
   const navigate = useNavigate();
   const [donateOpen, setDonateOpen] = useState(false);
   const [donationAmount, setDonationAmount] = useState<number>(1000);
+  const handleManualBooking = () => {
+    setDonateOpen(false);
+    navigate('/contact');
+  };
 
   useEffect(() => {
     setIsVisible(true);
@@ -56,17 +60,18 @@ const AboutPage = () => {
       navigate('/login');
       return;
     }
-    navigate('/payment', {
-      state: {
-        serviceId: 'donation',
-        serviceName: 'Donation to Sehat Kor Foundation',
-        providerId: 'admin',
-        providerName: 'Sehat Kor Admin',
-        providerType: 'hospital',
-        price: amount,
-        currency: 'PKR',
-      }
-    });
+    // Temporarily disabled: redirect to the old Payment page
+    // navigate('/payment', {
+    //   state: {
+    //     serviceId: 'donation',
+    //     serviceName: 'Donation to Sehat Kor Foundation',
+    //     providerId: 'admin',
+    //     providerName: 'Sehat Kor Admin',
+    //     providerType: 'hospital',
+    //     price: amount,
+    //     currency: 'PKR',
+    //   }
+    // });
   };
 
   const stats = [
@@ -565,62 +570,50 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Donation Dialog */}
+      {/* Donation Dialog - Replaced with Admin Payment Coming Soon modal */}
       <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Donate to Sehat Kor Foundation</DialogTitle>
-            <DialogDescription>
-              Your contribution helps us keep healthcare accessible and patient-centered.
-            </DialogDescription>
+            <DialogTitle className="text-2xl font-bold">Admin Payment — Coming Soon</DialogTitle>
+            <DialogDescription>JazzCash and EasyPaisa integration is under development</DialogDescription>
           </DialogHeader>
           <div className="space-y-5">
-            <div>
-              <Label htmlFor="donationAmount" className="text-gray-700">Enter Amount (PKR)</Label>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">PKR</div>
-                <Input
-                  id="donationAmount"
-                  type="number"
-                  min={1}
-                  value={Number.isFinite(donationAmount) ? donationAmount : 0}
-                  onChange={(e) => setDonationAmount(Number(e.target.value))}
-                  className="text-lg py-5"
-                  placeholder="e.g., 1000"
-                />
+            <p className="text-gray-700">
+              We’re finalizing secure payments via SehatKor Admin. Until then, please book manually and coordinate payment directly with the provider.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="rounded-lg border bg-white p-4">
+                <div className="font-semibold mb-1">Secure & Verified</div>
+                <div className="text-sm text-gray-600">Admin payment will include receipts and verified tracking.</div>
+              </div>
+              <div className="rounded-lg border bg-white p-4">
+                <div className="font-semibold mb-1">JazzCash • EasyPaisa</div>
+                <div className="text-sm text-gray-600">Local wallet support planned for fast and easy checkout.</div>
+              </div>
+              <div className="rounded-lg border bg-white p-4">
+                <div className="font-semibold mb-1">Timeline</div>
+                <div className="text-sm text-gray-600">Feature will appear here automatically once live.</div>
               </div>
             </div>
 
-            <div>
-              <div className="text-sm text-gray-600 mb-2">Quick amounts</div>
-              <div className="flex flex-wrap gap-2">
-                {[500, 1000, 2500, 5000].map((amt) => (
-                  <Button
-                    key={amt}
-                    type="button"
-                    variant="outline"
-                    className={`border-2 ${donationAmount === amt ? 'border-green-500 text-green-700' : 'border-gray-200'}`}
-                    onClick={() => quickSetAmount(amt)}
-                  >
-                    PKR {amt.toLocaleString()}
-                  </Button>
-                ))}
-              </div>
+            <div className="rounded-lg bg-gray-50 text-gray-700 text-sm p-3">
+              جاز کیش/ایزی پیسہ کے ذریعے آن لائن ادائیگیاں جلد دستیاب ہوں گی۔ فی الحال براہِ راست دستی   یا گرم ہستی پیمنٹ کی بکنگ استعمال کریں۔
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDonateOpen(false)}>Cancel</Button>
-              <Button
-                onClick={proceedDonate}
-                disabled={!Number.isFinite(donationAmount) || donationAmount <= 0}
-                className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800"
-              >
-                Continue to Payment
-              </Button>
+            <div className="flex justify-between gap-2 pt-2">
+              <Button onClick={() => setDonateOpen(false)} className="bg-blue-600 hover:bg-blue-700">Got it</Button>
+              <Button variant="outline" onClick={handleManualBooking}>Use Manual Booking</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/**
+       * Previous donation modal (temporarily disabled)
+       *
+       * <Dialog open={donateOpen} onOpenChange={setDonateOpen}> ... </Dialog>
+       */}
     </div>
   );
 };

@@ -82,6 +82,10 @@ export const getAllPublicServices = async (req, res) => {
           .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
+      // Exclude services whose provider record no longer exists (orphaned)
+      doctorServices = Array.isArray(doctorServices)
+        ? doctorServices.filter(s => s && s.providerId && s.providerId._id)
+        : [];
     }
     if (!hasType || type === "clinic") {
       clinicServices = await applyPaging(
@@ -89,6 +93,9 @@ export const getAllPublicServices = async (req, res) => {
           .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
+      clinicServices = Array.isArray(clinicServices)
+        ? clinicServices.filter(s => s && s.providerId && s.providerId._id)
+        : [];
     }
     if (!hasType || type === "pharmacy") {
       pharmacyServices = await applyPaging(
@@ -96,6 +103,9 @@ export const getAllPublicServices = async (req, res) => {
           .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
+      pharmacyServices = Array.isArray(pharmacyServices)
+        ? pharmacyServices.filter(s => s && s.providerId && s.providerId._id)
+        : [];
     }
     if (!hasType || type === "laboratory") {
       laboratoryServices = await applyPaging(
@@ -103,6 +113,9 @@ export const getAllPublicServices = async (req, res) => {
           .populate("providerId", "phone name avatar isVerified licenseNumber verificationStatus allowedToOperate")
           .sort({ createdAt: -1 })
       ).lean();
+      laboratoryServices = Array.isArray(laboratoryServices)
+        ? laboratoryServices.filter(s => s && s.providerId && s.providerId._id)
+        : [];
     }
 
     // Get user's individual ratings for all services if user is authenticated
@@ -316,7 +329,8 @@ export const getPublicServiceById = async (req, res) => {
         .lean();
     }
 
-    if (!service) {
+    // If service not found OR its provider has been deleted, return 404
+    if (!service || !service.providerId) {
       return res.status(404).json({ message: "Service not found" });
     }
 

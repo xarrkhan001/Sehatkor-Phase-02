@@ -4,6 +4,13 @@ import DoctorService from '../models/DoctorService.js';
 import ClinicService from '../models/ClinicService.js';
 import Medicine from '../models/Medicine.js';
 import LaboratoryTest from '../models/LaboratoryTest.js';
+import Booking from '../models/Booking.js';
+import Rating from '../models/Rating.js';
+import Message from '../models/Message.js';
+import Conversation from '../models/Conversation.js';
+import ConnectionRequest from '../models/ConnectionRequest.js';
+import ProviderDocument from '../models/ProviderDocument.js';
+import HiddenProvider from '../models/HiddenProvider.js';
 import { getModelForServiceType } from '../utils/serviceModelMapper.js';
 
 // 📊 Admin Dashboard - Get platform stats
@@ -159,7 +166,7 @@ export const getVerifiedUsers = async (req, res) => {
   }
 };
 
-// 🗑️ Delete a user permanently
+// 🗑️ Delete a user permanently with CASCADE DELETE
 export const deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -174,6 +181,65 @@ export const deleteUser = async (req, res) => {
       return res.status(403).json({ message: 'Cannot delete admin users' });
     }
 
+    // 🔥 CASCADE DELETE - Remove all associated data
+    const deletionStats = {
+      services: 0,
+      bookings: 0,
+      ratings: 0,
+      messages: 0,
+      conversations: 0,
+      connectionRequests: 0,
+      documents: 0,
+      hiddenProviders: 0
+    };
+
+    // 1. Delete all services created by this user (across all collections to be safe)
+    const doctorServices = await DoctorService.deleteMany({ providerId: userId });
+    deletionStats.services += doctorServices.deletedCount || 0;
+    const clinicServices = await ClinicService.deleteMany({ providerId: userId });
+    deletionStats.services += clinicServices.deletedCount || 0;
+    const medicines = await Medicine.deleteMany({ providerId: userId });
+    deletionStats.services += medicines.deletedCount || 0;
+    const labTests = await LaboratoryTest.deleteMany({ providerId: userId });
+    deletionStats.services += labTests.deletedCount || 0;
+
+    // 2. Delete all bookings (as patient or provider)
+    const bookingsAsPatient = await Booking.deleteMany({ patientId: userId });
+    const bookingsAsProvider = await Booking.deleteMany({ providerId: userId });
+    deletionStats.bookings = (bookingsAsPatient.deletedCount || 0) + (bookingsAsProvider.deletedCount || 0);
+
+    // 3. Delete all ratings (as patient or provider)
+    const ratingsAsPatient = await Rating.deleteMany({ patientId: userId });
+    const ratingsAsProvider = await Rating.deleteMany({ providerId: userId });
+    deletionStats.ratings = (ratingsAsPatient.deletedCount || 0) + (ratingsAsProvider.deletedCount || 0);
+
+    // 4. Delete all messages (as sender or recipient)
+    const messages = await Message.deleteMany({
+      $or: [{ sender: userId }, { recipient: userId }]
+    });
+    deletionStats.messages = messages.deletedCount || 0;
+
+    // 5. Delete all conversations where user is a participant
+    const conversations = await Conversation.deleteMany({
+      participants: userId
+    });
+    deletionStats.conversations = conversations.deletedCount || 0;
+
+    // 6. Delete all connection requests (as sender or recipient)
+    const connectionRequests = await ConnectionRequest.deleteMany({
+      $or: [{ sender: userId }, { recipient: userId }]
+    });
+    deletionStats.connectionRequests = connectionRequests.deletedCount || 0;
+
+    // 7. Delete all provider documents
+    const documents = await ProviderDocument.deleteMany({ userId: userId });
+    deletionStats.documents = documents.deletedCount || 0;
+
+    // 8. Delete hidden provider entry if exists
+    const hiddenProvider = await HiddenProvider.deleteMany({ providerId: userId });
+    deletionStats.hiddenProviders = hiddenProvider.deletedCount || 0;
+
+    // 9. Finally, delete the user account
     await User.findByIdAndDelete(userId);
     
     // Get Socket.IO instance from app
@@ -188,13 +254,14 @@ export const deleteUser = async (req, res) => {
     }
     
     res.status(200).json({ 
-      message: 'User deleted successfully',
+      message: 'User and all associated data deleted successfully',
       deletedUser: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role
-      }
+      },
+      deletionStats
     });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting user', error: error.message });
