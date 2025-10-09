@@ -1155,7 +1155,7 @@ const ClinicDashboard = () => {
                               </p>
                             </div>
 
-                            <Button onClick={handleAddService} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isAddingService || isUploadingImage}>
+                            <Button onClick={handleAddService} className="w-full" disabled={isAddingService || isUploadingImage}>
                               {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
                             </Button>
                           </div>

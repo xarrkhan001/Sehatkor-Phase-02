@@ -869,16 +869,16 @@ const LaboratoryDashboard = () => {
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Edit Test Dialog */}
             <Dialog open={isEditTestOpen} onOpenChange={setIsEditTestOpen}>
-              <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl">
                 <DialogHeader>
-                  <DialogTitle>Edit Test</DialogTitle>
+                  <DialogTitle className="text-white text-xl font-semibold">Edit Test</DialogTitle>
                   <DialogDescription>
                     Update details for this diagnostic test
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="editTestName">Test Name *</Label>
+                    <Label htmlFor="editTestName" className="text-white">Test Name <span className="text-red-400">*</span></Label>
                     <Input
                       id="editTestName"
                       value={editForm.name}
@@ -892,7 +892,7 @@ const LaboratoryDashboard = () => {
                   </div>
 
                   <div>
-                    <Label>Test Image</Label>
+                    <Label className="text-white">Test Image <span className="text-red-400">*</span></Label>
                     <ImageUpload
                       onImageSelect={(file, preview) => {
                         setEditImageFile(file);
@@ -1241,16 +1241,16 @@ const LaboratoryDashboard = () => {
                               <span className="text-[10px] sm:text-sm font-medium">Add</span>
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+                          <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl">
                             <DialogHeader>
-                              <DialogTitle>Add New Test</DialogTitle>
-                              <DialogDescription>
+                              <DialogTitle className="text-white text-xl font-semibold">Add New Test</DialogTitle>
+                              <DialogDescription className="text-slate-300">
                                 Add a new diagnostic test to your lab
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-3">
                               <div>
-                                <Label htmlFor="testName">Test Name *</Label>
+                                <Label htmlFor="testName" className="text-white">Test Name <span className="text-red-400">*</span></Label>
                                 <Input
                                   id="testName"
                                   value={testForm.name}
@@ -1264,7 +1264,7 @@ const LaboratoryDashboard = () => {
                               </div>
 
                               <div>
-                                <Label>Test Image</Label>
+                                <Label className="text-white">Test Image <span className="text-red-400">*</span></Label>
                                 <ImageUpload
                                   onImageSelect={(file, preview) => {
                                     setTestImageFile(file);
@@ -1282,7 +1282,7 @@ const LaboratoryDashboard = () => {
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                  <Label htmlFor="testPrice">Price (PKR) *</Label>
+                                  <Label htmlFor="testPrice" className="text-white">Price (PKR) <span className="text-red-400">*</span></Label>
                                   <Input
                                     id="testPrice"
                                     type="number"
@@ -1292,7 +1292,7 @@ const LaboratoryDashboard = () => {
                                   />
                                 </div>
                                 <div>
-                                  <Label htmlFor="testDuration">Duration (hours)</Label>
+                                  <Label htmlFor="testDuration" className="text-white">Duration (hours)</Label>
                                   <Input
                                     id="testDuration"
                                     value={testForm.duration}
@@ -1302,7 +1302,7 @@ const LaboratoryDashboard = () => {
                                 </div>
                               </div>
                               <div>
-                                <Label htmlFor="testCategory">Category</Label>
+                                <Label htmlFor="testCategory" className="text-white">Category <span className="text-red-400">*</span></Label>
                                 <Select value={testForm.category} onValueChange={(value) => { setTestForm({ ...testForm, category: value }); validateAddField('department', value); }}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select test category" />
@@ -1318,7 +1318,7 @@ const LaboratoryDashboard = () => {
                                 )}
                               </div>
                               <div>
-                                <Label htmlFor="testDescription">Description</Label>
+                                <Label htmlFor="testDescription" className="text-white">Description <span className="text-red-400">*</span></Label>
                                 <Textarea
                                   id="testDescription"
                                   value={testForm.description}
@@ -1333,9 +1333,9 @@ const LaboratoryDashboard = () => {
 
                               {/* Location Fields */}
                               <div className="space-y-3 border-t pt-3">
-                                <h4 className="font-medium text-sm">Location Information</h4>
+                                <h4 className="font-medium text-sm text-white">Location Information</h4>
                                 <div>
-                                  <Label htmlFor="testCity">City</Label>
+                                  <Label htmlFor="testCity" className="text-white">City <span className="text-red-400">*</span></Label>
                                   <Input
                                     id="testCity"
                                     value={testForm.city}
@@ -1349,7 +1349,7 @@ const LaboratoryDashboard = () => {
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="testAddress">Detailed Address</Label>
+                                  <Label htmlFor="testAddress" className="text-white">Detailed Address <span className="text-red-400">*</span></Label>
                                   <Textarea
                                     id="testAddress"
                                     value={testForm.detailAddress}
@@ -1364,7 +1364,7 @@ const LaboratoryDashboard = () => {
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="testMapLink">Google Maps Link (Optional)</Label>
+                                  <Label htmlFor="testMapLink" className="text-white">Google Maps Link (Optional)</Label>
                                   <Input
                                     id="testMapLink"
                                     value={testForm.googleMapLink}
@@ -1380,9 +1380,9 @@ const LaboratoryDashboard = () => {
 
                               {/* Availability */}
                               <div className="space-y-3 border-t pt-3">
-                                <h4 className="font-medium text-sm">Service Availability</h4>
+                                <h4 className="font-medium text-sm text-white">Service Availability</h4>
                                 <div className="space-y-2">
-                                  <Label>How is this test available? *</Label>
+                                  <Label className="text-white">How is this test available? <span className="text-red-400">*</span></Label>
                                   <div className="flex flex-col space-y-2">
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1393,7 +1393,7 @@ const LaboratoryDashboard = () => {
                                         onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
                                         className="text-primary focus:ring-primary"
                                       />
-                                      <span className="text-sm">Physical - In-person sample collection only</span>
+                                      <span className="text-sm text-white">Physical - In-person sample collection only</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1404,7 +1404,7 @@ const LaboratoryDashboard = () => {
                                         onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
                                         className="text-primary focus:ring-primary"
                                       />
-                                      <span className="text-sm">Online - Report review/booking online</span>
+                                      <span className="text-sm text-white">Online - Report review/booking online</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1415,7 +1415,7 @@ const LaboratoryDashboard = () => {
                                         onChange={(e) => setTestForm({ ...testForm, availability: e.target.value })}
                                         className="text-primary focus:ring-primary"
                                       />
-                                      <span className="text-sm">Online and Physical - Both options available</span>
+                                      <span className="text-sm text-white">Online and Physical - Both options available</span>
                                     </label>
                                   </div>
                                 </div>
@@ -1424,19 +1424,19 @@ const LaboratoryDashboard = () => {
                               {/* Service Type (Optional) */}
                               <div className="space-y-3 border-t pt-3">
                                 <div className="flex items-center justify-between">
-                                  <h4 className="font-medium text-sm">Service Type (Optional)</h4>
+                                  <h4 className="font-medium text-sm text-white">Service Type (Optional)</h4>
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setTestForm(prev => ({ ...prev, serviceType: [] }))}
-                                    className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                                    className="h-8 px-2 text-xs text-slate-300 hover:text-red-400"
                                   >
                                     Clear
                                   </Button>
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>What type of service is this? (Select multiple if applicable)</Label>
+                                  <Label className="text-white">What type of service is this? (Select multiple if applicable)</Label>
                                   <div className="grid grid-cols-2 gap-3">
 
                                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -1455,7 +1455,7 @@ const LaboratoryDashboard = () => {
                                         }}
                                         className="text-blue-600 focus:ring-blue-500"
                                       />
-                                      <span className="text-sm">Private</span>
+                                      <span className="text-sm text-white">Private</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1473,7 +1473,7 @@ const LaboratoryDashboard = () => {
                                         }}
                                         className="text-blue-600 focus:ring-blue-500"
                                       />
-                                      <span className="text-sm">Public</span>
+                                      <span className="text-sm text-white">Public</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1491,7 +1491,7 @@ const LaboratoryDashboard = () => {
                                         }}
                                         className="text-blue-600 focus:ring-blue-500"
                                       />
-                                      <span className="text-sm">Charity</span>
+                                      <span className="text-sm text-white">Charity</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1509,7 +1509,7 @@ const LaboratoryDashboard = () => {
                                         }}
                                         className="text-blue-600 focus:ring-blue-500"
                                       />
-                                      <span className="text-sm">NGO</span>
+                                      <span className="text-sm text-white">NGO</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1527,7 +1527,7 @@ const LaboratoryDashboard = () => {
                                         }}
                                         className="text-blue-600 focus:ring-blue-500"
                                       />
-                                      <span className="text-sm">Sehat Card</span>
+                                      <span className="text-sm text-white">Sehat Card</span>
                                     </label>
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                       <input
@@ -1545,7 +1545,7 @@ const LaboratoryDashboard = () => {
                                         }}
                                         className="text-blue-600 focus:ring-blue-500"
                                       />
-                                      <span className="text-sm">NPO</span>
+                                      <span className="text-sm text-white">NPO</span>
                                     </label>
                                   </div>
                                 </div>
@@ -1553,7 +1553,7 @@ const LaboratoryDashboard = () => {
 
                               {/* Home Delivery */}
                               <div className="space-y-2 border-t pt-3">
-                                <h4 className="font-medium text-sm">Home Delivery</h4>
+                                <h4 className="font-medium text-sm text-white">Home Delivery</h4>
                                 <label className="flex items-center space-x-2 cursor-pointer select-none">
                                   <input
                                     type="checkbox"
@@ -1561,11 +1561,11 @@ const LaboratoryDashboard = () => {
                                     onChange={(e) => setTestForm({ ...testForm, homeDelivery: e.target.checked })}
                                     className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
                                   />
-                                  <span className="text-sm">🏠 Home Delivery Available</span>
+                                  <span className="text-sm text-white">🏠 Home Delivery Available</span>
                                 </label>
                               </div>
 
-                              <Button onClick={handleAddTest} className="w-full" disabled={isUploadingImage || isAddingTest}>
+                              <Button onClick={handleAddTest} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage || isAddingTest}>
                                 {isAddingTest ? 'Adding Test...' : 'Add Test'}
                               </Button>
                             </div>
