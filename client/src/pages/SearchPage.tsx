@@ -588,9 +588,9 @@ const SearchPage = () => {
         // If serviceType is undefined or null, don't show when filters are applied
         if (!svcType) return false;
         
-        // Handle array of service types - require ALL selected types to be present (AND logic)
+        // Handle array of service types - include if ANY selected type matches (OR logic)
         if (Array.isArray(svcType)) {
-          return selectedServiceTypes.every(selectedType => svcType.includes(String(selectedType)));
+          return svcType.some((type: string) => selectedServiceTypes.includes(String(type)));
         }
         
         // Handle single service type
@@ -631,7 +631,8 @@ const SearchPage = () => {
       return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesRating && matchesHomeService && matchesAvailability && matchesAllCategory;
     });
 
-    // Sort so that highlighted service appears at the top, then services matching selected types, then real services before mock services
+    // Sort so that highlighted service appears at the top, then multi-type services when filters are applied,
+    // then services matching selected types, then real services before mock services
     if (highlightedService) {
       return filtered.sort((a, b) => {
         const aMatches = a.name.toLowerCase() === highlightedService.toLowerCase();
@@ -639,10 +640,13 @@ const SearchPage = () => {
         if (aMatches && !bMatches) return -1;
         if (!aMatches && bMatches) return 1;
 
-        // Prioritize services that match selected service types
+        // When filters are applied, prefer services that have multiple service types
         if (selectedServiceTypes.length > 0) {
           const aSvcType = (a as any).serviceType;
           const bSvcType = (b as any).serviceType;
+          const aMulti = Array.isArray(aSvcType);
+          const bMulti = Array.isArray(bSvcType);
+          if (aMulti !== bMulti) return aMulti ? -1 : 1;
 
           // Check if service matches ALL selected service types (highest priority)
           const aMatchesAllSelected = (() => {
@@ -699,6 +703,65 @@ const SearchPage = () => {
         if (a.rating !== b.rating) return b.rating - a.rating;
         const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
         const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+        return bd - ad;
+      });
+    }
+    // No highlighted service: when service type filters are applied, prefer multi-type services first
+    if (selectedServiceTypes.length > 0) {
+      return filtered.sort((a, b) => {
+        const aSvcType = (a as any).serviceType;
+        const bSvcType = (b as any).serviceType;
+        const aMulti = Array.isArray(aSvcType);
+        const bMulti = Array.isArray(bSvcType);
+        if (aMulti !== bMulti) return aMulti ? -1 : 1;
+
+        // Then services matching ALL selected types
+        const aMatchesAllSelected = (() => {
+          if (!aSvcType) return false;
+          const serviceTypes = Array.isArray(aSvcType) ? aSvcType : [aSvcType];
+          return selectedServiceTypes.every(selectedType => serviceTypes.includes(String(selectedType)));
+        })();
+        const bMatchesAllSelected = (() => {
+          if (!bSvcType) return false;
+          const serviceTypes = Array.isArray(bSvcType) ? bSvcType : [bSvcType];
+          return selectedServiceTypes.every(selectedType => serviceTypes.includes(String(selectedType)));
+        })();
+        if (aMatchesAllSelected && !bMatchesAllSelected) return -1;
+        if (!aMatchesAllSelected && bMatchesAllSelected) return 1;
+
+        // Then services matching ANY selected types
+        const aMatchesAnySelected = (() => {
+          if (!aSvcType) return false;
+          if (Array.isArray(aSvcType)) return aSvcType.some(type => selectedServiceTypes.includes(String(type)));
+          return selectedServiceTypes.includes(String(aSvcType));
+        })();
+        const bMatchesAnySelected = (() => {
+          if (!bSvcType) return false;
+          if (Array.isArray(bSvcType)) return bSvcType.some(type => selectedServiceTypes.includes(String(type)));
+          return selectedServiceTypes.includes(String(bSvcType));
+        })();
+        if (aMatchesAnySelected && !bMatchesAnySelected) return -1;
+        if (!aMatchesAnySelected && bMatchesAnySelected) return 1;
+
+        // Then real services first
+        if (a.isReal && !b.isReal) return -1;
+        if (!a.isReal && b.isReal) return 1;
+
+        // Then by rating badge priority
+        const rank = (s: any) => {
+          const badge = (s?.ratingBadge || '').toString().toLowerCase();
+          if (badge === 'excellent') return 3;
+          if (badge === 'good') return 2;
+          if (badge === 'fair') return 1;
+          return 0;
+        };
+        const rb = rank(b) - rank(a);
+        if (rb !== 0) return rb;
+
+        // Then by rating (highest first), then by createdAt desc
+        if (a.rating !== b.rating) return b.rating - a.rating;
+        const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+        const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
         return bd - ad;
       });
     }
@@ -982,7 +1045,7 @@ const SearchPage = () => {
                         </div>
                         
                         {["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"].map((type) => (
-                          <div key={type} className="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
+                          <div key={type} className="flex items-center space-x-2 p-1 hover:bg-gray-50 hover:text-primary rounded">
                             <Checkbox
                               id={`dropdown-serviceType-${type}`}
                               checked={selectedServiceTypes.includes(type)}
