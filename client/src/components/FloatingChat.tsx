@@ -934,13 +934,9 @@ const FloatingChat = () => {
           return;
         }
 
-        // Send connection request and immediately open chat interface
+        // Send connection request without message
         try {
-          await sendConnectionRequestWithMessage(
-            pid, 
-            detail.initialMessage || `Hello! I'm interested in your service "${detail.serviceName}".`,
-            detail.serviceName
-          );
+          await sendConnectionRequest(pid);
           
           // Create a temporary user object for the provider
           const providerUser = {
@@ -957,12 +953,52 @@ const FloatingChat = () => {
           setHasSelectedUser(true);
           setActiveTab('chat');
           
-          // Set a pre-filled message
-          setMessage(detail.initialMessage || `Hello! I'm interested in your service "${detail.serviceName}". Could you please provide more details?`);
+          // Auto-send the initial message
+          const initialMsg = detail.initialMessage || `Hello! I'm interested in your service "${detail.serviceName}". Could you please provide more details?`;
+          
+          // Send the message automatically
+          try {
+            const result = await sendInitialChatMessage(pid, initialMsg);
+            if (result.success && result.conversation) {
+              setConversationId(result.conversation._id);
+              
+              // Join the conversation room
+              const sc = getSocket();
+              sc.emit("join_conversation", result.conversation._id);
+              
+              // Add the sent message to the messages list
+              if (result.message) {
+                setMessages([result.message]);
+              }
+              
+              // Update conversations list
+              setConversations((prev) => {
+                const next = [...prev];
+                const existingIdx = next.findIndex((c) => c._id === result.conversation._id);
+                
+                const lm = {
+                  type: 'text',
+                  text: initialMsg,
+                  sender: (user as any)?.id || (user as any)?._id,
+                  createdAt: new Date().toISOString()
+                };
+                
+                if (existingIdx !== -1) {
+                  next[existingIdx] = { ...next[existingIdx], lastMessage: lm, unreadCount: 0 };
+                } else {
+                  next.unshift({ ...result.conversation, lastMessage: lm, unreadCount: 0 });
+                }
+                return next;
+              });
+            }
+          } catch (msgError) {
+            // If auto-send fails, just pre-fill the message
+            setMessage(initialMsg);
+          }
           
           toast({ 
             title: 'Connection Request Sent', 
-            description: `Request sent to ${detail.providerName}. You can send your first message now!` 
+            description: `Request sent to ${detail.providerName}. Your message has been sent!` 
           });
           
         } catch (error: any) {

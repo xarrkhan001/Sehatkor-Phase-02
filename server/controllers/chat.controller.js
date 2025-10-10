@@ -234,17 +234,17 @@ export const sendInitialChatMessage = async (req, res) => {
       return res.status(400).json({ message: 'recipientId and message are required' });
     }
 
-    // Check if users are connected
+    // Check if users have any connection (pending or accepted)
     const connection = await ConnectionRequest.findOne({
       $or: [
-        { sender: senderId, recipient: recipientId, status: 'accepted' },
-        { sender: recipientId, recipient: senderId, status: 'accepted' }
+        { sender: senderId, recipient: recipientId, status: { $in: ['pending', 'accepted'] } },
+        { sender: recipientId, recipient: senderId, status: { $in: ['pending', 'accepted'] } }
       ]
     });
 
     if (!connection) {
       return res.status(403).json({ 
-        message: 'Users are not connected. Please send a connection request first.' 
+        message: 'No connection request found. Please send a connection request first.' 
       });
     }
 
