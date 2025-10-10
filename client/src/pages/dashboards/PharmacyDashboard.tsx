@@ -867,7 +867,7 @@ const PharmacyDashboard = () => {
                             <span className="text-[10px] sm:text-sm font-medium">Add</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto">
+                        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-800/50 [&::-webkit-scrollbar-thumb]:bg-blue-600/70 [&::-webkit-scrollbar-thumb:hover]:bg-blue-500/80">
                           <DialogHeader>
                             <DialogTitle className="text-white text-xl font-semibold">Add New Medicine</DialogTitle>
                             <DialogDescription className="text-slate-300">
@@ -1534,7 +1534,7 @@ const PharmacyDashboard = () => {
 
             {/* Edit Medicine Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-              <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto">
+              <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-800/50 [&::-webkit-scrollbar-thumb]:bg-blue-600/70 [&::-webkit-scrollbar-thumb:hover]:bg-blue-500/80">
                 <DialogHeader>
                   <DialogTitle className="text-white text-xl font-semibold">Edit Medicine</DialogTitle>
                   <DialogDescription className="text-slate-300">
