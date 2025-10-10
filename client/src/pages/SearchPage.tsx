@@ -582,17 +582,17 @@ const SearchPage = () => {
       const matchesType = (() => {
         // If no service types selected, show all services
         if (selectedServiceTypes.length === 0) return true;
-        
+
         const svcType = (service as any).serviceType;
-        
+
         // If serviceType is undefined or null, don't show when filters are applied
         if (!svcType) return false;
-        
+
         // Handle array of service types - include if ANY selected type matches (OR logic)
         if (Array.isArray(svcType)) {
           return svcType.some((type: string) => selectedServiceTypes.includes(String(type)));
         }
-        
+
         // Handle single service type
         return selectedServiceTypes.includes(String(svcType));
       })();
@@ -1033,8 +1033,8 @@ const SearchPage = () => {
                   <Select>
                     <SelectTrigger className="mt-2">
                       <SelectValue placeholder={
-                        selectedServiceTypes.length === 0 
-                          ? "Select service types..." 
+                        selectedServiceTypes.length === 0
+                          ? "Select service types..."
                           : `${selectedServiceTypes.length} type${selectedServiceTypes.length > 1 ? 's' : ''} selected`
                       } />
                     </SelectTrigger>
@@ -1043,7 +1043,7 @@ const SearchPage = () => {
                         <div className="text-xs text-gray-500 mb-2">
                           Select multiple service types (optional)
                         </div>
-                        
+
                         {["Sehat Card", "Private", "Charity", "Public", "NPO", "NGO"].map((type) => (
                           <div key={type} className="flex items-center space-x-2 p-1 hover:bg-gray-50 hover:text-primary rounded">
                             <Checkbox
@@ -1067,7 +1067,7 @@ const SearchPage = () => {
                             </Label>
                           </div>
                         ))}
-                        
+
                         <div className="border-t pt-2 mt-2 flex gap-2">
                           <Button
                             variant="ghost"
@@ -1089,7 +1089,7 @@ const SearchPage = () => {
                       </div>
                     </SelectContent>
                   </Select>
-                  
+
                   {selectedServiceTypes.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {selectedServiceTypes.map((type) => (
@@ -2074,7 +2074,7 @@ const SearchPage = () => {
                   const loc = (currentMapService as any).location;
                   const link = (currentMapService as any).googleMapLink
                     || (addr ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(addr))}`
-                             : (loc ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(loc))}` : null));
+                      : (loc ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(loc))}` : null));
                   if (link) window.open(link, '_blank');
                 }}
               >
