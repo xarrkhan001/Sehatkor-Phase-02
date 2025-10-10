@@ -832,7 +832,7 @@ const ClinicDashboard = () => {
                             <span className="text-[10px] sm:text-sm font-medium">Add Service</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto">
+                        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-800/50 [&::-webkit-scrollbar-thumb]:bg-blue-600/70 [&::-webkit-scrollbar-thumb:hover]:bg-blue-500/80">
                           <DialogHeader>
                             <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
                             <DialogDescription>

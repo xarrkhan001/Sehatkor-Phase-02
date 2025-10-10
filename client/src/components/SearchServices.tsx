@@ -784,7 +784,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
             <span className="text-sm font-medium text-blue-700">Top results</span>
             <span className="text-xs text-blue-500 bg-blue-100/50 px-2 py-1 rounded-full">{filteredServices.length} found</span>
           </div>
-          <div className="max-h-[24rem] overflow-y-auto">
+          <div className="max-h-[24rem] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-100/50 [&::-webkit-scrollbar-thumb]:bg-blue-400/70 [&::-webkit-scrollbar-thumb:hover]:bg-blue-300/80">
             {filteredServices.length > 0 ? (
               filteredServices.map((service) => (
                 <div
