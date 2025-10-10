@@ -860,7 +860,9 @@ const ClinicDashboard = () => {
                                 currentImage={serviceImage}
                                 placeholder="Upload service image"
                                 className="max-w-xs"
+                                aspectRatio={16 / 9}
                               />
+                              <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
                               {isUploadingImage && (
                                 <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                               )}
@@ -1155,9 +1157,11 @@ const ClinicDashboard = () => {
                               </p>
                             </div>
 
-                            <Button onClick={handleAddService} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isAddingService || isUploadingImage}>
-                              {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
-                            </Button>
+                            <div className="flex justify-end">
+                              <Button onClick={handleAddService} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg min-w-[140px]" disabled={isAddingService || isUploadingImage}>
+                                {isAddingService ? (editingService ? 'Updating Service...' : 'Adding Service...') : (editingService ? 'Update Service' : 'Add Service')}
+                              </Button>
+                            </div>
                           </div>
                         </DialogContent>
                       </Dialog>

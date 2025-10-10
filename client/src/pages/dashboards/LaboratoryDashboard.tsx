@@ -906,7 +906,9 @@ const LaboratoryDashboard = () => {
                       currentImage={editImagePreview || editForm.imageUrl}
                       placeholder="Upload test image"
                       className="max-w-xs"
+                      aspectRatio={16 / 9}
                     />
+                    <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -1277,7 +1279,9 @@ const LaboratoryDashboard = () => {
                                   currentImage={testImagePreview}
                                   placeholder="Upload test image"
                                   className="max-w-xs"
+                                  aspectRatio={16 / 9}
                                 />
+                                <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
                               </div>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1565,14 +1569,16 @@ const LaboratoryDashboard = () => {
                                 </label>
                               </div>
 
-                              <Button onClick={handleAddTest} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage || isAddingTest}>
-                                {isAddingTest ? 'Adding Test...' : 'Add Test'}
-                              </Button>
+                              <div className="flex justify-end">
+                                <Button onClick={handleAddTest} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg min-w-[140px]" disabled={isUploadingImage || isAddingTest}>
+                                  {isAddingTest ? 'Adding Test...' : 'Add Test'}
+                                </Button>
+                              </div>
                             </div>
                           </DialogContent>
                         </Dialog>
                       </div>
-                    </CardHeader>
+</CardHeader>
                     <CardContent className="max-h-[600px] overflow-y-auto">
                       <div className="space-y-4">
                         {tests.length > 0 ? (

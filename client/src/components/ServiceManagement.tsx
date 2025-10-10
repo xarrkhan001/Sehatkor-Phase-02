@@ -838,7 +838,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             <DialogContent className="w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 border-slate-700 text-white shadow-2xl mx-auto p-4 sm:p-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-800/50 [&::-webkit-scrollbar-thumb]:bg-blue-600/70 [&::-webkit-scrollbar-thumb:hover]:bg-blue-500/80">
               <DialogHeader className="border-b border-slate-700 pb-4">
                 <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                  {editingService ? '✏️ Edit Service' : '✨ Add New Service'}
+                  {editingService ? ' Edit Service' : ' Add New Service'}
                 </DialogTitle>
                 <DialogDescription className="text-slate-300 text-base">
                   {editingService ? 'Update your service details with precision' : 'Create a new professional service offering'}
@@ -867,7 +867,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     currentImage={serviceImage}
                     placeholder="Upload service image"
                     className="w-full sm:max-w-xs"
+                    aspectRatio={16 / 9}
                   />
+                  <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
                   {isUploadingImage && (
                     <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                   )}
@@ -1045,7 +1047,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => setServiceForm(prev => ({ ...prev, serviceType: [] }))}
-                        className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                        className="h-8 px-2 text-xs bg-gray-200 text-gray-600 hover:text-red-600"
                       >
                         Clear
                       </Button>
@@ -1529,7 +1531,9 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                                 currentImage={v.imageUrl || ''}
                                 placeholder="Upload variant image"
                                 className="w-full sm:max-w-xs"
+                                aspectRatio={16 / 9}
                               />
+                              <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
                             </div>
                           </div>
                         </div>
@@ -1544,7 +1548,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                   <Button type="button" variant="outline" onClick={addNewVariant} disabled={isSaving || isUploadingImage} className="!bg-slate-800 !text-white !border-slate-300 hover:!bg-slate-700 hover:!text-white hover:!border-slate-200 min-w-[140px]">
                     <Plus className="w-4 h-4 mr-2" /> Add Variant
                   </Button>
-                  <Button onClick={handleAddService} disabled={isSaving || isUploadingImage} className="bg-red-500 hover:bg-red-600 text-white min-w-[140px]">
+                  <Button onClick={handleAddService} disabled={isSaving || isUploadingImage} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg min-w-[140px]">
                     {isSaving ? (
                       <span className="inline-flex items-center">
                         <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
