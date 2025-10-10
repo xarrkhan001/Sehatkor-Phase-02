@@ -9,7 +9,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UserBadge from "./UserBadge";
 import { getSocket } from "@/lib/socket";
 import { fetchVerifiedUsers, fetchMessages, getOrCreateConversation, uploadFile, uploadProfileImage, fetchConversations, markAsRead, updateMyProfile, deleteMessage as apiDeleteMessage, clearConversation as apiClearConversation } from "@/lib/chatApi";
-import { getPendingRequests, getConnectedUsers, deleteUserConnection } from "@/lib/connectionApi";
+import { 
+  getConnectedUsers, 
+  getPendingRequests, 
+  getSentRequests, 
+  sendConnectionRequest, 
+  sendConnectionRequestWithMessage,
+  acceptConnectionRequest, 
+  rejectConnectionRequest,
+  cancelConnectionRequest,
+  removeConnection
+} from '../lib/connectionApi';
+import { sendInitialChatMessage } from '../lib/chatApi';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -849,12 +860,208 @@ const FloatingChat = () => {
       }
     };
 
+    // Handler for chat with connection request
+    const handleChatWithRequest = async (evt: Event) => {
+      const e = evt as CustomEvent<{ 
+        serviceName?: string; 
+        providerName?: string; 
+        providerId?: string; 
+        initialMessage?: string;
+        requireConnection?: boolean;
+      }>;
+      const detail = e.detail || {};
+      const token = localStorage.getItem('sehatkor_token');
+      if (!token) {
+        setUsersError('Please login to use chat');
+        setIsOpen(true);
+        return;
+      }
+
+      if (!detail.providerId) {
+        toast({ title: 'Error', description: 'Provider information not available', variant: 'destructive' });
+        return;
+      }
+
+      setIsOpen(true);
+      try {
+        setLoadingUsers(true);
+        
+        // Check connection status
+        const [usersList, convs, sentRequests] = await Promise.all([
+          getConnectedUsers(), 
+          fetchConversations(),
+          getSentRequests()
+        ]);
+        setUsers(usersList);
+        setConversations(convs);
+
+        const pid = detail.providerId.trim();
+        const connectedUser = usersList.find((u: any) => String(u._id) === String(pid));
+        
+        if (connectedUser) {
+          // Already connected, open chat directly
+          await openChatWith(connectedUser);
+          return;
+        }
+
+        // Check if request is already pending
+        const pendingRequest = sentRequests.find((r: any) => 
+          String(r.recipient?._id) === String(pid) && r.status === 'pending'
+        );
+
+        if (pendingRequest) {
+          // Request is pending, but still open chat interface for this provider
+          // Create a temporary user object for the provider
+          const providerUser = {
+            _id: pid,
+            name: detail.providerName || 'Provider',
+            email: '',
+            role: 'Provider',
+            avatar: '',
+            isVerified: true
+          };
+          
+          // Set up the chat interface but with restricted messaging
+          setActiveUser(providerUser);
+          setHasSelectedUser(true);
+          setActiveTab('chat');
+          
+          // Show message that request is pending
+          toast({ 
+            title: 'Request Pending', 
+            description: 'Your connection request is pending. You can send your first message once the provider accepts.' 
+          });
+          return;
+        }
+
+        // Send connection request and immediately open chat interface
+        try {
+          await sendConnectionRequestWithMessage(
+            pid, 
+            detail.initialMessage || `Hello! I'm interested in your service "${detail.serviceName}".`,
+            detail.serviceName
+          );
+          
+          // Create a temporary user object for the provider
+          const providerUser = {
+            _id: pid,
+            name: detail.providerName || 'Provider',
+            email: '',
+            role: 'Provider',
+            avatar: '',
+            isVerified: true
+          };
+          
+          // Open chat interface immediately
+          setActiveUser(providerUser);
+          setHasSelectedUser(true);
+          setActiveTab('chat');
+          
+          // Set a pre-filled message
+          setMessage(detail.initialMessage || `Hello! I'm interested in your service "${detail.serviceName}". Could you please provide more details?`);
+          
+          toast({ 
+            title: 'Connection Request Sent', 
+            description: `Request sent to ${detail.providerName}. You can send your first message now!` 
+          });
+          
+        } catch (error: any) {
+          toast({ 
+            title: 'Error', 
+            description: error.message || 'Failed to send connection request', 
+            variant: 'destructive' 
+          });
+        }
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
     window.addEventListener('sehatkor:open-chat', handler as EventListener);
-    return () => window.removeEventListener('sehatkor:open-chat', handler as EventListener);
+    window.addEventListener('sehatkor:open-chat-with-request', handleChatWithRequest as EventListener);
+    
+    return () => {
+      window.removeEventListener('sehatkor:open-chat', handler as EventListener);
+      window.removeEventListener('sehatkor:open-chat-with-request', handleChatWithRequest as EventListener);
+    };
   }, [toast, openChatWith]);
 
-  const handleSend = () => {
-    if (!message.trim() || !conversationId || !activeUser) return;
+  const handleSend = async () => {
+    if (!message.trim() || !activeUser) return;
+    
+    // If no conversation ID, this might be a first message after connection request
+    if (!conversationId) {
+      try {
+        setSending(true);
+        // Try to send as initial message (will handle connection verification)
+        const result = await sendInitialChatMessage(activeUser._id, message.trim());
+        
+        if (result.success) {
+          setMessage("");
+          setReplyTo(null);
+          
+          // Set the conversation ID from the response
+          if (result.conversation) {
+            setConversationId(result.conversation._id);
+            
+            // Join the conversation room
+            const sc = getSocket();
+            sc.emit("join_conversation", result.conversation._id);
+            
+            // Update conversations list
+            setConversations((prev) => {
+              const next = [...prev];
+              const existingIdx = next.findIndex((c) => c._id === result.conversation._id);
+              
+              const lm = {
+                text: message.trim(),
+                type: 'text',
+                sender: myId,
+                createdAt: new Date().toISOString(),
+              };
+              
+              if (existingIdx !== -1) {
+                const item = { ...next[existingIdx], lastMessage: lm };
+                next.splice(existingIdx, 1);
+                next.unshift(item);
+              } else {
+                next.unshift({
+                  _id: result.conversation._id,
+                  participants: [
+                    { _id: myId },
+                    { _id: activeUser._id },
+                  ],
+                  unreadCount: 0,
+                  lastMessage: lm,
+                  updatedAt: new Date().toISOString(),
+                });
+              }
+              return next;
+            });
+            
+            // Load messages for this conversation
+            const msgs = await fetchMessages(result.conversation._id);
+            setMessages(msgs);
+          }
+          
+          toast({ 
+            title: 'Message Sent', 
+            description: 'Your message has been sent successfully!' 
+          });
+        }
+      } catch (error: any) {
+        toast({ 
+          title: 'Error', 
+          description: error.message || 'Failed to send message. Please ensure you are connected to this provider.', 
+          variant: 'destructive' 
+        });
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+    
+    // Regular message sending for existing conversations
     setSending(true);
     const sc = getSocket();
     const clientNonce = `${myId}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;

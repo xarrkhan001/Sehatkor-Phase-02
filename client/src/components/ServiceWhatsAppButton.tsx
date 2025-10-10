@@ -40,8 +40,14 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
     // Fallback: dispatch a global event so a site-wide chat widget can listen and open
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
-        new CustomEvent('sehatkor:open-chat', {
-          detail: { serviceName, providerName, providerId: providerIdUsed }
+        new CustomEvent('sehatkor:open-chat-with-request', {
+          detail: { 
+            serviceName, 
+            providerName, 
+            providerId: providerIdUsed,
+            initialMessage: `Hello! I'm interested in your service "${serviceName}". Could you please provide more details about availability and booking?`,
+            requireConnection: true
+          }
         })
       );
     }
@@ -251,15 +257,16 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
             variant="outline"
             size="sm"
             onClick={
-              connStatus === 'connected' ? (() => { if (isSelf) { toast({ title: 'Action not allowed', description: 'You cannot chat with yourself.', variant: 'destructive' }); return; } handleChatClick(); })
-              : connStatus === 'none' ? onRequestClick
-              : undefined
+              isSelf ? (() => { toast({ title: 'Action not allowed', description: 'You cannot chat with yourself.', variant: 'destructive' }); })
+              : connStatus === 'loading' ? undefined
+              : connStatus === 'pending' ? undefined
+              : handleChatClick
             }
             disabled={isSelf || connStatus === 'pending' || connStatus === 'loading' || sending}
             className="w-full h-7 text-[10px] px-1.5"
           >
             <MessageSquare className="w-3 h-3 mr-1" />
-            {isSelf ? 'Not allowed' : (connStatus === 'connected' ? 'Chat' : connStatus === 'pending' ? 'Pending' : connStatus === 'loading' ? '...' : sending ? 'Sending...' : 'Send Request')}
+            {isSelf ? 'Not allowed' : (connStatus === 'connected' ? 'Chat' : connStatus === 'pending' ? 'Pending' : connStatus === 'loading' ? '...' : sending ? 'Sending...' : 'Chat')}
           </Button>
         </div>
       </TooltipContent>

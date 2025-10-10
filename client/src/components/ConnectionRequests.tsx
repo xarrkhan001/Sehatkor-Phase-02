@@ -46,6 +46,8 @@ interface ConnectionRequest {
   sender: User;
   recipient: User;
   message: string;
+  initialMessage?: string;
+  serviceName?: string;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
 }
@@ -695,9 +697,17 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
             <div className="font-medium text-xs lg:text-sm truncate">{request.sender?.name || 'Unknown User'}</div>
           </div>
           
-          {request.message && (
+          {/* Service name if available */}
+          {request.serviceName && (
+            <div className="text-[11px] lg:text-xs text-blue-600 pl-8 lg:pl-10 -mt-1 font-medium">
+              Service: {request.serviceName}
+            </div>
+          )}
+          
+          {/* Initial message or regular message */}
+          {(request.initialMessage || request.message) && (
             <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
-              "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
+              "{(request.initialMessage || request.message).length > 50 ? `${(request.initialMessage || request.message).substring(0, 50)}...` : (request.initialMessage || request.message)}"
             </div>
           )}
 
@@ -791,9 +801,17 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
             </div>
           </div>
                   
-                  {request.message && (
+                  {/* Service name if available */}
+                  {request.serviceName && (
+                    <div className="text-[11px] lg:text-xs text-blue-600 pl-8 lg:pl-10 -mt-1 font-medium">
+                      Service: {request.serviceName}
+                    </div>
+                  )}
+                  
+                  {/* Initial message or regular message */}
+                  {(request.initialMessage || request.message) && (
                     <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
-                      "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
+                      "{(request.initialMessage || request.message).length > 50 ? `${(request.initialMessage || request.message).substring(0, 50)}...` : (request.initialMessage || request.message)}"
                     </div>
                   )}
 

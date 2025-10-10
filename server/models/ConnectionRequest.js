@@ -18,7 +18,14 @@ const connectionRequestSchema = new mongoose.Schema({
   },
   message: {
     type: String,
-    maxlength: 200,
+    default: ''
+  },
+  initialMessage: {
+    type: String,
+    default: ''
+  },
+  serviceName: {
+    type: String,
     default: ''
   },
   createdAt: {

@@ -177,3 +177,24 @@ export async function removeProfileImage() {
   }
   return data;
 }
+
+export async function sendInitialChatMessage(recipientId: string, message: string, serviceName?: string) {
+  const token = localStorage.getItem('sehatkor_token');
+  const res = await apiFetch(apiUrl('/api/chat/initial-message'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+    body: JSON.stringify({ 
+      recipientId, 
+      message,
+      serviceName 
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || 'Failed to send initial message');
+  }
+  return res.json();
+}
