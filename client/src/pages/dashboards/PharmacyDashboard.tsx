@@ -897,7 +897,9 @@ const PharmacyDashboard = () => {
                                 currentImage={medicineImagePreview}
                                 placeholder="Upload medicine image"
                                 className="max-w-xs"
+                                aspectRatio={16 / 9}
                               />
+                              <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
                               {isUploadingImage && (
                                 <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                               )}
@@ -1189,9 +1191,11 @@ const PharmacyDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <Button onClick={handleAddMedicine} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage || isAddingMedicine}>
-                              {isAddingMedicine ? 'Adding Medicine...' : 'Add Medicine'}
-                            </Button>
+                            <div className="flex justify-end">
+                              <Button onClick={handleAddMedicine} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg min-w-[140px]" disabled={isUploadingImage || isAddingMedicine}>
+                                {isAddingMedicine ? 'Adding Medicine...' : 'Add Medicine'}
+                              </Button>
+                            </div>
                           </div>
                         </DialogContent>
                       </Dialog>
@@ -1379,8 +1383,8 @@ const PharmacyDashboard = () => {
                                   <span className="truncate">Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 {booking.status === 'Scheduled' && booking.scheduledTime && (
-                                  <div className="flex items-center gap-2 text-primary font-medium">
-                                    <Clock className="w-4 h-4 flex-shrink-0" />
+                                  <div className="flex items-center gap-2 text-sm text-primary font-medium">
+                                    <Clock className="w-4 h-4" />
                                     <span className="truncate">Scheduled: {new Date(booking.scheduledTime).toLocaleString()}</span>
                                   </div>
                                 )}
@@ -1564,7 +1568,9 @@ const PharmacyDashboard = () => {
                       currentImage={editImagePreview}
                       placeholder="Upload medicine image"
                       className="max-w-xs"
+                      aspectRatio={16 / 9}
                     />
+                    <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
                     {isUploadingImage && (
                       <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                     )}
