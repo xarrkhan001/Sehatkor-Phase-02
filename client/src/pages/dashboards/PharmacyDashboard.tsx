@@ -1006,7 +1006,7 @@ const PharmacyDashboard = () => {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setMedicineForm(prev => ({ ...prev, serviceType: [] }))}
-                                  className="h-8 px-2 text-xs text-slate-300 hover:text-red-400"
+                                  className="h-8 px-2 text-xs bg-gray-200 text-gray-600 hover:text-red-600"
                                 >
                                   Clear
                                 </Button>

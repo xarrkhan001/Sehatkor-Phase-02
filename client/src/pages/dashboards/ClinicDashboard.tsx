@@ -1019,7 +1019,7 @@ const ClinicDashboard = () => {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setServiceForm({ ...serviceForm, serviceType: [] })}
-                                  className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                                  className="h-8 px-2 text-xs bg-gray-200 text-gray-600 hover:text-red-600"
                                 >
                                   Clear
                                 </Button>
@@ -1148,8 +1148,9 @@ const ClinicDashboard = () => {
                                   onChange={(e) => setServiceForm({ ...serviceForm, homeDelivery: e.target.checked })}
                                   className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                                 />
-                                <Label htmlFor="homeDelivery" className="flex items-center gap-2 cursor-pointer">
-                                  ðŸ  Home Delivery Available
+                                 <Label htmlFor="homeDelivery" className="flex items-center space-x-2 cursor-pointer text-white">
+                                  <span>🏠</span>
+                                  <span className="text-white">Home Delivery Available</span>
                                 </Label>
                               </div>
                               <p className="text-xs text-muted-foreground">

@@ -2,7 +2,6 @@ import express from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
 import { 
   sendConnectionRequest, 
-  sendConnectionRequestWithMessage,
   getPendingRequests, 
   getSentRequests,
   acceptConnectionRequest, 
@@ -21,9 +20,6 @@ router.use(authMiddleware);
 
 // Send connection request
 router.post('/request', sendConnectionRequest);
-
-// Send connection request with initial message
-router.post('/request-with-message', sendConnectionRequestWithMessage);
 
 // Get pending requests (received by current user)
 router.get('/pending', getPendingRequests);

@@ -86,16 +86,15 @@ Thank you!`;
   };
 
   const handleChatClick = () => {
-    // Dispatch event with booking message and connection request
+    // Dispatch event with booking message
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
-        new CustomEvent('sehatkor:open-chat-with-request', {
+        new CustomEvent('sehatkor:open-chat', {
           detail: {
             serviceName: service.name,
             providerName: service.provider,
             providerId: service._providerId,
-            initialMessage: getBookingMessage(),
-            requireConnection: true
+            initialMessage: getBookingMessage()
           }
         })
       );

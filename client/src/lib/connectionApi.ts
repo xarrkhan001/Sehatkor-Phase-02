@@ -18,41 +18,6 @@ export async function sendConnectionRequest(recipientId: string, message?: strin
   return res.json();
 }
 
-export async function sendConnectionRequestWithMessage(recipientId: string, initialMessage: string, serviceName?: string) {
-  const token = localStorage.getItem('sehatkor_token');
-  const message = `I would like to connect with you regarding "${serviceName || 'your service'}". ${initialMessage}`;
-  
-  // Fallback to regular connection request if new endpoint is not available
-  try {
-    const res = await fetch(`${API_BASE}/request-with-message`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-      body: JSON.stringify({ 
-        recipientId, 
-        message,
-        initialMessage,
-        serviceName 
-      }),
-    });
-    if (!res.ok) {
-      // If 404, fall back to regular request
-      if (res.status === 404) {
-        return sendConnectionRequest(recipientId, message);
-      }
-      const text = await res.text().catch(() => '');
-      throw new Error(text || 'Failed to send connection request with message');
-    }
-    return res.json();
-  } catch (error) {
-    // If network error or endpoint not found, use fallback
-    console.warn('Falling back to regular connection request:', error);
-    return sendConnectionRequest(recipientId, message);
-  }
-}
-
 export async function getPendingRequests() {
   const token = localStorage.getItem('sehatkor_token');
   const res = await fetch(`${API_BASE}/pending`, {
