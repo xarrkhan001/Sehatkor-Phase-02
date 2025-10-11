@@ -24,11 +24,11 @@ export function getSocket(): Socket {
       query: { token },
       withCredentials: true,
       autoConnect: true,
-      transports: ['websocket', 'polling'],
-      upgrade: true,
+      transports: ['websocket'], // Use only WebSocket for faster connection
+      upgrade: false, // Disable polling fallback for faster connection
       reconnection: true,
-      reconnectionAttempts: 5,
-      timeout: 20000,
+      reconnectionAttempts: 3,
+      timeout: 10000, // Faster timeout
       ...(socketPath ? { path: socketPath } : {}),
     });
   }

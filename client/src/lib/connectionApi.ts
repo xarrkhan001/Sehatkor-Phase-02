@@ -1,7 +1,7 @@
 import { apiUrl } from '@/config/api';
 const API_BASE = apiUrl('/api/connections');
 
-export async function sendConnectionRequest(recipientId: string, message?: string) {
+export async function sendConnectionRequest(recipientId: string, message?: string, serviceData?: { serviceName?: string; serviceId?: string; serviceLink?: string }) {
   const token = localStorage.getItem('sehatkor_token');
   const res = await fetch(`${API_BASE}/request`, {
     method: 'POST',
@@ -9,7 +9,14 @@ export async function sendConnectionRequest(recipientId: string, message?: strin
       'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
     },
-    body: JSON.stringify({ recipientId, message }),
+    body: JSON.stringify({ 
+      recipientId, 
+      message,
+      initialMessage: message,
+      serviceName: serviceData?.serviceName || '',
+      serviceId: serviceData?.serviceId || '',
+      serviceLink: serviceData?.serviceLink || ''
+    }),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');

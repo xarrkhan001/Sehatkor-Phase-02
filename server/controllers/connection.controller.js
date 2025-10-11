@@ -4,7 +4,7 @@ import User from '../models/User.js';
 // Send connection request
 export const sendConnectionRequest = async (req, res) => {
   try {
-    const { recipientId, message } = req.body;
+    const { recipientId, message, initialMessage, serviceName, serviceId, serviceLink } = req.body;
     const senderId = req.userId;
 
     const recipient = await User.findById(recipientId);
@@ -32,7 +32,11 @@ export const sendConnectionRequest = async (req, res) => {
     const connectionRequest = new ConnectionRequest({
       sender: senderId,
       recipient: recipientId,
-      message: message || ''
+      message: message || initialMessage || '',
+      initialMessage: initialMessage || '',
+      serviceName: serviceName || '',
+      serviceId: serviceId || '',
+      serviceLink: serviceLink || ''
     });
 
     await connectionRequest.save();
@@ -41,11 +45,23 @@ export const sendConnectionRequest = async (req, res) => {
 
     const io = req.app.get('io');
     if (io) {
-      io.to(recipientId).emit('new_connection_request', {
+      const eventData = {
         requestId: connectionRequest._id,
         sender: connectionRequest.sender,
-        message: 'You have a new connection request'
+        message: 'You have a new connection request',
+        initialMessage: initialMessage || '',
+        serviceName: serviceName || '',
+        serviceId: serviceId || '',
+        serviceLink: serviceLink || ''
+      };
+      
+      console.log(`🔔 Emitting new_connection_request to user ${recipientId}:`, {
+        recipientId,
+        serviceName: serviceName || 'N/A',
+        senderName: connectionRequest.sender?.name
       });
+      
+      io.to(String(recipientId)).emit('new_connection_request', eventData);
     }
 
     res.status(201).json({

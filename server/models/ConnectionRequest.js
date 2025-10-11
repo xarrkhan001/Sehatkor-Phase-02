@@ -28,6 +28,14 @@ const connectionRequestSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  serviceId: {
+    type: String,
+    default: ''
+  },
+  serviceLink: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now
