@@ -46,6 +46,10 @@ interface ConnectionRequest {
   sender: User;
   recipient: User;
   message: string;
+  initialMessage?: string;
+  serviceName?: string;
+  serviceId?: string;
+  serviceLink?: string;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
 }
@@ -91,17 +95,44 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
     try {
       const { getSocket } = require('@/lib/socket');
       socket = getSocket();
+      
+      // Ensure socket is connected
+      if (!socket.connected) {
+        socket.connect();
+      }
+      
+      console.log('🔌 ConnectionRequests: Socket connected:', socket.connected);
     } catch (error) {
+      console.error('❌ ConnectionRequests: Socket connection error:', error);
       return;
     }
 
     // Listen for new connection requests
     const onNewConnectionRequest = (data: any) => {
+      console.log('🔔 New connection request received:', data);
+      
       // Refresh pending requests when a new request is received
       loadPendingRequests();
+      
+      // Play notification sound
+      try {
+        const audio = new Audio('/sounds/abu.wav');
+        audio.volume = 1.0; // Full volume
+        audio.play()
+          .then(() => console.log('✅ Notification sound played'))
+          .catch(err => console.log('❌ Could not play notification sound:', err));
+      } catch (err) {
+        console.log('❌ Notification sound error:', err);
+      }
+      
+      // Show toast with service details if available
+      const description = data.serviceName 
+        ? `${data.sender?.name || 'Someone'} is interested in your service "${data.serviceName}"`
+        : data.message || "You have a new connection request";
+      
       toast({
-        title: "New Connection Request",
-        description: data.message || "You have a new connection request"
+        title: "🔔 New Connection Request",
+        description: description
       });
     };
 
@@ -696,8 +727,34 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
           </div>
           
           {request.message && (
-            <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
-              "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
+            <div className="text-[11px] lg:text-xs text-gray-700 pl-0 lg:pl-0 mt-1 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 shadow-sm whitespace-pre-wrap break-words">
+              {request.message.split('\n').map((line, idx) => {
+                // Check if line contains service name (first line usually)
+                if (idx === 0 && line.includes('Hi!')) {
+                  return (
+                    <div key={idx} className="font-semibold text-green-600 mb-1">
+                      {line}
+                    </div>
+                  );
+                }
+                // Check if line contains a link
+                if (line.includes('🔗') && request.serviceLink) {
+                  return (
+                    <div key={idx} className="flex items-start gap-1 mt-2">
+                      <span className="text-green-500 mt-0.5">🔗</span>
+                      <a
+                        href={request.serviceLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:text-green-700 underline font-medium break-all transition-colors"
+                      >
+                        View Service Details
+                      </a>
+                    </div>
+                  );
+                }
+                return <div key={idx} className="text-gray-600">{line}</div>;
+              })}
             </div>
           )}
 
@@ -792,8 +849,34 @@ const ConnectionRequests = ({ onConnectionAccepted }: ConnectionRequestsProps) =
           </div>
                   
                   {request.message && (
-                    <div className="text-[11px] lg:text-xs text-gray-500 pl-8 lg:pl-10 -mt-1">
-                      "{request.message.length > 16 ? `${request.message.substring(0, 16)}...` : request.message}"
+                    <div className="text-[11px] lg:text-xs text-gray-700 pl-0 lg:pl-0 mt-1 bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 shadow-sm whitespace-pre-wrap break-words">
+                      {request.message.split('\n').map((line, idx) => {
+                        // Check if line contains service name (first line usually)
+                        if (idx === 0 && line.includes('Hi!')) {
+                          return (
+                            <div key={idx} className="font-semibold text-green-600 mb-1">
+                              {line}
+                            </div>
+                          );
+                        }
+                        // Check if line contains a link
+                        if (line.includes('🔗') && request.serviceLink) {
+                          return (
+                            <div key={idx} className="flex items-start gap-1 mt-2">
+                              <span className="text-green-500 mt-0.5">🔗</span>
+                              <a
+                                href={request.serviceLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-600 hover:text-green-700 underline font-medium break-all transition-colors"
+                              >
+                                View Service Details
+                              </a>
+                            </div>
+                          );
+                        }
+                        return <div key={idx} className="text-gray-600">{line}</div>;
+                      })}
                     </div>
                   )}
 

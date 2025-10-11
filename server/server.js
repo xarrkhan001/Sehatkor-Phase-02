@@ -147,6 +147,11 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   const userId = socket.userId;
   registerUserSocket(userId, socket.id);
+  
+  // Join user-specific room for connection requests and notifications
+  socket.join(String(userId));
+  console.log(`✅ User ${userId} joined their personal room`);
+  
   // Notify all about current online users
   io.emit("online_users", getOnlineUserIds());
 

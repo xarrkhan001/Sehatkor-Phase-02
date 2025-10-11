@@ -170,9 +170,37 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
     }
     try {
       setSending(true);
-      await sendConnectionRequest(providerIdUsed, "");
+      
+      // Generate formatted message with service link (same as WhatsApp)
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sehatkor.cloud';
+      const serviceLink = serviceId ? `${baseUrl}/service/${serviceId}` : '';
+      
+      let formattedMessage = `Hi! I'm interested in your service "${serviceName}" listed on SehatKor.`;
+      if (serviceLink) {
+        formattedMessage += `\n\n🔗 View Service Details: ${serviceLink}`;
+      }
+      formattedMessage += `\n\nCould you please provide more details about this service?`;
+      
+      await sendConnectionRequest(
+        providerIdUsed, 
+        formattedMessage,
+        {
+          serviceName: serviceName,
+          serviceId: serviceId || '',
+          serviceLink: serviceLink
+        }
+      );
+      
+      // Play notification sound when request is sent
+      try {
+        const audio = new Audio('/sounds/abu.wav');
+        audio.play().catch(err => console.log('Could not play notification sound:', err));
+      } catch (err) {
+        console.log('Notification sound error:', err);
+      }
+      
       setConnStatus('pending');
-      toast({ title: 'Request Sent', description: 'Your connection request was sent.' });
+      toast({ title: 'Request Sent', description: 'Your connection request was sent with service details.' });
     } catch (e: any) {
       const msg = String(e?.message || '');
       // If backend reports already connected, flip state and open chat

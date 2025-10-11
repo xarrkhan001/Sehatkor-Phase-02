@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import FloatingChat from "./components/FloatingChat";
 import WhatsAppButton from "./components/WhatsAppButton";
+import GlobalConnectionListener from "./components/GlobalConnectionListener";
 import { useAuth } from "./contexts/AuthContext";
 import { lazy, Suspense } from "react";
 import ScrollToTop from "./components/ScrollToTop";
@@ -113,6 +114,7 @@ const AppShell = () => {
         </Suspense>
         <FloatingChat />
         <WhatsAppButton />
+        <GlobalConnectionListener />
         <Footer />
       </div>
     </BrowserRouter>
