@@ -23,11 +23,11 @@ export const openWhatsAppChat = (phone: string, message?: string): void => {
     console.warn('No phone number provided for WhatsApp');
     return;
   }
-  
+
   const formattedPhone = formatPhoneForWhatsApp(phone);
   const encodedMessage = message ? encodeURIComponent(message) : '';
-  const whatsappUrl = `https://wa.me/${formattedPhone}${encodedMessage ? `?text=${encodedMessage}` : ''}`;
-  
+  const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+
   window.open(whatsappUrl, '_blank');
 };
 
@@ -35,14 +35,25 @@ export const getDefaultWhatsAppMessage = (serviceName: string, providerName: str
   // Use production URL instead of localhost
   const baseUrl = window.location.origin.includes('localhost') ? 'https://sehatkor.cloud' : window.location.origin;
   const serviceLink = serviceId ? `${baseUrl}/service/${serviceId}` : '';
-  
+
+  console.log('🔧 WhatsApp Debug:', {
+    serviceName,
+    providerName,
+    serviceId,
+    baseUrl,
+    serviceLink,
+    currentOrigin: window.location.origin
+  });
+
   let message = `Hi! I'm interested in your service "${serviceName}" listed on SehatKor app.`;
-  
+
   if (serviceLink) {
     message += `\n\nService Link: ${serviceLink}`;
   }
-  
+
   message += `\n\nCould you please provide more details about this service?`;
-  
+
+  console.log('📱 Generated WhatsApp message:', message);
+
   return message;
 };

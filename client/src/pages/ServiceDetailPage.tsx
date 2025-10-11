@@ -108,7 +108,7 @@ const ServiceDetailPage = () => {
       endTime: (service as any).endTime,
       days: (service as any).days
     }];
-    
+
     if (service.variants && Array.isArray(service.variants)) {
       service.variants.forEach(variant => {
         slides.push({
@@ -203,7 +203,7 @@ const ServiceDetailPage = () => {
       console.log('  - variants:', (stateService as any)?.variants);
       return stateService;
     }
-    
+
     console.log('Service not found in navigation state, falling back to ServiceManager');
     const source = (ServiceManager as any).getAllServicesWithVariants
       ? (ServiceManager as any).getAllServicesWithVariants()
@@ -221,7 +221,7 @@ const ServiceDetailPage = () => {
       if (Array.isArray((s as any).variants)) {
         console.log('    - Variant hospitalClinicNames:', ((s as any).variants as any[]).map(v => v?.hospitalClinicName));
       }
-      
+
       const mapped = {
         id: s.id,
         name: s.name,
@@ -306,13 +306,13 @@ const ServiceDetailPage = () => {
       const key = `myRating:${uid}:${item.providerType}:${item.id}`;
       const my = localStorage.getItem(key);
       if (my) setYourBadge(my as any);
-    } catch {}
+    } catch { }
   }, [item?.id, item?.providerType, user?.id]);
 
   // Listen for immediate badge updates from RatingModal (optimistic UI)
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'fair'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent' | 'good' | 'fair' | 'poor' } | undefined;
       if (!detail) return;
       if (detail.serviceId === item?.id && detail.serviceType === item?.providerType) {
         setYourBadge(detail.yourBadge);
@@ -373,7 +373,7 @@ const ServiceDetailPage = () => {
         if (incomingDiseases.length && !current.length) {
           setHydratedDiseases(incomingDiseases);
         }
-      } catch {}
+      } catch { }
     };
     fetchCounts();
   }, [item?.id, item?.providerType]);
@@ -519,7 +519,7 @@ const ServiceDetailPage = () => {
                 ) : (
                   <span className="text-muted-foreground">No Image</span>
                 )}
-                
+
                 {/* Schedule overlays: days (top-left) and time (bottom-left) */}
                 {(() => {
                   const formatTo12Hour = (time24?: string): string => {
@@ -572,7 +572,7 @@ const ServiceDetailPage = () => {
                         effectiveLabel,
                         range,
                       });
-                    } catch {}
+                    } catch { }
 
                     if (effectiveLabel && range) return `${effectiveLabel} — ${range}`;
                     return String(effectiveLabel || range || "");
@@ -606,11 +606,10 @@ const ServiceDetailPage = () => {
                           console.log('🔧 ServiceDetailPage: Setting activeVariantIndex to:', index);
                           setActiveVariantIndex(index);
                         }}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          activeVariantIndex === index
+                        className={`w-2 h-2 rounded-full transition-all ${activeVariantIndex === index
                             ? 'bg-white shadow-lg'
                             : 'bg-white/50 hover:bg-white/70'
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -618,28 +617,28 @@ const ServiceDetailPage = () => {
               </div>
               {/* Footer info under image */}
               <div className="mt-8 hidden md:block">
-  <div className="flex items-center gap-2">
-    <h2 className="text-3xl font-semibold text-gray-600 truncate" title={activeSlide.name}>
-      {activeSlide.name}
-    </h2>
-    {(item as any)._providerVerified ? (
-      <Badge className="px-1.5 py-0.5 text-[10px] bg-green-50 text-green-600 border border-green-100">
-        Verified
-      </Badge>
-    ) : (
-      <Badge className="px-1.5 py-0.5 text-[10px] bg-red-50 text-red-600 border border-red-100">
-        Unverified
-      </Badge>
-    )}
-  </div>
-  <div className="text-sm text-muted-foreground">
-    {item.providerType === 'laboratory' ? 'Lab' :
-      item.providerType === 'pharmacy' ? 'Pharmacy' :
-      item.providerType === 'doctor' ? 'Doctor' :
-      item.providerType === 'clinic' ? 'Clinic' :
-      item.type}
-  </div>
-</div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-3xl font-semibold text-gray-600 truncate" title={activeSlide.name}>
+                    {activeSlide.name}
+                  </h2>
+                  {(item as any)._providerVerified ? (
+                    <Badge className="px-1.5 py-0.5 text-[10px] bg-green-50 text-green-600 border border-green-100">
+                      Verified
+                    </Badge>
+                  ) : (
+                    <Badge className="px-1.5 py-0.5 text-[10px] bg-red-50 text-red-600 border border-red-100">
+                      Unverified
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {item.providerType === 'laboratory' ? 'Lab' :
+                    item.providerType === 'pharmacy' ? 'Pharmacy' :
+                      item.providerType === 'doctor' ? 'Doctor' :
+                        item.providerType === 'clinic' ? 'Clinic' :
+                          item.type}
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card className="md:col-span-2">
@@ -659,7 +658,7 @@ const ServiceDetailPage = () => {
                 <div className="space-y-2 min-w-0">
                   {/* Price */}
                   <div className="text-primary font-bold text-xl mb-4">{activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price || 0).toLocaleString()}`}</div>
-                  
+
                   {/* Hospital/Clinic Name */}
                   {(() => {
                     // Prefer active slide; if empty on main slide, fallback to first variant that has a name
@@ -686,7 +685,7 @@ const ServiceDetailPage = () => {
                       </div>
                     ) : null;
                   })()}
-                  
+
                   {/* Category Badge */}
                   <div className="mb-4">
                     <Badge
@@ -777,8 +776,8 @@ const ServiceDetailPage = () => {
                             phoneNumber={item.providerPhone}
                             serviceName={item.name}
                             providerName={item.provider}
-                            serviceId={item.id}
                             providerId={item.providerId}
+                            serviceId={item.id}
                           />
                         )}
                       </div>
@@ -845,7 +844,7 @@ const ServiceDetailPage = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Rating counts */}
                   {freshCounts && (
                     <div className="flex items-center gap-2 text-xs text-gray-600 mb-4">
