@@ -606,6 +606,7 @@ const PharmaciesPage = () => {
                           phoneNumber={(service as any).providerPhone}
                           serviceName={service.name}
                           providerName={service.provider}
+                          serviceId={service.id}
                           providerId={(service as any)._providerId}
                         />
                       )}
