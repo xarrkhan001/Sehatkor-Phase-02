@@ -1,26 +1,29 @@
-// WhatsApp utility functions
+// 📱 WhatsApp utility functions
+
+// ✅ Phone number ko proper WhatsApp format me convert karta hai (Pakistan code 92)
 export const formatPhoneForWhatsApp = (phone: string): string => {
   if (!phone) return '';
-  
+
   // Remove all non-digit characters
   let cleanPhone = phone.replace(/\D/g, '');
-  
-  // If phone starts with 0, replace with 92 (Pakistan country code)
+
+  // If phone starts with 0, replace it with 92
   if (cleanPhone.startsWith('0')) {
     cleanPhone = '92' + cleanPhone.substring(1);
   }
-  
-  // If phone doesn't start with country code, add 92
+
+  // If phone doesn't start with country code 92, add it
   if (!cleanPhone.startsWith('92')) {
     cleanPhone = '92' + cleanPhone;
   }
-  
+
   return cleanPhone;
 };
 
+// ✅ WhatsApp chat open karta hai with pre-filled message
 export const openWhatsAppChat = (phone: string, message?: string): void => {
   if (!phone) {
-    console.warn('No phone number provided for WhatsApp');
+    console.warn('⚠️ No phone number provided for WhatsApp');
     return;
   }
 
@@ -31,9 +34,14 @@ export const openWhatsAppChat = (phone: string, message?: string): void => {
   window.open(whatsappUrl, '_blank');
 };
 
-export const getDefaultWhatsAppMessage = (serviceName: string, providerName: string, serviceId?: string): string => {
-  // Use production URL instead of localhost
-  const baseUrl = window.location.origin.includes('localhost') ? 'https://sehatkor.cloud' : window.location.origin;
+// ✅ Default WhatsApp message generate karta hai
+export const getDefaultWhatsAppMessage = (
+  serviceName: string,
+  providerName: string,
+  serviceId?: string
+): string => {
+  // Always use production domain
+  const baseUrl = 'https://sehatkor.cloud';
   const serviceLink = serviceId ? `${baseUrl}/service/${serviceId}` : '';
 
   console.log('🔧 WhatsApp Debug:', {
@@ -45,10 +53,10 @@ export const getDefaultWhatsAppMessage = (serviceName: string, providerName: str
     currentOrigin: window.location.origin
   });
 
-  let message = `Hi! I'm interested in your service "${serviceName}" listed on SehatKor app.`;
+  let message = `Hi! I'm interested in your service "${serviceName}" listed on SehatKor.`;
 
   if (serviceLink) {
-    message += `\n\nService Link: ${serviceLink}`;
+    message += `\n\n🔗 Service Link: ${serviceLink}`;
   }
 
   message += `\n\nCould you please provide more details about this service?`;
