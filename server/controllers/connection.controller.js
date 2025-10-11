@@ -7,14 +7,11 @@ export const sendConnectionRequest = async (req, res) => {
     const { recipientId, message } = req.body;
     const senderId = req.userId;
 
-    // Check if recipient exists
     const recipient = await User.findById(recipientId);
     if (!recipient) {
       return res.status(404).json({ message: 'User not found' });
     }
-    // Note: chat requests are allowed regardless of verification status for both sender and recipient
 
-    // Check if request already exists
     const existingRequest = await ConnectionRequest.findOne({
       $or: [
         { sender: senderId, recipient: recipientId },
@@ -28,12 +25,10 @@ export const sendConnectionRequest = async (req, res) => {
       } else if (existingRequest.status === 'accepted') {
         return res.status(400).json({ message: 'Already connected with this user' });
       } else if (existingRequest.status === 'rejected') {
-        // Allow resending after rejection - delete the old rejected request
         await ConnectionRequest.findByIdAndDelete(existingRequest._id);
       }
     }
 
-    // Create new request
     const connectionRequest = new ConnectionRequest({
       sender: senderId,
       recipient: recipientId,
@@ -42,16 +37,76 @@ export const sendConnectionRequest = async (req, res) => {
 
     await connectionRequest.save();
 
-    // Populate sender details for response
     await connectionRequest.populate('sender', 'name email role avatar');
 
-    // Emit socket event to recipient about new connection request
     const io = req.app.get('io');
     if (io) {
       io.to(recipientId).emit('new_connection_request', {
         requestId: connectionRequest._id,
         sender: connectionRequest.sender,
         message: 'You have a new connection request'
+      });
+    }
+
+    res.status(201).json({
+      message: 'Connection request sent successfully',
+      request: connectionRequest
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Connection request already exists' });
+    }
+    res.status(500).json({ message: 'Error sending connection request', error: error.message });
+  }
+};
+
+export const sendConnectionRequestWithMessage = async (req, res) => {
+  try {
+    const { recipientId, message, initialMessage, serviceName } = req.body;
+    const senderId = req.userId;
+
+    const recipient = await User.findById(recipientId);
+    if (!recipient) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const existingRequest = await ConnectionRequest.findOne({
+      $or: [
+        { sender: senderId, recipient: recipientId },
+        { sender: recipientId, recipient: senderId }
+      ]
+    });
+
+    if (existingRequest) {
+      if (existingRequest.status === 'pending') {
+        return res.status(400).json({ message: 'Connection request already pending' });
+      } else if (existingRequest.status === 'accepted') {
+        return res.status(400).json({ message: 'Already connected with this user' });
+      } else if (existingRequest.status === 'rejected') {
+        await ConnectionRequest.findByIdAndDelete(existingRequest._id);
+      }
+    }
+
+    const connectionRequest = new ConnectionRequest({
+      sender: senderId,
+      recipient: recipientId,
+      message: message || initialMessage || '',
+      initialMessage: initialMessage || '',
+      serviceName: serviceName || ''
+    });
+
+    await connectionRequest.save();
+
+    await connectionRequest.populate('sender', 'name email role avatar');
+
+    const io = req.app.get('io');
+    if (io) {
+      io.to(recipientId).emit('new_connection_request', {
+        requestId: connectionRequest._id,
+        sender: connectionRequest.sender,
+        message: 'You have a new connection request',
+        initialMessage: initialMessage,
+        serviceName: serviceName
       });
     }
 
