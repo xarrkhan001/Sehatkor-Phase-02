@@ -918,7 +918,7 @@ const CompareExplorer = () => {
                               </button>
                             )}
                             {item.providerPhone && (
-                              <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} providerId={item._providerId} />
+                              <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} serviceId={item.id} providerId={item._providerId} />
                             )}
                           </div>
                         </div>

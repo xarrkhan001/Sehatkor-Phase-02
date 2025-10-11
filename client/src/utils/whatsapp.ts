@@ -31,6 +31,18 @@ export const openWhatsAppChat = (phone: string, message?: string): void => {
   window.open(whatsappUrl, '_blank');
 };
 
-export const getDefaultWhatsAppMessage = (serviceName: string, providerName: string): string => {
-  return `Hi! I'm interested in your service "${serviceName}" listed on SehatKor. Could you please provide more details?`;
+export const getDefaultWhatsAppMessage = (serviceName: string, providerName: string, serviceId?: string): string => {
+  // Use production URL instead of localhost
+  const baseUrl = window.location.origin.includes('localhost') ? 'https://sehatkor.cloud' : window.location.origin;
+  const serviceLink = serviceId ? `${baseUrl}/service/${serviceId}` : '';
+  
+  let message = `Hi! I'm interested in your service "${serviceName}" listed on SehatKor app.`;
+  
+  if (serviceLink) {
+    message += `\n\nService Link: ${serviceLink}`;
+  }
+  
+  message += `\n\nCould you please provide more details about this service?`;
+  
+  return message;
 };

@@ -1024,6 +1024,7 @@ const ProviderProfilePage = () => {
                                 phoneNumber={(service as any).providerPhone}
                                 serviceName={service.name}
                                 providerName={service.providerName}
+                                serviceId={service.id}
                                 providerId={(service as any).providerId}
                               />
                             </div>

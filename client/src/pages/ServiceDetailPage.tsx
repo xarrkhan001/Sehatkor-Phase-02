@@ -777,6 +777,7 @@ const ServiceDetailPage = () => {
                             phoneNumber={item.providerPhone}
                             serviceName={item.name}
                             providerName={item.provider}
+                            serviceId={item.id}
                             providerId={item.providerId}
                           />
                         )}

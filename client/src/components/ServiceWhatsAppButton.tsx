@@ -19,9 +19,10 @@ interface ServiceWhatsAppButtonProps {
   providerName: string;
   onChatClick?: () => void;
   providerId?: string;
+  serviceId?: string;
 }
 
-const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatClick, providerId }: ServiceWhatsAppButtonProps) => {
+const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatClick, providerId, serviceId }: ServiceWhatsAppButtonProps) => {
   if (!phoneNumber) {
     return null;
   }
@@ -29,7 +30,7 @@ const ServiceWhatsAppButton = ({ phoneNumber, serviceName, providerName, onChatC
   const { user } = useAuth();
 
   const handleWhatsAppClick = () => {
-    openWhatsAppChat(phoneNumber, getDefaultWhatsAppMessage(serviceName, providerName));
+    openWhatsAppChat(phoneNumber, getDefaultWhatsAppMessage(serviceName, providerName, serviceId));
   };
 
   const handleChatClick = () => {
