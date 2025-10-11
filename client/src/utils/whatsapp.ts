@@ -40,8 +40,8 @@ export const getDefaultWhatsAppMessage = (
   providerName: string,
   serviceId?: string
 ): string => {
-  // Always use production domain
-  const baseUrl = 'https://sehatkor.cloud';
+  // Use current domain (works for both production and development)
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sehatkor.cloud';
   const serviceLink = serviceId ? `${baseUrl}/service/${serviceId}` : '';
 
   console.log('🔧 WhatsApp Debug:', {
@@ -56,7 +56,7 @@ export const getDefaultWhatsAppMessage = (
   let message = `Hi! I'm interested in your service "${serviceName}" listed on SehatKor.`;
 
   if (serviceLink) {
-    message += `\n\n🔗 Service Link: ${serviceLink}`;
+    message += `\n\n🔗 View Service Details: ${serviceLink}`;
   }
 
   message += `\n\nCould you please provide more details about this service?`;

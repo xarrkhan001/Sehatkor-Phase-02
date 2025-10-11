@@ -61,6 +61,12 @@ type Unified = {
   clinicCategory?: string;
   variants?: ServiceVariant[];
   diseases?: string[];
+  _providerVerified?: boolean;
+  hospitalClinicName?: string | null;
+  timeLabel?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  days?: string | null;
 };
 
 const ServiceDetailPage = () => {
@@ -90,6 +96,9 @@ const ServiceDetailPage = () => {
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [expandedDiseases, setExpandedDiseases] = useState<string | null>(null);
+  const [fetchedService, setFetchedService] = useState<Unified | null>(null);
+  const [isLoadingService, setIsLoadingService] = useState(false);
+  const [serviceNotFound, setServiceNotFound] = useState(false);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -204,6 +213,12 @@ const ServiceDetailPage = () => {
       return stateService;
     }
 
+    // If we have a fetched service from server, use it
+    if (fetchedService && fetchedService.id === id) {
+      console.log('Using fetched service from server:', fetchedService);
+      return fetchedService;
+    }
+
     console.log('Service not found in navigation state, falling back to ServiceManager');
     const source = (ServiceManager as any).getAllServicesWithVariants
       ? (ServiceManager as any).getAllServicesWithVariants()
@@ -296,7 +311,89 @@ const ServiceDetailPage = () => {
       });
     }
     return foundItem;
-  }, [id, stateService]);
+  }, [id, stateService, fetchedService]);
+
+  // Fetch service from server if not found locally (e.g., direct link from WhatsApp)
+  useEffect(() => {
+    const fetchServiceFromServer = async () => {
+      // Skip if we already have the service or already tried fetching
+      if (item || isLoadingService || serviceNotFound || fetchedService) return;
+      
+      // Skip if we have state service
+      if (stateService && stateService.id === id) return;
+
+      console.log('🔍 Service not found locally, fetching from server for ID:', id);
+      setIsLoadingService(true);
+      setServiceNotFound(false);
+
+      // Try all provider types to find the service
+      const providerTypes: Array<'doctor' | 'clinic' | 'laboratory' | 'pharmacy'> = ['doctor', 'clinic', 'laboratory', 'pharmacy'];
+      
+      for (const type of providerTypes) {
+        try {
+          console.log(`🔍 Trying to fetch service as ${type}...`);
+          const service = await ServiceManager.fetchServiceById(id, type);
+          
+          if (service) {
+            console.log('✅ Service found on server:', service);
+            
+            // Map to Unified format
+            const unified: Unified = {
+              id: service.id,
+              name: service.name,
+              description: service.description,
+              price: Number(service.price ?? 0),
+              rating: (service as any)?.averageRating ?? (service as any)?.rating ?? 0,
+              location: (service as any)?.city ?? (service as any)?.location ?? "Karachi",
+              provider: service.providerName,
+              image: service.image,
+              type: service.providerType === "doctor" ? "Treatment" : service.providerType === "pharmacy" ? "Medicine" : service.providerType === "laboratory" ? "Test" : "Treatment",
+              providerType: service.providerType,
+              isReal: true,
+              _providerVerified: Boolean((service as any)._providerVerified),
+              providerId: (service as any).providerId,
+              totalRatings: (service as any).totalRatings ?? 0,
+              providerPhone: (service as any).providerPhone,
+              googleMapLink: (service as any).googleMapLink,
+              coordinates: (service as any).coordinates ?? null,
+              address: (service as any).detailAddress ?? null,
+              hospitalClinicName: (service as any).hospitalClinicName ?? null,
+              ratingBadge: (service as any).ratingBadge ?? null,
+              myBadge: null,
+              homeService: service.providerType === 'doctor',
+              homeDelivery: Boolean((service as any).homeDelivery),
+              availability: (service as any).availability,
+              serviceType: (service as any).serviceType,
+              pharmacyCategory: service.providerType === 'pharmacy' ? ((service as any).category || undefined) : undefined,
+              labCategory: service.providerType === 'laboratory' ? ((service as any).category || undefined) : undefined,
+              doctorCategory: service.providerType === 'doctor' ? ((service as any).category || undefined) : undefined,
+              clinicCategory: service.providerType === 'clinic' ? ((service as any).category || undefined) : undefined,
+              variants: (service as any).variants || [],
+              diseases: Array.isArray((service as any).diseases) ? (service as any).diseases : [],
+              timeLabel: (service as any).timeLabel || null,
+              startTime: (service as any).startTime || null,
+              endTime: (service as any).endTime || null,
+              days: (service as any).days || null,
+            };
+            
+            setFetchedService(unified);
+            setIsLoadingService(false);
+            return; // Exit the loop once found
+          }
+        } catch (error) {
+          console.log(`❌ Service not found as ${type}:`, error);
+          // Continue to next type
+        }
+      }
+      
+      // If we reach here, service was not found in any type
+      console.log('❌ Service not found in any provider type');
+      setServiceNotFound(true);
+      setIsLoadingService(false);
+    };
+
+    fetchServiceFromServer();
+  }, [id, item, stateService, isLoadingService, serviceNotFound, fetchedService]);
 
   // Hydrate user's own badge for this item from localStorage on mount/item change
   useEffect(() => {
@@ -465,10 +562,32 @@ const ServiceDetailPage = () => {
   if (!item) {
     console.log('No item found, navigation state:', locationHook.state);
     console.log('Service ID from URL:', id);
+    
+    // Show loading state while fetching
+    if (isLoadingService) {
+      return (
+        <div className="min-h-screen bg-background">
+          <div className="container mx-auto px-4 py-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <p className="mt-4 text-muted-foreground">Loading service...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Show not found only after we've tried fetching
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12">
-          <div className="text-center text-muted-foreground">Service not found.</div>
+          <div className="text-center text-muted-foreground">
+            <p className="text-xl mb-4">Service not found.</p>
+            <Button onClick={() => navigate('/')} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go to Home
+            </Button>
+          </div>
         </div>
       </div>
     );
