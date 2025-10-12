@@ -57,6 +57,24 @@ export async function getSentRequests() {
 
 export async function acceptConnectionRequest(requestId: string) {
   const token = localStorage.getItem('sehatkor_token');
+
+  // First, try to get the request details from pending requests to retrieve service data
+  let serviceData = null;
+  try {
+    const pendingRequests = await getPendingRequests();
+    const request = pendingRequests.find((r: any) => String(r._id) === String(requestId));
+    if (request) {
+      serviceData = {
+        serviceName: request.serviceName,
+        serviceId: request.serviceId,
+        serviceLink: request.serviceLink,
+        sender: request.sender
+      };
+    }
+  } catch (error) {
+    // Continue without service data if we can't fetch it
+  }
+
   const res = await fetch(`${API_BASE}/accept/${requestId}`, {
     method: 'PUT',
     headers: {
@@ -68,7 +86,56 @@ export async function acceptConnectionRequest(requestId: string) {
     const text = await res.text().catch(() => '');
     throw new Error(text || 'Failed to accept request');
   }
-  return res.json();
+  const result = await res.json();
+
+  // After accepting, automatically send the service details to the chat if they exist
+  try {
+    if (serviceData && (serviceData.serviceName || serviceData.serviceId)) {
+      // Import chat functions dynamically to avoid circular dependencies
+      const { getOrCreateConversation } = await import('@/lib/chatApi');
+      const { getSocket } = await import('@/lib/socket');
+
+      // Get the sender's user ID from the service data
+      const senderId = serviceData.sender?._id || serviceData.sender;
+      if (senderId) {
+        // Create or get the conversation
+        const conversation = await getOrCreateConversation(senderId);
+
+        // Prepare the service message using the data from the pending request
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sehatkor.cloud';
+
+        let serviceMessage = `🎯 Service Connection Established!\n\n`;
+        if (serviceData.serviceName) {
+          serviceMessage += `💡 I am interested in your service: **${serviceData.serviceName}**\n\n`;
+        }
+        serviceMessage += `📋 **Service Details:**\n`;
+        if (serviceData.serviceName) {
+          serviceMessage += `• Service: ${serviceData.serviceName}\n`;
+        }
+        if (serviceData.serviceLink || serviceData.serviceId) {
+          const serviceLink = serviceData.serviceLink || `${baseUrl}/service/${serviceData.serviceId}`;
+          serviceMessage += `• 🔗 View Details: ${serviceLink}\n`;
+        }
+        serviceMessage += `\n💬 Ready to discuss details? Send a message to get started!`;
+
+        // Send the message via socket
+        const socket = getSocket();
+        await new Promise<void>((resolve) => {
+          socket.emit('send_message', {
+            conversationId: conversation._id,
+            recipientId: senderId,
+            type: 'text',
+            text: serviceMessage
+          }, () => resolve());
+        });
+      }
+    }
+  } catch (error) {
+    // Silently fail - don't break the accept flow if message sending fails
+    console.warn('Failed to send service details to chat after accepting request:', error);
+  }
+
+  return result;
 }
 
 export async function rejectConnectionRequest(requestId: string) {

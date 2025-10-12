@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/tooltip";
 import { openWhatsAppChat } from '@/utils/whatsapp';
 import { useAuth } from '@/contexts/AuthContext';
+import { sendConnectionRequest } from '@/lib/connectionApi';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookingOptionsModalProps {
   isOpen: boolean;
@@ -42,8 +44,77 @@ const BookingOptionsModal: React.FC<BookingOptionsModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast: useToastHook } = useToast();
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [connStatus, setConnStatus] = useState<'loading' | 'connected' | 'pending' | 'none'>('none');
+  const [sending, setSending] = useState(false);
+  const [resolvedProviderId, setResolvedProviderId] = useState<string | undefined>(undefined);
+
+  // Determine which providerId to use in actions
+  const providerIdUsed = service._providerId || resolvedProviderId;
+  const isSelf = !!(user && providerIdUsed && (String((user as any).id) === String(providerIdUsed)));
+
+  const refreshStatus = async () => {
+    // Only for signed-in users with a valid providerId
+    const token = typeof window !== 'undefined' ? localStorage.getItem('sehatkor_token') : null;
+    if (isSelf) {
+      setConnStatus('none');
+      return;
+    }
+    if (!providerIdUsed || !token) {
+      setConnStatus('none');
+      return;
+    }
+    try {
+      setConnStatus('loading');
+      // Import functions dynamically to avoid issues
+      const { getConnectedUsers, getSentRequests } = await import('@/lib/connectionApi');
+      const [connected, sent] = await Promise.all([getConnectedUsers(), getSentRequests()]);
+      const isConnected = (connected || []).some((u: any) => String(u._id) === String(providerIdUsed));
+      if (isConnected) {
+        setConnStatus('connected');
+        return;
+      }
+      const isAcceptedInSent = (sent || []).some((r: any) =>
+        r.status === 'accepted' && (String(r.recipient?._id) === String(providerIdUsed) || String(r.sender?._id) === String(providerIdUsed))
+      );
+      if (isAcceptedInSent) {
+        setConnStatus('connected');
+        return;
+      }
+      const hasPending = (sent || []).some((r: any) =>
+        r.status === 'pending' && (String(r.recipient?._id) === String(providerIdUsed) || String(r.sender?._id) === String(providerIdUsed))
+      );
+      setConnStatus(hasPending ? 'pending' : 'none');
+    } catch {
+      setConnStatus('none');
+    }
+  };
+
+  React.useEffect(() => {
+    refreshStatus();
+  }, [providerIdUsed]);
+
+  // Attempt to resolve providerId if missing, using providerName (limited to 1 hit by API)
+  React.useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (service._providerId || !service.provider || service.provider.trim().length < 2) return;
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('sehatkor_token') : null;
+        if (!token) return;
+        const { searchUsersForConnection } = await import('@/lib/connectionApi');
+        const results = await searchUsersForConnection(service.provider.trim());
+        const first = Array.isArray(results) && results.length > 0 ? results[0] : null;
+        if (!cancelled && first && first._id) {
+          setResolvedProviderId(String(first._id));
+        }
+      } catch {}
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [service._providerId, service.provider]);
 
   const handleAdminPayment = () => {
     // // Temporarily show a Coming Soon modal instead of navigating to payment page
@@ -74,32 +145,128 @@ const BookingOptionsModal: React.FC<BookingOptionsModalProps> = ({
 
   const getBookingMessage = () => {
     const price = service.price ? `PKR ${service.price.toLocaleString()}` : '';
-    return `Hello! I would like to book your service "${service.name}" ${price ? `(${price})` : ''} through SehatKor.
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sehatkor.cloud';
+    const serviceLink = service.id ? `${baseUrl}/service/${service.id}` : '';
+
+    let message = `Hello! I would like to book your service "${service.name}" ${price ? `(${price})` : ''} through SehatKor.
 
 Please confirm:
-- Availability 
+- Availability
 - Appointment time
 - Location details
 - Any special requirements
 
 Thank you!`;
+
+    if (serviceLink) {
+      message = `Hello! I would like to book your service "${service.name}" ${price ? `(${price})` : ''} through SehatKor.
+
+🔗 View Service Details: ${serviceLink}
+
+Please confirm:
+- Availability
+- Appointment time
+- Location details
+- Any special requirements
+
+Thank you!`;
+    }
+
+    return message;
   };
 
-  const handleChatClick = () => {
-    // Dispatch event with booking message
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('sehatkor:open-chat', {
-          detail: {
-            serviceName: service.name,
-            providerName: service.provider,
-            providerId: service._providerId,
-            initialMessage: getBookingMessage()
-          }
-        })
-      );
+  const handleChatClick = async () => {
+    if (connStatus === 'connected') {
+      // If already connected, just open the chat
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('sehatkor:open-chat', {
+            detail: {
+              serviceName: service.name,
+              providerName: service.provider,
+              providerId: providerIdUsed,
+              initialMessage: getBookingMessage()
+            }
+          })
+        );
+      }
+      onClose();
+      return;
     }
-    onClose();
+
+    // Send connection request
+    if (!providerIdUsed || sending) return;
+    if (isSelf) {
+      useToastHook({ title: 'Action not allowed', description: 'You cannot send a connection request to yourself.', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      setSending(true);
+
+      // Generate formatted message with service link
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sehatkor.cloud';
+      const serviceLink = service.id ? `${baseUrl}/service/${service.id}` : '';
+
+      let formattedMessage = `Hello! I would like to book your service "${service.name}" through SehatKor.`;
+      if (serviceLink) {
+        formattedMessage += `\n\n🔗 View Service Details: ${serviceLink}`;
+      }
+      formattedMessage += `\n\nPlease confirm availability and provide more details.`;
+
+      await sendConnectionRequest(
+        providerIdUsed,
+        formattedMessage,
+        {
+          serviceName: service.name,
+          serviceId: service.id || '',
+          serviceLink: serviceLink
+        }
+      );
+
+      // Play notification sound when request is sent
+      try {
+        const audio = new Audio('/sounds/abu.wav');
+        audio.play().catch(err => console.log('Could not play notification sound:', err));
+      } catch (err) {
+        console.log('Notification sound error:', err);
+      }
+
+      setConnStatus('pending');
+      useToastHook({ title: 'Request Sent', description: 'Your connection request was sent with service details.' });
+    } catch (e: any) {
+      const msg = String(e?.message || '');
+      // If backend reports already connected, flip state and open chat
+      if (msg.includes('Already connected')) {
+        setConnStatus('connected');
+        useToastHook({ title: 'Already connected', description: 'Opening chat...' });
+        // Open chat immediately for better UX
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('sehatkor:open-chat', {
+              detail: {
+                serviceName: service.name,
+                providerName: service.provider,
+                providerId: providerIdUsed,
+                initialMessage: getBookingMessage()
+              }
+            })
+          );
+        }
+        onClose();
+        return;
+      }
+      // If backend reports an already pending/sent request, switch to pending
+      if (msg.toLowerCase().includes('already pending') || msg.toLowerCase().includes('already sent') || msg.toLowerCase().includes('request already')) {
+        setConnStatus('pending');
+        useToastHook({ title: 'Request Pending', description: 'Your request is already pending.' });
+        onClose();
+        return;
+      }
+      useToastHook({ title: 'Error', description: msg || 'Failed to send request', variant: 'destructive' });
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleWhatsAppClick = () => {
@@ -155,7 +322,19 @@ Thank you!`;
             </Card>
 
             {/* Manual Booking Options */}
-            <Card className="border-0 bg-gradient-to-r from-gray-50 to-slate-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <Card
+              className="border-0 bg-gradient-to-r from-gray-50 to-slate-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer relative"
+              onClick={(e) => {
+                // Check if click is on tooltip buttons to avoid double triggering
+                if ((e.target as Element).closest('button')) {
+                  return;
+                }
+                if (service.providerPhone) {
+                  handleWhatsAppClick();
+                }
+                handleChatClick();
+              }}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -178,7 +357,10 @@ Thank you!`;
                               aria-label="Contact options"
                               onMouseEnter={() => setTooltipOpen(true)}
                               onFocus={() => setTooltipOpen(true)}
-                              onClick={() => setTooltipOpen((v) => !v)}
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent card click
+                                setTooltipOpen((v) => !v);
+                              }}
                             >
                               <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M8.5 19H8C4 19 2 18 2 13V8C2 4 4 2 8 2H16C20 2 22 4 22 8V13C22 17 20 19 16 19H15.5C15.19 19 14.89 19.15 14.7 19.4L13.2 21.4C12.54 22.28 11.46 22.28 10.8 21.4L9.3 19.4C9.14 19.18 8.77 19 8.5 19Z" stroke="#292D32" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
@@ -192,7 +374,10 @@ Thank you!`;
                             <TooltipArrow className="fill-white" />
                             <div className="flex flex-col gap-2">
                               <Button
-                                onClick={handleWhatsAppClick}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleWhatsAppClick();
+                                }}
                                 size="sm"
                                 className="w-full h-9 text-sm bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                               >
@@ -202,11 +387,15 @@ Thank you!`;
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={handleChatClick}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleChatClick();
+                                }}
+                                disabled={isSelf || connStatus === 'pending' || connStatus === 'loading' || sending}
                                 className="w-full h-9 text-sm border-2 border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
                               >
                                 <MessageSquare className="w-4 h-4 mr-2" />
-                                Chat
+                                {isSelf ? 'Not allowed' : (connStatus === 'connected' ? 'Chat' : connStatus === 'pending' ? 'Pending' : connStatus === 'loading' ? '...' : sending ? 'Sending...' : 'Send Request')}
                               </Button>
                             </div>
                           </TooltipContent>

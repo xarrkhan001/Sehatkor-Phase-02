@@ -1608,7 +1608,67 @@ const FloatingChat = () => {
                                 <div className="text-gray-500 italic text-xs">This message was deleted</div>
                               ) : (
                                 <>
-                              {m.type === 'text' && <div className="whitespace-pre-wrap leading-relaxed">{m.text}</div>}
+                              {m.type === 'text' && (
+                                <div className={`whitespace-pre-wrap leading-relaxed ${m.text?.startsWith('🎯 Service Connection Established!') 
+                                  ? 'text-sm bg-green-50/70 border border-green-200/50 rounded-lg p-2 shadow-sm max-w-[85%]' 
+                                  : ''}`}>
+                                  {m.text?.startsWith('🎯 Service Connection Established!') ? (
+                                    <div className="space-y-2">
+                                      {m.text.split('\n').map((line, idx) => {
+                                        if (line.includes('💡 I am interested in your service:')) {
+                                          return (
+                                            <div key={idx} className="font-semibold text-green-800 text-sm">
+                                              {line.replace('💡 I am interested in your service:', '💡 I am interested in your service:')}
+                                            </div>
+                                          );
+                                        }
+                                        if (line.includes('📋 **Service Details:**')) {
+                                          return (
+                                            <div key={idx} className="font-semibold text-green-800 text-sm">
+                                              {line}
+                                            </div>
+                                          );
+                                        }
+                                        if (line.includes('• Service:')) {
+                                          return (
+                                            <div key={idx} className="text-green-700 text-sm ml-2">
+                                              {line}
+                                            </div>
+                                          );
+                                        }
+                                        if (line.includes('• 🔗 View Details:')) {
+                                          const linkMatch = line.match(/• 🔗 View Details: (https?:\/\/[^\s]+)/);
+                                          if (linkMatch) {
+                                            return (
+                                              <div key={idx} className="flex items-center gap-2 ml-2">
+                                                <span className="text-green-600">🔗</span>
+                                                <a
+                                                  href={linkMatch[1]}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="text-green-600 hover:text-green-700 underline font-medium transition-colors"
+                                                >
+                                                  View Service Details
+                                                </a>
+                                              </div>
+                                            );
+                                          }
+                                        }
+                                        if (line.includes('💬 Ready to discuss')) {
+                                          return (
+                                            <div key={idx} className="text-green-700 text-sm italic">
+                                              {line}
+                                            </div>
+                                          );
+                                        }
+                                        return <div key={idx}>{line}</div>;
+                                      })}
+                                    </div>
+                                  ) : (
+                                    m.text
+                                  )}
+                                </div>
+                              )}
                               {m.type === 'image' && (
                                 <a href={m.fileUrl} download={(m.fileName || 'image.jpg') as string} target="_blank" rel="noopener" className="block">
                                   <img src={m.fileUrl} className="rounded-xl max-h-56 border shadow-sm" />
