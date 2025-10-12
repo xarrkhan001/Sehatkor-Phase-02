@@ -6,7 +6,7 @@ const normalized = typeof raw === 'string' && raw
   ? raw.replace(/\/$/, '').replace(/\/api$/, '')
   : '';
 
-export const API_BASE_URL = normalized || 'https://sehatkor.cloud';
+export const API_BASE_URL = normalized || 'https://sehatkor.pk';
 
 export const apiUrl = (path: string) => {
   if (!path) return API_BASE_URL;
@@ -18,7 +18,7 @@ export const apiUrl = (path: string) => {
 const socketRaw = (import.meta as any)?.env?.VITE_SOCKET_URL || API_BASE_URL;
 export const SOCKET_BASE_URL = typeof socketRaw === 'string' && socketRaw
   ? socketRaw.replace(/\/$/, '')
-  : 'https://sehatkor.cloud';
+  : 'https://sehatkor.pk';
 
 // Helper to call API using the base URL
 export async function apiFetch(inputPath: string, init?: RequestInit) {
