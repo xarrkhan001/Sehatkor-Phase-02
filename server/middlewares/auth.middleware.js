@@ -47,6 +47,10 @@ const authMiddleware = (req, res, next) => {
         role: decoded.role,
       });
     // Support both id and userId keys
+    req.user = {
+      userId: decoded.id || decoded.userId,
+      role: decoded.role
+    };
     req.userId = decoded.id || decoded.userId;
     req.userRole = decoded.role;
     next();

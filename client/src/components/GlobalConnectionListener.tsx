@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getPendingRequests } from "@/lib/connectionApi";
+import { getSocket } from "@/lib/socket";
 
 const GlobalConnectionListener = () => {
   const { toast } = useToast();
@@ -30,7 +31,6 @@ const GlobalConnectionListener = () => {
 
     let socket: any;
     try {
-      const { getSocket } = require('@/lib/socket');
       socket = getSocket();
 
       // Ensure socket is connected

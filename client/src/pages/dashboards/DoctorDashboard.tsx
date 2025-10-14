@@ -20,6 +20,7 @@ import ProfileImageUpload from "@/components/ProfileImageUpload";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import ProviderWallet from "@/components/ProviderWallet";
 import CurrencyAmount from "@/components/CurrencyAmount";
+import RegistrationVerification from "@/components/RegistrationVerification";
 import {
   Stethoscope,
   Calendar,
@@ -672,6 +673,9 @@ const DoctorDashboard = () => {
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-20 translate-x-20"></div>
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
             </Card>
+
+            {/* Registration Verification */}
+            <RegistrationVerification />
 
             {/* Edit Profile Dialog */}
             <EditProfileDialog

@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import FloatingChat from "./components/FloatingChat";
 import WhatsAppButton from "./components/WhatsAppButton";
 import GlobalConnectionListener from "./components/GlobalConnectionListener";
+import VerificationNotificationModal from "./components/VerificationNotificationModal";
 import { useAuth } from "./contexts/AuthContext";
 import { lazy, Suspense } from "react";
 import ScrollToTop from "./components/ScrollToTop";
@@ -115,6 +116,7 @@ const AppShell = () => {
         <FloatingChat />
         <WhatsAppButton />
         <GlobalConnectionListener />
+        <VerificationNotificationModal />
         <Footer />
       </div>
     </BrowserRouter>
