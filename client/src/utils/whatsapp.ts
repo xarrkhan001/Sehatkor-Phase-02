@@ -41,7 +41,7 @@ export const getDefaultWhatsAppMessage = (
   serviceId?: string
 ): string => {
   // Use current domain (works for both production and development)
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sehatkor.cloud';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sehatkor.pk/';
   const serviceLink = serviceId ? `${baseUrl}/service/${serviceId}` : '';
 
   console.log('🔧 WhatsApp Debug:', {

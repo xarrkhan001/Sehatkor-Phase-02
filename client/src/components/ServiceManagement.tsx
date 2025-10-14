@@ -870,6 +870,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     aspectRatio={16 / 9}
                   />
                   <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
+                  <p className="text-[11px] text-blue-300 mt-1">Images are automatically compressed for better performance while maintaining quality. Maximum file size: 5MB.</p>
                   {isUploadingImage && (
                     <p className="text-xs text-muted-foreground mt-1">Uploading image...</p>
                   )}
@@ -1534,6 +1535,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
                                 aspectRatio={16 / 9}
                               />
                               <p className="text-[11px] text-gray-100 mt-1">Recommended image ratio: 16:9 (e.g., 1280×720). تصویر کا تناسب 16:9 رکھیں۔</p>
+                              <p className="text-[11px] text-blue-300 mt-1">Images are automatically compressed for better performance while maintaining quality. Maximum file size: 5MB.</p>
                             </div>
                           </div>
                         </div>

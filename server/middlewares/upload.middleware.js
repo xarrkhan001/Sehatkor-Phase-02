@@ -12,8 +12,8 @@ const ALLOWED_MIME = new Set([
 const upload = multer({
   storage,
   limits: {
-    // Reasonable cap for images
-    fileSize: 20 * 1024 * 1024,
+    // Limit to 5MB as requested
+    fileSize: 5 * 1024 * 1024,
   },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_MIME.has(file.mimetype)) {
