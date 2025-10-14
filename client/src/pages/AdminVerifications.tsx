@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   CheckCircle, 
   XCircle, 
@@ -18,10 +19,12 @@ import {
   Building,
   FlaskConical,
   ShoppingBag,
-  ArrowLeft
+  ArrowLeft,
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiUrl } from '@/config/api';
+import RegistrationVerificationAdmin from '@/components/RegistrationVerificationAdmin';
 
 const AdminVerifications = () => {
   const navigate = useNavigate();
@@ -164,18 +167,31 @@ const AdminVerifications = () => {
       </div>
 
       {/* Main Content */}
-      <Card className="card-healthcare">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-green-600" />
-                Pending Verifications ({pendingUsers.length})
-              </CardTitle>
-              <CardDescription>
-                Review and approve healthcare provider registrations
-              </CardDescription>
-            </div>
+      <Tabs defaultValue="user-verifications" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="user-verifications" className="flex items-center gap-2">
+            <UserCheck className="w-4 h-4" />
+            User Verifications ({pendingUsers.length})
+          </TabsTrigger>
+          <TabsTrigger value="registration-verifications" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Registration Numbers
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="user-verifications">
+          <Card className="card-healthcare">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-green-600" />
+                    Pending User Verifications ({pendingUsers.length})
+                  </CardTitle>
+                  <CardDescription>
+                    Review and approve healthcare provider registrations
+                  </CardDescription>
+                </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -197,10 +213,10 @@ const AdminVerifications = () => {
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
           {/* Mobile Card List */}
           <div className="space-y-3 lg:hidden">
             {pendingUsers.map((user: any) => (
@@ -316,15 +332,21 @@ const AdminVerifications = () => {
             </TableBody>
           </Table>
 
-          {pendingUsers.length === 0 && (
-            <div className="text-center py-12">
-              <UserCheck className="w-16 h-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-              <p className="text-xl text-muted-foreground mb-2">No Pending Verifications</p>
-              <p className="text-muted-foreground">All healthcare providers have been verified</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              {pendingUsers.length === 0 && (
+                <div className="text-center py-12">
+                  <UserCheck className="w-16 h-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+                  <p className="text-xl text-muted-foreground mb-2">No Pending User Verifications</p>
+                  <p className="text-muted-foreground">All healthcare providers have been verified</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="registration-verifications">
+          <RegistrationVerificationAdmin />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

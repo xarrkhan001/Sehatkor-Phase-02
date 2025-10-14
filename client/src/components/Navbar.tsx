@@ -28,6 +28,7 @@ import {
   Repeat,
   ChevronDown
 } from "lucide-react";
+import { apiUrl } from '@/config/api';
 
 const Navbar = () => {
   const { user, logout, mode, toggleMode } = useAuth();
@@ -36,6 +37,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInfoDropdownOpen, setIsInfoDropdownOpen] = useState(false);
+  const [navVerification, setNavVerification] = useState<{ isVerified: boolean; status?: string } | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,6 +51,39 @@ const Navbar = () => {
       return () => window.removeEventListener('scroll', handleScroll);
     }
   }, [location.pathname]);
+
+  // Fetch provider verification status from backend to ensure accurate badge
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        if (!user || user.role === 'patient') {
+          setNavVerification(null);
+          return;
+        }
+        const token = localStorage.getItem('sehatkor_token');
+        if (!token) {
+          setNavVerification(null);
+          return;
+        }
+        const res = await fetch(apiUrl('/api/verification/my-status'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          setNavVerification(null);
+          return;
+        }
+        const data = await res.json();
+        const isVerified = Boolean(data?.user?.isVerified);
+        const status = data?.registrationVerification?.status as string | undefined;
+        setNavVerification({ isVerified, status });
+      } catch (e) {
+        setNavVerification(null);
+      }
+    };
+    fetchStatus();
+  }, [user]);
 
   const handleModeToggle = () => {
     toggleMode();
@@ -323,10 +358,8 @@ const Navbar = () => {
                                 <UserBadge role={(user as any).role} />
                               </div>
                               {(() => {
-                                const hasLicense = Boolean((user as any).licenseNumber && String((user as any).licenseNumber).trim() !== '');
-                                const verified = Boolean(user.isVerified && hasLicense);
-                                const status = (user as any).verificationStatus as string | undefined;
-                                const allowed = Boolean((user as any).allowedToOperate);
+                                const verified = Boolean(navVerification?.isVerified);
+                                const status = navVerification?.status;
                                 if (verified) {
                                   return (
                                     <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-green-200 to-green-300 border border-green-400/50 px-1.5 py-0.5 text-xs font-medium text-green-900 h-5 min-w-fit">
@@ -341,10 +374,10 @@ const Navbar = () => {
                                     </span>
                                   );
                                 }
-                                if (user.role !== 'patient' && allowed && !verified) {
+                                if (user.role !== 'patient' && !verified) {
                                   return (
                                     <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-red-200 to-rose-300 border border-red-400/50 px-1.5 py-0.5 text-xs font-medium text-red-900 h-5 min-w-fit">
-                                      <X className="h-2.5 w-2.5" /> Unverified
+                                      Unverified
                                     </span>
                                   );
                                 }
@@ -467,10 +500,8 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <UserBadge role={(user as any).role} />
                 {(() => {
-                  const hasLicense = Boolean((user as any).licenseNumber && String((user as any).licenseNumber).trim() !== '');
-                  const verified = Boolean(user.isVerified && hasLicense);
-                  const status = (user as any).verificationStatus as string | undefined;
-                  const allowed = Boolean((user as any).allowedToOperate);
+                  const verified = Boolean(navVerification?.isVerified);
+                  const status = navVerification?.status;
                   if (verified) {
                     return (
                       <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
@@ -485,7 +516,7 @@ const Navbar = () => {
                       </span>
                     );
                   }
-                  if (user.role !== 'patient' && allowed && !verified) {
+                  if (user.role !== 'patient' && !verified) {
                     return (
                       <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
                         <X className="h-3 w-3" /> Unverified
