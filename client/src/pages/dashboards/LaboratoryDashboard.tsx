@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ImageUpload from "@/components/ui/image-upload";
+import FullScreenLoader from "@/components/ui/full-screen-loader";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
@@ -756,12 +757,23 @@ const LaboratoryDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">{user?.name} Laboratory</h1>
+    <>
+      {/* Full Screen Loader */}
+      <FullScreenLoader 
+        isVisible={isAddingTest || isUpdatingTest} 
+        message={isUpdatingTest ? "Updating Test..." : "Adding Test..."} 
+      />
+      
+      <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+            <div className="text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">{user?.name} Laboratory</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
+                Manage diagnostic tests and lab operations
+              </p>
+            </div>
             <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
               Manage diagnostic tests and lab operations
             </p>
@@ -1198,8 +1210,8 @@ const LaboratoryDashboard = () => {
                     </label>
                   </div>
 
-                  <Button onClick={handleUpdateTest} className="w-full" disabled={isUploadingImage || isUpdatingTest}>
-                    {isUpdatingTest ? 'Saving...' : 'Save Changes'}
+                  <Button onClick={handleUpdateTest}  className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage || isUpdatingTest}>
+                    {isUpdatingTest ? 'Updating...' : 'Update Test'}
                   </Button>
                 </div>
               </DialogContent>
@@ -1909,7 +1921,7 @@ const LaboratoryDashboard = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

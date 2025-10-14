@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ui/image-upload";
+import FullScreenLoader from "@/components/ui/full-screen-loader";
 import ServiceManager, { Service } from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { createService as doctorCreate, updateService as doctorUpdate, deleteService as doctorDelete } from "@/lib/doctorApi";
@@ -807,7 +808,14 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
   };
 
   return (
-    <Card className={userRole === 'doctor' ? "relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl" : "card-healthcare"}>
+    <>
+      {/* Full Screen Loader */}
+      <FullScreenLoader 
+        isVisible={isSaving} 
+        message={editingService ? "Updating Service..." : "Adding Service..."} 
+      />
+      
+      <Card className={userRole === 'doctor' ? "relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl" : "card-healthcare"}>
       <CardHeader className={userRole === 'doctor' ? "bg-gradient-to-r from-blue-400 to-indigo-500 text-white rounded-t-lg" : undefined}>
         <div className={userRole === 'doctor' ? "flex items-center justify-between gap-3" : "flex flex-col sm:flex-row sm:items-center justify-between gap-2"}>
           <div>
@@ -1704,6 +1712,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
         )}
       </CardContent>
     </Card>
+    </>
   );
 };
 

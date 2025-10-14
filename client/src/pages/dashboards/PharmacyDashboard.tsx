@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/lib/serviceManager";
 import { uploadFile } from "@/lib/chatApi";
 import { listMedicines as apiList, createMedicine as apiCreate, updateMedicine as apiUpdate, deleteMedicine as apiDelete } from "@/lib/pharmacyApi";
+import FullScreenLoader from "@/components/ui/full-screen-loader";
 import {
   ShoppingBag,
   Pill,
@@ -70,6 +71,7 @@ const PharmacyDashboard = () => {
   const [medicineImageFile, setMedicineImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isAddingMedicine, setIsAddingMedicine] = useState(false);
+  const [isUpdatingMedicine, setIsUpdatingMedicine] = useState(false);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingMedicineId, setEditingMedicineId] = useState<string | null>(null);
@@ -683,6 +685,8 @@ const PharmacyDashboard = () => {
   const handleSaveEdit = async () => {
     if (!editingMedicineId) return;
     if (!validateEditLengths()) return;
+    
+    setIsUpdatingMedicine(true);
     try {
       let imageUrl: string | undefined = editImagePreview || undefined;
       let imagePublicId: string | undefined = undefined;
@@ -728,6 +732,8 @@ const PharmacyDashboard = () => {
         description: error?.message || "Failed to update medicine",
         variant: "destructive"
       });
+    } finally {
+      setIsUpdatingMedicine(false);
     }
   };
 
@@ -744,12 +750,23 @@ const PharmacyDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">{user?.name} Pharmacy</h1>
+    <>
+      {/* Full Screen Loader */}
+      <FullScreenLoader 
+        isVisible={isAddingMedicine || isUpdatingMedicine || isUploadingImage} 
+        message={isUpdatingMedicine ? "Updating Medicine..." : isAddingMedicine ? "Adding Medicine..." : "Uploading Image..."} 
+      />
+      
+      <div className="min-h-screen p-2 sm:p-4 md:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+            <div className="text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 break-words">{user?.name} Pharmacy</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
+                Manage medicines, prescriptions, and customer orders
+              </p>
+            </div>
             <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
               Manage medicines, prescriptions, and customer orders
             </p>
@@ -1972,7 +1989,7 @@ const PharmacyDashboard = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

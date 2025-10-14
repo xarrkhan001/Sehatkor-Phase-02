@@ -231,16 +231,10 @@ const RegistrationVerification: React.FC = () => {
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
                   <div className="flex-1">
-                    <h4 className="font-medium text-green-800">Verification Approved ✅</h4>
+                    <h4 className="font-medium text-green-800">Verification Approved </h4>
                     <p className="text-sm text-green-700 mb-3">
                       Congratulations! Your registration number has been verified. You are now a verified provider.
                     </p>
-                    <div className="bg-white p-3 rounded border border-green-300 mb-3">
-                      <p className="text-sm font-medium text-green-800 mb-1">🎉 Success Modal</p>
-                      <p className="text-xs text-green-600">
-                        Your verification is complete! This confirmation will also appear in a modal notification.
-                      </p>
-                    </div>
                     <Button 
                       onClick={() => setIsUpdateModalOpen(true)}
                       variant="outline"

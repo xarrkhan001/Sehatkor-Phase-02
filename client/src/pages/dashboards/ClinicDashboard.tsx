@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ImageUpload from "@/components/ui/image-upload";
+import FullScreenLoader from "@/components/ui/full-screen-loader";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
@@ -691,7 +692,14 @@ const ClinicDashboard = () => {
   const totalEarnings = walletData?.totalEarnings || 0;
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 md:p-6 lg:p-8">
+    <>
+      {/* Full Screen Loader */}
+      <FullScreenLoader 
+        isVisible={isAddingService} 
+        message={editingService ? "Updating Service..." : "Adding Service..."} 
+      />
+      
+      <div className="min-h-screen p-2 sm:p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div className="text-center sm:text-left">
@@ -1536,6 +1544,7 @@ const ClinicDashboard = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
