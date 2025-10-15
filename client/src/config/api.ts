@@ -7,7 +7,7 @@ const normalized = typeof raw === 'string' && raw
   : '';
 
 // Force localhost for development
-export const API_BASE_URL = 'http://localhost:4000';
+export const API_BASE_URL = 'https://sehatkor.pk';
 
 export const apiUrl = (path: string) => {
   if (!path) return API_BASE_URL;
@@ -17,7 +17,7 @@ export const apiUrl = (path: string) => {
 
 // Socket configuration: prefer explicit VITE_SOCKET_URL, otherwise reuse API base
 const socketRaw = (import.meta as any)?.env?.VITE_SOCKET_URL || API_BASE_URL;
-export const SOCKET_BASE_URL = 'http://localhost:4000';
+export const SOCKET_BASE_URL = 'https://sehatkor.pk';
 
 // Helper to call API using the base URL
 export async function apiFetch(inputPath: string, init?: RequestInit) {
