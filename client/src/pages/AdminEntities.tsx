@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, UserCheck, Building, FlaskConical, ShoppingBag, ArrowLeft, Search, ShieldCheck } from "lucide-react";
+import { Users, UserCheck, Building, FlaskConical, ShoppingBag, ArrowLeft, Search, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { apiUrl } from "@/config/api";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,6 +49,8 @@ const AdminEntities = () => {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(params.get("status") || "all");
   const [type, setType] = useState(params.get("type") || "all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const title = useMemo(() => {
     if (type !== "all") return `${roleLabel(type)}s`;
@@ -101,6 +103,17 @@ const AdminEntities = () => {
     }
     return list;
   }, [allUsers, type, status, search]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filtered.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [type, status, search]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,10 +179,17 @@ const AdminEntities = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Results ({filtered.length})
-            </CardTitle>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Results ({filtered.length})
+              </CardTitle>
+              {totalPages > 1 && (
+                <Badge variant="secondary" className="w-fit">
+                  Page {currentPage} of {totalPages}
+                </Badge>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -192,7 +212,7 @@ const AdminEntities = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((u) => (
+                    {paginatedUsers.map((u) => (
                       <TableRow key={u._id}>
                         <TableCell className="font-medium">{u.name}</TableCell>
                         <TableCell>
@@ -214,6 +234,40 @@ const AdminEntities = () => {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!loading && filtered.length > 0 && totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6 pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filtered.length)} of {filtered.length} users
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Button>
+                  <span className="text-sm px-3 py-1 bg-muted rounded font-medium">
+                    {currentPage}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
