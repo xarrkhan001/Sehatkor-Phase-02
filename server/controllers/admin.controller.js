@@ -21,6 +21,7 @@ export const getAdminStats = async (req, res) => {
     const totalPharmacies = await User.countDocuments({ role: 'pharmacy' });
     const totalLabs = await User.countDocuments({ role: 'laboratory' });
     const totalHospitals = await User.countDocuments({ role: 'clinic/hospital' });
+    const totalRegisteredAccounts = await User.countDocuments({});
 
     res.status(200).json({
       stats: {
@@ -29,6 +30,7 @@ export const getAdminStats = async (req, res) => {
         totalPharmacies,
         totalLabs,
         totalHospitals,
+        totalRegisteredAccounts,
       },
     });
   } catch (error) {

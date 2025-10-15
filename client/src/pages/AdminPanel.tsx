@@ -118,8 +118,8 @@ const AdminPanel = () => {
 
   const handleGateSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const validEmail = "test@gmail.com";
-    const validPassword = "12345678";
+    const validEmail = "sehatkor@admin.com";
+    const validPassword = "Ntl@0099";
     if (gateEmail.trim().toLowerCase() === validEmail && gatePassword === validPassword) {
       // Persist admin auth so navigating between admin pages doesn't prompt again
       localStorage.setItem('sehatkor_admin_auth', 'true');
@@ -147,15 +147,16 @@ const AdminPanel = () => {
     navigate('/', { replace: true });
   };
 
-  // Soft surface gradient per card color
-  const getCardSurface = (color: string) => {
-    if (color.includes('blue')) return 'from-blue-500/5 to-white';
-    if (color.includes('green')) return 'from-green-500/5 to-white';
-    if (color.includes('indigo')) return 'from-indigo-500/5 to-white';
-    if (color.includes('purple')) return 'from-purple-500/5 to-white';
-    if (color.includes('orange')) return 'from-orange-500/5 to-white';
-    if (color.includes('red')) return 'from-red-500/5 to-white';
-    return 'from-gray-400/5 to-white';
+  // Vibrant gradient backgrounds per card color
+  const getCardGradient = (color: string) => {
+    if (color.includes('teal')) return 'from-teal-500 via-teal-400 to-cyan-400';
+    if (color.includes('blue')) return 'from-blue-500 via-blue-400 to-indigo-400';
+    if (color.includes('green')) return 'from-green-500 via-emerald-400 to-teal-400';
+    if (color.includes('indigo')) return 'from-indigo-500 via-purple-400 to-pink-400';
+    if (color.includes('purple')) return 'from-purple-500 via-fuchsia-400 to-pink-400';
+    if (color.includes('orange')) return 'from-orange-500 via-amber-400 to-yellow-400';
+    if (color.includes('red')) return 'from-red-500 via-rose-400 to-pink-400';
+    return 'from-gray-500 via-gray-400 to-slate-400';
   };
 
   const getAuthToken = () => localStorage.getItem('sehatkor_token') || localStorage.getItem('token');
@@ -168,7 +169,8 @@ const AdminPanel = () => {
     totalDoctors: 0,
     totalHospitals: 0,
     totalPharmacies: 0,
-    totalLabs: 0
+    totalLabs: 0,
+    totalRegisteredAccounts: 0
   });
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
@@ -238,6 +240,7 @@ const AdminPanel = () => {
   }, []);
 
   const statsData = [
+    { title: "Total Registered Accounts", value: stats.totalRegisteredAccounts?.toString() || "0", icon: Activity, change: "Lifetime", color: "text-teal-500" },
     { title: "Verified Users", value: stats.verifiedUsers?.toString() || "0", icon: Users, change: "", color: "text-blue-500" },
     { title: "Total Doctors", value: stats.totalDoctors?.toString() || "0", icon: UserCheck, change: "", color: "text-green-500" },
     { title: "Total Hospitals/Clinics", value: stats.totalHospitals?.toString() || "0", icon: Building, change: "", color: "text-indigo-500" },
@@ -442,31 +445,23 @@ const AdminPanel = () => {
     }
   };
 
-  // Helper to map icon color -> soft gradient background for badge
-  const getIconBg = (color: string) => {
-    if (color.includes('blue')) return 'from-blue-500/10 to-blue-600/10 text-blue-600';
-    if (color.includes('green')) return 'from-green-500/10 to-green-600/10 text-green-600';
-    if (color.includes('indigo')) return 'from-indigo-500/10 to-indigo-600/10 text-indigo-600';
-    if (color.includes('purple')) return 'from-purple-500/10 to-purple-600/10 text-purple-600';
-    if (color.includes('orange')) return 'from-orange-500/10 to-orange-600/10 text-orange-600';
-    if (color.includes('red')) return 'from-red-500/10 to-red-600/10 text-red-600';
-    return 'from-gray-400/10 to-gray-500/10 text-gray-700';
-  };
-
-  // Accent gradient for top bar per card color
-  const getAccentBar = (color: string) => {
-    if (color.includes('blue')) return 'from-blue-400/40 via-blue-500/40 to-blue-600/40';
-    if (color.includes('green')) return 'from-green-400/40 via-green-500/40 to-green-600/40';
-    if (color.includes('indigo')) return 'from-indigo-400/40 via-indigo-500/40 to-indigo-600/40';
-    if (color.includes('purple')) return 'from-purple-400/40 via-purple-500/40 to-purple-600/40';
-    if (color.includes('orange')) return 'from-orange-400/40 via-orange-500/40 to-orange-600/40';
-    if (color.includes('red')) return 'from-red-400/40 via-red-500/40 to-red-600/40';
-    return 'from-gray-400/40 via-gray-500/40 to-gray-600/40';
+  // Shimmer effect for hover animation
+  const getShimmerGradient = (color: string) => {
+    if (color.includes('teal')) return 'from-teal-600 via-cyan-500 to-teal-600';
+    if (color.includes('blue')) return 'from-blue-600 via-indigo-500 to-blue-600';
+    if (color.includes('green')) return 'from-green-600 via-emerald-500 to-green-600';
+    if (color.includes('indigo')) return 'from-indigo-600 via-purple-500 to-indigo-600';
+    if (color.includes('purple')) return 'from-purple-600 via-fuchsia-500 to-purple-600';
+    if (color.includes('orange')) return 'from-orange-600 via-amber-500 to-orange-600';
+    if (color.includes('red')) return 'from-red-600 via-rose-500 to-red-600';
+    return 'from-gray-600 via-slate-500 to-gray-600';
   };
 
   // Build link for stat card -> entities list with filters
   const cardLinkFor = (title: string) => {
     switch (title) {
+      case 'Total Registered Accounts':
+        return '/admin/entities?status=all&type=all';
       case 'Verified Users':
         return '/admin/entities?status=verified&type=all';
       case 'Total Doctors':
@@ -483,7 +478,21 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-200 via-gray-200 to-slate-300">
+      {/* Decorative Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Animated Gradient Orbs */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-indigo-300/25 to-purple-300/25 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-purple-300/25 to-pink-300/25 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-blue-300/20 to-cyan-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.025)_1px,transparent_1px)] bg-[size:50px_50px]" />
+        
+        {/* Subtle Noise Texture */}
+        <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
+      </div>
+      
       {/* Gate Modal Overlay */}
       {showGate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 overflow-hidden">
@@ -546,185 +555,226 @@ const AdminPanel = () => {
       )}
 
       <div className={`container mx-auto px-4 py-8 transition ${showGate ? 'pointer-events-none select-none' : ''}`} aria-hidden={showGate}>
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Admin Dashboard</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Manage SehatKor platform operations and user verifications
-            </p>
+        {/* Stylish White Header */}
+        <div className="relative overflow-hidden rounded-3xl mb-8 bg-white shadow-xl border border-gray-100">
+          {/* Subtle Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-pink-50/50" />
+          
+          {/* Animated Background Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="text-success border-success w-fit">
-              <ShieldCheck className="w-4 h-4 mr-1" />
-              Admin Access
-            </Badge>
-            <Button variant="destructive" onClick={handleAdminLogout}>Admin Logout</Button>
+          
+          {/* Content */}
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-8">
+            <div className="flex items-center gap-4">
+              {/* Icon Badge */}
+              <div className="hidden sm:flex w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 items-center justify-center shadow-lg">
+                <ShieldCheck className="w-8 h-8 text-white drop-shadow-lg" />
+              </div>
+              
+              {/* Text Content */}
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 flex items-center gap-3">
+                  Admin Dashboard
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-xs font-semibold text-white shadow-md">
+                    LIVE
+                  </span>
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600 font-medium">
+                  Manage SehatKor platform operations and user verifications
+                </p>
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 hover:from-green-600 hover:to-emerald-600 transition-all shadow-md">
+                <ShieldCheck className="w-4 h-4 mr-1" />
+                Admin Access
+              </Badge>
+              <Button 
+                onClick={handleAdminLogout}
+                className="bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 hover:scale-105 transition-all shadow-md font-semibold border-0"
+              >
+                Admin Logout
+              </Button>
+            </div>
           </div>
+          
+          {/* Bottom Gradient Accent Line */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
         </div>
 
         {/* Removed: Top Verified Users Card */}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        {/* Stats Cards - Stylish Gradient Design */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           {statsData.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card
+              <div
                 key={index}
                 onClick={() => navigate(cardLinkFor(stat.title))}
-                className="relative cursor-pointer border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-0.5 rounded-2xl bg-white hover:border-gray-200 overflow-hidden group"
+                className="group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-2xl"
               >
-                <div className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${getAccentBar(stat.color)}`} />
-                <CardContent className="p-5">
-                  <div className={`flex items-start justify-between gap-4 p-3 rounded-xl bg-gradient-to-br ${getCardSurface(stat.color)}`}>
-                    <div className="min-w-0">
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                        {stat.title}
-                      </p>
-                      <p className="text-3xl font-semibold leading-tight">{stat.value}</p>
-                      <p
-                        className={`mt-1 text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-500'}`}
-                      >
-                        {stat.change || 'from last month'}
-                      </p>
+                {/* Gradient Background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${getCardGradient(stat.color)} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />
+                
+                {/* Shimmer Effect on Hover */}
+                <div className={`absolute inset-0 bg-gradient-to-r ${getShimmerGradient(stat.color)} opacity-0 group-hover:opacity-20 transition-opacity duration-700`} />
+                
+                {/* Decorative Circles */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                
+                {/* Content */}
+                <div className="relative p-6 text-white">
+                  {/* Icon */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                      <Icon className="w-7 h-7 text-white drop-shadow-lg" />
                     </div>
-                    <div className="shrink-0">
-                      <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr ${getIconBg(stat.color)} ring-1 ring-black/5 group-hover:scale-110 transition-transform`}>
-                        <Icon className={`w-5 h-5`} />
-                      </div>
-                    </div>
+                    <div className="w-2 h-2 rounded-full bg-white/40 group-hover:scale-150 transition-transform duration-300" />
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  {/* Stats */}
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-white/80 uppercase tracking-wider">
+                      {stat.title}
+                    </p>
+                    <p className="text-4xl font-bold text-white drop-shadow-lg">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-white/70 font-medium">
+                      {stat.change || 'from last month'}
+                    </p>
+                  </div>
+                  
+                  {/* Bottom Accent Line */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 group-hover:h-1.5 transition-all duration-300" />
+                </div>
+              </div>
             );
           })}
         </div>
 
-        {/* Stylish Navigation Header */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100">
-          <div className="flex flex-col gap-6">
-            {/* First Row - Main Admin Functions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-              
-              {/* Verify Entities Card */}
-              <div 
-                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-blue-200"
-                onClick={() => navigate('/admin/verifications')}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <UserCheck className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Verify Entities</h3>
-                    <p className="text-sm text-gray-500 mt-1">Review & approve providers</p>
-                  </div>
-                </div>
+        {/* Stylish Navigation Cards - Light Pastel Theme */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+          
+          {/* Verify Entities Card */}
+          <div 
+            className="group cursor-pointer bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-green-100 hover:border-green-200"
+            onClick={() => navigate('/admin/verifications')}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-emerald-400 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all shadow-md">
+                <UserCheck className="w-7 h-7" />
               </div>
-
-              {/* Documents Card */}
-              <div 
-                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-purple-200"
-                onClick={() => navigate('/admin/documents')}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <Eye className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Documents</h3>
-                    <p className="text-sm text-gray-500 mt-1">Manage uploaded files</p>
-                  </div>
-                </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Verify Entities</h3>
+                <p className="text-xs text-gray-500 mt-1">Review & approve providers</p>
               </div>
-
-              {/* Payment Management Card */}
-              <div 
-                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-blue-200"
-                onClick={() => navigate('/admin/payments')}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <CreditCard className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Payment Management</h3>
-                    <p className="text-sm text-gray-500 mt-1">Handle transactions & releases</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Second Row - Management Functions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-
-              {/* User Management Card - DANGER */}
-              <div 
-                className="group cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:border-red-300 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                onClick={() => navigate('/admin/user-management')}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <AlertTriangle className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-red-800 group-hover:text-red-900 transition-colors">User Management</h3>
-                    <p className="text-sm text-red-600 mt-1">Manage and delete user accounts</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recommended Services Management */}
-              <div 
-                className="group cursor-pointer bg-gradient-to-br from-yellow-50 to-orange-100 border border-yellow-200 hover:border-yellow-300 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                onClick={() => navigate('/admin/recommended-services')}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <Star className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-yellow-800 group-hover:text-yellow-900 transition-colors">Recommended Services</h3>
-                    <p className="text-sm text-yellow-600 mt-1">Mark services as recommended by SehatKor</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Hero Images Manager Card */}
-              <div 
-                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200"
-                onClick={() => { navigate('/admin/hero-images'); }}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <Image className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">Hero Images</h3>
-                    <p className="text-sm text-gray-500 mt-1">Manage homepage slider images</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Partners Manager Card */}
-              <div 
-                className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-purple-200"
-                onClick={() => { navigate('/admin/partners'); }}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <Handshake className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Partners Marquee</h3>
-                    <p className="text-sm text-gray-500 mt-1">Add logos and names</p>
-                  </div>
-                </div>
-              </div>
-
             </div>
           </div>
+
+          {/* Documents Card */}
+          <div 
+            className="group cursor-pointer bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-purple-100 hover:border-purple-200"
+            onClick={() => navigate('/admin/documents')}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-fuchsia-400 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all shadow-md">
+                <Eye className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Documents</h3>
+                <p className="text-xs text-gray-500 mt-1">Manage uploaded files</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Management Card */}
+          <div 
+            className="group cursor-pointer bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-blue-100 hover:border-blue-200"
+            onClick={() => navigate('/admin/payments')}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all shadow-md">
+                <CreditCard className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Payment Management</h3>
+                <p className="text-xs text-gray-500 mt-1">Handle transactions & releases</p>
+              </div>
+            </div>
+          </div>
+
+          {/* User Management Card */}
+          <div 
+            className="group cursor-pointer bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-red-100 hover:border-red-200"
+            onClick={() => navigate('/admin/user-management')}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-red-400 to-rose-400 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all shadow-md">
+                <AlertTriangle className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">User Management</h3>
+                <p className="text-xs text-gray-500 mt-1">Manage user accounts</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommended Services Card */}
+          <div 
+            className="group cursor-pointer bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-amber-100 hover:border-amber-200"
+            onClick={() => navigate('/admin/recommended-services')}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all shadow-md">
+                <Star className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Recommended Services</h3>
+                <p className="text-xs text-gray-500 mt-1">Mark services as recommended</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Images Card */}
+          <div 
+            className="group cursor-pointer bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-indigo-100 hover:border-indigo-200"
+            onClick={() => navigate('/admin/hero-images')}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-violet-400 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all shadow-md">
+                <Image className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Hero Images</h3>
+                <p className="text-xs text-gray-500 mt-1">Manage homepage slider</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Partners Marquee Card */}
+          <div 
+            className="group cursor-pointer bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-pink-100 hover:border-pink-200"
+            onClick={() => navigate('/admin/partners')}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-pink-400 to-rose-400 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all shadow-md">
+                <Handshake className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Partners Marquee</h3>
+                <p className="text-xs text-gray-500 mt-1">Add logos and names</p>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Partner Manager moved to separate page: /admin/partners */}
