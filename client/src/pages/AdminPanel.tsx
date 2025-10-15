@@ -464,6 +464,24 @@ const AdminPanel = () => {
     return 'from-gray-400/40 via-gray-500/40 to-gray-600/40';
   };
 
+  // Build link for stat card -> entities list with filters
+  const cardLinkFor = (title: string) => {
+    switch (title) {
+      case 'Verified Users':
+        return '/admin/entities?status=verified&type=all';
+      case 'Total Doctors':
+        return '/admin/entities?type=doctor&status=all';
+      case 'Total Hospitals/Clinics':
+        return '/admin/entities?type=clinic/hospital&status=all';
+      case 'Total Pharmacies':
+        return '/admin/entities?type=pharmacy&status=all';
+      case 'Total Laboratories':
+        return '/admin/entities?type=laboratory&status=all';
+      default:
+        return '/admin/entities';
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-background">
       {/* Gate Modal Overlay */}
@@ -554,7 +572,8 @@ const AdminPanel = () => {
             return (
               <Card
                 key={index}
-                className="relative border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-0.5 rounded-2xl bg-white hover:border-gray-200 overflow-hidden"
+                onClick={() => navigate(cardLinkFor(stat.title))}
+                className="relative cursor-pointer border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-0.5 rounded-2xl bg-white hover:border-gray-200 overflow-hidden group"
               >
                 <div className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${getAccentBar(stat.color)}`} />
                 <CardContent className="p-5">
@@ -571,7 +590,7 @@ const AdminPanel = () => {
                       </p>
                     </div>
                     <div className="shrink-0">
-                      <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr ${getIconBg(stat.color)} ring-1 ring-black/5`}>
+                      <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr ${getIconBg(stat.color)} ring-1 ring-black/5 group-hover:scale-110 transition-transform`}>
                         <Icon className={`w-5 h-5`} />
                       </div>
                     </div>
