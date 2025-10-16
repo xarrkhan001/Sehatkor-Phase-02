@@ -480,13 +480,14 @@ class ServiceManager {
   }
 
   // Add service
-  static addService(service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Service {
+  static addService(service: Omit<Service, 'createdAt' | 'updatedAt'> | Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Service {
     const allServices = this.getAllServices();
     const newService = {
       ...service,
-      id: `${service.providerType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      // Use provided ID if available (from server), otherwise generate one
+      id: (service as any).id || `${service.providerType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: (service as any).createdAt || new Date().toISOString(),
+      updatedAt: (service as any).updatedAt || new Date().toISOString(),
     } as Service;
 
     allServices.push(newService);

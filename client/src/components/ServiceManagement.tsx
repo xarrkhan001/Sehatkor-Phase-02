@@ -652,6 +652,7 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
             city: created.city ?? serviceForm.city,
             detailAddress: created.detailAddress ?? serviceForm.detailAddress,
             googleMapLink: created.googleMapLink ?? serviceForm.googleMapLink,
+            hospitalClinicName: created.hospitalClinicName ?? serviceForm.hospitalClinicName,
             diseases: created.diseases || diseases,
             // Include variants array if API returned it
             variants: Array.isArray((created as any).variants) ? (created as any).variants : [],
@@ -772,15 +773,26 @@ const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
   const handleDeleteService = async (serviceId: string) => {
     try {
-      if (userRole === 'doctor') await doctorDelete(serviceId);
+      // First delete from backend
+      if (userRole === 'doctor') {
+        await doctorDelete(serviceId);
+      }
+      
+      // Then update local storage and UI
       const success = ServiceManager.deleteService(serviceId);
       if (success) {
         const updatedServices = services.filter(service => service.id !== serviceId);
         onServicesUpdate(updatedServices);
         toast({ title: 'Success', description: 'Service deleted successfully' });
+        
+        // Reload services from server to ensure sync
+        if (onReloadServices) {
+          await onReloadServices();
+        }
       }
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Failed to delete', variant: 'destructive' });
+      console.error('Error deleting service:', e);
+      toast({ title: 'Error', description: e?.message || 'Failed to delete service', variant: 'destructive' });
     }
   };
 
