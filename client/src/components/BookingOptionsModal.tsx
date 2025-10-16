@@ -110,7 +110,7 @@ const BookingOptionsModal: React.FC<BookingOptionsModalProps> = ({
         if (!cancelled && first && first._id) {
           setResolvedProviderId(String(first._id));
         }
-      } catch {}
+      } catch { }
     };
     run();
     return () => { cancelled = true; };
