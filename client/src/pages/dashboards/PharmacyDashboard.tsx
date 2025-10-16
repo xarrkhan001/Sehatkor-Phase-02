@@ -1869,7 +1869,7 @@ const PharmacyDashboard = () => {
                   </div>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2">
                     <Button variant="outline" onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto">Cancel</Button>
                     <Button onClick={handleSaveEdit} className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage}>
                       {isUploadingImage ? 'Updating...' : 'Update Medicine'}

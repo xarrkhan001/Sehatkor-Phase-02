@@ -120,11 +120,35 @@ export async function updateService(id: string, updates: Partial<DoctorServiceDo
 }
 
 export async function deleteService(id: string): Promise<void> {
-  const res = await fetch(`${BASE}/services/${id}`, { method: 'DELETE', headers: { ...authHeaders() } });
-  if (!res.ok) {
-    let data: any = {};
-    try { data = await res.json(); } catch {}
-    throw new Error(data?.message || 'Failed to delete service');
+  try {
+    console.log('Deleting service with ID:', id);
+    const res = await fetch(`${BASE}/services/${id}`, { 
+      method: 'DELETE', 
+      headers: { ...authHeaders() } 
+    });
+    console.log('Delete service response status:', res.status);
+    
+    if (!res.ok) {
+      let data: any = {};
+      try { 
+        data = await res.json(); 
+      } catch (e) {
+        console.error('Failed to parse error response:', e);
+      }
+      throw new Error(data?.message || 'Failed to delete service');
+    }
+    
+    // Read the response body to properly complete the request
+    try {
+      const data = await res.json();
+      console.log('Delete service response:', data);
+    } catch (e) {
+      // Response might be empty or not JSON, which is fine for DELETE
+      console.log('Delete successful (no JSON response)');
+    }
+  } catch (error) {
+    console.error('Error in deleteService:', error);
+    throw error;
   }
 }
 

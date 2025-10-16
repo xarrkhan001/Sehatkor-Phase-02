@@ -209,12 +209,12 @@ const LaboratoryDashboard = () => {
     const description = trim(editForm.description);
     const city = trim(editForm.city);
     const addr = trim(editForm.detailAddress);
-    if (name.length > LIMITS.name) { toast.error(`Test Name must be at most ${LIMITS.name} characters.`); return false; }
-    if (department.length > LIMITS.department) { toast.error(`Category must be at most ${LIMITS.department} characters.`); return false; }
-    if (description.length > LIMITS.description) { toast.error(`Description must be at most ${LIMITS.description} characters.`); return false; }
-    if (city.length > LIMITS.city) { toast.error(`City must be at most ${LIMITS.city} characters.`); return false; }
-    if (addr.length > LIMITS.address) { toast.error(`Detailed Address must be at most ${LIMITS.address} characters.`); return false; }
-    if (!isValidHttpUrl(editForm.googleMapLink)) { toast.error('Google Map Link must be a valid http(s) URL.'); return false; }
+    if (name.length > LIMITS.name) { toast({ title: 'Error', description: `Test Name must be at most ${LIMITS.name} characters.`, variant: 'destructive' }); return false; }
+    if (department.length > LIMITS.department) { toast({ title: 'Error', description: `Category must be at most ${LIMITS.department} characters.`, variant: 'destructive' }); return false; }
+    if (description.length > LIMITS.description) { toast({ title: 'Error', description: `Description must be at most ${LIMITS.description} characters.`, variant: 'destructive' }); return false; }
+    if (city.length > LIMITS.city) { toast({ title: 'Error', description: `City must be at most ${LIMITS.city} characters.`, variant: 'destructive' }); return false; }
+    if (addr.length > LIMITS.address) { toast({ title: 'Error', description: `Detailed Address must be at most ${LIMITS.address} characters.`, variant: 'destructive' }); return false; }
+    if (!isValidHttpUrl(editForm.googleMapLink)) { toast({ title: 'Error', description: 'Google Map Link must be a valid http(s) URL.', variant: 'destructive' }); return false; }
     return true;
   };
 
@@ -358,10 +358,10 @@ const LaboratoryDashboard = () => {
       await apiDelete(id);
       ServiceManager.deleteService(id);
       await reloadTests();
-      toast.success('Test deleted');
+      toast({ title: 'Success', description: 'Test deleted successfully' });
     } catch (e: any) {
       console.error('Failed to delete test:', e);
-      toast.error(e?.message || 'Failed to delete test');
+      toast({ title: 'Error', description: e?.message || 'Failed to delete test', variant: 'destructive' });
     }
   };
 
@@ -391,7 +391,7 @@ const LaboratoryDashboard = () => {
     if (!editTestId) return;
     if (!validateEditLengths()) return;
     if (!editForm.name) {
-      toast.error('Please fill in required fields');
+      toast({ title: 'Error', description: 'Please fill in required fields', variant: 'destructive' });
       return;
     }
     
@@ -447,10 +447,10 @@ const LaboratoryDashboard = () => {
       setIsEditTestOpen(false);
       setEditTestId(null);
       await reloadTests();
-      toast.success('Test updated');
+      toast({ title: 'Success', description: 'Test updated successfully' });
     } catch (e: any) {
       console.error('Error updating test:', e);
-      toast.error(e?.message || 'Failed to update test');
+      toast({ title: 'Error', description: e?.message || 'Failed to update test', variant: 'destructive' });
     } finally {
       setIsUpdatingTest(false);
     }
@@ -493,7 +493,7 @@ const LaboratoryDashboard = () => {
 
     } catch (error) {
       console.error('Error loading tests:', error);
-      toast.error('Failed to load tests. Please refresh the page.');
+      toast({ title: 'Error', description: 'Failed to load tests. Please refresh the page.', variant: 'destructive' });
     }
   };
 
@@ -509,11 +509,11 @@ const LaboratoryDashboard = () => {
         const data = await response.json();
         setBookings(data);
       } else {
-        toast.error('Failed to fetch bookings.');
+        toast({ title: 'Error', description: 'Failed to fetch bookings.', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
-      toast.error('An error occurred while fetching bookings.');
+      toast({ title: 'Error', description: 'An error occurred while fetching bookings.', variant: 'destructive' });
     } finally {
       setIsLoadingBookings(false);
     }
@@ -529,12 +529,12 @@ const LaboratoryDashboard = () => {
       });
       if (response.ok) {
         setBookings(prev => prev.filter(b => b._id !== bookingId));
-        toast.success('Booking deleted successfully');
+        toast({ title: 'Success', description: 'Booking deleted successfully' });
       } else {
-        toast.error('Failed to delete booking');
+        toast({ title: 'Error', description: 'Failed to delete booking', variant: 'destructive' });
       }
     } catch (error) {
-      toast.error('Failed to delete booking');
+      toast({ title: 'Error', description: 'Failed to delete booking', variant: 'destructive' });
     }
   };
 
@@ -548,18 +548,18 @@ const LaboratoryDashboard = () => {
       });
       if (response.ok) {
         setBookings([]);
-        toast.success('All bookings deleted successfully');
+        toast({ title: 'Success', description: 'All bookings deleted successfully' });
       } else {
-        toast.error('Failed to delete all bookings');
+        toast({ title: 'Error', description: 'Failed to delete all bookings', variant: 'destructive' });
       }
     } catch (error) {
-      toast.error('Failed to delete all bookings');
+      toast({ title: 'Error', description: 'Failed to delete all bookings', variant: 'destructive' });
     }
   };
 
   const scheduleBooking = async () => {
     if (!selectedBooking || !scheduleDetails.scheduledTime) {
-      toast.error("Please select a time for the appointment.");
+      toast({ title: 'Error', description: 'Please select a time for the appointment.', variant: 'destructive' });
       return;
     }
 
@@ -576,14 +576,14 @@ const LaboratoryDashboard = () => {
       if (response.ok) {
         const updatedBooking = await response.json();
         setBookings(prev => prev.map(b => b._id === selectedBooking._id ? updatedBooking : b));
-        toast.success("Booking scheduled successfully");
+        toast({ title: 'Success', description: 'Booking scheduled successfully' });
         setIsScheduling(false);
         setSelectedBooking(null);
       } else {
         throw new Error('Failed to schedule booking');
       }
     } catch (error) {
-      toast.error("Failed to schedule booking");
+      toast({ title: 'Error', description: 'Failed to schedule booking', variant: 'destructive' });
     }
   };
 
@@ -599,12 +599,12 @@ const LaboratoryDashboard = () => {
       if (response.ok) {
         const updatedBooking = await response.json();
         setBookings(prev => prev.map(b => b._id === bookingId ? updatedBooking : b));
-        toast.success("Booking marked as complete");
+        toast({ title: 'Success', description: 'Booking marked as complete' });
       } else {
         throw new Error('Failed to complete booking');
       }
     } catch (error) {
-      toast.error("Failed to complete booking");
+      toast({ title: 'Error', description: 'Failed to complete booking', variant: 'destructive' });
     }
   };
 
@@ -1076,7 +1076,7 @@ const LaboratoryDashboard = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => setEditForm(prev => ({ ...prev, serviceType: [] }))}
-                        className="h-8 px-2 text-xs text-gray-600 hover:text-red-600"
+                        className="h-8 px-2 bg-gray-200 text-xs text-gray-600 hover:text-red-600"
                       >
                         Clear
                       </Button>
@@ -1204,20 +1204,22 @@ const LaboratoryDashboard = () => {
                         type="checkbox"
                         checked={editForm.homeDelivery}
                         onChange={(e) => setEditForm({ ...editForm, homeDelivery: e.target.checked })}
-                        className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+                        className="text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-sm">🏠 Home Delivery Available</span>
+                      <span className="text-sm">Offer home sample collection</span>
                     </label>
                   </div>
 
-                  <Button onClick={handleUpdateTest}  className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage || isUpdatingTest}>
-                    {isUpdatingTest ? 'Updating...' : 'Update Test'}
-                  </Button>
+                  <div className="flex justify-end">
+                    <Button onClick={handleUpdateTest} className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" disabled={isUploadingImage || isUpdatingTest}>
+                      {isUpdatingTest ? 'Updating...' : 'Update Test'}
+                    </Button>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
 
-            <Tabs defaultValue="tests">
+            <Tabs defaultValue="tests" className="space-y-4 sm:space-y-6">
               <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-slate-100 to-gray-200 p-1 rounded-xl shadow-inner">
                 <TabsTrigger
                   value="tests"

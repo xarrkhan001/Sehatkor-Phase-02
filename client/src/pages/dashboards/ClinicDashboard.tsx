@@ -1232,7 +1232,13 @@ const ClinicDashboard = () => {
                                   <Edit className="w-4 h-4 mr-1" /> Edit
                                 </Button>
                                 <Button size="sm" variant="destructive" className="flex-1" onClick={async () => {
-                                  try { await apiDelete(String(service.id)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
+                                  try { 
+                                    await apiDelete(String(service.id)); 
+                                    await reloadServices(); 
+                                    toast({ title: 'Success', description: 'Service deleted successfully' }); 
+                                  } catch (e: any) { 
+                                    toast({ title: 'Error', description: e?.message || 'Failed to delete service', variant: 'destructive' }); 
+                                  }
                                 }}>
                                   <Trash2 className="w-4 h-4 mr-1" /> Delete
                                 </Button>
@@ -1312,7 +1318,13 @@ const ClinicDashboard = () => {
                                         size="sm" 
                                         variant="destructive"
                                         onClick={async () => {
-                                          try { await apiDelete(String(service.id)); await reloadServices(); toast.success('Service deleted'); } catch (e: any) { toast.error(e?.message || 'Failed to delete'); }
+                                          try { 
+                                            await apiDelete(String(service.id)); 
+                                            await reloadServices(); 
+                                            toast({ title: 'Success', description: 'Service deleted successfully' }); 
+                                          } catch (e: any) { 
+                                            toast({ title: 'Error', description: e?.message || 'Failed to delete service', variant: 'destructive' }); 
+                                          }
                                         }}
                                       >
                                         <Trash2 className="w-4 h-4 mr-1" />
