@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import BlogSkeleton from "@/components/skeletons/BlogSkeleton";
 import { BookOpen, Stethoscope, Users, Award, Image as ImageIcon, ShieldCheck, MapPin, Star, Zap, HeartPulse, Monitor, Laptop } from "lucide-react";
@@ -262,7 +263,7 @@ const BlogPage = () => {
           {/* Grid Pattern */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
         </div>
-        
+
         <div className="relative container mx-auto px-4 py-20">
           <div className="max-w-6xl mx-auto">
             {/* Badge with Animation */}
@@ -311,13 +312,13 @@ const BlogPage = () => {
                 ];
                 const gradient = gradients[index];
                 return (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="group relative"
                   >
                     {/* Glow Effect */}
                     <div className={`absolute -inset-0.5 bg-gradient-to-r ${gradient} rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-500`}></div>
-                    
+
                     {/* Card */}
                     <div className="relative bg-white rounded-2xl p-6 shadow-lg ring-1 ring-gray-900/5 hover:shadow-2xl transition-all duration-300 transform group-hover:-translate-y-1">
                       <div className="text-center space-y-3">
@@ -402,7 +403,7 @@ const BlogPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {screenshots.map((shot, idx) => {
               const isLaptop = (shot as any).device === "laptop";
-              
+
               // Subtle background colors array
               const bgColors = [
                 'bg-blue-50',
@@ -420,9 +421,9 @@ const BlogPage = () => {
                 'bg-sky-50',
                 'bg-emerald-50'
               ];
-              
+
               const cardBg = bgColors[idx % bgColors.length];
-              
+
               return (
                 <div
                   key={shot.title}
@@ -430,7 +431,7 @@ const BlogPage = () => {
                 >
                   {/* Glow Effect */}
                   <div className="absolute -inset-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
+
                   {/* Card Container */}
                   <div className={`relative ${cardBg} rounded-2xl shadow-lg border border-gray-200/80 overflow-hidden group-hover:shadow-xl group-hover:border-blue-300/50 transition-all duration-500 flex flex-col h-full`}>
                     {/* Content Area - Compact */}
@@ -456,6 +457,77 @@ const BlogPage = () => {
         </section>
 
 
+        {/* Blog Posts Section */}
+        <section className="mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Health Articles & Guides</h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-green-500 mx-auto rounded-full mb-4"></div>
+            <p className="text-xl text-gray-600">Expert healthcare guides to help you make informed decisions</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Blog Post 1 */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2"></div>
+              <div className="p-6">
+                <Badge className="mb-3 bg-blue-100 text-blue-700">Health Guide</Badge>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  How to Book Doctor Appointments Online in Pakistan
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Complete 2025 guide to book verified doctors online. Save time, avoid queues, and consult from home.
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">5 min read</span>
+                  <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Link to="/blog/how-to-book-doctor-online-pakistan">Read More</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Blog Post 2 */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
+              <div className="bg-gradient-to-r from-green-500 to-green-600 h-2"></div>
+              <div className="p-6">
+                <Badge className="mb-3 bg-green-100 text-green-700">Lab Test Guide</Badge>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Best Lab Tests for Routine Health Checkup
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Essential blood tests every Pakistani should consider. Complete guide with prices and online booking.
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">6 min read</span>
+                  <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
+                    <Link to="/blog/best-lab-tests-routine-checkup-pakistan">Read More</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Blog Post 3 */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
+              <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-2"></div>
+              <div className="p-6">
+                <Badge className="mb-3 bg-purple-100 text-purple-700">Hospital Guide</Badge>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Top 10 Hospitals in Lahore, Karachi, Islamabad
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Complete 2025 ranking of Pakistan's best hospitals with specialties, facilities, and booking guide.
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">8 min read</span>
+                  <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700">
+                    <Link to="/blog/top-10-hospitals-pakistan-2025">Read More</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="mb-20">
           <div className="text-center mb-12">
@@ -463,15 +535,15 @@ const BlogPage = () => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-green-500 mx-auto rounded-full mb-6"></div>
             <p className="text-xl text-gray-600 mb-8">Search services, compare providers, and book instantly.</p>
             <div className="flex items-center justify-center gap-4">
-              <Button 
+              <Button
                 onClick={() => navigate('/search')}
                 className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg"
               >
                 Search Services
               </Button>
-              <Button 
+              <Button
                 onClick={() => navigate('/about')}
-                variant="outline" 
+                variant="outline"
                 className="px-8 py-3 rounded-xl font-semibold border-gray-300"
               >
                 About Us
