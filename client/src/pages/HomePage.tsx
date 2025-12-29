@@ -17,15 +17,15 @@ import heroImage5 from "@/assets/hero4.png";
 
 import { useAuth } from "@/contexts/AuthContext";
 
-import { 
-  Search, 
-  UserPlus, 
-  Calendar, 
-  MapPin, 
-  Star, 
-  CheckCircle, 
-  Heart, 
-  Shield, 
+import {
+  Search,
+  UserPlus,
+  Calendar,
+  MapPin,
+  Star,
+  CheckCircle,
+  Heart,
+  Shield,
   Clock,
   Users,
   Info,
@@ -60,7 +60,7 @@ const HomePage = () => {
     try {
       const el = document.getElementById('about');
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch {}
+    } catch { }
   };
 
   // Rotate hero background images every 5 seconds based on available images
@@ -102,7 +102,7 @@ const HomePage = () => {
           const urls = data.images.map((i: any) => i?.url).filter((u: any) => typeof u === 'string' && !!u);
           setHeroImages(urls);
         }
-      } catch {}
+      } catch { }
     };
     load();
   }, []);
@@ -189,7 +189,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden pt-16">
       {/* Hero Section */}
-      <section 
+      <section
         className="relative overflow-visible py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 px-4 text-white min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] lg:min-h-[85vh] hero-section hero-background"
         style={{
           width: '100vw',
@@ -227,58 +227,58 @@ const HomePage = () => {
             <p className="text-base font-thin sm:text-lg md:text-xl lg:text-xl mb-6 sm:mb-8 text-white/70 leading-relaxed max-w-3xl mx-auto">
               Find, compare, and book healthcare services across Pakistan with SehatKor
             </p>
-           
-            
+
+
             {/* Search Component */}
             <div className="mt-4 sm:mt-6 relative z-10 w-full max-w-2xl mx-auto">
               <SearchServices hideCategory hideLocationIcon light />
             </div>
 
             <div className="flex flex-row sm:flex-row gap-2 lg:gap-4 justify-center mt-4 sm:mt-8 w-full max-w-2xl mx-auto">
-  <Button
-    asChild
-    className="bg-white text-primary hover:bg-white/90 
+              <Button
+                asChild
+                className="bg-white text-primary hover:bg-white/90 
     px-2 sm:px-6 py-1.5 sm:py-3 
     text-[11px] sm:text-base 
     flex-1 sm:flex-none
     "
-  >
-    <Link to="/search" className="flex items-center justify-center">
-      <Search className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-      Search Services
-    </Link>
-  </Button>
+              >
+                <Link to="/search" className="flex items-center justify-center">
+                  <Search className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                  Search Services
+                </Link>
+              </Button>
 
-  {!user ? (
-    <Button
-      asChild
-      variant="outline"
-      className="border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 
+              {!user ? (
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-red-600 
       px-2 sm:px-6 py-1.5 sm:py-3 
       text-[11px] sm:text-base 
       flex-1 sm:flex-none"
-    >
-      <Link to="/register" className="flex items-center justify-center">
-        <UserPlus className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-        Register Now
-      </Link>
-    </Button>
-  ) : (
-    <Button
-      asChild
-      variant="outline"
-      className="border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-blue-600 
+                >
+                  <Link to="/register" className="flex items-center justify-center">
+                    <UserPlus className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    Register Now
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-blue-600 
       px-2 sm:px-6 py-1.5 sm:py-3 
       text-[11px] sm:text-base 
       flex-1 sm:flex-none"
-    >
-      <Link to="/about" className="flex items-center justify-center">
-        <Info className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-        About Us
-      </Link>
-    </Button>
-  )}
-</div>
+                >
+                  <Link to="/about" className="flex items-center justify-center">
+                    <Info className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    About Us
+                  </Link>
+                </Button>
+              )}
+            </div>
 
           </div>
         </div>
@@ -341,11 +341,11 @@ const HomePage = () => {
               Comprehensive healthcare services to meet all your medical needs
             </p>
           </div>
-          
+
           {/* New Layout: 4 left cards + 2 right cards */}
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              
+
               {/* Left Column - 3 stacked cards */}
               <div className="lg:col-span-6 space-y-4">
                 {services.slice(0, 3).map((service, index) => {
@@ -353,12 +353,11 @@ const HomePage = () => {
                   return (
                     <Card key={index} className={`group border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 ${service.bgColor} ${service.hoverBgColor} min-h-[120px]`}>
                       <CardContent className="p-6 flex items-center">
-                        <div className={`w-12 h-12 rounded-lg ${
-                          service.bgColor === 'bg-blue-50' ? 'bg-blue-100' : 
-                          service.bgColor === 'bg-green-50' ? 'bg-green-100' : 
-                          service.bgColor === 'bg-indigo-50' ? 'bg-indigo-100' :
-                          service.bgColor === 'bg-orange-50' ? 'bg-orange-100' : 'bg-gray-100'
-                        } flex items-center justify-center mr-4 flex-shrink-0`}>
+                        <div className={`w-12 h-12 rounded-lg ${service.bgColor === 'bg-blue-50' ? 'bg-blue-100' :
+                          service.bgColor === 'bg-green-50' ? 'bg-green-100' :
+                            service.bgColor === 'bg-indigo-50' ? 'bg-indigo-100' :
+                              service.bgColor === 'bg-orange-50' ? 'bg-orange-100' : 'bg-gray-100'
+                          } flex items-center justify-center mr-4 flex-shrink-0`}>
                           <Icon className={`w-6 h-6 ${service.color}`} />
                         </div>
                         <div className="flex-1">
@@ -380,10 +379,9 @@ const HomePage = () => {
                   return (
                     <Card key={index + 3} className={`group border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 ${service.bgColor} ${service.hoverBgColor} h-full min-h-[250px]`}>
                       <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full">
-                        <div className={`w-16 h-16 rounded-lg ${
-                          service.bgColor === 'bg-emerald-50' ? 'bg-emerald-100' : 
+                        <div className={`w-16 h-16 rounded-lg ${service.bgColor === 'bg-emerald-50' ? 'bg-emerald-100' :
                           service.bgColor === 'bg-purple-50' ? 'bg-purple-100' : 'bg-gray-100'
-                        } flex items-center justify-center mb-6`}>
+                          } flex items-center justify-center mb-6`}>
                           <Icon className={`w-8 h-8 ${service.color}`} />
                         </div>
                         <CardTitle className="text-2xl font-semibold text-gray-800 mb-4">{service.title}</CardTitle>
@@ -401,22 +399,22 @@ const HomePage = () => {
       </section>
 
       {/* Comparison Explorer (styled section) */}
-      <section 
+      <section
         className="relative py-20 sm:py-24 overflow-hidden bg-gradient-to-br from-slate-300 via-zinc-200 to-slate-100"
       >
         {/* Subtle overlay */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.17),transparent_62%),radial-gradient(ellipse_at_bottom_right,rgba(99,102,241,0.15),transparent_62%)]" />
-        
+
         {/* Decorative elements (very subtle) */}
         <div className="absolute top-10 left-10 w-20 h-20 bg-white/70 rounded-full blur-2xl"></div>
         <div className="absolute bottom-10 right-10 w-32 h-32 bg-cyan-300/35 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-indigo-300/30 rounded-full blur-2xl"></div>
-        
+
         {/* Container (no inner card) */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-8 text-center">
-            <Badge 
-              variant="secondary" 
+            <Badge
+              variant="secondary"
               className="mb-4 bg-white/40 backdrop-blur-sm border-white/50 text-gray-800 hover:bg-white/60 transition-all duration-300"
             >
               Smart Compare
@@ -428,7 +426,7 @@ const HomePage = () => {
               Pick the same product across providers and see price, location, and rating differences
             </p>
           </div>
-          
+
           <CompareExplorer />
         </div>
 
@@ -446,7 +444,7 @@ const HomePage = () => {
               We're committed to making healthcare accessible, affordable, and reliable for everyone
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
