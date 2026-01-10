@@ -31,21 +31,164 @@
     content="Book doctor appointments, find hospitals, labs, and pharmacies in Pakistan. Trusted healthcare platform with verified doctors and 24/7 support." />
   <meta name="twitter:image" content="https://sehatkor.pk/og-image.jpg" />
   <link rel="icon" type="image/png" href="src/assets/favicon.png" />
-  <!-- Structured Data placeholder -->
+  <!-- Enhanced Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Sehatkor",
-    "url": "https://sehatkor.pk",
-    "logo": "https://sehatkor.pk/logo.png",
-    "sameAs": [],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+923141521115",
-      "contactType": "customer service"
-    }
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://sehatkor.pk/#organization",
+        "name": "Sehatkor",
+        "url": "https://sehatkor.pk",
+        "logo": "https://sehatkor.pk/logo.png",
+        "description": "Pakistan's leading healthcare platform for booking doctor appointments, hospitals, labs, and pharmacies online.",
+        "foundingDate": "2023",
+        "areaServed": [
+          {
+            "@type": "Country",
+            "name": "Pakistan"
+          },
+          {
+            "@type": "City",
+            "name": "Karachi"
+          },
+          {
+            "@type": "City", 
+            "name": "Lahore"
+          },
+          {
+            "@type": "City",
+            "name": "Islamabad"
+          },
+          {
+            "@type": "City",
+            "name": "Rawalpindi"
+          },
+          {
+            "@type": "City",
+            "name": "Peshawar"
+          },
+          {
+            "@type": "City",
+            "name": "Mardan"
+          },
+          {
+            "@type": "City",
+            "name": "Swat"
+          },
+          {
+            "@type": "City",
+            "name": "Chitral"
+          },
+          {
+            "@type": "City",
+            "name": "Noshera"
+          },
+          {
+            "@type": "City",
+            "name": "Swabi"
+          },
+          {
+            "@type": "City",
+            "name": "Azad Kashmir"
+          }
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+923141521115",
+          "contactType": "customer service",
+          "availableLanguage": ["English", "Urdu"],
+          "serviceArea": "Pakistan"
+        },
+        "sameAs": [
+          "https://www.facebook.com/sehatkor",
+          "https://www.instagram.com/sehatkor",
+          "https://twitter.com/sehatkor"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://sehatkor.pk/#website",
+        "url": "https://sehatkor.pk",
+        "name": "Sehatkor",
+        "description": "Book doctor appointments, find hospitals, labs, and pharmacies in Pakistan. Trusted healthcare platform with verified doctors.",
+        "publisher": {
+          "@id": "https://sehatkor.pk/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://sehatkor.pk/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "MedicalOrganization",
+        "@id": "https://sehatkor.pk/#medical",
+        "name": "Sehatkor Healthcare Platform",
+        "url": "https://sehatkor.pk",
+        "description": "Digital healthcare platform connecting patients with verified doctors, hospitals, laboratories, and pharmacies across Pakistan.",
+        "medicalSpecialty": [
+          "General Practice",
+          "Cardiology", 
+          "Pediatrics",
+          "Gynecology",
+          "Orthopedics",
+          "Dermatology"
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Healthcare Services",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Doctor Consultation",
+                "description": "Online and in-person doctor appointments"
+              }
+            },
+            {
+              "@type": "Offer", 
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Hospital Services",
+                "description": "Hospital admissions, surgeries, and treatments"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service", 
+                "name": "Laboratory Tests",
+                "description": "Blood tests, diagnostics, and health screenings"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Pharmacy Services", 
+                "description": "Prescription medicines and health products delivery"
+              }
+            }
+          ]
+        }
+      }
+    ]
   }
+  </script>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', {
+      page_title: 'Sehatkor - Healthcare Platform Pakistan',
+      page_location: 'https://sehatkor.pk/',
+      content_group1: 'healthcare'
+    });
   </script>
 </head>
 
