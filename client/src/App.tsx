@@ -37,6 +37,16 @@ const BlogPage = lazy(() => import("./pages/BlogPage"));
 const BlogHowToBookDoctor = lazy(() => import("./pages/blog/how-to-book-doctor-online-pakistan"));
 const BlogBestLabTests = lazy(() => import("./pages/blog/best-lab-tests-routine-checkup-pakistan"));
 const BlogTopHospitals = lazy(() => import("./pages/blog/top-10-hospitals-pakistan-2025"));
+const KarachiPage = lazy(() => import("./pages/locations/KarachiPage"));
+const LahorePage = lazy(() => import("./pages/locations/LahorePage"));
+const IslamabadPage = lazy(() => import("./pages/locations/IslamabadPage"));
+const PeshawarPage = lazy(() => import("./pages/locations/PeshawarPage"));
+const MardanPage = lazy(() => import("./pages/locations/MardanPage"));
+const SwatPage = lazy(() => import("./pages/locations/SwatPage"));
+const ChitralPage = lazy(() => import("./pages/locations/ChitralPage"));
+const NosheraPage = lazy(() => import("./pages/locations/NosheraPage"));
+const SwabiPage = lazy(() => import("./pages/locations/SwabiPage"));
+const AzadKashmirPage = lazy(() => import("./pages/locations/AzadKashmirPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
@@ -107,6 +117,16 @@ const AppShell = () => {
             <Route path="/blog/how-to-book-doctor-online-pakistan" element={<Suspense fallback={<BlogSkeleton />}><BlogHowToBookDoctor /></Suspense>} />
             <Route path="/blog/best-lab-tests-routine-checkup-pakistan" element={<Suspense fallback={<BlogSkeleton />}><BlogBestLabTests /></Suspense>} />
             <Route path="/blog/top-10-hospitals-pakistan-2025" element={<Suspense fallback={<BlogSkeleton />}><BlogTopHospitals /></Suspense>} />
+            <Route path="/karachi" element={<Suspense fallback={<PageSkeleton />}><KarachiPage /></Suspense>} />
+            <Route path="/lahore" element={<Suspense fallback={<PageSkeleton />}><LahorePage /></Suspense>} />
+            <Route path="/islamabad" element={<Suspense fallback={<PageSkeleton />}><IslamabadPage /></Suspense>} />
+            <Route path="/peshawar" element={<Suspense fallback={<PageSkeleton />}><PeshawarPage /></Suspense>} />
+            <Route path="/mardan" element={<Suspense fallback={<PageSkeleton />}><MardanPage /></Suspense>} />
+            <Route path="/swat" element={<Suspense fallback={<PageSkeleton />}><SwatPage /></Suspense>} />
+            <Route path="/chitral" element={<Suspense fallback={<PageSkeleton />}><ChitralPage /></Suspense>} />
+            <Route path="/noshera" element={<Suspense fallback={<PageSkeleton />}><NosheraPage /></Suspense>} />
+            <Route path="/swabi" element={<Suspense fallback={<PageSkeleton />}><SwabiPage /></Suspense>} />
+            <Route path="/azad-kashmir" element={<Suspense fallback={<PageSkeleton />}><AzadKashmirPage /></Suspense>} />
             <Route path="/about" element={<Suspense fallback={<PageSkeleton />}><AboutPage /></Suspense>} />
             <Route path="/contact" element={<Suspense fallback={<PageSkeleton />}><ContactPage /></Suspense>} />
             <Route path="/admin" element={<Suspense fallback={<AdminSkeleton />}><AdminPanel /></Suspense>} />

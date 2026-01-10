@@ -7,16 +7,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
-import { 
-  Menu, 
-  X, 
-  Stethoscope, 
-  Home, 
-  Grid3X3, 
-  UserPlus, 
-  LogIn, 
-  BookOpen, 
-  Phone, 
+import {
+  Menu,
+  X,
+  Stethoscope,
+  Home,
+  Grid3X3,
+  UserPlus,
+  LogIn,
+  BookOpen,
+  Phone,
   LayoutDashboard,
   LogOut,
   User,
@@ -26,7 +26,8 @@ import {
   UserCircle,
   BadgeCheck,
   Repeat,
-  ChevronDown
+  ChevronDown,
+  MapPin
 } from "lucide-react";
 import { apiUrl } from '@/config/api';
 
@@ -90,7 +91,7 @@ const Navbar = () => {
 
     // Only navigate if user is currently on a dashboard page
     const isDashboardPage = location.pathname.startsWith('/dashboard');
-    
+
     if (isDashboardPage) {
       if (mode === 'patient') {
         switch (user?.role) {
@@ -151,21 +152,21 @@ const Navbar = () => {
 
   // Filter navigation items based on authentication status
   const navItems = allNavItems
-  .map(item => {
-    if (item.name === "Dashboard") {
-      return { ...item, href: getDashboardPath() };
-    }
-    return item;
-  })
-  .filter(item => {
-    if (item.requiresAuth === false) {
-      return !user; // Show login/register only when not logged in
-    }
-    if (item.requiresAuth === true) {
-      return user; // Show dashboard only when logged in
-    }
-    return true; // Show other items always
-  });
+    .map(item => {
+      if (item.name === "Dashboard") {
+        return { ...item, href: getDashboardPath() };
+      }
+      return item;
+    })
+    .filter(item => {
+      if (item.requiresAuth === false) {
+        return !user; // Show login/register only when not logged in
+      }
+      if (item.requiresAuth === true) {
+        return user; // Show dashboard only when logged in
+      }
+      return true; // Show other items always
+    });
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -175,11 +176,28 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`${location.pathname === '/' ? 'fixed' : 'sticky'} top-0 z-50 w-full border-b overflow-visible transition-all duration-300 ${
-      location.pathname === '/' && isScrolled 
-        ? 'bg-gray-50/40 backdrop-blur-xl shadow-xl border-gray-100/40' 
-        : 'bg-gray-50/70 backdrop-blur-md shadow-sm border-gray-100/60'
-    }`}>
+    <nav className={`${location.pathname === '/' ? 'fixed' : 'sticky'} top-0 z-50 w-full border-b overflow-visible transition-all duration-300 ${location.pathname === '/' && isScrolled
+      ? 'bg-gray-50/40 backdrop-blur-xl shadow-xl border-gray-100/40'
+      : 'bg-gray-50/70 backdrop-blur-md shadow-sm border-gray-100/60'
+      }`}>
+      <style>
+        {`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+          }
+        `}
+      </style>
       <div className="container mx-auto px-4 relative">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -194,62 +212,42 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              
+
               // Group About, Blog, Contact into dropdown for large screens only
               if (['About', 'Blog', 'Contact'].includes(item.name)) {
                 return null; // Don't render these individually
               }
-              
+
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
-                    isActive(item.href)
-                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
-                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
+                  className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
+                    ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                    : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                    }`}
                 >
-                  <Icon className={`w-4 h-4 transition-all duration-300 ${
-                    isActive(item.href) 
-                      ? "text-white drop-shadow-sm" 
-                      : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
-                  }`} strokeWidth={2.5} />
+                  <Icon className={`w-4 h-4 transition-all duration-300 ${isActive(item.href)
+                    ? "text-white drop-shadow-sm"
+                    : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
+                    }`} strokeWidth={2.5} />
                   <span className=" transition-all duration-300">{item.name}</span>
                 </Link>
               );
             })}
-            
+
             {/* Info Dropdown for large screens only */}
             <div className="hidden lg:block relative">
               <div className="flex items-center">
-                {/* About Link - Clickable */}
-                <Link
-                  to="/about"
-                  className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
-                    isActive('/about')
-                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
-                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                >
-                  <BadgeCheck className={`w-4 h-4 transition-all duration-300 ${
-                    isActive('/about') 
-                      ? "text-white drop-shadow-sm" 
-                      : "text-blue-500 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
-                  }`} strokeWidth={2.5} />
-                  <span className="transition-all duration-300">About</span>
-                </Link>
-                
                 {/* Dropdown Arrow - Separate clickable area */}
                 <DropdownMenu open={isInfoDropdownOpen} onOpenChange={setIsInfoDropdownOpen}>
                   <DropdownMenuTrigger asChild>
                     <button className="group flex items-center justify-center w-8 h-10 rounded-xl text-sm font-medium transition-all duration-300 ml-1 text-gray-800 hover:text-gray-900 hover:bg-gray-100">
-                      <ChevronDown className={`w-3 h-3 transition-all duration-200 ${
-                        isInfoDropdownOpen ? 'rotate-180' : ''
-                      } text-gray-500 group-hover:text-red-500`} />
+                      <ChevronDown className={`w-3 h-3 transition-all duration-200 ${isInfoDropdownOpen ? 'rotate-180' : ''
+                        } text-gray-500 group-hover:text-red-500`} />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 mt-2 bg-gray-50/95 border border-gray-100/60 shadow-lg rounded-xl backdrop-blur-md">
+                  <DropdownMenuContent align="end" className="w-72 max-h-80 overflow-y-auto custom-scrollbar bg-gray-50/95 backdrop-blur-xl border border-gray-100/40 shadow-xl rounded-2xl mt-3 p-0 animate-in slide-in-from-top-2 duration-300" sideOffset={8} alignOffset={-15}>
                     <div className="p-1">
                       <DropdownMenuItem asChild className="rounded-lg">
                         <Link to="/blog" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
@@ -273,12 +271,128 @@ const Navbar = () => {
                           </div>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuLabel className="px-3 py-2 text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50/95 backdrop-blur-xl z-10">Locations</DropdownMenuLabel>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/karachi" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100">
+                            <MapPin className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Karachi</span>
+                            <p className="text-xs text-gray-500">1000+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/lahore" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100">
+                            <MapPin className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Lahore</span>
+                            <p className="text-xs text-gray-500">800+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/islamabad" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100">
+                            <MapPin className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Islamabad</span>
+                            <p className="text-xs text-gray-500">600+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuLabel className="px-3 py-2 text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50/95 backdrop-blur-xl z-10">KPK Cities</DropdownMenuLabel>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/peshawar" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100">
+                            <MapPin className="w-4 h-4 text-orange-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Peshawar</span>
+                            <p className="text-xs text-gray-500">400+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/mardan" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-100">
+                            <MapPin className="w-4 h-4 text-teal-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Mardan</span>
+                            <p className="text-xs text-gray-500">200+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/swat" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100">
+                            <MapPin className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Swat</span>
+                            <p className="text-xs text-gray-500">150+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/chitral" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100">
+                            <MapPin className="w-4 h-4 text-indigo-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Chitral</span>
+                            <p className="text-xs text-gray-500">80+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuLabel className="px-3 py-2 text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50/95 backdrop-blur-xl z-10">Other Cities</DropdownMenuLabel>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/noshera" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100">
+                            <MapPin className="w-4 h-4 text-rose-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Noshera</span>
+                            <p className="text-xs text-gray-500">100+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/swabi" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100">
+                            <MapPin className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Swabi</span>
+                            <p className="text-xs text-gray-500">180+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/azad-kashmir" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-100">
+                            <MapPin className="w-4 h-4 text-cyan-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Azad Kashmir</span>
+                            <p className="text-xs text-gray-500">250+ doctors</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
-            
+
             {/* Show individual items for medium screens */}
             <div className="lg:hidden flex items-center space-x-1">
               {['About', 'Blog', 'Contact'].map((itemName) => {
@@ -289,17 +403,15 @@ const Navbar = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
-                      isActive(item.href)
-                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
-                        : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                    }`}
+                    className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                      }`}
                   >
-                    <Icon className={`w-4 h-4 transition-all duration-300 ${
-                      isActive(item.href) 
-                        ? "text-white drop-shadow-sm" 
-                        : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
-                    }`} strokeWidth={2.5} />
+                    <Icon className={`w-4 h-4 transition-all duration-300 ${isActive(item.href)
+                      ? "text-white drop-shadow-sm"
+                      : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
+                      }`} strokeWidth={2.5} />
                     <span className=" transition-all duration-300">{item.name}</span>
                   </Link>
                 );
@@ -327,7 +439,7 @@ const Navbar = () => {
                     <DropdownMenuLabel className="font-normal relative z-10">
                       <div className="flex items-start gap-4">
                         <div className="relative p-1 bg-gradient-to-r from-green-400 via-cyan-400 to-blue-500 rounded-full shadow-lg shadow-cyan-400/50 mt-1">
-                          <Avatar 
+                          <Avatar
                             className="h-16 w-16 shadow-xl cursor-pointer transition-all duration-300 hover:scale-105"
                             onClick={() => {
                               if (user) {
@@ -339,18 +451,18 @@ const Navbar = () => {
                               }
                             }}
                           >
-                          <AvatarImage src={user.avatar || (user as any).avatar} alt={user.name} className="object-cover" />
-                          <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold text-xl">
-                            {user.name?.charAt(0) ?? 'U'}
-                          </AvatarFallback>
-                        </Avatar>
+                            <AvatarImage src={user.avatar || (user as any).avatar} alt={user.name} className="object-cover" />
+                            <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold text-xl">
+                              {user.name?.charAt(0) ?? 'U'}
+                            </AvatarFallback>
+                          </Avatar>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="space-y-1">
                             <p className="text-base font-bold leading-tight text-gray-900 truncate">{user.name}</p>
                             <p className="text-sm leading-tight text-gray-600 truncate">{user.email}</p>
                           </div>
-                          
+
                           {/* Provider Type & Verification Section */}
                           <div className="mt-3 space-y-2">
                             <div className="flex items-center justify-start gap-1.5">
@@ -384,7 +496,7 @@ const Navbar = () => {
                                 return null;
                               })()}
                             </div>
-                            
+
                             {/* Specialization Section */}
                             {user?.specialization && (
                               <div className="pt-1">
@@ -407,11 +519,10 @@ const Navbar = () => {
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent px-4 py-4 rounded-xl mx-0 my-1 cursor-pointer hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 border border-transparent hover:border-blue-200/60 hover:shadow-md">
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center">
-                            <div className={`p-2.5 rounded-xl mr-4 transition-all duration-300 shadow-sm ${
-                              mode === 'patient' 
-                                ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border border-blue-200' 
-                                : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border border-gray-200'
-                            }`}>
+                            <div className={`p-2.5 rounded-xl mr-4 transition-all duration-300 shadow-sm ${mode === 'patient'
+                              ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border border-blue-200'
+                              : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border border-gray-200'
+                              }`}>
                               <Repeat className="h-4 w-4" />
                             </div>
                             <div className="flex flex-col">
@@ -434,7 +545,7 @@ const Navbar = () => {
                         </div>
                       </DropdownMenuItem>
                     )}
-                    
+
                     {/* Logout Button */}
                     <DropdownMenuItem onClick={handleLogout} className="text-gray-700 focus:text-red-600 focus:bg-red-50 hover:bg-red-50 px-4 py-3 rounded-xl mx-0 my-1 transition-all duration-300 border border-transparent hover:border-red-200/60 hover:shadow-md group">
                       <div className="flex items-center w-full">
@@ -449,107 +560,156 @@ const Navbar = () => {
               </DropdownMenu>
             ) : null}
 
-           {/* Mobile Menu */}
-<Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-  <SheetTrigger asChild>
-    <Button variant="ghost" size="sm" className="md:hidden w-10 h-10 p-0 rounded-xl hover:bg-gray-100 transition-all duration-300">
-      <Menu className="w-5 h-5 text-gray-600" />
-    </Button>
-  </SheetTrigger>
-  <SheetContent side="right" className="w-80 bg-gray-50/95 backdrop-blur-md">
-    <div className="flex items-center mb-6">
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
-          <Stethoscope className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
-      </div>
-    </div>
-    
-    <div className="space-y-2">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.name}
-            to={item.href}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${
-              isActive(item.href)
-                ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
-                : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-            }`}
-          >
-            <Icon className={`w-5 h-5 transition-all duration-300 ${
-              isActive(item.href) 
-                ? "text-white drop-shadow-sm" 
-                : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
-            }`} strokeWidth={2.5} />
-            <span className="group-hover:font-semibold transition-all duration-300">{item.name}</span>
-          </Link>
-        );
-      })}
-      
-      {user && (
-        <>
-          <div className="border-t border-gray-200 my-4"></div>
-          <div className="px-4 py-2">
-            <p className="text-sm font-medium text-gray-900">{user.name}</p>
-            <p className="text-xs text-gray-500">{user.email}</p>
-            <div className="mt-2 flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <UserBadge role={(user as any).role} />
-                {(() => {
-                  const verified = Boolean(navVerification?.isVerified);
-                  const status = navVerification?.status;
-                  if (verified) {
-                    return (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                        <BadgeCheck className="h-3 w-3" /> Verified
-                      </span>
-                    );
-                  }
-                  if (user.role !== 'patient' && status === 'pending') {
-                    return (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
-                        <X className="h-3 w-3" /> Pending
-                      </span>
-                    );
-                  }
-                  if (user.role !== 'patient' && !verified) {
-                    return (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                        <X className="h-3 w-3" /> Unverified
-                      </span>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-              {user?.specialization && (
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-[9px] font-normal">
-                    {user.specialization} Specialist
-                  </span>
+            {/* Mobile Menu */}
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="md:hidden w-10 h-10 p-0 rounded-xl hover:bg-gray-100 transition-all duration-300">
+                  <Menu className="w-5 h-5 text-gray-600" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80 bg-gray-50/95 backdrop-blur-md overflow-y-auto">
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
+                      <Stethoscope className="w-6 h-6 text-white" />
+                    </div>
+                    <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              handleLogout();
-              setIsMobileMenuOpen(false);
-            }}
-            className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-300 w-full"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </button>
-        </>
-      )}
-    </div>
-  </SheetContent>
-</Sheet>
+
+                <div className="space-y-2">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
+                          ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
+                          : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                          }`}
+                      >
+                        <Icon className={`w-5 h-5 transition-all duration-300 ${isActive(item.href)
+                          ? "text-white drop-shadow-sm"
+                          : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
+                          }`} strokeWidth={2.5} />
+                        <span className="group-hover:font-semibold transition-all duration-300">{item.name}</span>
+                      </Link>
+                    );
+                  })}
+
+                  {/* Locations Section - Before User Info */}
+                  <div className="border-t border-gray-200 my-4"></div>
+                  <div className="px-4 py-3">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <MapPin className="w-5 h-5 text-red-500" />
+                      <span className="text-sm font-semibold text-gray-900">Locations</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link to="/karachi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-blue-600" />
+                        <span className="text-xs font-medium text-gray-900">Karachi</span>
+                      </Link>
+                      <Link to="/lahore" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-green-600" />
+                        <span className="text-xs font-medium text-gray-900">Lahore</span>
+                      </Link>
+                      <Link to="/islamabad" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-purple-600" />
+                        <span className="text-xs font-medium text-gray-900">Islamabad</span>
+                      </Link>
+                      <Link to="/peshawar" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-orange-600" />
+                        <span className="text-xs font-medium text-gray-900">Peshawar</span>
+                      </Link>
+                      <Link to="/mardan" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-teal-600" />
+                        <span className="text-xs font-medium text-gray-900">Mardan</span>
+                      </Link>
+                      <Link to="/swat" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-emerald-600" />
+                        <span className="text-xs font-medium text-gray-900">Swat</span>
+                      </Link>
+                      <Link to="/chitral" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-indigo-600" />
+                        <span className="text-xs font-medium text-gray-900">Chitral</span>
+                      </Link>
+                      <Link to="/noshera" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-rose-600" />
+                        <span className="text-xs font-medium text-gray-900">Noshera</span>
+                      </Link>
+                      <Link to="/swabi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors">
+                        <MapPin className="w-3 h-3 text-amber-600" />
+                        <span className="text-xs font-medium text-gray-900">Swabi</span>
+                      </Link>
+                      <Link to="/azad-kashmir" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors col-span-2">
+                        <MapPin className="w-3 h-3 text-cyan-600" />
+                        <span className="text-xs font-medium text-gray-900">Azad Kashmir</span>
+                      </Link>
+                    </div>
+                  </div>
+
+                  {user && (
+                    <>
+                      <div className="border-t border-gray-200 my-4"></div>
+                      <div className="px-4 py-2">
+                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                        <div className="mt-2 flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <UserBadge role={(user as any).role} />
+                            {(() => {
+                              const verified = Boolean(navVerification?.isVerified);
+                              const status = navVerification?.status;
+                              if (verified) {
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                                    <BadgeCheck className="h-3 w-3" /> Verified
+                                  </span>
+                                );
+                              }
+                              if (user.role !== 'patient' && status === 'pending') {
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
+                                    <X className="h-3 w-3" /> Pending
+                                  </span>
+                                );
+                              }
+                              if (user.role !== 'patient' && !verified) {
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                                    <X className="h-3 w-3" /> Unverified
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
+                          {user?.specialization && (
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-[9px] font-normal">
+                                {user.specialization} Specialist
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-300 w-full"
+                      >
+                        <LogOut className="w-5 h-5" />
+                        <span>Logout</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
