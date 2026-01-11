@@ -1,10 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const MardanPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-white">
+            <Helmet>
+                <title>Best Doctors in Mardan | مردان میں ڈاکٹر | Book Doctor Appointment Online</title>
+                <meta name="description" content="Find and book top-rated doctors in Mardan. 300+ PMDC verified doctors. مردان میں بہترین ڈاکٹر۔ Online appointments, instant booking, 24/7 support." />
+                <meta name="keywords" content="doctor in Mardan, best doctor Mardan, Mardan doctor appointment, مردان ڈاکٹر, آنلائن ڈاکٹر مردان, lady doctor Mardan, child specialist Mardan, Mardan Medical Complex, KPK doctors" />
+                <link rel="canonical" href="https://sehatkor.pk/mardan" />
+                <meta property="og:title" content="Best Doctors in Mardan | Book Online" />
+                <meta property="og:description" content="300+ verified doctors in Mardan. Online appointments, 24/7 support." />
+                <meta property="og:url" content="https://sehatkor.pk/mardan" />
+            </Helmet>
+
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16">
                 <div className="container mx-auto px-6">

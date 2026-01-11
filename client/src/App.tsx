@@ -75,6 +75,7 @@ const InvoiceDetailPage = lazy(() => import("./pages/InvoiceDetailPage"));
 import { CompareProvider } from "./contexts/CompareContext";
 import { SocketProvider } from "./context/SocketContext";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
+import { HelmetProvider } from 'react-helmet-async';
 
 const queryClient = new QueryClient();
 
@@ -152,19 +153,21 @@ const AppShell = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <SocketProvider>
-        <CompareProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppShell />
-          </TooltipProvider>
-        </CompareProvider>
-      </SocketProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <SocketProvider>
+          <CompareProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AppShell />
+            </TooltipProvider>
+          </CompareProvider>
+        </SocketProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
