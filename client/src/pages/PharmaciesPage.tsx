@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
@@ -100,12 +101,12 @@ const PharmaciesPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            
+
             // Recommended services priority (recommended services appear first)
             const aRecommended = Boolean((a as any).recommended);
             const bRecommended = Boolean((b as any).recommended);
             if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-            
+
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
               if (badge === 'excellent') return 3;
@@ -153,12 +154,12 @@ const PharmaciesPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -290,12 +291,12 @@ const PharmaciesPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -434,6 +435,67 @@ const PharmaciesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Helmet>
+        <title>{
+          searchTerm
+            ? `${searchTerm} - Online Pharmacy & Medicines | Sehatkor`
+            : `Online Pharmacy in Pakistan | Buy Medicine Online | Home Delivery`
+        }</title>
+        <meta name="description" content={
+          searchTerm
+            ? `Buy ${searchTerm} online in Pakistan. Check price, availability and get home delivery from trusted pharmacies. Genuine medicines, 100% authentic.`
+            : `Pakistan's most trusted online pharmacy. Buy medicines, vitamins, and healthcare products with fast home delivery. Upload prescription and get medicines at your doorstep.`
+        } />
+        <meta name="keywords" content={(() => {
+          const baseKeywords = [
+            // Core Pharmacy Terms
+            "online pharmacy Pakistan", "buy medicine online", "medicine delivery",
+            "medical store near me", "pharmacy near me", "home delivery pharmacy",
+            "discount pharmacy", "authentic medicine",
+
+            // Major Brands & Chains (Contextual)
+            "HealthPlus", "Dvago", "Servaid", "Clinix", "Fazal Din",
+
+            // High Volume Medicine Names
+            "Panadol", "Panadol Extra", "Brufen", "Disprin", "Arinac",
+            "Augmentin", "Azomax", "Ciproxin", "Antibiotics",
+            "Insulin", "Lantus", "Humulin", "Glucophage", "Diabetes medicine",
+            "Ventolin Inhaler", "Cough syrup", "Surbex Z", "Calcium tablets",
+
+            // Categories & Personal Care
+            "Vitamins", "Multivitamins", "Food Supplements", "Protein powder",
+            "Skin care products", "Face wash", "Sunblock", "Acne cream",
+            "Baby care", "Pampers", "Baby milk", "Feeder",
+            "Sexual health", "Contraceptives", "Condoms",
+
+            // Devices & Surgical
+            "Blood pressure monitor", "BP apparatus", "Glucometer", "Sugar check machine",
+            "Thermometer", "Oximeter", "Nebulizer machine", "Wheelchair",
+            "Surgical mask", "Gloves", "Bandages",
+
+            // Urdu Keywords
+            "آنلائن فارمیسی", "ادویات گھر منگوائیں", "میڈیکل سٹور", "دوائیاں",
+            "شوگر کی دوائی", "بلڈ پریشر کی مشین", "طاقت کی دوائی"
+          ];
+
+          let dynamicKeywords = [];
+
+          if (searchTerm) {
+            dynamicKeywords.push(
+              `price of ${searchTerm}`,
+              `buy ${searchTerm} online`,
+              `${searchTerm} side effects`,
+              `${searchTerm} uses`,
+              `${searchTerm} dosage`,
+              `${searchTerm} in Pakistan`,
+              `${searchTerm} ki qeemat` // Urdu
+            );
+          }
+
+          return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
+        })()} />
+        <link rel="canonical" href={`https://sehatkor.pk/pharmacies${searchTerm ? `?search=${searchTerm}` : ''}`} />
+      </Helmet>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -482,7 +544,7 @@ const PharmaciesPage = () => {
                     <div className="absolute top-1.5 left-1.5 z-10">
                       <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
                         <div className="flex flex-col leading-tight">
                           <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>

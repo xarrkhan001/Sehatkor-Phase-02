@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -615,11 +616,12 @@ const SearchPage = () => {
       "Lahore": { lat: 31.5204, lng: 74.3587 },
 
       "Islamabad": { lat: 33.6844, lng: 73.0479 },
-
+      "pindi": { lat: 33.5651, lng: 73.0169 }, // Rawalpindi
       "Faisalabad": { lat: 31.4504, lng: 73.1350 },
-
+      "Mardan": { lat: 34.1989, lng: 72.0231 },
+      "Peshawar": { lat: 34.0151, lng: 71.5249 },
+      "Swat": { lat: 35.2227, lng: 72.4258 },
       "Karachi": { lat: 24.8607, lng: 67.0011 }
-
     };
 
 
@@ -1813,8 +1815,114 @@ const SearchPage = () => {
 
 
   return (
-
     <div className="min-h-screen bg-gray-100 relative">
+      <Helmet>
+        <title>{
+          searchTerm
+            ? `${searchTerm} - Search Results | Sehatkor`
+            : categoryFilter !== 'all'
+              ? `Best ${categoryFilter.split(':')[1] || categoryFilter.split(':')[0]} in ${location === 'all' ? 'Pakistan' : location} | Book Online`
+              : `Search Doctors, Hospitals & Labs in ${location === 'all' ? 'Pakistan' : location} | Sehatkor`
+        }</title>
+        <meta name="description" content={
+          searchTerm
+            ? `Result for ${searchTerm} in ${location === 'all' ? 'Pakistan' : location}. Book appointments with top rated healthcare providers on Sehatkor.`
+            : `Find and book the best ${categoryFilter !== 'all' ? (categoryFilter.split(':')[1] || categoryFilter.split(':')[0]) : 'doctors, hospitals, and labs'} in ${location === 'all' ? 'Pakistan' : location}. Read verified reviews, check fees, and book instant appointments.`
+        } />
+        <meta name="keywords" content={(() => {
+          const loc = location === 'all' ? 'Pakistan' : location;
+          // Clean category string (e.g. "doctor:Cardiologist" -> "Cardiologist")
+          const rawCat = categoryFilter !== 'all' ? categoryFilter : '';
+          const catParts = rawCat.split(':');
+          const mainType = catParts[0]; // doctor, pharmacy, laboratory, clinic
+          const subType = catParts[1] || ''; // Cardiologist, Tablets, Blood Test, Surgery
+
+          const baseKeywords = [
+            "online doctor Pakistan", "sehatkor", "medical services", "health app Pakistan",
+            "آنلائن ڈاکٹر", "میڈیکل سروس", "book appointment online"
+          ];
+
+          let dynamicKeywords = [];
+
+          // 1. SPECIFIC SERVICE TYPE LOGIC
+          if (mainType === 'doctor') {
+            const docKey = subType || 'Doctor';
+            dynamicKeywords.push(
+              `best ${docKey} in ${loc}`,
+              `${docKey} appointment ${loc}`,
+              `consult ${docKey} online`,
+              `top rated ${docKey} ${loc}`,
+              `${docKey} fees`,
+              `${docKey} near me`
+            );
+            if (subType) dynamicKeywords.push(`specialist for ${subType} in ${loc}`);
+            dynamicKeywords.push(`${loc} میں ${subType || 'ڈاکٹر'}`);
+          }
+          else if (mainType === 'pharmacy' || mainType === 'medicine') {
+            const medKey = subType || 'Medicine';
+            dynamicKeywords.push(
+              `online pharmacy ${loc}`,
+              `buy ${medKey} online ${loc}`,
+              `medicine delivery ${loc}`,
+              `${medKey} price in Pakistan`,
+              `best pharmacy in ${loc}`
+            );
+            dynamicKeywords.push(`آنلائن فارمیسی ${loc}`, `ادویات کی ڈیلیوری`);
+          }
+          else if (mainType === 'laboratory' || mainType === 'lab') {
+            const labKey = subType || 'Lab Test';
+            dynamicKeywords.push(
+              `book ${labKey} ${loc}`,
+              `home sampling ${loc}`,
+              `best diagnostic lab ${loc}`,
+              `${labKey} price ${loc}`,
+              `Chughtai Lab ${loc}`,
+              `Excel Lab ${loc}`
+            );
+            dynamicKeywords.push(`لیب ٹیسٹ گھر پر`, `${loc} لیبارٹری`);
+          }
+          else if (mainType === 'clinic' || mainType === 'hospital') {
+            const hospKey = subType || 'Hospital';
+            dynamicKeywords.push(
+              `best ${hospKey} in ${loc}`,
+              `emergency ${hospKey} ${loc}`,
+              `${hospKey} contact number`,
+              `private hospital ${loc}`,
+              `government hospital ${loc}`
+            );
+            dynamicKeywords.push(`${loc} ہسپتال`, `ایمرجنسی ڈاکٹر`);
+          }
+          else if (categoryFilter === 'all' && !searchTerm) {
+            // General generic keywords if nothing selected
+            dynamicKeywords.push(
+              `doctors in ${loc}`, `hospitals in ${loc}`, `labs in ${loc}`,
+              `online medicine ${loc}`, `medical store ${loc}`
+            );
+          }
+
+          // 2. SEARCH TERM & LOCATION COMBINATIONS
+          if (searchTerm) {
+            dynamicKeywords.push(
+              `${searchTerm} treatment ${loc}`,
+              `${searchTerm} specialist ${loc}`,
+              `${searchTerm} medicine price`,
+              `${searchTerm} test cost`
+            );
+          }
+
+          // 3. BRAND & INTENT KEYWORDS
+          dynamicKeywords.push(
+            `sehatkor ${loc}`,
+            `marham alternative ${loc}`,
+            `oladoc alternative ${loc}`,
+            `PMDC verified`
+          );
+
+          // Unique & Join
+          return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
+        })()} />
+        <link rel="canonical" href={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`} />
+      </Helmet>
 
       <div className="container mx-auto px-4 py-8">
 

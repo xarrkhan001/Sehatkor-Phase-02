@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 import ServiceManager from "@/lib/serviceManager";
@@ -139,7 +140,7 @@ const DoctorsPage = () => {
             const key = `myRating:${uid}:doctor:${service.id}`;
             const my = localStorage.getItem(key);
             if (my) (mappedItem as any).myBadge = my as any;
-          } catch {}
+          } catch { }
           console.log('🧪 DoctorsPage map:', {
             id: mappedItem.id,
             name: mappedItem.name,
@@ -156,7 +157,7 @@ const DoctorsPage = () => {
           id: s.id,
           name: s.name,
           timeLabel: s.timeLabel,
-          startTime: s.startTime, 
+          startTime: s.startTime,
           endTime: s.endTime,
           days: s.days,
           ratingBadge: s.ratingBadge,
@@ -165,16 +166,16 @@ const DoctorsPage = () => {
           totalRatings: s.totalRatings,
           variants: s.variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days }))
         })));
-        
-        console.log('🔍 DoctorsPage: Mapped services (initial load):', mapped.slice(0, 2).map(s => ({ 
-          id: s.id, 
+
+        console.log('🔍 DoctorsPage: Mapped services (initial load):', mapped.slice(0, 2).map(s => ({
+          id: s.id,
           name: s.name,
           rating: s.rating,
           ratingBadge: (s as any).ratingBadge,
           myBadge: (s as any).myBadge,
           totalRatings: (s as any).totalRatings,
           mainSchedule: { timeLabel: (s as any).timeLabel, startTime: (s as any).startTime, endTime: (s as any).endTime, days: (s as any).days },
-          variants: (s as any).variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days })) 
+          variants: (s as any).variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days }))
         })));
 
         setDoctorServices(prev => {
@@ -185,12 +186,12 @@ const DoctorsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            
+
             // Recommended services priority (recommended services appear first)
             const aRecommended = Boolean((a as any).recommended);
             const bRecommended = Boolean((b as any).recommended);
             if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-            
+
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
               if (badge === 'excellent') return 3;
@@ -250,12 +251,12 @@ const DoctorsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -383,7 +384,7 @@ const DoctorsPage = () => {
           const my = localStorage.getItem(key);
           if (my) item.myBadge = my as any;
         }
-      } catch {}
+      } catch { }
 
       console.log('🔍 DoctorsPage: Raw services from API (loadMore):', services.slice(0, 2).map(s => ({
         id: s.id,
@@ -395,9 +396,9 @@ const DoctorsPage = () => {
         totalRatings: s.totalRatings,
         variants: s.variants
       })));
-      
-      console.log('🔍 DoctorsPage: Mapped services with variants (loadMore):', mapped.slice(0, 3).map(s => ({ 
-        id: s.id, 
+
+      console.log('🔍 DoctorsPage: Mapped services with variants (loadMore):', mapped.slice(0, 3).map(s => ({
+        id: s.id,
         name: s.name,
         rating: s.rating,
         ratingBadge: (s as any).ratingBadge,
@@ -405,7 +406,7 @@ const DoctorsPage = () => {
         totalRatings: (s as any).totalRatings,
         availability: (s as any).availability,
         mainSchedule: { timeLabel: (s as any).timeLabel, startTime: (s as any).startTime, endTime: (s as any).endTime, days: (s as any).days },
-        variants: (s as any).variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days })) 
+        variants: (s as any).variants?.map((v: any) => ({ timeLabel: v.timeLabel, startTime: v.startTime, endTime: v.endTime, days: v.days }))
       })));
 
       setDoctorServices(prev => {
@@ -416,12 +417,12 @@ const DoctorsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -535,7 +536,7 @@ const DoctorsPage = () => {
   const getDisplayForService = (service: Service) => {
     const variantIndex = activeVariantIndex[service.id] ?? 0;
     const variants = (service as any).variants as any[] | undefined;
-    
+
     if (!Array.isArray(variants) || variants.length === 0 || variantIndex === 0) {
       const result = {
         name: service.name,
@@ -554,19 +555,19 @@ const DoctorsPage = () => {
       });
       return result;
     }
-    
+
     const variant = variants[variantIndex - 1];
     if (!variant) {
       const result = {
-      name: service.name,
-      price: service.price,
-      image: service.image,
-      location: service.location,
-      detailAddress: (service as any).detailAddress,
-      description: service.description,
-      googleMapLink: (service as any).googleMapLink,
-      hospitalClinicName: (service as any).hospitalClinicName
-    } as any;
+        name: service.name,
+        price: service.price,
+        image: service.image,
+        location: service.location,
+        detailAddress: (service as any).detailAddress,
+        description: service.description,
+        googleMapLink: (service as any).googleMapLink,
+        hospitalClinicName: (service as any).hospitalClinicName
+      } as any;
       console.log('🔎 DoctorsPage.getDisplayForService no-variant-fallback', {
         id: service.id,
         name: service.name,
@@ -574,7 +575,7 @@ const DoctorsPage = () => {
       });
       return result;
     }
-    
+
     const result = {
       name: variant.name || service.name,
       price: variant.price ?? service.price,
@@ -606,11 +607,11 @@ const DoctorsPage = () => {
   const getDisplayTimeInfo = (service: Service) => {
     const variantIndex = activeVariantIndex[service.id] ?? 0;
     const variants = (service as any).variants as any[] | undefined;
-    
+
     if (!Array.isArray(variants) || variants.length === 0 || variantIndex === 0) {
       return (service as any).timeLabel || 'Available';
     }
-    
+
     const variant = variants[variantIndex - 1];
     return variant?.timeLabel || (service as any).timeLabel || 'Available';
   };
@@ -618,7 +619,7 @@ const DoctorsPage = () => {
   const getDisplayTimeRange = (service: Service) => {
     const variantIndex = activeVariantIndex[service.id] ?? 0;
     const variants = (service as any).variants as any[] | undefined;
-    
+
     if (!Array.isArray(variants) || variants.length === 0 || variantIndex === 0) {
       return (service as any).timeRange || '9:00 AM - 5:00 PM';
     }
@@ -710,6 +711,62 @@ const DoctorsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Helmet>
+        <title>{
+          searchTerm
+            ? `${searchTerm} - Find Doctors | Sehatkor`
+            : initialDisease
+              ? `Best Doctors for ${initialDisease} in Pakistan | Book Online`
+              : `Find Best Doctors in Pakistan | Sehatkor - PMDC Verified`
+        }</title>
+        <meta name="description" content={
+          searchTerm || initialDisease
+            ? `Book appointments with top-rated doctors for ${searchTerm || initialDisease}. ${filteredServices.length > 0 ? `Choose from ${filteredServices.length}+ verified specialists.` : 'Find the best healthcare professionals.'} Read reviews, check fees, and book online.`
+            : `Search and book appointments with PMDC verified doctors in Pakistan. Find specialists for any disease, read patient reviews, and get instant confirmation. Available in Karachi, Lahore, Islamabad, and more.`
+        } />
+        <meta name="keywords" content={(() => {
+          const baseKeywords = [
+            "find doctor Pakistan", "online doctor appointment", "PMDC verified doctors",
+            "best doctors Karachi", "best doctors Lahore", "best doctors Islamabad",
+            "General Physician", "Gastroenterologist", "Family Doctor", "Medical Specialist",
+            "stomach doctor", "liver specialist", "daily checkup doctor",
+            "ڈاکٹر تلاش کریں", "آنلائن ڈاکٹر", "میڈیکل سپیشلسٹ", "Sehatkor doctors"
+          ];
+
+          let dynamicKeywords = [];
+
+          const query = searchTerm || initialDisease;
+          if (query) {
+            // Treat query as potential doctor name, specialty, or symptom
+            dynamicKeywords.push(
+              `Dr. ${query}`,
+              `Doctor ${query}`,
+              `Dr ${query} Sehatkor`,
+              `Dr ${query} contact number`,
+              `Book Dr ${query}`,
+              `doctors for ${query}`,
+              `best doctor for ${query} in Pakistan`,
+              `${query} specialist`,
+              `${query} treatment doctors`,
+              `doctor for ${query} pain`, // Symptom based intent
+              `ڈاکٹر ${query}`,
+              `${query} کا علاج`
+            );
+          } else {
+            // Fallback: Broad "Random Discovery" Strategy
+            // Covers high-volume specialties and common symptoms users search for randomly
+            dynamicKeywords.push(
+              "cardiologist", "dermatologist", "gynecologist", "pediatrician",
+              "general physician", "medical consultant", "stomach specialist",
+              "ent specialist", "eye specialist", "orthopedic surgeon",
+              "sugar doctor", "blood pressure doctor", "fever doctor"
+            );
+          }
+
+          return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
+        })()} />
+        <link rel="canonical" href={`https://sehatkor.pk/doctors${initialDisease ? `?disease=${initialDisease}` : ''}`} />
+      </Helmet>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -767,13 +824,13 @@ const DoctorsPage = () => {
                   ) : (
                     <span className="text-gray-400 text-4xl">🩺</span>
                   )}
-                  
+
                   {/* Top-left recommended overlay */}
                   {(service as any).recommended && (
                     <div className="absolute top-1.5 left-1.5 z-10">
                       <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
                         <div className="flex flex-col leading-tight">
                           <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
@@ -1181,36 +1238,36 @@ const DoctorsPage = () => {
           ))}
         </div>
 
-      {hasMore && (
-        <div className="flex justify-center mt-8">
-          <Button
-            onClick={loadMore}
-            disabled={isLoading}
-            className="relative overflow-hidden rounded-full px-6 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-purple-500/40 ring-2 ring-white/20 hover:ring-white/30 transition-all duration-300 group"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              <span className="font-semibold tracking-wide">{isLoading ? 'Loading...' : 'Load More'}</span>
-              {!isLoading && (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" className="opacity-90 animate-bounce">
-                  <path d="M12 16l-5-5h10l-5 5z"></path>
-                </svg>
-              )}
-            </span>
-            <span className="absolute inset-0 bg-white/10 blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></span>
-          </Button>
-        </div>
-      )}
+        {hasMore && (
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={loadMore}
+              disabled={isLoading}
+              className="relative overflow-hidden rounded-full px-6 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-purple-500/40 ring-2 ring-white/20 hover:ring-white/30 transition-all duration-300 group"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                <span className="font-semibold tracking-wide">{isLoading ? 'Loading...' : 'Load More'}</span>
+                {!isLoading && (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" className="opacity-90 animate-bounce">
+                    <path d="M12 16l-5-5h10l-5 5z"></path>
+                  </svg>
+                )}
+              </span>
+              <span className="absolute inset-0 bg-white/10 blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></span>
+            </Button>
+          </div>
+        )}
 
-      {filteredServices.length === 0 && (
-        <EmptyState
-          variant="doctor"
-          title="No doctors found"
-          message="Try adjusting your keywords, filters, or expand the price range"
-          actionLabel={searchTerm ? "Clear search" : undefined}
-          onAction={searchTerm ? () => setSearchTerm("") : undefined}
-        />
-      )}
-    </div>
+        {filteredServices.length === 0 && (
+          <EmptyState
+            variant="doctor"
+            title="No doctors found"
+            message="Try adjusting your keywords, filters, or expand the price range"
+            actionLabel={searchTerm ? "Clear search" : undefined}
+            onAction={searchTerm ? () => setSearchTerm("") : undefined}
+          />
+        )}
+      </div>
 
       {/* Location Map Card */}
       {showLocationMap && currentMapService && (

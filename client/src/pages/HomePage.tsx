@@ -14,6 +14,7 @@ import heroImage2 from "@/assets/hero1.jpg";
 import heroImage3 from "@/assets/hero2.png";
 import heroImage4 from "@/assets/hero3.png";
 import heroImage5 from "@/assets/hero4.png";
+import { Helmet } from 'react-helmet-async';
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -37,6 +38,7 @@ import {
 } from "lucide-react";
 
 import { popularDiseases } from "@/data/diseases";
+
 
 // Red circle with white medical cross, stylable via text-*/currentColor for the circle
 const MedicalPlusIcon = ({ className }: { className?: string }) => (
@@ -188,6 +190,20 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden pt-16">
+      <Helmet>
+        <title>Sehatkor - آنلائن ڈاکٹر اپائنٹمنٹ پاکستان | Book Best Doctors Online</title>
+        <meta name="description" content="Pakistan's #1 healthcare platform. Book verified doctors online in Karachi, Lahore, Islamabad. آنلائن ڈاکٹر بک کریں۔ 24/7 support, instant appointments, lowest fees." />
+        <meta name="keywords" content="online doctor Pakistan, doctor appointment, آنلائن ڈاکٹر, book doctor online, doctor near me, best doctor Karachi, best doctor Mardan, best doctor Peshawar, Lahore doctor, Islamabad hospital, lady doctor, child specialist, skin doctor, heart specialist, online consultation, lab test home, pharmacy delivery, sehatkor, marham alternative, oladoc alternative, PMDC verified doctors, 24/7 doctor helpline, video consultation, emergency doctor, prescription online, affordable healthcare Pakistan" />
+        <link rel="canonical" href="https://sehatkor.pk/" />
+        <meta property="og:title" content="Sehatkor - Pakistan's #1 Healthcare Platform" />
+        <meta property="og:description" content="Book verified doctors online in Karachi, Lahore, Islamabad. 24/7 support, instant appointments, lowest fees." />
+        <meta property="og:url" content="https://sehatkor.pk/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://sehatkor.pk/og-image.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Sehatkor - Book Best Doctors Online in Pakistan" />
+        <meta name="twitter:description" content="Pakistan's #1 healthcare platform. Book verified doctors, hospitals, labs. 24/7 support." />
+      </Helmet>
       {/* Hero Section */}
       <section
         className="relative overflow-visible py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 px-4 text-white min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] lg:min-h-[85vh] hero-section hero-background"

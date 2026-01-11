@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate, useParams } from "react-router-dom";
 import ServiceManager, { Service } from "@/lib/serviceManager";
 import { Card, CardContent } from "@/components/ui/card";
@@ -183,7 +184,7 @@ const ProviderProfilePage = () => {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(service => 
+      filtered = filtered.filter(service =>
         service.name.toLowerCase().includes(query) ||
         service.description?.toLowerCase().includes(query) ||
         service.category?.toLowerCase().includes(query)
@@ -194,7 +195,7 @@ const ProviderProfilePage = () => {
     if (priceFilter && priceFilter !== "all") {
       filtered = filtered.filter(service => {
         const price = Number((service as any).price) || 0;
-        
+
         switch (priceFilter) {
           case "free":
             return price === 0;
@@ -224,7 +225,7 @@ const ProviderProfilePage = () => {
       const aRecommended = Boolean(a.recommended);
       const bRecommended = Boolean(b.recommended);
       if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-      
+
       // Badge priority: excellent > good > fair > others
       const rank = (s: any) => {
         const badge = (s?.ratingBadge || '').toString().toLowerCase();
@@ -235,12 +236,12 @@ const ProviderProfilePage = () => {
       };
       const rb = rank(b) - rank(a);
       if (rb !== 0) return rb;
-      
+
       // Sort by rating (highest first)
       const ar = a.rating ?? 0;
       const br = b.rating ?? 0;
       if (br !== ar) return br - ar;
-      
+
       // Sort by creation date (newest first)
       const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
       const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
@@ -257,13 +258,13 @@ const ProviderProfilePage = () => {
         console.log('No providerId provided');
         return;
       }
-      
+
       console.log('Fetching provider data for ID:', providerId);
       setUserLoading(true);
       try {
         const response = await fetch(`/api/user/public/${providerId}`);
         console.log('API Response status:', response.status);
-        
+
         if (response.ok) {
           const userData = await response.json();
           console.log('Provider user data fetched:', userData);
@@ -360,7 +361,7 @@ const ProviderProfilePage = () => {
   // Listen for per-user immediate badge updates
   useEffect(() => {
     const handler = (e: any) => {
-      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent'|'good'|'normal'|'poor' } | undefined;
+      const detail = e?.detail as { serviceId: string; serviceType: string; yourBadge: 'excellent' | 'good' | 'normal' | 'poor' } | undefined;
       if (!detail) return;
       setServices(prev => prev.map(s => s.id === detail.serviceId ? ({ ...s, myBadge: detail.yourBadge } as any) : s));
     };
@@ -451,12 +452,12 @@ const ProviderProfilePage = () => {
 
   const currentMapService = showLocationMap
     ? (() => {
-        const svc = services.find(s => s.id === showLocationMap);
-        if (!svc) return null;
-        const coordinates = getCoordinatesForLocation((svc as any).city || "Karachi");
-        const address = (svc as any).detailAddress || (svc as any).city || "Location not specified";
-        return { ...svc, coordinates, address } as any;
-      })()
+      const svc = services.find(s => s.id === showLocationMap);
+      if (!svc) return null;
+      const coordinates = getCoordinatesForLocation((svc as any).city || "Karachi");
+      const address = (svc as any).detailAddress || (svc as any).city || "Location not specified";
+      return { ...svc, coordinates, address } as any;
+    })()
     : null;
 
   const headingByType = (t?: Service["providerType"]) => {
@@ -492,8 +493,44 @@ const ProviderProfilePage = () => {
 
   const meta = headingByType(providerType);
 
+  // SEO Data Construction
+  const seoName = providerUser?.name || providerName || "Provider";
+  const seoSpecialty = providerUser?.specialization || meta.label;
+  const seoCity = services[0]?.city || services[0]?.location || "Pakistan";
+  const seoRole = meta.label; // Doctor, Pharmacy, Lab, etc.
+
+  // Extract services for rich SEO
+  const serviceNames = services.slice(0, 5).map(s => s.name).join(", ");
+  const allServiceKeywords = services.map(s => s.name).join(", ");
+
+  const seoDescription = `Book appointment with ${seoName}, ${seoSpecialty} in ${seoCity}. Offers: ${serviceNames}. Check contact number, fees, reviews and address. Verified Sehatkor Provider.`;
+
+  // JSON-LD Structured Data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": seoRole === "Doctor" ? "Physician" : seoRole === "Hospital" ? "Hospital" : "MedicalOrganization",
+    "name": seoName,
+    "image": avatarSrc,
+    "telephone": providerUser?.phone,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": seoCity,
+      "addressCountry": "PK"
+    },
+    "priceRange": "PKR 500 - PKR 5000",
+    "medicalSpecialty": seoSpecialty,
+    "description": seoDescription
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
+      <Helmet>
+        <title>{`${seoName} - ${seoSpecialty} in ${seoCity} | Sehatkor`}</title>
+        <meta name="description" content={seoDescription} />
+        <meta name="keywords" content={`${seoName}, ${seoName} services, ${allServiceKeywords}, ${seoSpecialty} in ${seoCity}, best ${seoRole} in ${seoCity}, ${seoName} fees, ${seoName} contact, ${seoCity} doctors list`} />
+        <link rel="canonical" href={`https://sehatkor.pk/provider/${providerId}`} />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       {/* Profile Hero Header */}
       <div className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-200 border-b border-gray-200/60">
         <div className="max-w-7xl mx-auto px-4 py-7">
@@ -744,8 +781,8 @@ const ProviderProfilePage = () => {
               <div className="text-gray-300 text-8xl mb-6">🔍</div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">No services found</h3>
               <p className="text-gray-500 mb-6 max-w-md mx-auto">Try adjusting your search or filter criteria to find what you're looking for</p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSearchQuery("");
                   setPriceFilter("all");
@@ -770,7 +807,7 @@ const ProviderProfilePage = () => {
                   <div className="absolute top-1.5 left-1.5 z-10">
                     <div className="px-2 py-1 text-[9px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1 backdrop-blur-sm">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="10" height="10" fill="currentColor" className="text-amber-900">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                       <div className="flex flex-col leading-tight">
                         <span className="font-black text-amber-900 text-[9px] tracking-wider font-extrabold">RECOMMENDED</span>
@@ -815,7 +852,7 @@ const ProviderProfilePage = () => {
                               </button>
                             </div>
                           )}
-                          
+
 
                           {/* Badges moved to card body below */}
                         </div>
@@ -840,12 +877,12 @@ const ProviderProfilePage = () => {
                                 aria-hidden="true"
                                 className="shrink-0"
                               >
-                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/>
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z" />
                               </svg>
                               <span className="truncate">{(service as any).department}</span>
                             </div>
                           )}
-                          
+
                           {/* Verification and Provider Type Badges - moved below department */}
                           <div className="flex items-center gap-2 mt-2">
                             {(((service as any)._providerVerified) || ((service as any).providerVerified) || (providerUser?.isVerified) || (service as any).isVerified) ? (
@@ -868,7 +905,7 @@ const ProviderProfilePage = () => {
 
                   <div className="px-5 pt-3 pb-5 flex-1 flex flex-col">
                     <div className="my-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-                    
+
                     <div className="flex items-center justify-between mb-3 gap-3">
                       <div className="flex items-center gap-2">
                         <Badge className={`text-xs px-2 py-1 ${meta.badgeClass} font-medium`}>
@@ -920,8 +957,8 @@ const ProviderProfilePage = () => {
                       {/* Row 1: Rating ↔ Location */}
                       <div className="flex justify-between items-center min-h-[24px]">
                         <div className="flex-shrink-0">
-                          <RatingBadge 
-                            rating={(service as any).averageRating ?? (service as any).rating ?? 0} 
+                          <RatingBadge
+                            rating={(service as any).averageRating ?? (service as any).rating ?? 0}
                             totalRatings={(service as any).totalRatings || 0}
                             ratingBadge={(service as any).ratingBadge}
                             yourBadge={(service as any).myBadge || null}
@@ -1020,7 +1057,7 @@ const ProviderProfilePage = () => {
                         <div className="flex-shrink-0">
                           {(service as any).providerPhone && (
                             <div className="relative z-50">
-                              <ServiceWhatsAppButton 
+                              <ServiceWhatsAppButton
                                 phoneNumber={(service as any).providerPhone}
                                 serviceName={service.name}
                                 providerName={service.providerName}
@@ -1034,7 +1071,7 @@ const ProviderProfilePage = () => {
                     </div>
 
                     <div className="mt-auto space-y-2">
-                      <Button 
+                      <Button
                         className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-200 rounded-xl font-semibold py-4 text-[15px]"
                         onClick={() => handleBookNow(service)}
                       >
@@ -1083,8 +1120,8 @@ const ProviderProfilePage = () => {
                                 // Derive a normalized type for consistent badge conditions
                                 type:
                                   ((service as any).providerType || providerType) === 'pharmacy' ? 'Medicine' :
-                                  ((service as any).providerType || providerType) === 'laboratory' ? 'Test' :
-                                  ((service as any).category === 'Surgery' ? 'Surgery' : 'Treatment'),
+                                    ((service as any).providerType || providerType) === 'laboratory' ? 'Test' :
+                                      ((service as any).category === 'Surgery' ? 'Surgery' : 'Treatment'),
                                 // Coerce homeDelivery to boolean to avoid falsy string issues
                                 homeDelivery: Boolean((service as any).homeDelivery),
                                 // Pass-through common optional fields
@@ -1115,9 +1152,9 @@ const ProviderProfilePage = () => {
 
           {services.length > 0 && hasMore && (
             <div className="flex justify-center mt-8">
-              <Button 
-                onClick={loadMore} 
-                disabled={isLoading} 
+              <Button
+                onClick={loadMore}
+                disabled={isLoading}
                 variant="outline"
                 className="bg-white border-gray-200 hover:bg-gray-50 px-8 py-3 rounded-xl font-medium shadow-sm"
               >
@@ -1152,20 +1189,20 @@ const ProviderProfilePage = () => {
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-xl p-4">
                   <p className="text-sm font-semibold text-gray-700 mb-2">Location</p>
                   <p className="text-sm text-gray-900">{currentMapService.address}</p>
                 </div>
-                
+
                 <div className="bg-gray-50 rounded-xl p-4">
                   <p className="text-sm font-semibold text-gray-700 mb-2">Provider</p>
                   <p className="text-sm text-gray-900">{currentMapService.providerName}</p>
                 </div>
-                
+
                 {((currentMapService as any).googleMapLink) && (
-                  <Button 
+                  <Button
                     className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white rounded-xl py-3 font-medium shadow-lg"
                     onClick={() => window.open((currentMapService as any).googleMapLink as string, '_blank')}
                   >

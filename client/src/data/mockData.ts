@@ -206,6 +206,19 @@ export const mockServices: Service[] = [
     description: "Insulin for diabetes management, available at pharmacy.",
     provider: "HealthPlus Pharmacy"
   },
+  {
+    id: "15",
+    name: "Gastroenterology Consultation",
+    price: 2000,
+    rating: 4.9,
+    ratingBadge: 'excellent',
+    location: "Mardan",
+    type: "Treatment",
+    homeService: false,
+    image: "/api/placeholder/300/200",
+    description: "Consultation with Dr. Luqman Hakim, Specialist General Physician and Gastroenterologist. Expert in stomach and liver diseases.",
+    provider: "Dr. Luqman Hakim"
+  }
 ];
 
 export const mockBlogPosts: BlogPost[] = [

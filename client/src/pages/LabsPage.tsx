@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import ServiceManager from "@/lib/serviceManager";
@@ -52,7 +53,7 @@ const LabsPage = () => {
       const params = new URLSearchParams(location.search);
       const labCat = params.get('labCategory');
       setSelectedLabCategory(labCat);
-    } catch {}
+    } catch { }
   }, [location.search]);
 
   useEffect(() => {
@@ -116,12 +117,12 @@ const LabsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            
+
             // Recommended services priority (recommended services appear first)
             const aRecommended = Boolean((a as any).recommended);
             const bRecommended = Boolean((b as any).recommended);
             if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-            
+
             // Badge priority: excellent > good > fair > others
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
@@ -170,12 +171,12 @@ const LabsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -330,12 +331,12 @@ const LabsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -472,6 +473,64 @@ const LabsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Helmet>
+        <title>{
+          searchTerm
+            ? `${searchTerm} - Lab Tests & Diagnostics | Sehatkor`
+            : selectedLabCategory
+              ? `Best ${selectedLabCategory} Labs in Pakistan | Book Online`
+              : `Book Lab Tests Online in Pakistan | Home Sampling | Sehatkor`
+        }</title>
+        <meta name="description" content={
+          searchTerm || selectedLabCategory
+            ? `Book ${searchTerm || selectedLabCategory} tests online. Compare prices from top labs like Chugtai, Excel, and IDC. Get home sample collection and online reports.`
+            : `Book diagnostic lab tests online in Pakistan. Find best labs for Blood Tests, MRI, CT Scan, Ultrasound. Free home sampling and digital reports available.`
+        } />
+        <meta name="keywords" content={(() => {
+          const baseKeywords = [
+            // Core Lab Terms
+            "lab test online Pakistan", "book lab test", "home sample collection",
+            "Chughtai Lab", "Excel Labs", "IDC", "Citilab", "diagnostic center",
+            "medical lab", "pathology lab", "radiology center",
+
+            // Specific Tests (Found in Data & Common High-Traffic)
+            "Complete Blood Count", "CBC test", "Blood Test Complete",
+            "Liver Function Test", "LFT test", "Lipid Profile", "Cholesterol test",
+            "COVID-19 PCR Test", "Coronavirus test", "Antibody test",
+            "Sugar test", "Hba1c", "Diabetes test", "Fasting blood sugar",
+            "Thyroid Profile", "T3 T4 TSH", "Vitamin D test", "Calcium test",
+            "Urine Routine", "Urine Culture", "Stool test",
+            "Dengue NS1", "Malaria test", "Typhoid test",
+
+            // Radiology & Imaging
+            "X-Ray Chest", "Digital X-Ray", "Ultrasound Abdomen", "Pelvic Ultrasound",
+            "MRI Brain", "MRI Spine", "CT Scan Head", "CT Scan Chest",
+            "ECG", "Echocardiography", "Mammography",
+
+            // Urdu Keywords
+            "لیب ٹیسٹ", "خون کا ٹیسٹ", "گھر پر ٹیسٹ", "شوگر ٹیسٹ",
+            "یرقان کا ٹیسٹ", "کورونا ٹیسٹ", "ریڈیالوجی", "ایکسرے"
+          ];
+
+          let dynamicKeywords = [];
+
+          const query = searchTerm || selectedLabCategory;
+          if (query) {
+            dynamicKeywords.push(
+              `${query} test price`,
+              `best lab for ${query}`,
+              `${query} test near me`,
+              `${query} home sampling`,
+              `${query} report online`,
+              `${query} ki qeemat`, // Urdu "price of [test]"
+              `book ${query} test`
+            );
+          }
+
+          return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
+        })()} />
+        <link rel="canonical" href={`https://sehatkor.pk/labs${selectedLabCategory ? `?labCategory=${selectedLabCategory}` : ''}`} />
+      </Helmet>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -520,7 +579,7 @@ const LabsPage = () => {
                     <div className="absolute top-1.5 left-1.5 z-10">
                       <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
                         <div className="flex flex-col leading-tight">
                           <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>

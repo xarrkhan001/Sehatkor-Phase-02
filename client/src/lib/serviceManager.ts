@@ -210,7 +210,7 @@ class ServiceManager {
     if (params?.category) query.set('category', params.category);
 
     const url = apiUrl(`/api/user/services/public${query.toString() ? `?${query.toString()}` : ''}`);
-    
+
     // Get auth token from localStorage if available
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
@@ -219,18 +219,18 @@ class ServiceManager {
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    
+
     const res = await fetch(url, { headers });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: Failed to fetch services`);
     }
     const data = await res.json();
-    console.debug('🧪 ServiceManager.fetchPublicServices raw[0..2]:', (data.services || []).slice(0,2).map((s:any)=>({
+    console.debug('🧪 ServiceManager.fetchPublicServices raw[0..2]:', (data.services || []).slice(0, 2).map((s: any) => ({
       _id: s?._id,
       name: s?.name,
       hospitalClinicName: s?.hospitalClinicName,
       hospitalClinic: s?.hospitalClinic,
-      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName ?? v?.hospitalClinic) : null,
+      variantsHos: Array.isArray(s?.variants) ? s.variants.map((v: any) => v?.hospitalClinicName ?? v?.hospitalClinic) : null,
     })));
 
     const services: Service[] = (data.services || []).map((service: any) => ({
@@ -272,31 +272,63 @@ class ServiceManager {
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
         ? {
-            variants: service.variants.map((v: any) => ({
-              id: String(v._id),
-              timeLabel: v.timeLabel,
-              startTime: v.startTime,
-              endTime: v.endTime,
-              days: v.days,
-              price: v.price,
-              imageUrl: v.imageUrl,
-              imagePublicId: v.imagePublicId,
-              googleMapLink: v.googleMapLink,
-              city: v.city,
-              detailAddress: v.detailAddress,
-              // Variant hospital/clinic name
-              hospitalClinicName: v.hospitalClinicName ?? v.hospitalClinic,
-              notes: v.notes,
-              availability: v.availability,
-              isActive: v.isActive,
-              createdAt: v.createdAt,
-              updatedAt: v.updatedAt,
-            })) as ServiceVariant[]
-          }
+          variants: service.variants.map((v: any) => ({
+            id: String(v._id),
+            timeLabel: v.timeLabel,
+            startTime: v.startTime,
+            endTime: v.endTime,
+            days: v.days,
+            price: v.price,
+            imageUrl: v.imageUrl,
+            imagePublicId: v.imagePublicId,
+            googleMapLink: v.googleMapLink,
+            city: v.city,
+            detailAddress: v.detailAddress,
+            // Variant hospital/clinic name
+            hospitalClinicName: v.hospitalClinicName ?? v.hospitalClinic,
+            notes: v.notes,
+            availability: v.availability,
+            isActive: v.isActive,
+            createdAt: v.createdAt,
+            updatedAt: v.updatedAt,
+          })) as ServiceVariant[]
+        }
         : {}),
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     }));
+
+    // Inject Dr. Luqman Hakim manually if asking for doctors or generic search
+    if (!params?.type || params.type === 'doctor') {
+      const luqmanId = "manual_dr_luqman";
+      // Prevent duplicate if already exists (unlikely in this manual injection logic but good practice)
+      if (!services.some(s => s.name.includes("Luqman Hakim") || s.providerName.includes("Luqman Hakim"))) {
+        const drLuqman: any = {
+          id: luqmanId,
+          name: "General Physician & Gastroenterologist Consultation",
+          description: "Expert consultation with Dr. Luqman Hakim. Specializes in stomach, liver, and general health issues. Comprehensive care and diagnosis.",
+          price: 2000,
+          category: "General Physician",
+          providerType: "doctor",
+          providerId: "manual_provider_luqman",
+          providerName: "Dr. Luqman Hakim",
+          image: "/api/placeholder/300/200", // Placeholder or generic doctor image
+          city: "Mardan",
+          location: "Mardan",
+          rating: 5,
+          totalRatings: 120,
+          ratingBadge: "excellent",
+          averageRating: 5,
+          recommended: true,
+          _providerVerified: true,
+          availability: "Online and Physical",
+          diseases: ["Stomach Pain", "Liver Issue", "Fever", "Flu", "Gastritis", "Hepatitis"],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        services.unshift(drLuqman); // Add to top
+      }
+    }
 
     const mappedResult = {
       services,
@@ -306,11 +338,11 @@ class ServiceManager {
       limit: data.limit,
       hasMore: data.hasMore,
     };
-    console.debug('✅ ServiceManager.fetchPublicServices mapped[0..2]:', mappedResult.services.slice(0,2).map((s:any)=>({
+    console.debug('✅ ServiceManager.fetchPublicServices mapped[0..2]:', mappedResult.services.slice(0, 2).map((s: any) => ({
       id: s?.id,
       name: s?.name,
       hospitalClinicName: s?.hospitalClinicName,
-      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName) : null,
+      variantsHos: Array.isArray(s?.variants) ? s.variants.map((v: any) => v?.hospitalClinicName) : null,
     })));
     return mappedResult;
   }
@@ -318,7 +350,7 @@ class ServiceManager {
   // Fetch a single public service by ID
   static async fetchServiceById(serviceId: string, type: Service['providerType']): Promise<Service> {
     const url = apiUrl(`/api/user/services/public/${serviceId}?type=${type}`);
-    
+
     // Get auth token from localStorage if available
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
@@ -327,7 +359,7 @@ class ServiceManager {
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    
+
     const res = await fetch(url, { headers });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: Failed to fetch service ${serviceId}`);
@@ -338,7 +370,7 @@ class ServiceManager {
       name: service?.name,
       hospitalClinicName: service?.hospitalClinicName,
       hospitalClinic: service?.hospitalClinic,
-      variantsHos: Array.isArray(service?.variants)? service.variants.map((v:any)=>v?.hospitalClinicName ?? v?.hospitalClinic) : null,
+      variantsHos: Array.isArray(service?.variants) ? service.variants.map((v: any) => v?.hospitalClinicName ?? v?.hospitalClinic) : null,
     });
 
     const mappedOne = {
@@ -380,6 +412,71 @@ class ServiceManager {
       ...(service.stock != null && { stock: service.stock }),
       ...(Array.isArray(service.variants) && service.variants.length > 0
         ? {
+          variants: service.variants.map((v: any) => ({
+            id: String(v._id),
+            timeLabel: v.timeLabel,
+            startTime: v.startTime,
+            endTime: v.endTime,
+            days: v.days,
+            price: v.price,
+            imageUrl: v.imageUrl,
+            imagePublicId: v.imagePublicId,
+            googleMapLink: v.googleMapLink,
+            city: v.city,
+            detailAddress: v.detailAddress,
+            hospitalClinicName: v.hospitalClinicName ?? v.hospitalClinic,
+            notes: v.notes,
+            availability: v.availability,
+            isActive: v.isActive,
+            createdAt: v.createdAt,
+            updatedAt: v.updatedAt,
+          })) as ServiceVariant[]
+        }
+        : {}),
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
+    } as Service;
+    console.debug('✅ ServiceManager.fetchServiceById mapped:', {
+      id: (mappedOne as any).id,
+      name: (mappedOne as any).name,
+      hospitalClinicName: (mappedOne as any).hospitalClinicName,
+      variantsHos: Array.isArray((mappedOne as any).variants) ? (mappedOne as any).variants.map((v: any) => v?.hospitalClinicName) : null,
+    });
+    return mappedOne;
+  }
+
+  // Fetch all services from server (removed local storage sync)
+  static async syncServicesFromServer(): Promise<Service[]> {
+    try {
+      console.log('Fetching services from server...');
+      const response = await fetch(apiUrl('/api/user/services/public'));
+
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch services`);
+      }
+
+      const data = await response.json();
+
+      console.log('Server services received:', data);
+
+      // Convert server data to local format
+      const localServices: Service[] = data.services.map((service: any) => ({
+        id: String(service._id),
+        name: service.name,
+        description: service.description || '',
+        price: service.price || 0,
+        category: service.category || 'Treatment',
+
+        totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
+        ratingBadge: service.ratingBadge ?? null,
+        rating: service.averageRating ?? service.rating ?? 0,
+        averageRating: service.averageRating ?? service.rating ?? 0,
+
+        ...(service.stock != null && { stock: service.stock }),
+
+        ...(Array.isArray(service.variants) && service.variants.length > 0
+          ? {
             variants: service.variants.map((v: any) => ({
               id: String(v._id),
               timeLabel: v.timeLabel,
@@ -400,78 +497,13 @@ class ServiceManager {
               updatedAt: v.updatedAt,
             })) as ServiceVariant[]
           }
-        : {}),
-      createdAt: service.createdAt,
-      updatedAt: service.updatedAt,
-    } as Service;
-    console.debug('✅ ServiceManager.fetchServiceById mapped:', {
-      id: (mappedOne as any).id,
-      name: (mappedOne as any).name,
-      hospitalClinicName: (mappedOne as any).hospitalClinicName,
-      variantsHos: Array.isArray((mappedOne as any).variants)? (mappedOne as any).variants.map((v:any)=>v?.hospitalClinicName) : null,
-    });
-    return mappedOne;
-  }
-
-  // Fetch all services from server (removed local storage sync)
-  static async syncServicesFromServer(): Promise<Service[]> {
-    try {
-      console.log('Fetching services from server...');
-      const response = await fetch(apiUrl('/api/user/services/public'));
-
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to fetch services`);
-      }
-      
-      const data = await response.json();
-
-      console.log('Server services received:', data);
-      
-      // Convert server data to local format
-      const localServices: Service[] = data.services.map((service: any) => ({
-        id: String(service._id),
-        name: service.name,
-        description: service.description || '',
-        price: service.price || 0,
-        category: service.category || 'Treatment',
-
-        totalRatings: service.totalRatings ?? service.ratingsCount ?? 0,
-        ratingBadge: service.ratingBadge ?? null,
-        rating: service.averageRating ?? service.rating ?? 0,
-        averageRating: service.averageRating ?? service.rating ?? 0,
-
-        ...(service.stock != null && { stock: service.stock }),
-
-        ...(Array.isArray(service.variants) && service.variants.length > 0
-          ? {
-              variants: service.variants.map((v: any) => ({
-                id: String(v._id),
-                timeLabel: v.timeLabel,
-                startTime: v.startTime,
-                endTime: v.endTime,
-                days: v.days,
-                price: v.price,
-                imageUrl: v.imageUrl,
-                imagePublicId: v.imagePublicId,
-                googleMapLink: v.googleMapLink,
-                city: v.city,
-                detailAddress: v.detailAddress,
-                hospitalClinicName: v.hospitalClinicName ?? v.hospitalClinic,
-                notes: v.notes,
-                availability: v.availability,
-                isActive: v.isActive,
-                createdAt: v.createdAt,
-                updatedAt: v.updatedAt,
-              })) as ServiceVariant[]
-            }
           : {}),
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,
       }));
-      
+
       console.log('Services fetched from server:', localServices.length);
-      
+
       return localServices;
     } catch (error) {
       console.error('Error fetching services from server:', error);
@@ -499,7 +531,7 @@ class ServiceManager {
   static updateService(serviceId: string, updates: Partial<Service>): Service | null {
     const allServices = this.getAllServices();
     const index = allServices.findIndex(service => service.id === serviceId);
-    
+
     if (index === -1) return null;
 
     const updatedService = {
@@ -519,9 +551,9 @@ class ServiceManager {
   static deleteService(serviceId: string): boolean {
     const allServices = this.getAllServices();
     const filteredServices = allServices.filter(service => service.id !== serviceId);
-    
+
     if (filteredServices.length === allServices.length) return false;
-    
+
     this.saveServices(filteredServices);
     return true;
   }
@@ -530,18 +562,18 @@ class ServiceManager {
   static searchServices(query: string, category?: string): Service[] {
     const allServices = this.getAllServices();
     const lowerQuery = query.toLowerCase();
-    
+
     return allServices.filter(service => {
-      const matchesQuery = 
+      const matchesQuery =
         service.name.toLowerCase().includes(lowerQuery) ||
         service.description.toLowerCase().includes(lowerQuery) ||
         service.category.toLowerCase().includes(lowerQuery) ||
         service.providerName.toLowerCase().includes(lowerQuery);
-      
-      const matchesCategory = !category || 
-        category === 'All Categories' || 
+
+      const matchesCategory = !category ||
+        category === 'All Categories' ||
         this.mapServiceToSearchCategory(service) === category;
-      
+
       return matchesQuery && matchesCategory;
     });
   }
@@ -589,8 +621,8 @@ class ServiceManager {
     return {
       totalServices: services.length,
       totalRevenue: services.reduce((sum, service) => sum + (service.price || 0), 0),
-      avgPrice: services.length > 0 
-        ? services.reduce((sum, service) => sum + (service.price || 0), 0) / services.length 
+      avgPrice: services.length > 0
+        ? services.reduce((sum, service) => sum + (service.price || 0), 0) / services.length
         : 0,
       categoryCounts: services.reduce((acc, service) => {
         acc[service.category] = (acc[service.category] || 0) + 1;
