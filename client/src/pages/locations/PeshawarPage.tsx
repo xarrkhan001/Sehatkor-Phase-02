@@ -1,10 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const PeshawarPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white">
+            <Helmet>
+                <title>Best Doctors in Peshawar | پشاور میں ڈاکٹر | Book Doctor Appointment Online</title>
+                <meta name="description" content="Find and book top-rated doctors in Peshawar. 500+ PMDC verified doctors. پشاور میں بہترین ڈاکٹر۔ Online appointments, instant booking, 24/7 support." />
+                <meta name="keywords" content="doctor in Peshawar, best doctor Peshawar, Peshawar doctor appointment, پشاور ڈاکٹر, آنلائن ڈاکٹر پشاور, lady doctor Peshawar, child specialist Peshawar, Hayatabad hospital, Khyber Teaching Hospital" />
+                <link rel="canonical" href="https://sehatkor.pk/peshawar" />
+                <meta property="og:title" content="Best Doctors in Peshawar | Book Online" />
+                <meta property="og:description" content="500+ verified doctors in Peshawar. Online appointments, 24/7 support." />
+                <meta property="og:url" content="https://sehatkor.pk/peshawar" />
+            </Helmet>
+
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-orange-600 to-orange-700 text-white py-16">
                 <div className="container mx-auto px-6">

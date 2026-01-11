@@ -1,10 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const AzadKashmirPage = () => {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-white">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white">
+            <Helmet>
+                <title>Best Doctors in Azad Kashmir | آزاد کشمیر میں ڈاکٹر | Book Doctor Appointment</title>
+                <meta name="description" content="Find and book top-rated doctors in Azad Kashmir. 250+ PMDC verified doctors. آزاد کشمیر میں بہترین ڈاکٹر۔ Online appointments, 24/7 support." />
+                <meta name="keywords" content="doctor in Azad Kashmir, best doctor Muzaffarabad, AJK doctor appointment, آزاد کشمیر ڈاکٹر, آنلائن ڈاکٹر کشمیر, lady doctor Kashmir, child specialist Muzaffarabad, Kashmir hospital" />
+                <link rel="canonical" href="https://sehatkor.pk/azad-kashmir" />
+                <meta property="og:title" content="Best Doctors in Azad Kashmir | Book Online" />
+                <meta property="og:description" content="250+ verified doctors in Azad Kashmir. Online appointments, 24/7 support." />
+                <meta property="og:url" content="https://sehatkor.pk/azad-kashmir" />
+            </Helmet>
+
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white py-16">
                 <div className="container mx-auto px-6">

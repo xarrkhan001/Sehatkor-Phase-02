@@ -1,10 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const SwatPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white">
+            <Helmet>
+                <title>Best Doctors in Swat | سوات میں ڈاکٹر | Book Doctor Appointment Online</title>
+                <meta name="description" content="Find and book top-rated doctors in Swat Valley. 250+ PMDC verified doctors. سوات میں بہترین ڈاکٹر۔ Online appointments, 24/7 support." />
+                <meta name="keywords" content="doctor in Swat, best doctor Swat, Swat doctor appointment, سوات ڈاکٹر, آنلائن ڈاکٹر سوات, lady doctor Swat, child specialist Swat, Mingora hospital, Swat Valley doctors" />
+                <link rel="canonical" href="https://sehatkor.pk/swat" />
+                <meta property="og:title" content="Best Doctors in Swat | Book Online" />
+                <meta property="og:description" content="250+ verified doctors in Swat Valley. Online appointments, 24/7 support." />
+                <meta property="og:url" content="https://sehatkor.pk/swat" />
+            </Helmet>
+
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white py-16">
                 <div className="container mx-auto px-6">

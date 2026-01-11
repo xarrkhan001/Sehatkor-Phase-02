@@ -1,10 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const LahorePage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-white">
+            <Helmet>
+                <title>Best Doctors in Lahore | لاہور میں ڈاکٹر | Book Doctor Appointment Online</title>
+                <meta name="description" content="Find and book top-rated doctors in Lahore. 800+ PMDC verified doctors in Gulberg, DHA, Model Town. لاہور میں بہترین ڈاکٹر۔ Online appointments, instant booking, 24/7 support." />
+                <meta name="keywords" content="doctor in Lahore, best doctor Lahore, Lahore doctor appointment, Gulberg doctor, DHA Lahore, لاہور ڈاکٹر, آنلائن ڈاکٹر لاہور, lady doctor Lahore, child specialist Lahore, cardiologist Lahore, Shaukat Khanum, Mayo Hospital Lahore" />
+                <link rel="canonical" href="https://sehatkor.pk/lahore" />
+                <meta property="og:title" content="Best Doctors in Lahore | Book Online Appointment" />
+                <meta property="og:description" content="800+ verified doctors in Lahore. Book appointments in Gulberg, DHA, Model Town. 24/7 support." />
+                <meta property="og:url" content="https://sehatkor.pk/lahore" />
+                <meta property="og:type" content="website" />
+            </Helmet>
+
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
                 <div className="container mx-auto px-6">

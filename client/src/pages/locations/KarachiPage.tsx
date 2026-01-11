@@ -1,10 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const KarachiPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+            <Helmet>
+                <title>Best Doctors in Karachi | آنلائن ڈاکٹر کراچی | Book Doctor Appointment Online</title>
+                <meta name="description" content="Find and book top-rated doctors in Karachi. 1000+ PMDC verified doctors in DHA, Clifton, Gulshan. کراچی میں بہترین ڈاکٹر۔ Online appointments, instant booking, 24/7 support." />
+                <meta name="keywords" content="doctor in Karachi, best doctor Karachi, Karachi doctor appointment, DHA doctor, Clifton hospital, کراچی ڈاکٹر, آنلائن ڈاکٹر کراچی, lady doctor Karachi, child specialist Karachi, cardiologist Karachi, Aga Khan hospital, Jinnah hospital Karachi" />
+                <link rel="canonical" href="https://sehatkor.pk/karachi" />
+                <meta property="og:title" content="Best Doctors in Karachi | Book Online Appointment" />
+                <meta property="og:description" content="1000+ verified doctors in Karachi. Book appointments in DHA, Clifton, Gulshan. 24/7 support." />
+                <meta property="og:url" content="https://sehatkor.pk/karachi" />
+                <meta property="og:type" content="website" />
+            </Helmet>
+
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
                 <div className="container mx-auto px-6">
