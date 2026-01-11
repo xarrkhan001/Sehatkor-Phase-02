@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
@@ -102,12 +103,12 @@ const HospitalsPage = () => {
             const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
             const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            
+
             // Recommended services priority (recommended services appear first)
             const aRecommended = Boolean((a as any).recommended);
             const bRecommended = Boolean((b as any).recommended);
             if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-            
+
             // Badge priority: excellent > good > fair > others
             const rank = (s: any) => {
               const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
@@ -177,12 +178,12 @@ const HospitalsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -307,12 +308,12 @@ const HospitalsPage = () => {
           const aOwn = (a as any)._providerId && user?.id && (a as any)._providerId === user.id;
           const bOwn = (b as any)._providerId && user?.id && (b as any)._providerId === user.id;
           if (aOwn !== bOwn) return aOwn ? -1 : 1;
-          
+
           // Recommended services priority (recommended services appear first)
           const aRecommended = Boolean((a as any).recommended);
           const bRecommended = Boolean((b as any).recommended);
           if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-          
+
           const rank = (s: any) => {
             const badge = ((s as any)?.ratingBadge || '').toString().toLowerCase();
             if (badge === 'excellent') return 3;
@@ -447,6 +448,70 @@ const HospitalsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Helmet>
+        <title>{
+          searchTerm
+            ? `${searchTerm} - Hospitals & Clinics | Sehatkor`
+            : `Best Hospitals in Pakistan | Find Clinics & Medical Centers | Sehatkor`
+        }</title>
+        <meta name="description" content={
+          searchTerm
+            ? `Find top-rated hospitals and clinics for ${searchTerm}. Compare facilities, check emergency services, fees, and patient reviews. Book appointments online.`
+            : `list of best hospitals and clinics in Pakistan. Search private and government medical centers in Karachi, Lahore, Islamabad. 24/7 Emergency services, surgery centers, and specialized clinics.`
+        } />
+        <meta name="keywords" content={(() => {
+          const baseKeywords = [
+            // Core "High Traffic" Keywords
+            "hospital near me", "clinic near me", "hospitals in Pakistan",
+            "best medical center", "emergency hospital near me", "24 hour hospital",
+            "private hospital", "government hospital", "civil hospital", "DHQ hospital",
+
+            // Facility Types (High Search Volume)
+            "maternity home", "gynecology clinic", "delivery clinic",
+            "dental clinic", "dental hospital", "teeth checkup",
+            "eye hospital", "eye specialist clinic",
+            "orthopedic hospital", "bone clinic",
+            "cardiology center", "heart hospital",
+            "skin clinic", "dermatology center",
+            "kidney center", "dialysis center",
+
+            // Services & Tests
+            "lab test", "blood test", "x-ray", "ultrasound", "MRI scan", "CT scan",
+            "emergency ward", "trauma center", "burn center", "ICU", "operation theater",
+
+            // Location Specific (Major Cities)
+            "hospitals in Karachi", "hospitals in Lahore", "hospitals in Islamabad",
+            "hospitals in Rawalpindi", "hospitals in Peshawar", "hospitals in Quetta",
+            "hospitals in Multan", "hospitals in Faisalabad", "hospitals in Mardan",
+
+            // Urdu Keywords (For Local Traffic)
+            "ہسپتال", "کلینک", "طبی مرکز", "ایمرجنسی", "خواتین کا ہسپتال",
+            "بچوں کا ہسپتال", "سرکاری ہسپتال", "پرائیویٹ ہسپتال", "علاج",
+
+            // Intent Based
+            "cheap hospital", "free medical camp", "charity hospital",
+            "best fees hospital", "doctor appointment hospital"
+          ];
+
+          let dynamicKeywords = [];
+
+          if (searchTerm) {
+            dynamicKeywords.push(
+              `${searchTerm} hospital`,
+              `clinics for ${searchTerm}`,
+              `best hospital for ${searchTerm}`,
+              `${searchTerm} medical center`,
+              `${searchTerm} emergency`,
+              `${searchTerm} treatment`,
+              `${searchTerm} doctor hospital`,
+              `${searchTerm} ka ilaj hospital` // Urdu
+            );
+          }
+
+          return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
+        })()} />
+        <link rel="canonical" href={`https://sehatkor.pk/hospitals${searchTerm ? `?search=${searchTerm}` : ''}`} />
+      </Helmet>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -495,7 +560,7 @@ const HospitalsPage = () => {
                     <div className="absolute top-1.5 left-1.5 z-10">
                       <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
                         <div className="flex flex-col leading-tight">
                           <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
@@ -538,7 +603,7 @@ const HospitalsPage = () => {
                           aria-hidden="true"
                           className="shrink-0"
                         >
-                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/>
+                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z" />
                         </svg>
                         <span className="truncate">{(service as any).department}</span>
                       </div>

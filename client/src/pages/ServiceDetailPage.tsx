@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { mockServices, Service as MockService } from "@/data/mockData";
@@ -318,7 +319,7 @@ const ServiceDetailPage = () => {
     const fetchServiceFromServer = async () => {
       // Skip if we already have the service or already tried fetching
       if (item || isLoadingService || serviceNotFound || fetchedService) return;
-      
+
       // Skip if we have state service
       if (stateService && stateService.id === id) return;
 
@@ -328,15 +329,15 @@ const ServiceDetailPage = () => {
 
       // Try all provider types to find the service
       const providerTypes: Array<'doctor' | 'clinic' | 'laboratory' | 'pharmacy'> = ['doctor', 'clinic', 'laboratory', 'pharmacy'];
-      
+
       for (const type of providerTypes) {
         try {
           console.log(`🔍 Trying to fetch service as ${type}...`);
           const service = await ServiceManager.fetchServiceById(id, type);
-          
+
           if (service) {
             console.log('✅ Service found on server:', service);
-            
+
             // Map to Unified format
             const unified: Unified = {
               id: service.id,
@@ -375,7 +376,7 @@ const ServiceDetailPage = () => {
               endTime: (service as any).endTime || null,
               days: (service as any).days || null,
             };
-            
+
             setFetchedService(unified);
             setIsLoadingService(false);
             return; // Exit the loop once found
@@ -385,7 +386,7 @@ const ServiceDetailPage = () => {
           // Continue to next type
         }
       }
-      
+
       // If we reach here, service was not found in any type
       console.log('❌ Service not found in any provider type');
       setServiceNotFound(true);
@@ -562,7 +563,7 @@ const ServiceDetailPage = () => {
   if (!item) {
     console.log('No item found, navigation state:', locationHook.state);
     console.log('Service ID from URL:', id);
-    
+
     // Show loading state while fetching
     if (isLoadingService) {
       return (
@@ -576,7 +577,7 @@ const ServiceDetailPage = () => {
         </div>
       );
     }
-    
+
     // Show not found only after we've tried fetching
     return (
       <div className="min-h-screen bg-background">
@@ -726,8 +727,8 @@ const ServiceDetailPage = () => {
                           setActiveVariantIndex(index);
                         }}
                         className={`w-2 h-2 rounded-full transition-all ${activeVariantIndex === index
-                            ? 'bg-white shadow-lg'
-                            : 'bg-white/50 hover:bg-white/70'
+                          ? 'bg-white shadow-lg'
+                          : 'bg-white/50 hover:bg-white/70'
                           }`}
                       />
                     ))}
