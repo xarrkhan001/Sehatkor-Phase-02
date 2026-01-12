@@ -31,19 +31,19 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 
 const Footer = () => {
   const services = [
-    { name: "Find Doctors", href: "/doctors", icon: Stethoscope },
-    { name: "Lab Tests", href: "/labs", icon: FlaskConical },
-    { name: "Medicines", href: "/pharmacies", icon: Pill },
-    { name: "Hospitals", href: "/hospitals", icon: Hospital }
+    { name: "Find Doctors", nameUrdu: "ڈاکٹرز تلاش کریں", href: "/doctors", icon: Stethoscope },
+    { name: "Lab Tests", nameUrdu: "لیب ٹیسٹ", href: "/labs", icon: FlaskConical },
+    { name: "Medicines", nameUrdu: "ادویات", href: "/pharmacies", icon: Pill },
+    { name: "Hospitals", nameUrdu: "ہسپتال", href: "/hospitals", icon: Hospital }
   ];
 
   const quickLinks = [
-    { name: "About Us", href: "/about" },
-    { name: "How it Works", href: "/how-it-works" },
-    { name: "Healthcare Providers", href: "/providers" },
-    { name: "Blog", href: "/blog" },
-    { name: "FAQ", href: "/faq" },
-    { name: "Help Center", href: "/help" }
+    { name: "About Us", nameUrdu: "ہمارے بارے میں", href: "/about" },
+    { name: "How it Works", nameUrdu: "یہ کیسے کام کرتا ہے", href: "/how-it-works" },
+    { name: "Healthcare Providers", nameUrdu: "طبی فراہم کنندگان", href: "/providers" },
+    { name: "Blog", nameUrdu: "بلاگ", href: "/blog" },
+    { name: "FAQ", nameUrdu: "سوالات", href: "/faq" },
+    { name: "Help Center", nameUrdu: "مدد کا مرکز", href: "/help" }
   ];
 
   const legalLinks = [
@@ -70,6 +70,9 @@ const Footer = () => {
             <p className="text-gray-300 leading-relaxed mb-6">
               Pakistan's trusted healthcare platform connecting patients with quality medical services.
               Find doctors, book appointments, order medicines, and manage your health - all in one place.
+              <span className="block mt-4 text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300" style={{ fontFamily: "'Noto Nastaliq Urdu', serif", lineHeight: '1.8' }}>
+                پاکستان کا قابلِ اعتماد ہیلتھ کیئر پلیٹ فارم جو مریضوں کو معیاری طبی سہولیات سے جوڑتا ہے۔ ڈاکٹرز تلاش کریں، اپوائنٹمنٹ بک کریں، ادویات منگوائیں اور اپنی صحت کا خیال رکھیں - سب ایک ہی جگہ۔
+              </span>
             </p>
 
             {/* Stats */}
@@ -106,9 +109,12 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 flex items-center">
-              <Heart className="w-5 h-5 text-red-400 mr-2" />
-              Our Services
+            <h3 className="text-lg font-semibold mb-6 flex flex-col">
+              <span className="flex items-center mb-1">
+                <Heart className="w-5 h-5 text-red-400 mr-2" />
+                Our Services
+              </span>
+              <span className="text-sm font-bold text-red-400/80" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>ہماری خدمات</span>
             </h3>
             <ul className="space-y-3">
               {services.map((service, index) => {
@@ -117,10 +123,15 @@ const Footer = () => {
                   <li key={index}>
                     <Link
                       to={service.href}
-                      className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-300 group"
+                      className="flex flex-col space-y-1 group"
                     >
-                      <Icon className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform duration-300" />
-                      <span className="group-hover:translate-x-1 transition-transform duration-300">{service.name}</span>
+                      <div className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-300">
+                        <Icon className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform duration-300" />
+                        <span className="group-hover:translate-x-1 transition-transform duration-300">{service.name}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-gray-400 group-hover:text-gray-200 transition-colors duration-300 pl-7" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>
+                        {service.nameUrdu}
+                      </span>
                     </Link>
                   </li>
                 );
@@ -130,18 +141,26 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 flex items-center">
-              <Users className="w-5 h-5 text-blue-400 mr-2" />
-              Quick Links
+            <h3 className="text-lg font-semibold mb-6 flex flex-col">
+              <span className="flex items-center mb-1">
+                <Users className="w-5 h-5 text-blue-400 mr-2" />
+                Quick Links
+              </span>
+              <span className="text-sm font-bold text-blue-400/80" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>اہم لنکس</span>
             </h3>
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <Link
                     to={link.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 inline-block"
+                    className="flex flex-col space-y-1 group"
                   >
-                    {link.name}
+                    <span className="text-gray-300 hover:text-white transition-colors duration-300 group-hover:translate-x-1 inline-block">
+                      {link.name}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-400 group-hover:text-gray-200 transition-colors duration-300" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>
+                      {link.nameUrdu}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -150,9 +169,12 @@ const Footer = () => {
 
           {/* Contact & Newsletter */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 flex items-center">
-              <Shield className="w-5 h-5 text-green-400 mr-2" />
-              Stay Connected
+            <h3 className="text-lg font-semibold mb-6 flex flex-col">
+              <span className="flex items-center mb-1">
+                <Shield className="w-5 h-5 text-green-400 mr-2" />
+                Stay Connected
+              </span>
+              <span className="text-sm font-bold text-green-400/80" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>ہمارے ساتھ جڑے رہیں</span>
             </h3>
 
             {/* Contact Info */}
@@ -167,7 +189,7 @@ const Footer = () => {
               </div>
               <div className="flex items-start space-x-3 text-gray-300">
                 <MapPin className="w-4 h-4 text-red-400 mt-1" />
-                <span>Charsdha Road Near Mervas Mandi  Mardan</span>
+                <span className="font-mono text-sm">Charsadda Road Near Mervas Mandi Mardan</span>
               </div>
             </div>
 
@@ -183,7 +205,7 @@ const Footer = () => {
 
             {/* Copyright */}
             <div className="text-gray-400 text-sm">
-              © 2024 SehatKor. All rights reserved. | Connecting Pakistan with Quality Healthcare
+              © 2024 SehatKor. All rights reserved. | <span className="inline-block md:inline font-bold" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>پاکستان کو معیاری صحت کی سہولیات سے جوڑنا</span>
             </div>
 
             {/* Legal Links */}
