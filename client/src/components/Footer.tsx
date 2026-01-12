@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { 
-  Stethoscope, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
+import {
+  Stethoscope,
+  Phone,
+  Mail,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
   Linkedin,
   FlaskConical,
   Pill,
@@ -20,12 +20,12 @@ import { Input } from "@/components/ui/input";
 
 // Custom TikTok Icon Component
 const TikTokIcon = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
+  <svg
+    viewBox="0 0 24 24"
     className={className}
     fill="currentColor"
   >
-    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
   </svg>
 );
 
@@ -54,11 +54,11 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+    <footer className="bg-gradient-to-br from-gray-950 via-emerald-950 to-gray-950 text-white">
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          
+
           {/* Company Info */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
@@ -68,10 +68,10 @@ const Footer = () => {
               <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">SehatKor</span>
             </div>
             <p className="text-gray-300 leading-relaxed mb-6">
-              Pakistan's trusted healthcare platform connecting patients with quality medical services. 
+              Pakistan's trusted healthcare platform connecting patients with quality medical services.
               Find doctors, book appointments, order medicines, and manage your health - all in one place.
             </p>
-            
+
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="text-center p-3 bg-white/5 rounded-lg backdrop-blur-sm">
@@ -115,8 +115,8 @@ const Footer = () => {
                 const Icon = service.icon;
                 return (
                   <li key={index}>
-                    <Link 
-                      to={service.href} 
+                    <Link
+                      to={service.href}
                       className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-300 group"
                     >
                       <Icon className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform duration-300" />
@@ -137,8 +137,8 @@ const Footer = () => {
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
-                  <Link 
-                    to={link.href} 
+                  <Link
+                    to={link.href}
                     className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 inline-block"
                   >
                     {link.name}
@@ -154,7 +154,7 @@ const Footer = () => {
               <Shield className="w-5 h-5 text-green-400 mr-2" />
               Stay Connected
             </h3>
-            
+
             {/* Contact Info */}
             <div className="space-y-4 mb-6">
               <div className="flex items-center space-x-3 text-gray-300">
@@ -171,7 +171,7 @@ const Footer = () => {
               </div>
             </div>
 
-            
+
           </div>
         </div>
       </div>
@@ -180,18 +180,18 @@ const Footer = () => {
       <div className="border-t border-white/10">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            
+
             {/* Copyright */}
             <div className="text-gray-400 text-sm">
               © 2024 SehatKor. All rights reserved. | Connecting Pakistan with Quality Healthcare
             </div>
-            
+
             {/* Legal Links */}
             <div className="flex flex-wrap items-center space-x-6 text-sm">
               {legalLinks.map((link, index) => (
-                <Link 
+                <Link
                   key={index}
-                  to={link.href} 
+                  to={link.href}
                   className="text-gray-400 hover:text-white transition-colors duration-300"
                 >
                   {link.name}
@@ -199,7 +199,7 @@ const Footer = () => {
               ))}
             </div>
           </div>
-        
+
         </div>
       </div>
     </footer>

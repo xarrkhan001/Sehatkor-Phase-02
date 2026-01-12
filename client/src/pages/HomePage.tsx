@@ -51,6 +51,14 @@ const MedicalPlusIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const heroAltTexts = [
+  "Find Best Doctors & Specialists",
+  "Top Hospitals and Clinics in Pakistan",
+  "Diagnostic Labs & Home Sampling",
+  "Online Pharmacy & Medicine Delivery",
+  "Emergency Healthcare Services"
+];
+
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentHero, setCurrentHero] = useState(0);
@@ -220,28 +228,34 @@ const HomePage = () => {
               ? heroImages
               : [heroImage, heroImage2, heroImage3, heroImage4, heroImage5]
           ).map((src, idx) => (
-            <div
+            <img
               key={idx}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentHero === idx ? 'opacity-100' : 'opacity-0'}`}
+              src={src}
+              alt={heroAltTexts[idx] || "Sehatkor Healthcare Services"}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${currentHero === idx ? 'opacity-100' : 'opacity-0'}`}
               style={{
-                backgroundImage: `url(${src})`,
-                backgroundSize: 'cover',
-                backgroundPosition: idx === 4 && !heroImages.length ? (isMobile ? 'center center' : 'center -160px') : 'center center',
-                backgroundRepeat: 'no-repeat'
+                objectPosition: idx === 4 && !heroImages.length ? (isMobile ? 'center center' : 'center -160px') : 'center center',
               }}
+              loading={idx === 0 ? "eager" : "lazy"}
             />
           ))}
         </div>
 
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/60 sm:bg-black/50 z-10"></div>
-        <div className="container mx-auto relative  z-20 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center lg:mt-16 w-full">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold mb-4 lg:mt- sm:mb-6 leading-tight text-white/80">
-              Your Health, Our Priority
+        <div className="container mx-auto relative z-20 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 pb-12 sm:pb-20">
+          <div className="max-w-5xl mx-auto text-center w-full">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 leading-tight text-white drop-shadow-xl">
+              Find Best <span className="bg-gradient-to-r from-slate-300 via-emerald-400 to-slate-300 bg-clip-text text-transparent drop-shadow-md">Healthcare Services</span> in Pakistan
+              <span className="block mt-3 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium text-white drop-shadow-xl leading-relaxed" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>
+                پاکستان میں <span className="bg-gradient-to-r from-slate-300 via-emerald-400 to-slate-300 bg-clip-text text-transparent drop-shadow-md">بہترین طبی سہولیات</span> تلاش کریں
+              </span>
             </h1>
-            <p className="text-base font-thin sm:text-lg md:text-xl lg:text-xl mb-6 sm:mb-8 text-white/70 leading-relaxed max-w-3xl mx-auto">
-              Find, compare, and book healthcare services across Pakistan with SehatKor
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 text-slate-100 leading-relaxed max-w-4xl mx-auto font-medium drop-shadow-lg tracking-wide">
+              Your Complete Health Partner. Connect with top-rated providers for all your medical needs.
+              <span className="block mt-3 text-xs sm:text-sm md:text-base lg:text-lg text-slate-100/90" style={{ fontFamily: "'Noto Nastaliq Urdu', serif", lineHeight: '2.0' }}>
+                آپ کا مکمل ہیلتھ پارٹنر۔ بہترین ڈاکٹرز، ہسپتال، لیبز اور ادویات کی خدمات ایک ہی جگہ۔
+              </span>
             </p>
 
 
