@@ -12,6 +12,7 @@ import ConnectionRequest from '../models/ConnectionRequest.js';
 import ProviderDocument from '../models/ProviderDocument.js';
 import HiddenProvider from '../models/HiddenProvider.js';
 import { getModelForServiceType } from '../utils/serviceModelMapper.js';
+import { sendProviderVerificationEmail } from '../services/email.service.js';
 
 // 📊 Admin Dashboard - Get platform stats
 export const getAdminStats = async (req, res) => {
@@ -100,6 +101,37 @@ export const verifyEntity = async (req, res) => {
         user.verifiedBy = req.user?.id || req.userId || user.verifiedBy || null;
       } catch {}
       await user.save();
+      
+    // 📧 Send verification email to provider
+      try {
+        console.log(`\n--- START VERIFICATION EMAIL PROCESS ---`);
+        console.log(`Target User: ${user.name}`);
+        console.log(`Target Email: ${user.email}`);
+        console.log(`Target Role: ${user.role}`);
+        
+        if (!user.email) {
+          console.error('❌ CRITICAL: User has no email address!');
+        } else {
+          console.log('🚀 Attempting to send email via SendGrid service...');
+          const emailResult = await sendProviderVerificationEmail(user.email, user.name, user.role);
+          
+          console.log('📨 Service Response:', JSON.stringify(emailResult, null, 2));
+          
+          if (emailResult.success) {
+            console.log(`✅ SUCCESS: Verification email sent to ${user.email}`);
+          } else {
+            console.error(`⚠️ FAILED: Function returned false success.`);
+            console.error(`Error details:`, emailResult.error);
+          }
+        }
+        console.log(`--- END VERIFICATION EMAIL PROCESS ---\n`);
+        
+      } catch (emailError) {
+        // Log error but don't block verification
+        console.error('❌ EXCEPTION in email process:', emailError);
+        console.error('Stack:', emailError.stack);
+      }
+      
       return res.status(200).json({ message: hasLicense ? 'Entity approved and verified successfully' : 'Entity approved to operate without verification' });
     } else if (status === 'rejected') {
       user.isVerified = false;
