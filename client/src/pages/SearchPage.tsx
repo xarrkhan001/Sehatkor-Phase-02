@@ -1924,28 +1924,34 @@ const SearchPage = () => {
         <link rel="canonical" href={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`} />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4">
 
         {/* Search Header */}
 
         <div className="mb-6">
 
           <PageSearchHeader
-
-            title="Search Healthcare Services"
-
+            title={
+              <span className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+                Search Healthcare Services
+              </span>
+            }
             subtitle="Find doctors, hospitals, labs, and pharmacies across Pakistan"
-
+            rightContent={
+              <div className="flex flex-col gap-1">
+                <span className="text-2xl md:text-3xl font-nastaliq text-emerald-600" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
+                  صحت کی خدمات تلاش کریں
+                </span>
+                <span className="font-nastaliq text-slate-500 text-lg" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
+                  پاکستان بھر میں ڈاکٹرز، ہسپتال، لیز اور فارمیسی تلاش کریں
+                </span>
+              </div>
+            }
             label="Search services"
-
             placeholder="Search for services, providers, or treatments..."
-
             value={searchTerm}
-
             onChange={(v) => setSearchTerm(v)}
-
             resultsCount={filteredServices.length}
-
           />
 
           {/* Mobile: Filters toggle */}
