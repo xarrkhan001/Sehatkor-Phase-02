@@ -531,12 +531,26 @@ const LabsPage = () => {
         })()} />
         <link rel="canonical" href={`https://sehatkor.pk/labs${selectedLabCategory ? `?labCategory=${selectedLabCategory}` : ''}`} />
       </Helmet>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <PageSearchHeader
-            title="Find Labs & Testing Centers"
+            title={
+              <span className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+                Find Labs & Testing Centers
+              </span>
+            }
             subtitle="Search from our network of diagnostic facilities"
+            rightContent={
+              <div className="flex flex-col items-end">
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-emerald-600 font-nastaliq leading-normal pb-2" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
+                  بہترین لیبارٹری ٹیسٹ تلاش کریں
+                </h1>
+                <p className="mt-1 text-sm md:text-base text-slate-500 font-nastaliq text-right" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
+                  پاکستان بھر میں لیب ٹیسٹ اور تشخیصی مراکز سے رابطہ کریں
+                </p>
+              </div>
+            }
             label="Search labs"
             placeholder="Search labs by name, test, or location..."
             value={searchTerm}
