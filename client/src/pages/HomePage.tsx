@@ -8,6 +8,7 @@ import CompareTray from "@/components/CompareTray";
 import PartnersMarquee from "@/components/PartnersMarquee";
 import CompareExplorer from "@/components/CompareExplorer";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
+import BreadcrumbSchema from "@/components/BreadcrumbSchema";
 import { apiUrl } from "@/config/api";
 import heroImage from "@/assets/healthcare-hero-bg.jpg";
 import heroImage2 from "@/assets/hero1.jpg";
@@ -232,9 +233,10 @@ const HomePage = () => {
               key={idx}
               src={src}
               alt={heroAltTexts[idx] || "Sehatkor Healthcare Services"}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${currentHero === idx ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out backdrop-blur-sm ${currentHero === idx ? 'opacity-100' : 'opacity-0'}`}
               style={{
                 objectPosition: idx === 4 && !heroImages.length ? (isMobile ? 'center center' : 'center -160px') : 'center center',
+                filter: 'blur(2px)',
               }}
               loading={idx === 0 ? "eager" : "lazy"}
             />
@@ -242,7 +244,7 @@ const HomePage = () => {
         </div>
 
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/60 sm:bg-black/50 z-10"></div>
+        <div className="absolute inset-0 bg-black/65 z-10"></div>
         <div className="container mx-auto relative z-20 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 pb-12 sm:pb-20">
           <div className="max-w-5xl mx-auto text-center w-full">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 leading-tight text-white drop-shadow-xl">
@@ -326,6 +328,103 @@ const HomePage = () => {
                 <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Searches Section - SEO Optimized */}
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-gray-800">Popular Searches</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Quick access to the most searched healthcare services in Pakistan
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            {/* Specialty Searches */}
+            <Link to="/doctors?specialty=Cardiologist" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-red-200 bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">❤️</div>
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-800 group-hover:text-red-600 transition-colors">Cardiologist</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Heart Specialist</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/doctors?specialty=Pediatrician" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-blue-200 bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">👶</div>
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-800 group-hover:text-blue-600 transition-colors">Pediatrician</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Child Specialist</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/doctors?specialty=Gynecologist" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-pink-200 bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">👩‍⚕️</div>
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-800 group-hover:text-pink-600 transition-colors">Gynecologist</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Lady Doctor</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/doctors?specialty=Dermatologist" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-purple-200 bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">🧴</div>
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-800 group-hover:text-purple-600 transition-colors">Dermatologist</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Skin Specialist</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/doctors?specialty=Dentist" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-teal-200 bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">🦷</div>
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-800 group-hover:text-teal-600 transition-colors">Dentist</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Dental Care</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/doctors?specialty=Orthopedic" className="group">
+              <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-orange-200 bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">🦴</div>
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-800 group-hover:text-orange-600 transition-colors">Orthopedic</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Bone Specialist</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          {/* City Searches */}
+          <div className="mt-8 sm:mt-10">
+            <h3 className="text-lg sm:text-xl font-semibold mb-4 text-center text-gray-800">Search by City</h3>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+              <Link to="/karachi" className="px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all text-sm sm:text-base font-medium text-gray-700 hover:text-emerald-700">
+                Karachi Doctors
+              </Link>
+              <Link to="/lahore" className="px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all text-sm sm:text-base font-medium text-gray-700 hover:text-emerald-700">
+                Lahore Doctors
+              </Link>
+              <Link to="/islamabad" className="px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all text-sm sm:text-base font-medium text-gray-700 hover:text-emerald-700">
+                Islamabad Doctors
+              </Link>
+              <Link to="/peshawar" className="px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all text-sm sm:text-base font-medium text-gray-700 hover:text-emerald-700">
+                Peshawar Doctors
+              </Link>
+              <Link to="/mardan" className="px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition-all text-sm sm:text-base font-medium text-gray-700 hover:text-emerald-700">
+                Mardan Doctors
+              </Link>
+            </div>
           </div>
         </div>
       </section>

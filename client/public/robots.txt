@@ -1,17 +1,52 @@
+# Sehatkor Healthcare Platform - Robots.txt
+# Updated: 2026-01-14
+
+# Google Bots
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
-User-agent: Bingbot
+User-agent: Googlebot-Image
 Allow: /
 
+# Bing Bot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Social Media Bots
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Other Search Engines
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# Default for all other bots
 User-agent: *
 Allow: /
+Crawl-delay: 2
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /api
+Disallow: /dashboard/admin
+Disallow: /*.json$
 
 # Sitemap location
 Sitemap: https://sehatkor.pk/sitemap.xml
