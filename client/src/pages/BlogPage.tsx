@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SEO from "@/components/SEO";
 import { useNavigate, Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,8 +32,32 @@ const BlogPage = () => {
     return <BlogSkeleton />;
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "Sehatkor Healthcare Blog",
+    "description": "Expert medical insights, health guides, and updates from Pakistan's leading healthcare platform.",
+    "url": "https://sehatkor.pk/blog",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Sehatkor",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://sehatkor.pk/logo.png"
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+      <SEO
+        title="Sehatkor Blog - Healthcare Articles & Medical Guides Pakistan"
+        description="Read expert medical articles, health guides, and tips about healthcare in Pakistan. Stay updated with Sehatkor's latest insights on doctors, labs, and hospitals."
+        keywords="health blog pakistan, medical articles, doctor guides, lab test information, hospital reviews, sehatkor blog"
+        canonical="https://sehatkor.pk/blog"
+        jsonLd={jsonLd}
+        type="website"
+      />
       {/* Hero Section - Professional & SEO Optimized */}
       <section className="relative bg-gradient-to-br from-white via-blue-50/50 to-white overflow-hidden py-20 lg:py-24">
         <div className="absolute inset-0 opacity-20">

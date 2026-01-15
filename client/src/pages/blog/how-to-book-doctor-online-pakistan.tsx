@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,31 @@ const BlogPost = () => {
 
     return (
         <div className="min-h-screen bg-white">
+            <SEO
+                title="How to Book Doctor Appointments Online in Pakistan (2025 Guide)"
+                description="Complete guide on how to book verified doctors online in Pakistan using Sehatkor. Save time and find specialists in Karachi, Lahore, Islamabad."
+                keywords="book doctor online pakistan, online doctor appointment, sehatkor guide, digital healthcare pakistan, find doctor online"
+                canonical="https://sehatkor.pk/blog/how-to-book-doctor-online-pakistan"
+                type="article"
+                jsonLd={{
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": "How to Book Doctor Appointments Online in Pakistan: Complete 2025 Guide",
+                    "datePublished": "2025-12-29",
+                    "author": {
+                        "@type": "Organization",
+                        "name": "Sehatkor Team"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Sehatkor",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": "https://sehatkor.pk/logo.png"
+                        }
+                    }
+                }}
+            />
             {/* Hero Section */}
             <section className="relative bg-gradient-to-br from-blue-50 via-white to-green-50 py-20 px-4">
                 <div className="max-w-4xl mx-auto text-center">
