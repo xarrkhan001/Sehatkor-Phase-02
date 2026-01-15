@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
@@ -711,20 +711,20 @@ const DoctorsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Helmet>
-        <title>{
+      <SEO
+        title={
           searchTerm
-            ? `${searchTerm} - Find Doctors | Sehatkor`
+            ? `${searchTerm} - Find Doctors`
             : initialDisease
-              ? `Best Doctors for ${initialDisease} in Pakistan | Book Online`
-              : `Find Best Doctors in Pakistan | Sehatkor - PMDC Verified`
-        }</title>
-        <meta name="description" content={
+              ? `Best Doctors for ${initialDisease}`
+              : `Find Best Doctors in Pakistan`
+        }
+        description={
           searchTerm || initialDisease
             ? `Book appointments with top-rated doctors for ${searchTerm || initialDisease}. ${filteredServices.length > 0 ? `Choose from ${filteredServices.length}+ verified specialists.` : 'Find the best healthcare professionals.'} Read reviews, check fees, and book online.`
             : `Search and book appointments with PMDC verified doctors in Pakistan. Find specialists for any disease, read patient reviews, and get instant confirmation. Available in Karachi, Lahore, Islamabad, and more.`
-        } />
-        <meta name="keywords" content={(() => {
+        }
+        keywords={(() => {
           const baseKeywords = [
             "find doctor Pakistan", "online doctor appointment", "PMDC verified doctors",
             "best doctors Karachi", "best doctors Lahore", "best doctors Islamabad",
@@ -737,24 +737,20 @@ const DoctorsPage = () => {
 
           const query = searchTerm || initialDisease;
           if (query) {
-            // Treat query as potential doctor name, specialty, or symptom
             dynamicKeywords.push(
               `Dr. ${query}`,
               `Doctor ${query}`,
               `Dr ${query} Sehatkor`,
-              `Dr ${query} contact number`,
               `Book Dr ${query}`,
               `doctors for ${query}`,
               `best doctor for ${query} in Pakistan`,
               `${query} specialist`,
               `${query} treatment doctors`,
-              `doctor for ${query} pain`, // Symptom based intent
+              `doctor for ${query} pain`,
               `ڈاکٹر ${query}`,
               `${query} کا علاج`
             );
           } else {
-            // Fallback: Broad "Random Discovery" Strategy
-            // Covers high-volume specialties and common symptoms users search for randomly
             dynamicKeywords.push(
               "cardiologist", "dermatologist", "gynecologist", "pediatrician",
               "general physician", "medical consultant", "stomach specialist",
@@ -764,9 +760,9 @@ const DoctorsPage = () => {
           }
 
           return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
-        })()} />
-        <link rel="canonical" href={`https://sehatkor.pk/doctors${initialDisease ? `?disease=${initialDisease}` : ''}`} />
-      </Helmet>
+        })()}
+        canonical={`https://sehatkor.pk/doctors${initialDisease ? `?disease=${initialDisease}` : ''}`}
+      />
       <div className="container mx-auto px-4 py-4">
         {/* Header */}
         <div className="mb-6">

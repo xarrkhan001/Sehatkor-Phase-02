@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { useNavigate, useParams } from "react-router-dom";
 import ServiceManager, { Service } from "@/lib/serviceManager";
 import { Card, CardContent } from "@/components/ui/card";
@@ -524,13 +524,15 @@ const ProviderProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
-      <Helmet>
-        <title>{`${seoName} - ${seoSpecialty} in ${seoCity} | Sehatkor`}</title>
-        <meta name="description" content={seoDescription} />
-        <meta name="keywords" content={`${seoName}, ${seoName} services, ${allServiceKeywords}, ${seoSpecialty} in ${seoCity}, best ${seoRole} in ${seoCity}, ${seoName} fees, ${seoName} contact, ${seoCity} doctors list`} />
-        <link rel="canonical" href={`https://sehatkor.pk/provider/${providerId}`} />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
+      <SEO
+        title={`${seoName} - ${seoSpecialty} in ${seoCity}`}
+        description={seoDescription}
+        keywords={`${seoName}, ${seoName} services, ${allServiceKeywords}, ${seoSpecialty} in ${seoCity}, best ${seoRole} in ${seoCity}, ${seoName} fees, ${seoName} contact, ${seoCity} doctors list`}
+        canonical={`https://sehatkor.pk/provider/${providerId}`}
+        jsonLd={jsonLd}
+        image={avatarSrc}
+        type="profile"
+      />
       {/* Profile Hero Header */}
       <div className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-200 border-b border-gray-200/60">
         <div className="max-w-7xl mx-auto px-4 py-7">
