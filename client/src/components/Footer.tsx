@@ -222,6 +222,86 @@ const Footer = () => {
             </div>
           </div>
 
+          {/* Developer Credits */}
+          <div className="mt-6 pt-6 border-t border-white/5">
+            <div className="flex flex-col items-center space-y-3 text-sm">
+              {/* Developer Info */}
+              <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <span className="text-gray-500">Developed by:</span>
+                  <img
+                    src="/abuzar-ceo.jpg"
+                    alt="Abuzar - Full Stack Developer & CEO"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-600 shadow-md"
+                  />
+                  <a
+                    href="https://abuzar-portfolio-lat.vercel.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-gray-300 hover:text-white transition-colors duration-300 hover:underline"
+                  >
+                    Abuzar
+                  </a>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-blue-400">Full Stack Dev & CEO</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <span className="text-gray-500">Company:</span>
+                  <a
+                    href="https://ash-cloud-official-bpmr.vercel.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold bg-gradient-to-r from-red-400 to-green-400 bg-clip-text text-transparent hover:from-red-300 hover:to-green-300 transition-all duration-300"
+                  >
+                    ASH Cloud
+                  </a>
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Phone className="w-3.5 h-3.5 text-green-400" />
+                  <a
+                    href="tel:+923429752032"
+                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                  >
+                    +923429752032
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Phone className="w-3.5 h-3.5 text-green-400" />
+                  <a
+                    href="tel:+923178521144"
+                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                  >
+                    +923178521144
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Mail className="w-3.5 h-3.5 text-blue-400" />
+                  <a
+                    href="mailto:abuzarktk123@gmail.com"
+                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                  >
+                    abuzarktk123@gmail.com
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Linkedin className="w-3.5 h-3.5 text-blue-500" />
+                  <a
+                    href="https://www.linkedin.com/company/ashcloudofficial/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                  >
+                    ASH Cloud LinkedIn
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </footer>
