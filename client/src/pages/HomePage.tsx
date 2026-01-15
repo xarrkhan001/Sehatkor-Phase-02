@@ -199,7 +199,47 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden pt-16">
-      <SEO />
+      <SEO
+        title="آنلائن ڈاکٹر اپائنٹمنٹ پاکستان | Book Best Doctors, Hospitals & Labs Online"
+        description="Pakistan's #1 healthcare platform - Sehatkor. Book PMDC verified doctors, top hospitals, diagnostic labs & pharmacies online in Karachi, Lahore, Islamabad, Peshawar, Mardan. آنلائن ڈاکٹر، ہسپتال، لیب اور فارمیسی بک کریں۔ 24/7 support, instant appointments, home services, lowest fees guaranteed."
+        keywords="online doctor Pakistan, book doctor online Pakistan, آنلائن ڈاکٹر پاکستان, best healthcare platform Pakistan, PMDC verified doctors, doctor appointment online, ڈاکٹر بک کریں, آنلائن ہسپتال, find doctor near me, best doctors Karachi, best doctors Lahore, best doctors Islamabad, best doctors Peshawar, best doctors Mardan, کراچی میں ڈاکٹر, لاہور میں ڈاکٹر, اسلام آباد میں ڈاکٹر, پشاور میں ڈاکٹر, مردان میں ڈاکٹر, cardiologist Pakistan, pediatrician Pakistan, gynecologist Pakistan, dermatologist Pakistan, dentist Pakistan, general physician Pakistan, lady doctor Pakistan, child specialist Pakistan, ماہر امراض قلب, بچوں کا ڈاکٹر, خواتین کا ڈاکٹر, جلد کا ڈاکٹر, best hospitals Pakistan, hospital booking online, ہسپتال تلاش کریں, lab test Pakistan, diagnostic lab near me, لیب ٹیسٹ, blood test home, online pharmacy Pakistan, medicine delivery, آنلائن فارمیسی, دوائی ڈیلیوری, healthcare services Pakistan, medical consultation online, 24/7 doctor helpline, emergency doctor, sehatkor, affordable healthcare Pakistan, home sample collection, prescription medicine delivery, marham alternative, oladoc alternative, doctor ki fees, ڈاکٹر کی فیس, sasta doctor, سستا ڈاکٹر, cheap doctor, free checkup, مفت چیک اپ, bukhar ka ilaj, بخار کا علاج, fever treatment, pet dard ka doctor, پیٹ درد کا ڈاکٹر, stomach pain doctor, sir dard ka ilaj, سر درد کا علاج, headache treatment, zukam ka ilaj, زکام کا علاج, cold treatment, khansi ka ilaj, کھانسی کا علاج, cough treatment, sugar ka doctor, شوگر کا ڈاکٹر, diabetes doctor, blood pressure doctor, بلڈ پریشر ڈاکٹر, BP doctor, dil ka doctor, دل کا ڈاکٹر, heart doctor, jigar ka doctor, جگر کا ڈاکٹر, liver doctor, kidney doctor, گردے کا ڈاکٹر, haddi ka doctor, ہڈی کا ڈاکٹر, bone doctor, jild ka doctor, جلد کا ڈاکٹر, skin doctor, ankh ka doctor, آنکھ کا ڈاکٹر, eye doctor, kan ka doctor, کان کا ڈاکٹر, ENT doctor, dant ka doctor, دانت کا ڈاکٹر, teeth doctor, bacho ka doctor, بچوں کا ڈاکٹر, baby doctor, pregnancy doctor, حمل کا ڈاکٹر, maternity doctor, delivery doctor, ڈیلیوری ڈاکٹر, operation doctor, آپریشن ڈاکٹر, surgery doctor, emergency hospital, ایمرجنسی ہسپتال, raat ko doctor, رات کو ڈاکٹر, night doctor, Sunday doctor, اتوار کو ڈاکٹر, weekend doctor, cheap hospital, سستا ہسپتال, government hospital, سرکاری ہسپتال, private hospital, پرائیویٹ ہسپتال, ghar par doctor, گھر پر ڈاکٹر, home visit doctor, online doctor consultation, آنلائن ڈاکٹر مشورہ, video call doctor, ویڈیو کال ڈاکٹر, phone par doctor, فون پر ڈاکٹر, teleconsultation, medicine ghar mangwao, دوائی گھر منگواؤ, medicine home delivery, dawai online, دوائی آنلائن, buy medicine online, test ghar par, ٹیسٹ گھر پر, home test, blood test ghar par, بلڈ ٹیسٹ گھر پر, home blood test, x-ray kahan ho, ایکسرے کہاں ہو, where to get xray, ultrasound near me, الٹراساؤنڈ میرے قریب, COVID test kahan, کووڈ ٹیسٹ کہاں, where COVID test, vaccine kahan milegi, ویکسین کہاں ملے گی, vaccination center, injection ghar par, انجیکشن گھر پر, home injection, drip ghar par, ڈرپ گھر پر, IV at home, nurse ghar par, نرس گھر پر, home nurse, physiotherapy home, فزیوتھراپی گھر پر, health checkup package, ہیلتھ چیک اپ پیکیج, full body checkup, مکمل جسم کا چیک اپ, routine checkup, معمول کا چیک اپ, medical certificate, میڈیکل سرٹیفکیٹ, fitness certificate, فٹنس سرٹیفکیٹ, prescription online, نسخہ آنلائن, online prescription, report online dekho, رپورٹ آنلائن دیکھو, view report online, doctor rating, ڈاکٹر کی ریٹنگ, best reviewed doctor, بہترین ریویو والا ڈاکٹر, top rated doctor, experienced doctor, تجربہ کار ڈاکٹر, senior doctor, سینئر ڈاکٹر, specialist doctor, ماہر ڈاکٹر, MBBS doctor, ایم بی بی ایس ڈاکٹر, FCPS doctor, ایف سی پی ایس ڈاکٹر, verified doctor, تصدیق شدہ ڈاکٹر, licensed doctor, لائسنس یافتہ ڈاکٹر, qualified doctor, قابل ڈاکٹر, trustworthy doctor, قابل اعتماد ڈاکٹر, family doctor, فیملی ڈاکٹر, home doctor, گھریلو ڈاکٹر, urgent care, فوری علاج, instant appointment, فوری اپائنٹمنٹ, same day appointment, اسی دن اپائنٹمنٹ, walk-in clinic, واک ان کلینک, no waiting doctor, بغیر انتظار ڈاکٹر, quick consultation, فوری مشورہ, telemedicine Pakistan, ٹیلی میڈیسن پاکستان, digital health Pakistan, ڈیجیٹل صحت پاکستان, health app Pakistan, صحت ایپ پاکستان, medical app, میڈیکل ایپ, doctor booking app, ڈاکٹر بکنگ ایپ, hospital app, ہسپتال ایپ, lab booking app, لیب بکنگ ایپ, pharmacy app, فارمیسی ایپ"
+        canonical="https://sehatkor.pk/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Sehatkor",
+            "alternateName": "صحت کور",
+            "url": "https://sehatkor.pk",
+            "logo": "https://sehatkor.pk/logo.png",
+            "description": "Pakistan's leading online healthcare platform connecting patients with verified doctors, hospitals, labs, and pharmacies",
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": "PK"
+            },
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "Customer Service",
+              "availableLanguage": ["English", "Urdu"]
+            },
+            "sameAs": [
+              "https://www.facebook.com/sehatkor",
+              "https://www.twitter.com/sehatkor"
+            ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Sehatkor",
+            "url": "https://sehatkor.pk",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://sehatkor.pk/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]}
+      />
       {/* Hero Section */}
       <section
         className="relative overflow-visible py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 px-4 text-white min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] lg:min-h-[85vh] hero-section hero-background"
