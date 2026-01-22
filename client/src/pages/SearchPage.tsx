@@ -1819,15 +1819,15 @@ const SearchPage = () => {
       <Helmet>
         <title>{
           searchTerm
-            ? `${searchTerm} - Search Results | Sehatkor`
+            ? `Sehatkor Services - ${searchTerm} | Pakistan's Best Healthcare Platform`
             : categoryFilter !== 'all'
-              ? `Best ${categoryFilter.split(':')[1] || categoryFilter.split(':')[0]} in ${location === 'all' ? 'Pakistan' : location} | Book Online`
-              : `Search Doctors, Hospitals & Labs in ${location === 'all' ? 'Pakistan' : location} | Sehatkor`
+              ? `Sehatkor Services - Best ${categoryFilter.split(':')[1] || categoryFilter.split(':')[0]} in ${location === 'all' ? 'Pakistan' : location}`
+              : `Sehatkor Services - Search Doctors, Hospitals, Labs & Pharmacies | Pakistan Healthcare`
         }</title>
         <meta name="description" content={
           searchTerm
-            ? `Result for ${searchTerm} in ${location === 'all' ? 'Pakistan' : location}. Book appointments with top rated healthcare providers on Sehatkor.`
-            : `Find and book the best ${categoryFilter !== 'all' ? (categoryFilter.split(':')[1] || categoryFilter.split(':')[0]) : 'doctors, hospitals, and labs'} in ${location === 'all' ? 'Pakistan' : location}. Read verified reviews, check fees, and book instant appointments.`
+            ? `Sehatkor Services - Find ${searchTerm} in ${location === 'all' ? 'Pakistan' : location}. Book appointments with top rated doctors, hospitals, labs, pharmacies. 24/7 support, instant booking.`
+            : `Sehatkor Services - Find and book the best ${categoryFilter !== 'all' ? (categoryFilter.split(':')[1] || categoryFilter.split(':')[0]) : 'doctors, hospitals, labs, and pharmacies'} in ${location === 'all' ? 'Pakistan' : location}. Read verified reviews, check fees, instant appointments.`
         } />
         <meta name="keywords" content={(() => {
           const loc = location === 'all' ? 'Pakistan' : location;
@@ -1838,8 +1838,17 @@ const SearchPage = () => {
           const subType = catParts[1] || ''; // Cardiologist, Tablets, Blood Test, Surgery
 
           const baseKeywords = [
-            "online doctor Pakistan", "sehatkor", "medical services", "health app Pakistan",
-            "آنلائن ڈاکٹر", "میڈیکل سروس", "book appointment online"
+            "sehatkor services", "sehatkor.pk", "sehatkor pakistan", "healthcare services pakistan",
+            "online doctor Pakistan", "medical services", "health app Pakistan", "doctor booking",
+            "hospital booking", "lab test booking", "pharmacy services", "آنلائن ڈاکٹر", "میڈیکل سروس",
+            "book appointment online", "sehatkor doctors", "sehatkor hospitals", "sehatkor labs",
+            "sehatkor pharmacy", "sehatkor medical", "sehatkor healthcare", "sehatkor consultation",
+            "سیہت کور سروسز", "سیہت کور ڈاکٹر", "سیہت کور ہسپتال", "سیہت کور لیب", "سیہت کور فارمیسی",
+            "پاکستان میڈیکل سروس", "آن لائن ہیلتھ کیر", "ڈاکٹر اپائنٹمنٹ", "ہسپتال بکنگ", "لیب ٹیسٹ",
+            "فارمیسی سروس", "سیہت کور پاکستان", "آن لائن ڈاکٹر پاکستان", "ڈاکٹر بکنگ آن لائن",
+            "ہسپتال بکنگ پاکستان", "لیب ٹیسٹ بکنگ", "فارمیسی ڈیلیوری", "میڈیکل کنسلٹیشن",
+            "سیہت کور میڈیکل", "پاکستان ہیلتھ سروس", "آن لائن ہسپتال", "ڈاکٹر کنسلٹیشن",
+            "لیبارٹری ٹیسٹ", "میڈیسن ڈیلیوری", "سیہت کور ہیلتھ پلیٹ فارم", "پاکستان ڈاکٹر"
           ];
 
           let dynamicKeywords = [];
@@ -1848,80 +1857,159 @@ const SearchPage = () => {
           if (mainType === 'doctor') {
             const docKey = subType || 'Doctor';
             dynamicKeywords.push(
+              `sehatkor ${docKey.toLowerCase()}`,
               `best ${docKey} in ${loc}`,
               `${docKey} appointment ${loc}`,
               `consult ${docKey} online`,
               `top rated ${docKey} ${loc}`,
               `${docKey} fees`,
-              `${docKey} near me`
+              `${docKey} near me`,
+              `sehatkor doctor consultation`,
+              `online doctor ${loc}`,
+              `verified doctor ${loc}`,
+              `${loc} میں ${docKey}`,
+              `سیہت کور ${docKey.toLowerCase()}`,
+              `بہترین ${docKey} ${loc} میں`,
+              `${docKey} اپائنٹمنٹ ${loc}`,
+              `آن لائن ${docKey} کنسلٹیشن`,
+              `${docKey} فیس ${loc}`,
+              `${docKey} میرے قریب`
             );
-            if (subType) dynamicKeywords.push(`specialist for ${subType} in ${loc}`);
-            dynamicKeywords.push(`${loc} میں ${subType || 'ڈاکٹر'}`);
+            if (subType) dynamicKeywords.push(`specialist for ${subType} in ${loc}`, `sehatkor ${subType.toLowerCase()} specialist`);
+            dynamicKeywords.push(`${loc} میں ${subType || 'ڈاکٹر'}`, `سیہت کور ڈاکٹر`);
           }
           else if (mainType === 'pharmacy' || mainType === 'medicine') {
             const medKey = subType || 'Medicine';
             dynamicKeywords.push(
+              `sehatkor pharmacy`,
+              `sehatkor medicine`,
               `online pharmacy ${loc}`,
               `buy ${medKey} online ${loc}`,
               `medicine delivery ${loc}`,
               `${medKey} price in Pakistan`,
-              `best pharmacy in ${loc}`
+              `best pharmacy in ${loc}`,
+              `sehatkor medical store`,
+              `online medicine Pakistan`,
+              `sehatkor drug delivery`,
+              `${loc} میں فارمیسی`,
+              `سیہت کور ادویات`,
+              `آن لائن ادویات ${loc}`,
+              `${medKey} آن لائن خریدیں ${loc}`,
+              `ادویات ڈیلیوری ${loc}`,
+              `${medKey} قیمت پاکستان`,
+              `بہترین فارمیسی ${loc} میں`,
+              `سیہت کور میڈیکل اسٹور`,
+              `آنلائن فارمیسی ${loc}`,
+              `ادویات کی ڈیلیوری`,
+              `سیہت کور فارمیسی`
             );
-            dynamicKeywords.push(`آنلائن فارمیسی ${loc}`, `ادویات کی ڈیلیوری`);
           }
           else if (mainType === 'laboratory' || mainType === 'lab') {
             const labKey = subType || 'Lab Test';
             dynamicKeywords.push(
+              `sehatkor lab`,
+              `sehatkor laboratory`,
+              `sehatkor diagnostic`,
               `book ${labKey} ${loc}`,
               `home sampling ${loc}`,
               `best diagnostic lab ${loc}`,
               `${labKey} price ${loc}`,
               `Chughtai Lab ${loc}`,
-              `Excel Lab ${loc}`
+              `Excel Lab ${loc}`,
+              `online lab test ${loc}`,
+              `sehatkor pathology`,
+              `لیب ٹیسٹ گھر پر`,
+              `${loc} لیبارٹری`,
+              `سیہت کور لیب`
             );
-            dynamicKeywords.push(`لیب ٹیسٹ گھر پر`, `${loc} لیبارٹری`);
           }
           else if (mainType === 'clinic' || mainType === 'hospital') {
             const hospKey = subType || 'Hospital';
             dynamicKeywords.push(
+              `sehatkor hospital`,
+              `sehatkor medical center`,
               `best ${hospKey} in ${loc}`,
               `emergency ${hospKey} ${loc}`,
               `${hospKey} contact number`,
               `private hospital ${loc}`,
-              `government hospital ${loc}`
+              `government hospital ${loc}`,
+              `sehatkor emergency`,
+              `hospital booking ${loc}`
             );
-            dynamicKeywords.push(`${loc} ہسپتال`, `ایمرجنسی ڈاکٹر`);
+            dynamicKeywords.push(`${loc} ہسپتال`, `ایمرجنسی ڈاکٹر`, `سیہت کور ہسپتال`);
           }
           else if (categoryFilter === 'all' && !searchTerm) {
             // General generic keywords if nothing selected
             dynamicKeywords.push(
+              `sehatkor all services`,
+              `sehatkor complete healthcare`,
               `doctors in ${loc}`, `hospitals in ${loc}`, `labs in ${loc}`,
-              `online medicine ${loc}`, `medical store ${loc}`
+              `online medicine ${loc}`, `medical store ${loc}`,
+              `sehatkor one stop healthcare`,
+              `complete medical services ${loc}`
             );
           }
 
           // 2. SEARCH TERM & LOCATION COMBINATIONS
           if (searchTerm) {
             dynamicKeywords.push(
+              `sehatkor ${searchTerm.toLowerCase()}`,
               `${searchTerm} treatment ${loc}`,
               `${searchTerm} specialist ${loc}`,
               `${searchTerm} medicine price`,
-              `${searchTerm} test cost`
+              `${searchTerm} test cost`,
+              `sehatkor search ${searchTerm.toLowerCase()}`,
+              `find ${searchTerm} on sehatkor`
             );
           }
 
           // 3. BRAND & INTENT KEYWORDS
           dynamicKeywords.push(
             `sehatkor ${loc}`,
+            `sehatkor services ${loc}`,
             `marham alternative ${loc}`,
             `oladoc alternative ${loc}`,
-            `PMDC verified`
+            `PMDC verified`,
+            `sehatkor verified doctors`,
+            `sehatkor trusted healthcare`,
+            `sehatkor 24/7 support`,
+            `sehatkor instant booking`,
+            `sehatkor lowest fees`
+          );
+
+          // 4. ADDITIONAL SERVICE KEYWORDS
+          dynamicKeywords.push(
+            "sehatkor emergency services", "sehatkor covid test", "sehatkor vaccination",
+            "sehatkor blood test", "sehatkor ultrasound", "sehatkor x-ray", "sehatkor mri",
+            "sehatkor ct scan", "sehatkor health checkup", "sehatkor full body checkup",
+            "sehatkor diabetes test", "sehatkor pregnancy test", "sehatkor child vaccination",
+            "sehatkor online prescription", "sehatkor video consultation", "sehatkor home visit",
+            "sehatkor medical emergency", "sehatkor urgent care", "sehatkor same day appointment",
+            "سیہت کور ایمرجنسی سروسز", "سیہت کور کووڈ ٹیسٹ", "سیہت کور ویکسینیشن",
+            "سیہت کور بلڈ ٹیسٹ", "سیہت کور الٹراساؤنڈ", "سیہت کور ایکس رے", "سیہت کور ایم آر آئی",
+            "سیہت کور سی ٹی اسکین", "سیہت کور ہیلتھ چیک اپ", "سیہت کور فل باڈی چیک اپ",
+            "سیہت کور شوگر ٹیسٹ", "سیہت کور پریگننسی ٹیسٹ", "سیہت کور چائلڈ ویکسینیشن",
+            "سیہت کور آن لائن پریسکرپشن", "سیہت کور ویڈیو کنسلٹیشن", "سیہت کور ہوم وزٹ",
+            "سیہت کور میڈیکل ایمرجنسی", "سیہت کوررجنٹ کیر", "سیہت کور سیم ڈے اپائنٹمنٹ"
           );
 
           // Unique & Join
           return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
         })()} />
         <link rel="canonical" href={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`} />
+        <meta property="og:title" content={
+          searchTerm
+            ? `Sehatkor Services - ${searchTerm} | Pakistan Healthcare`
+            : `Sehatkor Services - Complete Healthcare Platform | Pakistan`
+        } />
+        <meta property="og:description" content={
+          searchTerm
+            ? `Find ${searchTerm} on Sehatkor - Pakistan's trusted healthcare platform. Book doctors, hospitals, labs, pharmacies online.`
+            : `Sehatkor Services - Complete healthcare solution. Find doctors, hospitals, labs, pharmacies in one place.`
+        } />
+        <meta property="og:url" content={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Sehatkor Services - Pakistan Healthcare" />
       </Helmet>
 
       <div className="container mx-auto px-4 py-4">
