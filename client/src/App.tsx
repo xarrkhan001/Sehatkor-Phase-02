@@ -58,6 +58,7 @@ const AdminPayments = lazy(() => import("./pages/AdminPayments"));
 const AdminUserManagement = lazy(() => import("./pages/AdminUserManagement"));
 const AdminRecommendedServices = lazy(() => import("./pages/AdminRecommendedServices"));
 const AdminEntities = lazy(() => import("./pages/AdminEntities"));
+const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OAuthCallbackPage = lazy(() => import("./pages/auth/OAuthCallbackPage"));
 const DiseaseListPage = lazy(() => import("./pages/DiseaseListPage"));
@@ -130,6 +131,7 @@ const AppShell = () => {
             <Route path="/azad-kashmir" element={<Suspense fallback={<PageSkeleton />}><AzadKashmirPage /></Suspense>} />
             <Route path="/about" element={<Suspense fallback={<PageSkeleton />}><AboutPage /></Suspense>} />
             <Route path="/contact" element={<Suspense fallback={<PageSkeleton />}><ContactPage /></Suspense>} />
+            <Route path="/developers" element={<Suspense fallback={<PageSkeleton />}><DevelopersPage /></Suspense>} />
             <Route path="/admin" element={<Suspense fallback={<AdminSkeleton />}><AdminPanel /></Suspense>} />
             <Route path="/admin/partners" element={<Suspense fallback={<AdminSkeleton />}><AdminPartners /></Suspense>} />
             <Route path="/admin/hero-images" element={<Suspense fallback={<AdminSkeleton />}><AdminHeroImages /></Suspense>} />

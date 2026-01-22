@@ -30,6 +30,14 @@
     <priority>0.7</priority>
   </url>
 
+  <!-- Developers Page -->
+  <url>
+    <loc>https://sehatkor.pk/developers</loc>
+    <lastmod>2026-01-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Service Pages -->
   <url>
     <loc>https://sehatkor.pk/doctors</loc>

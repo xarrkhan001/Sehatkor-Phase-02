@@ -124,6 +124,7 @@ const Navbar = () => {
     { name: "Labs", href: "/labs", icon: FlaskConical, color: "text-orange-600" },
     { name: "Pharmacies", href: "/pharmacies", icon: Pill, color: "text-teal-600" },
     { name: "About", href: "/about", icon: BadgeCheck, color: "text-blue-500" },
+    { name: "Developers", href: "/developers", icon: User, color: "text-purple-600" },
     { name: "Blog", href: "/blog", icon: BookOpen, color: "text-indigo-600" },
     { name: "Contact", href: "/contact", icon: Phone, color: "text-emerald-600" },
     { name: "Dashboard", href: "", icon: LayoutDashboard, color: "text-slate-600", requiresAuth: true },
@@ -213,8 +214,8 @@ const Navbar = () => {
             {navItems.map((item) => {
               const Icon = item.icon;
 
-              // Group About, Blog, Contact into dropdown for large screens only
-              if (['About', 'Blog', 'Contact'].includes(item.name)) {
+              // Group About, Developers, Blog, Contact into dropdown for large screens only
+              if (['About', 'Developers', 'Blog', 'Contact'].includes(item.name)) {
                 return null; // Don't render these individually
               }
 
@@ -249,6 +250,28 @@ const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-72 max-h-80 overflow-y-auto custom-scrollbar bg-gray-50/95 backdrop-blur-xl border border-gray-100/40 shadow-xl rounded-2xl mt-3 p-0 animate-in slide-in-from-top-2 duration-300" sideOffset={8} alignOffset={-15}>
                     <div className="p-1">
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/about" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50">
+                            <BadgeCheck className="w-4 h-4 text-blue-500" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">About</span>
+                            <p className="text-xs text-gray-500">Our mission & vision</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/developers" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50">
+                            <User className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Developers</span>
+                            <p className="text-xs text-gray-500">Meet our development team</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem asChild className="rounded-lg">
                         <Link to="/blog" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50">
@@ -395,7 +418,7 @@ const Navbar = () => {
 
             {/* Show individual items for medium screens */}
             <div className="lg:hidden flex items-center space-x-1">
-              {['About', 'Blog', 'Contact'].map((itemName) => {
+              {['About', 'Developers', 'Blog', 'Contact'].map((itemName) => {
                 const item = allNavItems.find(nav => nav.name === itemName);
                 if (!item) return null;
                 const Icon = item.icon;
