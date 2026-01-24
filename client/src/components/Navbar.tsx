@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import UserBadge from "@/components/UserBadge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -38,6 +38,8 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInfoDropdownOpen, setIsInfoDropdownOpen] = useState(false);
+  const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
+  const [isDesktopLocationsExpanded, setIsDesktopLocationsExpanded] = useState(false);
   const [navVerification, setNavVerification] = useState<{ isVerified: boolean; status?: string } | null>(null);
 
   useEffect(() => {
@@ -124,10 +126,10 @@ const Navbar = () => {
     { name: "Labs", href: "/labs", icon: FlaskConical, color: "text-orange-600" },
     { name: "Pharmacies", href: "/pharmacies", icon: Pill, color: "text-teal-600" },
     { name: "About", href: "/about", icon: BadgeCheck, color: "text-blue-500" },
-    { name: "Developers", href: "/developers", icon: User, color: "text-purple-600" },
     { name: "Blog", href: "/blog", icon: BookOpen, color: "text-indigo-600" },
     { name: "Contact", href: "/contact", icon: Phone, color: "text-emerald-600" },
     { name: "Dashboard", href: "", icon: LayoutDashboard, color: "text-slate-600", requiresAuth: true },
+    { name: "Developers", href: "/developers", icon: User, color: "text-purple-600" },
     { name: "Register", href: "/register", icon: UserPlus, color: "text-cyan-600", requiresAuth: false },
     { name: "Login", href: "/login", icon: LogIn, color: "text-violet-600", requiresAuth: false },
   ];
@@ -237,6 +239,56 @@ const Navbar = () => {
               );
             })}
 
+            {/* Locations Dropdown for Desktop */}
+            <div className="hidden lg:block relative">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 text-gray-800 hover:text-gray-900 hover:bg-gray-100">
+                    <MapPin className="w-4 h-4 text-red-500 group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
+                    <span>Locations</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="bottom" align="end" className="w-64 max-h-[80vh] overflow-y-auto custom-scrollbar bg-gray-50/95 backdrop-blur-xl border border-gray-100/40 shadow-xl rounded-2xl mt-2 p-2 animate-in slide-in-from-top-2 duration-300">
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500">Major Cities</DropdownMenuLabel>
+                  <div className="grid grid-cols-2 gap-1">
+                    {[
+                      { name: 'Karachi', path: '/karachi', color: 'text-blue-600', bg: 'bg-blue-100' },
+                      { name: 'Lahore', path: '/lahore', color: 'text-green-600', bg: 'bg-green-100' },
+                      { name: 'Islamabad', path: '/islamabad', color: 'text-purple-600', bg: 'bg-purple-100' },
+                      { name: 'Peshawar', path: '/peshawar', color: 'text-orange-600', bg: 'bg-orange-100' },
+                    ].map((city) => (
+                      <DropdownMenuItem key={city.name} asChild className="rounded-lg">
+                        <Link to={city.path} className="flex items-center space-x-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                          <MapPin className={`w-3 h-3 ${city.color}`} />
+                          <span className="text-xs font-medium text-gray-700">{city.name}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+
+                  <DropdownMenuSeparator className="my-2" />
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500">KPK & Others</DropdownMenuLabel>
+                  <div className="grid grid-cols-2 gap-1">
+                    {[
+                      { name: 'Mardan', path: '/mardan', color: 'text-teal-600', bg: 'bg-teal-100' },
+                      { name: 'Swat', path: '/swat', color: 'text-emerald-600', bg: 'bg-emerald-100' },
+                      { name: 'Chitral', path: '/chitral', color: 'text-indigo-600', bg: 'bg-indigo-100' },
+                      { name: 'Noshera', path: '/noshera', color: 'text-rose-600', bg: 'bg-rose-100' },
+                      { name: 'Swabi', path: '/swabi', color: 'text-amber-600', bg: 'bg-amber-100' },
+                      { name: 'Azad Kashmir', path: '/azad-kashmir', color: 'text-cyan-600', bg: 'bg-cyan-100' }
+                    ].map((city) => (
+                      <DropdownMenuItem key={city.name} asChild className="rounded-lg">
+                        <Link to={city.path} className="flex items-center space-x-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                          <MapPin className={`w-3 h-3 ${city.color}`} />
+                          <span className="text-xs font-medium text-gray-700">{city.name}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             {/* Info Dropdown for large screens only */}
             <div className="hidden lg:block relative">
               <div className="flex items-center">
@@ -262,17 +314,6 @@ const Navbar = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/developers" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50">
-                            <User className="w-4 h-4 text-purple-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Developers</span>
-                            <p className="text-xs text-gray-500">Meet our development team</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
                         <Link to="/blog" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50">
                             <BookOpen className="w-4 h-4 text-indigo-600" />
@@ -294,119 +335,14 @@ const Navbar = () => {
                           </div>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-1" />
-                      <DropdownMenuLabel className="px-3 py-2 text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50/95 backdrop-blur-xl z-10">Locations</DropdownMenuLabel>
                       <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/karachi" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100">
-                            <MapPin className="w-4 h-4 text-blue-600" />
+                        <Link to="/developers" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50">
+                            <User className="w-4 h-4 text-purple-600" />
                           </div>
                           <div>
-                            <span className="font-medium text-gray-900">Karachi</span>
-                            <p className="text-xs text-gray-500">1000+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/lahore" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100">
-                            <MapPin className="w-4 h-4 text-green-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Lahore</span>
-                            <p className="text-xs text-gray-500">800+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/islamabad" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100">
-                            <MapPin className="w-4 h-4 text-purple-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Islamabad</span>
-                            <p className="text-xs text-gray-500">600+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-1" />
-                      <DropdownMenuLabel className="px-3 py-2 text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50/95 backdrop-blur-xl z-10">KPK Cities</DropdownMenuLabel>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/peshawar" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100">
-                            <MapPin className="w-4 h-4 text-orange-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Peshawar</span>
-                            <p className="text-xs text-gray-500">400+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/mardan" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-100">
-                            <MapPin className="w-4 h-4 text-teal-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Mardan</span>
-                            <p className="text-xs text-gray-500">200+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/swat" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100">
-                            <MapPin className="w-4 h-4 text-emerald-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Swat</span>
-                            <p className="text-xs text-gray-500">150+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/chitral" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100">
-                            <MapPin className="w-4 h-4 text-indigo-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Chitral</span>
-                            <p className="text-xs text-gray-500">80+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-1" />
-                      <DropdownMenuLabel className="px-3 py-2 text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50/95 backdrop-blur-xl z-10">Other Cities</DropdownMenuLabel>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/noshera" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100">
-                            <MapPin className="w-4 h-4 text-rose-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Noshera</span>
-                            <p className="text-xs text-gray-500">100+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/swabi" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100">
-                            <MapPin className="w-4 h-4 text-amber-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Swabi</span>
-                            <p className="text-xs text-gray-500">180+ doctors</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/azad-kashmir" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-100">
-                            <MapPin className="w-4 h-4 text-cyan-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Azad Kashmir</span>
-                            <p className="text-xs text-gray-500">250+ doctors</p>
+                            <span className="font-medium text-gray-900">Developers</span>
+                            <p className="text-xs text-gray-500">Meet our development team</p>
                           </div>
                         </Link>
                       </DropdownMenuItem>
@@ -622,55 +558,66 @@ const Navbar = () => {
                     );
                   })}
 
-                  {/* Locations Section - Before User Info */}
+                  {/* Locations Section - Collapsible */}
                   <div className="border-t border-gray-200 my-4"></div>
-                  <div className="px-4 py-3">
-                    <div className="flex items-center space-x-2 mb-3">
-                      <MapPin className="w-5 h-5 text-red-500" />
-                      <span className="text-sm font-semibold text-gray-900">Locations</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Link to="/karachi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-blue-600" />
-                        <span className="text-xs font-medium text-gray-900">Karachi</span>
-                      </Link>
-                      <Link to="/lahore" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-green-600" />
-                        <span className="text-xs font-medium text-gray-900">Lahore</span>
-                      </Link>
-                      <Link to="/islamabad" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-purple-600" />
-                        <span className="text-xs font-medium text-gray-900">Islamabad</span>
-                      </Link>
-                      <Link to="/peshawar" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-orange-600" />
-                        <span className="text-xs font-medium text-gray-900">Peshawar</span>
-                      </Link>
-                      <Link to="/mardan" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-teal-600" />
-                        <span className="text-xs font-medium text-gray-900">Mardan</span>
-                      </Link>
-                      <Link to="/swat" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-emerald-600" />
-                        <span className="text-xs font-medium text-gray-900">Swat</span>
-                      </Link>
-                      <Link to="/chitral" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-indigo-600" />
-                        <span className="text-xs font-medium text-gray-900">Chitral</span>
-                      </Link>
-                      <Link to="/noshera" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-rose-600" />
-                        <span className="text-xs font-medium text-gray-900">Noshera</span>
-                      </Link>
-                      <Link to="/swabi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors">
-                        <MapPin className="w-3 h-3 text-amber-600" />
-                        <span className="text-xs font-medium text-gray-900">Swabi</span>
-                      </Link>
-                      <Link to="/azad-kashmir" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors col-span-2">
-                        <MapPin className="w-3 h-3 text-cyan-600" />
-                        <span className="text-xs font-medium text-gray-900">Azad Kashmir</span>
-                      </Link>
-                    </div>
+                  <div>
+                    <button
+                      onClick={() => setIsLocationsExpanded(!isLocationsExpanded)}
+                      className="group flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:bg-gray-100 text-gray-800"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="w-5 h-5 text-red-500 group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
+                        <span className="group-hover:font-semibold transition-all duration-300">Locations</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isLocationsExpanded ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isLocationsExpanded && (
+                      <div className="px-4 py-3 animate-in slide-in-from-top-2 duration-300">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Link to="/karachi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-blue-600" />
+                            <span className="text-xs font-medium text-gray-900">Karachi</span>
+                          </Link>
+                          <Link to="/lahore" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-green-600" />
+                            <span className="text-xs font-medium text-gray-900">Lahore</span>
+                          </Link>
+                          <Link to="/islamabad" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-purple-600" />
+                            <span className="text-xs font-medium text-gray-900">Islamabad</span>
+                          </Link>
+                          <Link to="/peshawar" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-orange-600" />
+                            <span className="text-xs font-medium text-gray-900">Peshawar</span>
+                          </Link>
+                          <Link to="/mardan" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-teal-600" />
+                            <span className="text-xs font-medium text-gray-900">Mardan</span>
+                          </Link>
+                          <Link to="/swat" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-emerald-600" />
+                            <span className="text-xs font-medium text-gray-900">Swat</span>
+                          </Link>
+                          <Link to="/chitral" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-indigo-600" />
+                            <span className="text-xs font-medium text-gray-900">Chitral</span>
+                          </Link>
+                          <Link to="/noshera" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-rose-600" />
+                            <span className="text-xs font-medium text-gray-900">Noshera</span>
+                          </Link>
+                          <Link to="/swabi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors">
+                            <MapPin className="w-3 h-3 text-amber-600" />
+                            <span className="text-xs font-medium text-gray-900">Swabi</span>
+                          </Link>
+                          <Link to="/azad-kashmir" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors col-span-2">
+                            <MapPin className="w-3 h-3 text-cyan-600" />
+                            <span className="text-xs font-medium text-gray-900">Azad Kashmir</span>
+                          </Link>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {user && (
