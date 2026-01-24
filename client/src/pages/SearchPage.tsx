@@ -1153,12 +1153,42 @@ const SearchPage = () => {
   const filteredServices = useMemo(() => {
 
     const filtered = allServices.filter(service => {
+      // Enhanced search matching for better doctor discoverability
+      const searchLower = searchTerm.toLowerCase().trim();
 
-      const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // 1. Provider name matching (highest priority)
+      const providerNameMatch = service.provider.toLowerCase().includes(searchLower);
 
-        service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // 2. Service name matching
+      const serviceNameMatch = service.name.toLowerCase().includes(searchLower);
 
-        String((service as any).labCategory || '').toLowerCase().includes(searchTerm.toLowerCase());
+      // 3. Specialization matching (for doctors)
+      const specializationMatch = (service as any).specialization
+        ? String((service as any).specialization).toLowerCase().includes(searchLower)
+        : false;
+
+      // 4. Disease matching (for doctor services)
+      const diseaseMatch = Array.isArray((service as any).diseases)
+        ? (service as any).diseases.some((d: string) =>
+          (d || '').toLowerCase().includes(searchLower)
+        )
+        : false;
+
+      // 5. Lab category matching
+      const labCategoryMatch = String((service as any).labCategory || '').toLowerCase().includes(searchLower);
+
+      // 6. Description matching (lower priority)
+      const descriptionMatch = service.description
+        ? service.description.toLowerCase().includes(searchLower)
+        : false;
+
+      const matchesSearch = !searchTerm ||
+        providerNameMatch ||
+        serviceNameMatch ||
+        specializationMatch ||
+        diseaseMatch ||
+        labCategoryMatch ||
+        descriptionMatch;
 
       // Service Type filter now uses backend serviceType (Sehat Card, Private, Charity, Public, NPO, NGO)
 
@@ -1532,6 +1562,78 @@ const SearchPage = () => {
 
       });
 
+    }
+
+    // Enhanced default sorting: prioritize search relevance when search term is present
+    if (searchTerm && searchTerm.trim()) {
+      return filtered.sort((a, b) => {
+        const searchLower = searchTerm.toLowerCase().trim();
+
+        // 1. Exact provider name match (highest priority)
+        const aProviderExact = a.provider.toLowerCase() === searchLower;
+        const bProviderExact = b.provider.toLowerCase() === searchLower;
+        if (aProviderExact && !bProviderExact) return -1;
+        if (!aProviderExact && bProviderExact) return 1;
+
+        // 2. Provider name starts with search term
+        const aProviderStarts = a.provider.toLowerCase().startsWith(searchLower);
+        const bProviderStarts = b.provider.toLowerCase().startsWith(searchLower);
+        if (aProviderStarts && !bProviderStarts) return -1;
+        if (!aProviderStarts && bProviderStarts) return 1;
+
+        // 3. Provider name contains search term
+        const aProviderContains = a.provider.toLowerCase().includes(searchLower);
+        const bProviderContains = b.provider.toLowerCase().includes(searchLower);
+        if (aProviderContains && !bProviderContains) return -1;
+        if (!aProviderContains && bProviderContains) return 1;
+
+        // 4. Specialization match (for doctors)
+        const aSpecMatch = (a as any).specialization
+          ? String((a as any).specialization).toLowerCase().includes(searchLower)
+          : false;
+        const bSpecMatch = (b as any).specialization
+          ? String((b as any).specialization).toLowerCase().includes(searchLower)
+          : false;
+        if (aSpecMatch && !bSpecMatch) return -1;
+        if (!aSpecMatch && bSpecMatch) return 1;
+
+        // 5. Service name exact match
+        const aServiceExact = a.name.toLowerCase() === searchLower;
+        const bServiceExact = b.name.toLowerCase() === searchLower;
+        if (aServiceExact && !bServiceExact) return -1;
+        if (!aServiceExact && bServiceExact) return 1;
+
+        // 6. Service name contains search term
+        const aServiceContains = a.name.toLowerCase().includes(searchLower);
+        const bServiceContains = b.name.toLowerCase().includes(searchLower);
+        if (aServiceContains && !bServiceContains) return -1;
+        if (!aServiceContains && bServiceContains) return 1;
+
+        // 7. Then by verification status (verified doctors first)
+        const aVerified = (a as any)._providerVerified;
+        const bVerified = (b as any)._providerVerified;
+        if (aVerified && !bVerified) return -1;
+        if (!aVerified && bVerified) return 1;
+
+        // 8. Then by rating badge
+        const rank = (s: any) => {
+          const badge = (s?.ratingBadge || '').toString().toLowerCase();
+          if (badge === 'excellent') return 3;
+          if (badge === 'good') return 2;
+          if (badge === 'fair') return 1;
+          return 0;
+        };
+        const rb = rank(b) - rank(a);
+        if (rb !== 0) return rb;
+
+        // 9. Then by rating
+        if (a.rating !== b.rating) return b.rating - a.rating;
+
+        // 10. Finally by creation date
+        const ad = (a as any).createdAt ? Date.parse((a as any).createdAt) : 0;
+        const bd = (b as any).createdAt ? Date.parse((b as any).createdAt) : 0;
+        return bd - ad;
+      });
     }
 
     return filtered;

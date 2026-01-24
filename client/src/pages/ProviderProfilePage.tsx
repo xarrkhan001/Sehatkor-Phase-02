@@ -503,31 +503,133 @@ const ProviderProfilePage = () => {
   const serviceNames = services.slice(0, 5).map(s => s.name).join(", ");
   const allServiceKeywords = services.map(s => s.name).join(", ");
 
-  const seoDescription = `Book appointment with ${seoName}, ${seoSpecialty} in ${seoCity}. Offers: ${serviceNames}. Check contact number, fees, reviews and address. Verified Sehatkor Provider.`;
+  // Generate comprehensive keywords automatically
+  const generateKeywords = () => {
+    const keywords: string[] = [];
 
-  // JSON-LD Structured Data
+    // 1. Doctor/Provider name variations
+    keywords.push(seoName);
+    keywords.push(`${seoName} ${seoCity}`);
+    keywords.push(`${seoName} services`);
+    keywords.push(`${seoName} contact number`);
+    keywords.push(`${seoName} fees`);
+    keywords.push(`${seoName} appointment`);
+    keywords.push(`book ${seoName} online`);
+    keywords.push(`${seoName} Sehatkor`);
+
+    // 2. Specialty-based keywords
+    if (seoSpecialty && seoSpecialty !== "Provider") {
+      keywords.push(seoSpecialty);
+      keywords.push(`${seoSpecialty} ${seoCity}`);
+      keywords.push(`best ${seoSpecialty} ${seoCity}`);
+      keywords.push(`${seoSpecialty} in ${seoCity}`);
+      keywords.push(`${seoSpecialty} near me`);
+      keywords.push(`top ${seoSpecialty} Pakistan`);
+
+      // Role-specific keywords
+      if (seoRole === "Doctor") {
+        keywords.push(`${seoSpecialty} specialist`);
+        keywords.push(`${seoSpecialty} doctor ${seoCity}`);
+        keywords.push(`${seoSpecialty} consultation`);
+      }
+    }
+
+    // 3. Service-based keywords (from actual services)
+    services.slice(0, 10).forEach(service => {
+      keywords.push(service.name);
+      keywords.push(`${service.name} ${seoCity}`);
+    });
+
+    // 4. Location-based variations
+    keywords.push(`${seoRole} in ${seoCity}`);
+    keywords.push(`best ${seoRole} ${seoCity}`);
+    keywords.push(`${seoCity} ${seoRole} list`);
+    keywords.push(`verified ${seoRole} ${seoCity}`);
+
+    // 5. Common search phrases
+    if (seoRole === "Doctor") {
+      keywords.push(`doctor appointment ${seoCity}`);
+      keywords.push(`online doctor booking Pakistan`);
+      keywords.push(`PMDC verified doctor`);
+    }
+
+    // 6. Urdu keywords for better local SEO
+    keywords.push(`ڈاکٹر ${seoCity}`);
+    if (seoSpecialty.toLowerCase().includes('cardio')) {
+      keywords.push('دل کا ڈاکٹر');
+    } else if (seoSpecialty.toLowerCase().includes('gastro')) {
+      keywords.push('پیٹ کا ڈاکٹر');
+    } else if (seoSpecialty.toLowerCase().includes('derma')) {
+      keywords.push('جلد کا ڈاکٹر');
+    }
+    keywords.push('آنلائن ڈاکٹر اپائنٹمنٹ');
+
+    return Array.from(new Set(keywords)).join(", ");
+  };
+
+  // Enhanced SEO description with more details
+  const avgPrice = services.length > 0
+    ? Math.round(services.reduce((sum, s) => sum + (Number((s as any).price) || 0), 0) / services.length)
+    : 0;
+  const priceRange = avgPrice > 0 ? `Fees from PKR ${avgPrice}` : "Affordable fees";
+  const verificationStatus = providerUser?.isVerified && providerUser?.licenseNumber ? "Verified" : "Registered";
+  const totalRatings = services.reduce((sum, s) => sum + (Number((s as any).totalRatings) || 0), 0);
+  const avgRating = services.length > 0
+    ? (services.reduce((sum, s) => sum + (Number(s.rating) || 0), 0) / services.length).toFixed(1)
+    : "0";
+
+  const seoDescription = `Book appointment with ${seoName}, ${verificationStatus} ${seoSpecialty} in ${seoCity}. ${priceRange}. ${totalRatings > 0 ? `${avgRating}★ rating from ${totalRatings} patients.` : ''} Services: ${serviceNames}. Check contact number, timings, reviews and location on Sehatkor.pk`;
+
+  // Enhanced JSON-LD Structured Data with more details
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": seoRole === "Doctor" ? "Physician" : seoRole === "Hospital" ? "Hospital" : "MedicalOrganization",
+    "@type": seoRole === "Doctor" ? "Physician" : seoRole === "Hospital" || seoRole === "Clinic" ? "Hospital" : "MedicalOrganization",
     "name": seoName,
     "image": avatarSrc,
     "telephone": providerUser?.phone,
     "address": {
       "@type": "PostalAddress",
       "addressLocality": seoCity,
+      "addressRegion": seoCity === "Karachi" ? "Sindh" : seoCity === "Lahore" ? "Punjab" : seoCity === "Islamabad" ? "Islamabad Capital Territory" : "Pakistan",
       "addressCountry": "PK"
     },
-    "priceRange": "PKR 500 - PKR 5000",
+    "priceRange": avgPrice > 0 ? `PKR ${Math.round(avgPrice * 0.8)} - PKR ${Math.round(avgPrice * 1.2)}` : "PKR 500 - PKR 5000",
     "medicalSpecialty": seoSpecialty,
-    "description": seoDescription
+    "description": seoDescription,
+    ...(totalRatings > 0 && {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": avgRating,
+        "reviewCount": totalRatings,
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }),
+    ...(services.length > 0 && {
+      "availableService": services.slice(0, 5).map(service => ({
+        "@type": "MedicalProcedure",
+        "name": service.name,
+        "description": service.description || `${service.name} service provided by ${seoName}`
+      }))
+    }),
+    ...(providerUser?.isVerified && providerUser?.licenseNumber && {
+      "hasCredential": {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "Medical License",
+        "recognizedBy": {
+          "@type": "Organization",
+          "name": "Pakistan Medical Commission"
+        }
+      }
+    })
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
       <SEO
-        title={`${seoName} - ${seoSpecialty} in ${seoCity}`}
+        title={`${seoName} - ${seoSpecialty} in ${seoCity} | Sehatkor`}
         description={seoDescription}
-        keywords={`${seoName}, ${seoName} services, ${allServiceKeywords}, ${seoSpecialty} in ${seoCity}, best ${seoRole} in ${seoCity}, ${seoName} fees, ${seoName} contact, ${seoCity} doctors list`}
+        keywords={generateKeywords()}
         canonical={`https://sehatkor.pk/provider/${providerId}`}
         jsonLd={jsonLd}
         image={avatarSrc}
