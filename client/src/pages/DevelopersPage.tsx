@@ -64,7 +64,8 @@ const DevelopersPage = () => {
                         "@type": "Person",
                         "@id": "https://sehatkor.pk/developers#abuzar",
                         "name": "Abuzar",
-                        "jobTitle": ["Software Engineer", "Full Stack Developer", "CEO"],
+                        "alternateName": ["Abuzar Khan", "Abuzar CEO", "Abuzar ASH Cloud"],
+                        "jobTitle": ["Software Engineer", "Full Stack Developer", "CEO and Co-Founder", "Lead Developer", "Tech Entrepreneur"],
                         "worksFor": {
                             "@type": "Organization",
                             "@id": "https://ash-cloud-official-bpmr.vercel.app/#organization",
@@ -75,7 +76,14 @@ const DevelopersPage = () => {
                             "areaServed": "Pakistan"
                         },
                         "url": "https://abuzar-portfolio-lat.vercel.app/",
-                        "image": "https://sehatkor.pk/abuzar-ceo.jpg",
+                        "image": {
+                            "@type": "ImageObject",
+                            "url": "https://sehatkor.pk/abuzar-ceo.jpg",
+                            "contentUrl": "https://sehatkor.pk/abuzar-ceo.jpg",
+                            "caption": "Abuzar - CEO and Co-Founder of ASH Cloud, Software Engineer, Full Stack Developer",
+                            "description": "Professional photo of Abuzar, CEO of ASH Cloud and lead developer of Sehatkor.pk",
+                            "name": "Abuzar CEO ASH Cloud"
+                        },
                         "sameAs": [
                             "https://www.linkedin.com/company/ashcloudofficial/",
                             "https://ash-cloud-official-bpmr.vercel.app/",
@@ -83,22 +91,33 @@ const DevelopersPage = () => {
                         ],
                         "telephone": "+923429752032",
                         "email": "abuzarktk123@gmail.com",
+                        "address": {
+                            "@type": "PostalAddress",
+                            "addressLocality": "Peshawar",
+                            "addressRegion": "Khyber Pakhtunkhwa",
+                            "addressCountry": "Pakistan"
+                        },
                         "knowsAbout": [
                             "React.js", "Node.js", "MongoDB", "Express.js", "MERN Stack",
                             "React Native", "Python Django", "JavaScript Expert", "Nuxt.js", "Vue.js",
-                            "Desktop Application (Offline/Online)", "Firebase", "Healthcare Software Development",
-                            "Web Applications", "Mobile Development", "AI Solutions", "Cloud Computing", "Database Design"
+                            "Desktop Application Development", "Firebase", "Healthcare Software Development",
+                            "Web Applications", "Mobile Development", "AI Solutions", "Cloud Computing", "Database Design",
+                            "Full Stack Development", "Software Architecture", "API Development", "E-commerce Solutions",
+                            "Enterprise Software", "Custom Software Development", "Sehatkor Development"
                         ],
                         "alumniOf": "Software Engineering",
-                        "hasCredential": "Full Stack Development Certification",
-                        "description": "Abuzar - CEO of ASH Cloud and lead developer of Sehatkor.pk. Expert full stack developer with comprehensive experience across all technology platforms including web applications, mobile apps, desktop software, AI solutions, cloud computing, and database systems. Specializing in MERN stack, React Native, Python Django, and delivering innovative digital solutions for healthcare, e-commerce, enterprise, and custom business applications in Peshawar, Pakistan.",
-                        "seeks": "Software Development Projects"
+                        "hasCredential": ["Full Stack Development Certification", "MERN Stack Expert", "React Native Developer"],
+                        "award": ["CEO of ASH Cloud", "Lead Developer of Sehatkor.pk", "Full Stack Expert"],
+                        "description": "Abuzar - Software Engineer, Full Stack Developer, CEO and Co-Founder of ASH Cloud company. Lead developer of Sehatkor.pk with comprehensive experience across all technology platforms including web applications, mobile apps, desktop software, AI solutions, cloud computing, and database systems. Specializing in MERN stack, React Native, Python Django, and delivering innovative digital solutions for healthcare, e-commerce, enterprise, and custom business applications in Peshawar, Pakistan.",
+                        "seeks": "Software Development Projects",
+                        "keywords": "Abuzar, Abuzar software engineer, Abuzar full stack developer, Abuzar CEO, Abuzar ASH Cloud, CEO of ASH Cloud, co-founder ASH Cloud, Abuzar Sehatkor developer, Sehatkor.pk developer, Abuzar Pakistan developer, Abuzar Peshawar, MERN stack developer Pakistan, React Native developer Pakistan, full stack developer Peshawar, software engineer Pakistan, ASH Cloud CEO, healthcare software developer, Abuzar portfolio, Abuzar tech entrepreneur, Pakistan software developer, Peshawar tech CEO, Abuzar web developer, Abuzar mobile developer, Abuzar AI developer, best developer Pakistan, top developer Peshawar"
                     },
                     {
                         "@type": "Person",
                         "@id": "https://sehatkor.pk/developers#haris",
                         "name": "Syed Haris Shah",
-                        "jobTitle": ["Software Engineer", "Full Stack Developer"],
+                        "alternateName": ["Haris Shah", "Syed Haris", "Haris ASH Cloud", "Harry Shah"],
+                        "jobTitle": ["Software Engineer", "Full Stack Developer", "Senior Developer Member", "Frontend Specialist", "Backend Developer"],
                         "worksFor": {
                             "@type": "Organization",
                             "@id": "https://ash-cloud-official-bpmr.vercel.app/#organization",
@@ -106,23 +125,40 @@ const DevelopersPage = () => {
                             "url": "https://ash-cloud-official-bpmr.vercel.app/"
                         },
                         "url": "https://portfolio22-lilac.vercel.app/",
-                        "image": "https://sehatkor.pk/haris-photo.jpg",
+                        "image": {
+                            "@type": "ImageObject",
+                            "url": "https://sehatkor.pk/haris-photo.jpg",
+                            "contentUrl": "https://sehatkor.pk/haris-photo.jpg",
+                            "caption": "Syed Haris Shah - Senior Developer Member of ASH Cloud, Software Engineer, Full Stack Developer",
+                            "description": "Professional photo of Syed Haris Shah, Senior Developer at ASH Cloud and key developer of Sehatkor.pk",
+                            "name": "Syed Haris Shah ASH Cloud Developer"
+                        },
                         "sameAs": [
                             "https://www.linkedin.com/company/ashcloudofficial/",
                             "https://ash-cloud-official-bpmr.vercel.app/",
                             "https://portfolio22-lilac.vercel.app/"
                         ],
                         "email": "syedharryshah1@gmail.com",
+                        "address": {
+                            "@type": "PostalAddress",
+                            "addressLocality": "Peshawar",
+                            "addressRegion": "Khyber Pakhtunkhwa",
+                            "addressCountry": "Pakistan"
+                        },
                         "knowsAbout": [
                             "React.js", "Node.js", "MongoDB", "Express.js", "MERN Stack",
                             "React Native", "Python Django", "JavaScript Expert", "Nuxt.js", "Vue.js",
-                            "Desktop Application (Offline/Online)", "Firebase", "Frontend Development", "Backend Development",
-                            "Healthcare Software", "Web Applications", "UI/UX Design", "Database Management"
+                            "Desktop Application Development", "Firebase", "Frontend Development", "Backend Development",
+                            "Healthcare Software", "Web Applications", "UI/UX Design", "Database Management",
+                            "Full Stack Development", "API Development", "Responsive Design", "Modern Web Technologies",
+                            "E-commerce Development", "Custom Software Solutions", "Sehatkor Development"
                         ],
                         "alumniOf": "Software Engineering",
-                        "hasCredential": "Full Stack Development Certification",
-                        "description": "Syed Haris Shah - Full stack developer at ASH Cloud and key developer of Sehatkor.pk. Versatile developer with expertise across multiple technology platforms including web development, mobile applications, desktop software, frontend/backend systems, UI/UX design, and database management. Specializing in React.js, Node.js, MERN stack, and modern web technologies for healthcare, e-commerce, enterprise solutions, and custom business applications in Peshawar, Pakistan.",
-                        "seeks": "Full Stack Development Opportunities"
+                        "hasCredential": ["Full Stack Development Certification", "MERN Stack Developer", "UI/UX Specialist"],
+                        "award": ["Senior Developer ASH Cloud", "Key Developer of Sehatkor.pk", "Full Stack Specialist"],
+                        "description": "Syed Haris Shah - Software Engineer, Full Stack Developer, and Senior Developer Member of ASH Cloud company. Key developer of Sehatkor.pk with versatile expertise across multiple technology platforms including web development, mobile applications, desktop software, frontend/backend systems, UI/UX design, and database management. Specializing in React.js, Node.js, MERN stack, and modern web technologies for healthcare, e-commerce, enterprise solutions, and custom business applications in Peshawar, Pakistan.",
+                        "seeks": "Full Stack Development Opportunities",
+                        "keywords": "Syed Haris Shah, Haris Shah, Syed Haris software engineer, Haris full stack developer, Haris ASH Cloud, Senior developer ASH Cloud, Syed Haris Shah Sehatkor, Sehatkor developer Haris, Haris Pakistan developer, Haris Peshawar, MERN stack developer Haris, React developer Pakistan, full stack developer Haris, software engineer Haris Shah, ASH Cloud senior developer, healthcare software Haris, Haris portfolio, UI UX developer Pakistan, frontend developer Peshawar, backend developer Pakistan, Haris web developer, Haris mobile developer, best developer Pakistan, top developer Peshawar, Syed Haris Shah portfolio"
                     }
                 ]
             },
@@ -248,9 +284,9 @@ const DevelopersPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
             <SEO
-                title="Top Software Developers Pakistan | Abuzar CEO ASH Cloud & Syed Haris Shah | Sehatkor.pk Team 2025"
-                description="Looking for expert software developers in Pakistan? Meet Abuzar (CEO of ASH Cloud) and Syed Haris Shah - versatile full stack developers who built Sehatkor.pk. Expertise across all technology platforms including web applications, mobile apps, desktop software, AI solutions, cloud computing, and database systems. Specializing in MERN stack, React Native, Python Django, and delivering innovative digital solutions for healthcare, e-commerce, enterprise, and custom business applications. Contact Peshawar's best developers for comprehensive software development services."
-                keywords="Abuzar CEO ASH Cloud Pakistan, Syed Haris Shah full stack developer Peshawar, ASH Cloud software development company Pakistan, Sehatkor.pk developers team, best software developers Pakistan 2025, top web developers Pakistan, MERN stack experts Pakistan, React Native app developers Pakistan, Python Django developers Peshawar, JavaScript expert developers Pakistan, Vue.js Nuxt.js developers Pakistan, Firebase backend developers Pakistan, healthcare software development Pakistan, medical app developers Pakistan, custom website developers Pakistan, enterprise software solutions Pakistan, e-commerce developers Pakistan, mobile app development Pakistan, desktop application developers Pakistan, AI solutions developers Pakistan, cloud computing experts Pakistan, database design specialists Pakistan, UI UX designers Pakistan, frontend backend developers Pakistan, full stack web development Pakistan, software house Peshawar, IT solutions Pakistan, digital transformation Pakistan, healthcare IT specialists Pakistan, medical platform developers Pakistan, clinic management software Pakistan, hospital management systems Pakistan, lab management software Pakistan, pharmacy management systems Pakistan, telemedicine app developers Pakistan, health tech startups Pakistan, Pakistani software engineers, Peshawar tech companies, KPK software developers, Pakistan IT industry, software development services Pakistan, web design development Pakistan, app development company Pakistan, custom software solutions Pakistan, business software development Pakistan, healthcare technology Pakistan, medical software solutions Pakistan, digital health platforms Pakistan, Pakistani development agencies, top coding experts Pakistan, software consultants Pakistan, tech entrepreneurs Pakistan, programming experts Pakistan, development services Pakistan, custom applications Pakistan, software outsourcing Pakistan, Pakistan software market, IT services Pakistan, technology solutions Pakistan, who developed Sehatkor.pk, Sehatkor.pk creator, Sehatkor.pk developer team, Abuzar Sehatkor developer, Syed Haris Shah Sehatkor developer, ASH Cloud Sehatkor developers, Sehatkor.pk programming team, Sehatkor.pk tech team, Sehatkor.pk software engineers, developer of Sehatkor.pk, Sehatkor.pk web developers, Sehatkor.pk app developers, Sehatkor.pk backend developers, Sehatkor.pk frontend developers, Abuzar Pakistan developer, Haris Shah Pakistan developer, ASH Cloud Peshawar, Pakistani software developers, Peshawar software house, best developers in Pakistan, healthcare platform developers Pakistan, medical app developers Pakistan, Peshawar developers, KPK software developers, search Abuzar CEO, search Syed Haris Shah, find Sehatkor developers, Abuzar software engineer Pakistan, Syed Haris Shah developer Pakistan, CEO ASH Cloud Pakistan"
+                title="Sehatkor.pk Developers - Abuzar CEO & Syed Haris Shah | ASH Cloud Software Engineers Pakistan"
+                description="Meet the developers of Sehatkor.pk - Abuzar (Software Engineer, Full Stack Developer, CEO and Co-Founder of ASH Cloud) and Syed Haris Shah (Software Engineer, Full Stack Developer, Senior Developer Member of ASH Cloud). Expert full stack developers who built Pakistan's leading healthcare platform. Expertise across all technology platforms including web applications, mobile apps, desktop software, AI solutions, cloud computing, and database systems. Specializing in MERN stack, React Native, Python Django, and delivering innovative digital solutions for healthcare, e-commerce, enterprise, and custom business applications in Peshawar, Pakistan. Contact the best software developers in Pakistan for comprehensive development services."
+                keywords="sehatkor.pk developers, sehatkor developers, who developed sehatkor.pk, sehatkor.pk developer team, developers of sehatkor.pk, sehatkor.pk creators, Abuzar sehatkor developer, Syed Haris Shah sehatkor developer, Abuzar software engineer Pakistan, Abuzar full stack developer, Abuzar CEO ASH Cloud, Abuzar co-founder ASH Cloud, Abuzar CEO and co-founder ASH Cloud company, Syed Haris Shah software engineer, Syed Haris Shah full stack developer, Syed Haris Shah senior developer, Syed Haris Shah ASH Cloud, senior developer member ASH Cloud, ASH Cloud software development company Pakistan, ASH Cloud developers team, ASH Cloud Peshawar, best software developers Pakistan 2025, top web developers Pakistan, MERN stack experts Pakistan, React Native app developers Pakistan, Python Django developers Peshawar, JavaScript expert developers Pakistan, Vue.js Nuxt.js developers Pakistan, Firebase backend developers Pakistan, healthcare software development Pakistan, medical app developers Pakistan, custom website developers Pakistan, enterprise software solutions Pakistan, e-commerce developers Pakistan, mobile app development Pakistan, desktop application developers Pakistan, AI solutions developers Pakistan, cloud computing experts Pakistan, database design specialists Pakistan, UI UX designers Pakistan, frontend backend developers Pakistan, full stack web development Pakistan, software house Peshawar, IT solutions Pakistan, digital transformation Pakistan, healthcare IT specialists Pakistan, medical platform developers Pakistan, clinic management software Pakistan, hospital management systems Pakistan, lab management software Pakistan, pharmacy management systems Pakistan, telemedicine app developers Pakistan, health tech startups Pakistan, Pakistani software engineers, Peshawar tech companies, KPK software developers, Pakistan IT industry, software development services Pakistan, web design development Pakistan, app development company Pakistan, custom software solutions Pakistan, business software development Pakistan, healthcare technology Pakistan, medical software solutions Pakistan, digital health platforms Pakistan, Pakistani development agencies, top coding experts Pakistan, software consultants Pakistan, tech entrepreneurs Pakistan, programming experts Pakistan, development services Pakistan, custom applications Pakistan, software outsourcing Pakistan, Pakistan software market, IT services Pakistan, technology solutions Pakistan, Abuzar Pakistan developer, Haris Shah Pakistan developer, search Abuzar CEO, search Syed Haris Shah, find Sehatkor developers, Abuzar contact, Syed Haris Shah contact, ASH Cloud contact, hire Pakistani developers, hire Peshawar developers, best developers in Pakistan, Abuzar portfolio, Syed Haris Shah portfolio, ASH Cloud portfolio, sehatkor.pk programming team, sehatkor.pk tech team, sehatkor.pk software engineers, sehatkor.pk web developers, sehatkor.pk app developers, sehatkor.pk backend developers, sehatkor.pk frontend developers"
                 canonical="https://sehatkor.pk/developers"
                 jsonLd={jsonLd}
                 type="website"
@@ -391,22 +427,25 @@ const DevelopersPage = () => {
                                 <div className="p-8">
                                     <div className="flex flex-col items-center text-center mb-6">
                                         <div className="relative mb-6">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-30"></div>
-                                            <img
-                                                src="/abuzar-ceo.jpg"
-                                                alt="Abuzar - CEO of ASH Cloud"
-                                                className="relative w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg"
-                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-xl opacity-40"></div>
+                                            <div className="relative w-40 h-40 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 border-4 border-white shadow-2xl ring-4 ring-blue-100 overflow-hidden">
+                                                <img
+                                                    src="/abuzar-ceo.jpg?v=3"
+                                                    alt="Abuzar - CEO and Co-Founder of ASH Cloud, Software Engineer, Full Stack Developer, Lead Developer of Sehatkor.pk"
+                                                    title="Abuzar - CEO ASH Cloud | Software Engineer | Full Stack Developer Pakistan"
+                                                    className="w-full h-full object-cover"
+                                                    style={{ objectPosition: '45% 8%' }}
+                                                    loading="eager"
+                                                    itemProp="image"
+                                                />
+                                            </div>
                                         </div>
 
                                         <h3 className="text-2xl font-bold text-gray-900 mb-2">Abuzar</h3>
-                                        <div className="flex flex-col gap-1 mb-4">
-                                            <p className="text-blue-600 font-semibold">Software Engineer & Full Stack Developer</p>
-                                            <p className="text-blue-500 font-medium text-sm">CEO of ASH Cloud</p>
-                                        </div>
+                                        <p className="text-blue-600 font-semibold mb-4">Software Engineer (Full-Stack Developer)</p>
 
                                         <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white mb-4">
-                                            ASH Cloud Founder
+                                            CEO & Co-Founder of ASH Cloud
                                         </Badge>
                                     </div>
 
@@ -470,19 +509,22 @@ const DevelopersPage = () => {
                                 <div className="p-8">
                                     <div className="flex flex-col items-center text-center mb-6">
                                         <div className="relative mb-6">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl blur-lg opacity-30"></div>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-blue-600 rounded-full blur-xl opacity-40"></div>
                                             <img
                                                 src="/haris-photo.jpg"
-                                                alt="Syed Haris Shah - Full Stack Developer"
-                                                className="relative w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg"
+                                                alt="Syed Haris Shah - Senior Developer Member of ASH Cloud, Software Engineer, Full Stack Developer, Key Developer of Sehatkor.pk"
+                                                title="Syed Haris Shah - Senior Developer ASH Cloud | Software Engineer | Full Stack Developer Pakistan"
+                                                className="relative w-40 h-40 rounded-full object-cover border-4 border-white shadow-2xl ring-4 ring-green-100"
+                                                loading="eager"
+                                                itemProp="image"
                                             />
                                         </div>
 
                                         <h3 className="text-2xl font-bold text-gray-900 mb-2">Syed Haris Shah</h3>
-                                        <p className="text-green-600 font-semibold mb-4">Software Engineer & Full Stack Developer</p>
+                                        <p className="text-green-600 font-semibold mb-4">Software Engineer (Full-Stack Developer)</p>
 
                                         <Badge className="bg-gradient-to-r from-green-600 to-blue-600 text-white mb-4">
-                                            ASH Cloud Team Member
+                                            Senior Member of ASH Cloud
                                         </Badge>
                                     </div>
 
@@ -553,8 +595,8 @@ const DevelopersPage = () => {
                                         Visit ASH Cloud
                                     </a>
                                 </Button>
-                                <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
-                                    <a href="tel:+923429752032">
+                                <Button asChild size="lg" className="bg-green-500 text-white hover:bg-green-600 border-2 border-green-500">
+                                    <a href="tel:+923178521144">
                                         Call Now
                                     </a>
                                 </Button>
