@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { mockServices, Service as MockService } from "@/data/mockData";
@@ -623,8 +624,96 @@ const ServiceDetailPage = () => {
     </svg>
   );
 
+  // Dynamic SEO Logic - Automatically generates tags for ANY service
+  const seoData = useMemo(() => {
+    if (!item) return null;
+
+    const city = item.location || "Pakistan";
+    const priceDisplay = item.price === 0 ? "Free" : `PKR ${item.price}`;
+    const providerName = item.provider || "Sehatkor Provider";
+    const serviceName = item.name;
+
+    let title = "";
+    let description = "";
+    let keywords = "";
+    let schemaType = "MedicalProcedure"; // Default
+
+    // Logic based on Provider Type
+    switch (item.providerType) {
+      case "doctor":
+        title = `${serviceName} by ${providerName} - ${city} | Sehatkor`;
+        description = `Book appointment for ${serviceName} with ${providerName} in ${city}. Fees: ${priceDisplay}. Verified reviews, timing, and contact info. Best ${item.doctorCategory || "Doctor"} services in ${city}.`;
+        keywords = `${serviceName}, ${providerName}, ${city}, Doctor appointment, ${item.doctorCategory || "Specialist"}, Sehatkor`;
+        schemaType = "MedicalProcedure"; // Or Physician
+        break;
+
+      case "pharmacy":
+        title = `${serviceName} at ${providerName} - ${city} | Sehatkor`;
+        description = `Buy ${serviceName} from ${providerName} in ${city}. Price: ${priceDisplay}. Check availability and home delivery options on Sehatkor.`;
+        keywords = `${serviceName}, ${providerName}, ${city}, Pharmacy, Medicine delivery, ${item.pharmacyCategory || "Medicine"}, Sehatkor`;
+        schemaType = "Product"; // Or Drug
+        break;
+
+      case "laboratory":
+        title = `${serviceName} at ${providerName} - ${city} | Sehatkor`;
+        description = `Book ${serviceName} test at ${providerName} in ${city}. Price: ${priceDisplay}. Home sampling available. Verified lab results.`;
+        keywords = `${serviceName}, ${providerName}, ${city}, Lab test, Pathology, ${item.labCategory || "Test"}, Sehatkor`;
+        schemaType = "MedicalTest";
+        break;
+
+      case "clinic":
+      default:
+        title = `${serviceName} at ${providerName} - ${city} | Sehatkor`;
+        description = `Book ${serviceName} at ${providerName} in ${city}. Fees: ${priceDisplay}. Top rated medical services in ${city}.`;
+        keywords = `${serviceName}, ${providerName}, ${city}, Clinic, Hospital, Medical service, Sehatkor`;
+        schemaType = "MedicalProcedure";
+        break;
+    }
+
+    // Common Urdu Keywords
+    keywords += `, ${city} میں ڈاکٹر, آنلائن اپائنٹمنٹ, صحت کار`;
+
+    // Dynamic JSON-LD Schema
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": schemaType,
+      "name": serviceName,
+      "description": description,
+      "provider": {
+        "@type": item.providerType === 'doctor' ? 'Person' : 'Organization',
+        "name": providerName,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": city,
+          "addressCountry": "PK"
+        }
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": item.price,
+        "priceCurrency": "PKR",
+        "availability": "https://schema.org/InStock"
+      },
+      "image": item.image ? (item.image.startsWith('http') ? item.image : `https://sehatkor.pk${item.image}`) : undefined
+    };
+
+    return { title, description, keywords, jsonLd, image: item.image };
+  }, [item]);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Dynamic SEO Component */}
+      {seoData && (
+        <SEO
+          title={seoData.title}
+          description={seoData.description}
+          keywords={seoData.keywords}
+          image={seoData.image}
+          jsonLd={seoData.jsonLd}
+          type="article"
+        />
+      )}
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-8 pb-24 md:pb-8">
         <Button variant="ghost" className="mb-4" onClick={handleBack}>
           <ArrowLeft className="w-4 h-4 mr-2" />
