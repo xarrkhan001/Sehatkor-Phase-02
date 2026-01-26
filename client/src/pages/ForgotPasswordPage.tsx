@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
 
 const ForgotPasswordPage: React.FC = () => {
@@ -80,7 +81,7 @@ const ForgotPasswordPage: React.FC = () => {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Email Sent!</h2>
             <p className="text-gray-600 mb-6">
-              We've sent a password reset link to <strong>{email}</strong>. 
+              We've sent a password reset link to <strong>{email}</strong>.
               Please check your email and follow the instructions to reset your password.
             </p>
             <div className="space-y-4">
@@ -94,11 +95,10 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 onClick={submitForgot}
                 disabled={loading || remaining > 0}
-                className={`w-full py-3 px-4 rounded-lg font-medium transition duration-200 ${
-                  remaining > 0
-                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                className={`w-full py-3 px-4 rounded-lg font-medium transition duration-200 ${remaining > 0
+                  ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
               >
                 {remaining > 0 ? `Resend available in ${remaining}s` : 'Resend Email'}
               </button>
@@ -120,6 +120,15 @@ const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <Helmet>
+        <title>Forgot Password - Sehatkor | Reset Your Account Password</title>
+        <meta
+          name="description"
+          content="Reset your Sehatkor account password. Enter your email to receive password reset instructions. Secure password recovery for healthcare platform users."
+        />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://sehatkor.pk/forgot-password" />
+      </Helmet>
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">

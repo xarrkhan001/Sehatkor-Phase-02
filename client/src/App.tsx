@@ -59,6 +59,9 @@ const AdminUserManagement = lazy(() => import("./pages/AdminUserManagement"));
 const AdminRecommendedServices = lazy(() => import("./pages/AdminRecommendedServices"));
 const AdminEntities = lazy(() => import("./pages/AdminEntities"));
 const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
+const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage"));
+const DisclaimerPage = lazy(() => import("./pages/DisclaimerPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OAuthCallbackPage = lazy(() => import("./pages/auth/OAuthCallbackPage"));
 const DiseaseListPage = lazy(() => import("./pages/DiseaseListPage"));
@@ -132,6 +135,9 @@ const AppShell = () => {
             <Route path="/about" element={<Suspense fallback={<PageSkeleton />}><AboutPage /></Suspense>} />
             <Route path="/contact" element={<Suspense fallback={<PageSkeleton />}><ContactPage /></Suspense>} />
             <Route path="/developers" element={<Suspense fallback={<PageSkeleton />}><DevelopersPage /></Suspense>} />
+            <Route path="/how-it-works" element={<Suspense fallback={<PageSkeleton />}><HowItWorksPage /></Suspense>} />
+            <Route path="/disclaimer" element={<Suspense fallback={<PageSkeleton />}><DisclaimerPage /></Suspense>} />
+            <Route path="/privacy" element={<Suspense fallback={<PageSkeleton />}><PrivacyPolicyPage /></Suspense>} />
             <Route path="/admin" element={<Suspense fallback={<AdminSkeleton />}><AdminPanel /></Suspense>} />
             <Route path="/admin/partners" element={<Suspense fallback={<AdminSkeleton />}><AdminPartners /></Suspense>} />
             <Route path="/admin/hero-images" element={<Suspense fallback={<AdminSkeleton />}><AdminHeroImages /></Suspense>} />

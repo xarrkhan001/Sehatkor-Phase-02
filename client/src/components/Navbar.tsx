@@ -27,7 +27,10 @@ import {
   BadgeCheck,
   Repeat,
   ChevronDown,
-  MapPin
+  MapPin,
+  HelpCircle,
+  FileText,
+  Shield
 } from "lucide-react";
 import { apiUrl } from '@/config/api';
 
@@ -346,6 +349,39 @@ const Navbar = () => {
                           </div>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/how-it-works" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-50">
+                            <HelpCircle className="w-4 h-4 text-cyan-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">How it Works</span>
+                            <p className="text-xs text-gray-500">Learn how to use Sehatkor</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/disclaimer" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50">
+                            <FileText className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Disclaimer</span>
+                            <p className="text-xs text-gray-500">Legal information</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/privacy" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-50">
+                            <Shield className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">Privacy Policy</span>
+                            <p className="text-xs text-gray-500">Your data protection</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -557,6 +593,52 @@ const Navbar = () => {
                       </Link>
                     );
                   })}
+
+                  {/* Additional Info Links - Mobile Only */}
+                  <Link
+                    to="/how-it-works"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive('/how-it-works')
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
+                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                      }`}
+                  >
+                    <HelpCircle className={`w-5 h-5 transition-all duration-300 ${isActive('/how-it-works')
+                      ? "text-white drop-shadow-sm"
+                      : "text-cyan-600 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
+                      }`} strokeWidth={2.5} />
+                    <span className="group-hover:font-semibold transition-all duration-300">How it Works</span>
+                  </Link>
+
+                  <Link
+                    to="/disclaimer"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive('/disclaimer')
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
+                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                      }`}
+                  >
+                    <FileText className={`w-5 h-5 transition-all duration-300 ${isActive('/disclaimer')
+                      ? "text-white drop-shadow-sm"
+                      : "text-amber-600 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
+                      }`} strokeWidth={2.5} />
+                    <span className="group-hover:font-semibold transition-all duration-300">Disclaimer</span>
+                  </Link>
+
+                  <Link
+                    to="/privacy"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive('/privacy')
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
+                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                      }`}
+                  >
+                    <Shield className={`w-5 h-5 transition-all duration-300 ${isActive('/privacy')
+                      ? "text-white drop-shadow-sm"
+                      : "text-green-600 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
+                      }`} strokeWidth={2.5} />
+                    <span className="group-hover:font-semibold transition-all duration-300">Privacy Policy</span>
+                  </Link>
 
                   {/* Locations Section - Collapsible */}
                   <div className="border-t border-gray-200 my-4"></div>
