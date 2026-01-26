@@ -9,11 +9,12 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { GoogleLogin } from '@react-oauth/google';
-import { 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
+import { Helmet } from 'react-helmet-async';
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
   LogIn,
   Stethoscope,
   Chrome,
@@ -55,7 +56,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       toast({
         title: "Error",
@@ -130,6 +131,15 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-10">
+      <Helmet>
+        <title>Login - Sehatkor | Sign In to Your Healthcare Account</title>
+        <meta
+          name="description"
+          content="Login to your Sehatkor account. Access your healthcare dashboard, manage appointments, view medical records. Secure login for patients and healthcare providers."
+        />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://sehatkor.pk/login" />
+      </Helmet>
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-4">
@@ -253,14 +263,14 @@ const LoginPage = () => {
                       setGoogleLoading(true);
                       const idToken = cred?.credential as string;
                       if (!idToken) throw new Error('Missing Google credential');
-                      
+
                       const res = await fetch(apiUrl('/api/auth/google'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ idToken })
                       });
                       const data = await res.json();
-                      
+
                       if (!res.ok) {
                         if (res.status === 403) {
                           toast({

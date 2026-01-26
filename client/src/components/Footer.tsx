@@ -39,17 +39,15 @@ const Footer = () => {
 
   const quickLinks = [
     { name: "About Us", nameUrdu: "ہمارے بارے میں", href: "/about" },
-    { name: "How it Works", nameUrdu: "یہ کیسے کام کرتا ہے", href: "/how-it-works" },
-    { name: "Healthcare Providers", nameUrdu: "طبی فراہم کنندگان", href: "/providers" },
     { name: "Blog", nameUrdu: "بلاگ", href: "/blog" },
-    { name: "FAQ", nameUrdu: "سوالات", href: "/faq" },
-    { name: "Help Center", nameUrdu: "مدد کا مرکز", href: "/help" }
+    { name: "Contact", nameUrdu: "رابطہ کریں", href: "/contact" },
+    { name: "Developers", nameUrdu: "ڈویلپرز", href: "/developers" },
+    { name: "How it Works", nameUrdu: "یہ کیسے کام کرتا ہے", href: "/how-it-works" }
   ];
 
   const legalLinks = [
+    { name: "How it Works", href: "/how-it-works" },
     { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Cookie Policy", href: "/cookies" },
     { name: "Disclaimer", href: "/disclaimer" }
   ];
 
@@ -227,31 +225,26 @@ const Footer = () => {
             <div className="flex flex-col items-center space-y-3 text-sm">
               {/* Developer Info */}
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-                <div className="flex items-center space-x-2 text-gray-400">
-                  <span className="text-gray-500">Developed by:</span>
-                  <img
-                    src="/abuzar-ceo.jpg"
-                    alt="Abuzar - Full Stack Developer & CEO"
-                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-600 shadow-md"
-                  />
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <span className="text-gray-700">Developed by:</span>
                   <a
                     href="https://abuzar-portfolio-lat.vercel.app/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-gray-300 hover:text-white transition-colors duration-300 hover:underline"
+                    className="font-normal text-gray-500 hover:text-gray-400 transition-colors duration-300 hover:underline"
                   >
                     Abuzar
                   </a>
-                  <span className="text-gray-500">•</span>
-                  <span className="text-blue-400">Full Stack Dev & CEO</span>
+                  <span className="text-gray-700">•</span>
+                  <span className="text-gray-600">Software Engineer (Fullstack Developer)</span>
                 </div>
-                <div className="flex items-center space-x-2 text-gray-400">
-                  <span className="text-gray-500">Company:</span>
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <span className="text-gray-700">CEO of</span>
                   <a
                     href="https://ash-cloud-official-bpmr.vercel.app/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-bold bg-gradient-to-r from-red-400 to-green-400 bg-clip-text text-transparent hover:from-red-300 hover:to-green-300 transition-all duration-300"
+                    className="font-normal text-gray-500 hover:text-gray-400 transition-all duration-300"
                   >
                     ASH Cloud
                   </a>
@@ -260,40 +253,40 @@ const Footer = () => {
 
               {/* Contact Info */}
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-                <div className="flex items-center space-x-2 text-gray-400">
-                  <Phone className="w-3.5 h-3.5 text-green-400" />
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Phone className="w-3.5 h-3.5 text-gray-600" />
                   <a
                     href="tel:+923429752032"
-                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                    className="text-gray-500 hover:text-gray-400 transition-colors duration-300"
                   >
                     +923429752032
                   </a>
                 </div>
-                <div className="flex items-center space-x-2 text-gray-400">
-                  <Phone className="w-3.5 h-3.5 text-green-400" />
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Phone className="w-3.5 h-3.5 text-gray-600" />
                   <a
                     href="tel:+923178521144"
-                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                    className="text-gray-500 hover:text-gray-400 transition-colors duration-300"
                   >
                     +923178521144
                   </a>
                 </div>
-                <div className="flex items-center space-x-2 text-gray-400">
-                  <Mail className="w-3.5 h-3.5 text-blue-400" />
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Mail className="w-3.5 h-3.5 text-gray-600" />
                   <a
                     href="mailto:abuzarktk123@gmail.com"
-                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                    className="text-gray-500 hover:text-gray-400 transition-colors duration-300"
                   >
                     abuzarktk123@gmail.com
                   </a>
                 </div>
-                <div className="flex items-center space-x-2 text-gray-400">
-                  <Linkedin className="w-3.5 h-3.5 text-blue-500" />
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Linkedin className="w-3.5 h-3.5 text-gray-600" />
                   <a
                     href="https://www.linkedin.com/company/ashcloudofficial/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                    className="text-gray-500 hover:text-gray-400 transition-colors duration-300"
                   >
                     ASH Cloud LinkedIn
                   </a>
