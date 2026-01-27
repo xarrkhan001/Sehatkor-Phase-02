@@ -53,5 +53,33 @@ export default defineConfig(({ mode }) => ({
     // Transpile down to broadly supported syntax
     target: "es2017",
     cssTarget: ["chrome61", "safari11", "firefox60"],
+    // Performance optimizations for better Core Web Vitals
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+          ],
+          'maps-vendor': ['@react-google-maps/api', 'leaflet', 'react-leaflet'],
+          'query-vendor': ['@tanstack/react-query', 'axios'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+    // Minification for production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info'],
+      },
+    },
   },
 }));
