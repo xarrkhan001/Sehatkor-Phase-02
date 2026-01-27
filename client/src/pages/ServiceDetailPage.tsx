@@ -561,69 +561,6 @@ const ServiceDetailPage = () => {
     setIsBookingModalOpen(true);
   };
 
-  if (!item) {
-    console.log('No item found, navigation state:', locationHook.state);
-    console.log('Service ID from URL:', id);
-
-    // Show loading state while fetching
-    if (isLoadingService) {
-      return (
-        <div className="min-h-screen bg-background">
-          <div className="container mx-auto px-4 py-12">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              <p className="mt-4 text-muted-foreground">Loading service...</p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Show not found only after we've tried fetching
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center text-muted-foreground">
-            <p className="text-xl mb-4">Service not found.</p>
-            <Button onClick={() => navigate('/')} variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go to Home
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const activeSlide = getActiveSlide(item);
-  const slides = getSlides(item);
-  const hasVariants = slides.length > 1;
-
-  const canRate = item.isReal && user && (user.role === 'patient' || mode === 'patient') && (item.providerId !== (user as any)?.id);
-
-  // Inline Virus icon component for diseases tooltip
-  const VirusIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <circle cx="32" cy="32" r="14" fill="#22c55e" />
-      {Array.from({ length: 12 }).map((_, i) => {
-        const angle = (i * Math.PI * 2) / 12;
-        const x2 = 32 + Math.cos(angle) * 22;
-        const y2 = 32 + Math.sin(angle) * 22;
-        const x1 = 32 + Math.cos(angle) * 14;
-        const y1 = 32 + Math.sin(angle) * 14;
-        return (
-          <g key={i} stroke="#22c55e" strokeWidth="3" strokeLinecap="round">
-            <line x1={x1} y1={y1} x2={x2} y2={y2} />
-            <circle cx={x2} cy={y2} r="2.5" fill="#22c55e" />
-          </g>
-        );
-      })}
-      <circle cx="26" cy="30" r="2.5" fill="#16a34a" />
-      <circle cx="36" cy="35" r="3" fill="#16a34a" />
-      <circle cx="32" cy="26" r="2" fill="#16a34a" />
-    </svg>
-  );
-
   // Dynamic SEO Logic - Automatically generates tags for ANY service
   const seoData = useMemo(() => {
     if (!item) return null;
@@ -699,6 +636,71 @@ const ServiceDetailPage = () => {
 
     return { title, description, keywords, jsonLd, image: item.image };
   }, [item]);
+
+  if (!item) {
+    console.log('No item found, navigation state:', locationHook.state);
+    console.log('Service ID from URL:', id);
+
+    // Show loading state while fetching
+    if (isLoadingService) {
+      return (
+        <div className="min-h-screen bg-background">
+          <div className="container mx-auto px-4 py-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <p className="mt-4 text-muted-foreground">Loading service...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show not found only after we've tried fetching
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center text-muted-foreground">
+            <p className="text-xl mb-4">Service not found.</p>
+            <Button onClick={() => navigate('/')} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go to Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const activeSlide = getActiveSlide(item);
+  const slides = getSlides(item);
+  const hasVariants = slides.length > 1;
+
+  const canRate = item.isReal && user && (user.role === 'patient' || mode === 'patient') && (item.providerId !== (user as any)?.id);
+
+  // Inline Virus icon component for diseases tooltip
+  const VirusIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <circle cx="32" cy="32" r="14" fill="#22c55e" />
+      {Array.from({ length: 12 }).map((_, i) => {
+        const angle = (i * Math.PI * 2) / 12;
+        const x2 = 32 + Math.cos(angle) * 22;
+        const y2 = 32 + Math.sin(angle) * 22;
+        const x1 = 32 + Math.cos(angle) * 14;
+        const y1 = 32 + Math.sin(angle) * 14;
+        return (
+          <g key={i} stroke="#22c55e" strokeWidth="3" strokeLinecap="round">
+            <line x1={x1} y1={y1} x2={x2} y2={y2} />
+            <circle cx={x2} cy={y2} r="2.5" fill="#22c55e" />
+          </g>
+        );
+      })}
+      <circle cx="26" cy="30" r="2.5" fill="#16a34a" />
+      <circle cx="36" cy="35" r="3" fill="#16a34a" />
+      <circle cx="32" cy="26" r="2" fill="#16a34a" />
+    </svg>
+  );
+
+
 
   return (
     <div className="min-h-screen bg-background">
