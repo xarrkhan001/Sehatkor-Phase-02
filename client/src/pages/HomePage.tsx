@@ -16,6 +16,7 @@ import heroImage3 from "@/assets/hero2.png";
 import heroImage4 from "@/assets/hero3.png";
 import heroImage5 from "@/assets/hero4.png";
 import SEO from "@/components/SEO";
+import { motion } from "framer-motion";
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -35,10 +36,68 @@ import {
   FlaskConical,
   Plus,
   Pill,
-  Scissors
+  Scissors,
+  Activity
 } from "lucide-react";
 
 import { popularDiseases } from "@/data/diseases";
+
+// Animation variants for smooth, professional animations
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.8, ease: "easeOut" }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
+
+const slideInLeft = {
+  hidden: { opacity: 0, x: -50 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const slideInRight = {
+  hidden: { opacity: 0, x: 50 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
 
 
 // Red circle with white medical cross, stylable via text-*/currentColor for the circle
@@ -59,6 +118,30 @@ const heroAltTexts = [
   "Online Pharmacy & Medicine Delivery",
   "Emergency Healthcare Services"
 ];
+
+// Floating particle component for the background
+const FloatingParticle = ({ children, delay, duration, x, y, scale }: { children: React.ReactNode, delay: number, duration: number, x: any, y: any, scale: number }) => (
+  <motion.div
+    initial={{ opacity: 0, x: 0, y: 0, scale: 0, rotate: 0 }}
+    animate={{
+      opacity: [0.2, 0.5, 0.2],
+      x: x,
+      y: y,
+      scale: [scale * 0.9, scale, scale * 0.9],
+      rotate: [0, 180, 360]
+    }}
+    transition={{
+      duration: duration,
+      repeat: Infinity,
+      delay: delay,
+      ease: "easeInOut",
+      repeatType: "reverse"
+    }}
+    className="absolute z-[15] pointer-events-none drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+  >
+    {children}
+  </motion.div>
+);
 
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -198,7 +281,26 @@ const HomePage = () => {
   const diseaseIntro = popularDiseases;
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden pt-16">
+    <div className="min-h-screen bg-background overflow-x-hidden pt-16 relative">
+      {/* Refined Gentle Flash Intro - Subtle Light Reveal */}
+      <motion.div
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="fixed inset-0 z-[100] pointer-events-none bg-white"
+        style={{
+          background: "radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 80%)",
+        }}
+      />
+
+
+
+
+
+
+
+
+
       <SEO
         title="آنلائن ڈاکٹر اپائنٹمنٹ پاکستان | Book Best Doctors, Hospitals & Labs Online"
         description="Pakistan's #1 healthcare platform - Sehatkor. Book PMDC verified doctors, top hospitals, diagnostic labs & pharmacies online in Karachi, Lahore, Islamabad, Peshawar, Mardan. آنلائن ڈاکٹر، ہسپتال، لیب اور فارمیسی بک کریں۔ 24/7 support, instant appointments, home services, lowest fees guaranteed."
@@ -270,30 +372,106 @@ const HomePage = () => {
           ))}
         </div>
 
+        {/* Animated Background Particles - Medical Texture */}
+        <motion.div
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ delay: 10, duration: 2, ease: "easeOut" }}
+          className="absolute inset-0 overflow-hidden pointer-events-none z-[15] mix-blend-overlay"
+        >
+          {/* Top Left Area */}
+          <div className="absolute top-10 left-10">
+            <FloatingParticle delay={0} duration={15} x={20} y={-20} scale={1.2}>
+              <Plus className="w-8 h-8 text-white/40" />
+            </FloatingParticle>
+          </div>
+          <div className="absolute top-20 left-[15%]">
+            <FloatingParticle delay={1} duration={18} x={-30} y={30} scale={1.5}>
+              <div className="w-12 h-12 border-2 border-white/20 rounded-full flex items-center justify-center">
+                <Plus className="w-6 h-6 text-white/30" />
+              </div>
+            </FloatingParticle>
+          </div>
+
+          {/* Top Right Area */}
+          <div className="absolute top-16 right-[10%]">
+            <FloatingParticle delay={2} duration={20} x={30} y={-30} scale={1}>
+              <Activity className="w-16 h-16 text-emerald-100/30" />
+            </FloatingParticle>
+          </div>
+          <div className="absolute top-32 right-[25%]">
+            <FloatingParticle delay={3} duration={16} x={-20} y={-40} scale={1.4}>
+              <div className="w-10 h-10 border border-dashed border-white/40 rounded-full"></div>
+            </FloatingParticle>
+          </div>
+
+          {/* Bottom Left Area */}
+          <div className="absolute bottom-32 left-[8%]">
+            <FloatingParticle delay={4} duration={22} x={40} y={-20} scale={1.3}>
+              <div className="w-12 h-6 border-2 border-white/30 rounded-full rotate-45"></div>
+            </FloatingParticle>
+          </div>
+
+          {/* Bottom Right Area */}
+          <div className="absolute bottom-20 right-[15%]">
+            <FloatingParticle delay={5} duration={14} x={-20} y={20} scale={0.8}>
+              <div className="grid grid-cols-2 gap-1">
+                <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
+              </div>
+            </FloatingParticle>
+          </div>
+        </motion.div>
+
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/65 z-10"></div>
         <div className="container mx-auto relative z-20 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 pb-12 sm:pb-20">
           <div className="max-w-5xl mx-auto text-center w-full">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 leading-tight text-white drop-shadow-xl">
+            <motion.h1
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl font-bold tracking-tight mb-4 sm:mb-6 leading-tight text-white drop-shadow-xl"
+            >
               Find Best <span className="bg-gradient-to-r from-slate-300 via-emerald-400 to-slate-300 bg-clip-text text-transparent drop-shadow-md">Healthcare Services</span> in Pakistan
               <span className="block mt-3 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium text-white drop-shadow-xl leading-relaxed" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>
                 پاکستان میں <span className="bg-gradient-to-r from-slate-300 via-emerald-400 to-slate-300 bg-clip-text text-transparent drop-shadow-md">بہترین طبی سہولیات</span> تلاش کریں
               </span>
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 text-slate-100 leading-relaxed max-w-4xl mx-auto font-medium drop-shadow-lg tracking-wide">
+            </motion.h1>
+            <motion.p
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              transition={{ delay: 0.2 }}
+              className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 text-slate-100 leading-relaxed max-w-4xl mx-auto font-medium drop-shadow-lg tracking-wide"
+            >
               Your Complete Health Partner. Connect with top-rated providers for all your medical needs.
               <span className="block mt-3 text-xs sm:text-sm md:text-base lg:text-lg text-slate-100/90" style={{ fontFamily: "'Noto Nastaliq Urdu', serif", lineHeight: '2.0' }}>
                 آپ کا مکمل ہیلتھ پارٹنر۔ بہترین ڈاکٹرز، ہسپتال، لیبز اور ادویات کی خدمات ایک ہی جگہ۔
               </span>
-            </p>
+            </motion.p>
 
 
             {/* Search Component */}
-            <div className="mt-4 sm:mt-6 relative z-10 w-full max-w-2xl mx-auto">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={scaleIn}
+              transition={{ delay: 0.4 }}
+              className="mt-4 sm:mt-6 relative z-10 w-full max-w-2xl mx-auto"
+            >
               <SearchServices hideCategory hideLocationIcon light />
-            </div>
+            </motion.div>
 
-            <div className="flex flex-row sm:flex-row gap-2 lg:gap-4 justify-center mt-4 sm:mt-8 w-full max-w-2xl mx-auto">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              transition={{ delay: 0.6 }}
+              className="flex flex-row sm:flex-row gap-2 lg:gap-4 justify-center mt-4 sm:mt-8 w-full max-w-2xl mx-auto"
+            >
               <Button
                 asChild
                 className="bg-white text-primary hover:bg-white/90 
@@ -337,30 +515,43 @@ const HomePage = () => {
                   </Link>
                 </Button>
               )}
-            </div>
+            </motion.div>
 
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Stats Section */}
-      <section className="py-12 sm:py-16 bg-white">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={staggerContainer}
+        className="py-12 sm:py-16 bg-white"
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2">
-                  {stat.number}
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                className="text-center group hover:scale-105 transition-transform duration-300"
+              >
+                <div className="relative">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2 group-hover:text-emerald-600 transition-colors">
+                    {stat.number}
+                  </div>
+                  <div className="absolute inset-0 bg-emerald-100 blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-300 rounded-full"></div>
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section >
 
       {/* Popular Searches Section - SEO Optimized */}
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+      < section className="py-12 sm:py-16 bg-gradient-to-br from-emerald-50 via-white to-blue-50" >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-gray-800">Popular Searches</h2>
@@ -454,10 +645,10 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Diseases & Symptoms Section */}
-      <section className="py-16 sm:py-20 bg-white">
+      < section className="py-16 sm:py-20 bg-white" >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Diseases & Symptoms</h2>
@@ -486,10 +677,10 @@ const HomePage = () => {
             </Button>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Services Section */}
-      <section className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20">
+      < section className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20" >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-800">Our Services</h2>
@@ -552,17 +743,17 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Comparison Explorer (styled section) */}
-      <section
+      < section
         className="relative py-20 sm:py-24 overflow-hidden bg-gradient-to-br from-slate-300 via-zinc-200 to-slate-100"
       >
         {/* Subtle overlay */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.17),transparent_62%),radial-gradient(ellipse_at_bottom_right,rgba(99,102,241,0.15),transparent_62%)]" />
+        < div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.17),transparent_62%),radial-gradient(ellipse_at_bottom_right,rgba(99,102,241,0.15),transparent_62%)]" />
 
         {/* Decorative elements (very subtle) */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-white/70 rounded-full blur-2xl"></div>
+        < div className="absolute top-10 left-10 w-20 h-20 bg-white/70 rounded-full blur-2xl" ></div >
         <div className="absolute bottom-10 right-10 w-32 h-32 bg-cyan-300/35 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-indigo-300/30 rounded-full blur-2xl"></div>
 
@@ -586,13 +777,13 @@ const HomePage = () => {
           <CompareExplorer />
         </div>
 
-      </section>
+      </section >
 
       {/* Partners Marquee below the compare section */}
-      <PartnersMarquee speed="normal" />
+      < PartnersMarquee speed="normal" />
 
       {/* Features Section (About) */}
-      <section id="about" className="py-16 sm:py-20 bg-white scroll-mt-24">
+      < section id="about" className="py-16 sm:py-20 bg-white scroll-mt-24" >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Why Choose SehatKor?</h2>
@@ -616,10 +807,10 @@ const HomePage = () => {
             })}
           </div>
         </div>
-      </section>
+      </section >
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-20 bg-gray-100 text-gray-900">
+      < section className="py-16 sm:py-20 bg-gray-100 text-gray-900" >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
             Ready to Take Control of Your Health?
@@ -642,9 +833,9 @@ const HomePage = () => {
             </Button>
           </div>
         </div>
-      </section>
+      </section >
       <CompareTray />
-    </div>
+    </div >
   );
 };
 
