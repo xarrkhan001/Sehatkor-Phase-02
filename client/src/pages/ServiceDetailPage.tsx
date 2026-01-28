@@ -714,48 +714,67 @@ const ServiceDetailPage = () => {
     jsonLdGraph.push(breadcrumbSchema);
 
     // 3. FAQ Schema - Common questions about the service
-    const faqSchema = {
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": `What is the ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName}?`,
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": `The ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName} is ${priceDisplay}.`
-          }
-        },
-        {
-          "@type": "Question",
-          "name": `Is ${item.homeDelivery ? 'home delivery' : 'online booking'} available for ${serviceName}?`,
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": item.homeDelivery
-              ? `Yes, home delivery is available for ${serviceName} in ${city}.`
-              : item.availability === 'Online'
-                ? `Yes, ${serviceName} is available online.`
-                : `${serviceName} is available at ${providerName} in ${city}. You can book online through Sehatkor.`
-          }
-        },
-        {
-          "@type": "Question",
-          "name": `How can I book ${serviceName} at ${providerName}?`,
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": `You can book ${serviceName} at ${providerName} online through Sehatkor. Simply click the "Book Now" button on this page for instant booking confirmation.`
-          }
-        },
-        {
-          "@type": "Question",
-          "name": `What is the location of ${providerName}?`,
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": `${providerName} is located in ${city}, Pakistan. ${item.address ? `Address: ${item.address}` : ''}`
-          }
+    const faqQuestions: any[] = [];
+
+    // Q1: Price/Fee
+    if (serviceName) {
+      faqQuestions.push({
+        "@type": "Question",
+        "name": `What is the ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `The ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName} is ${priceDisplay}.`
         }
-      ]
-    };
-    jsonLdGraph.push(faqSchema);
+      });
+    }
+
+    // Q2: Availability / Booking Method
+    if (serviceName) {
+      faqQuestions.push({
+        "@type": "Question",
+        "name": `Is ${item.homeDelivery ? 'home delivery' : 'online booking'} available for ${serviceName}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.homeDelivery
+            ? `Yes, home delivery is available for ${serviceName} in ${city}.`
+            : item.availability === 'Online'
+              ? `Yes, ${serviceName} is available online.`
+              : `${serviceName} is available at ${providerName} in ${city}. You can book online through Sehatkor.`
+        }
+      });
+    }
+
+    // Q3: How to book
+    if (serviceName && providerName) {
+      faqQuestions.push({
+        "@type": "Question",
+        "name": `How can I book ${serviceName} at ${providerName}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `You can book ${serviceName} at ${providerName} online through Sehatkor. Simply click the "Book Now" button on this page for instant booking confirmation.`
+        }
+      });
+    }
+
+    // Q4: Location (Only if we have a city or address)
+    if (providerName && (city || item.address)) {
+      faqQuestions.push({
+        "@type": "Question",
+        "name": `What is the location of ${providerName}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `${providerName} is located in ${city}, Pakistan.${item.address ? ` Address: ${item.address}` : ''}`
+        }
+      });
+    }
+
+    if (faqQuestions.length > 0) {
+      const faqSchema = {
+        "@type": "FAQPage",
+        "mainEntity": faqQuestions
+      };
+      jsonLdGraph.push(faqSchema);
+    }
 
     // 4. Review Schema - Add individual reviews if available
     if (rating > 0 && totalRatings > 0 && freshCounts) {
