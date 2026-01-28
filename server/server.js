@@ -25,6 +25,7 @@ import partnerRoutes from "./routes/partner.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import heroRoutes from "./routes/hero.routes.js";
 import verificationRoutes from "./routes/verification.routes.js";
+import sitemapRoutes from "./routes/sitemap.routes.js";
 import {
   registerUserSocket,
   unregisterUserSocket,
@@ -99,6 +100,7 @@ app.use("/api", contactRoutes);
 app.use("/api", partnerRoutes);
 app.use("/api", heroRoutes);
 app.use("/api/verification", verificationRoutes);
+app.use("/api", sitemapRoutes);
 
 // Compatibility: allow callback URL without /api prefix to match FACEBOOK_CALLBACK_URL
 app.get("/auth/facebook/callback", facebookCallback);

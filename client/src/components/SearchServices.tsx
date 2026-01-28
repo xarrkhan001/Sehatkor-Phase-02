@@ -102,9 +102,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
         // If a location is selected, filter by city or variant city
         const filteredByLoc = (selectedLocation && selectedLocation !== 'all')
           ? mapped.filter(s => {
-              const city = (getDisplayCity(s) || s.city || '').toString().toLowerCase();
-              return city.includes(String(selectedLocation).toLowerCase());
-            })
+            const city = (getDisplayCity(s) || s.city || '').toString().toLowerCase();
+            return city.includes(String(selectedLocation).toLowerCase());
+          })
           : mapped;
         setRealServices(filteredByLoc);
         setHasMore(more);
@@ -126,10 +126,10 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
         const { services } = await ServiceManager.fetchPublicServices({ page: 1, limit: 500 });
         const mapped = mapServices(services);
         setAllFetchedServices(mapped);
-      } catch {}
+      } catch { }
     };
     prefetchLocations();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Live update provider name in dropdown when profile changes
@@ -205,11 +205,11 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   }, [user?.name, user?.id]);
 
   const mapServices = (services: Service[]): SearchService[] => {
-    console.log('🧪 SearchServices.mapServices input[0..2]:', (services || []).slice(0,2).map((s:any)=>({
+    console.log('🧪 SearchServices.mapServices input[0..2]:', (services || []).slice(0, 2).map((s: any) => ({
       id: s?.id,
       name: s?.name,
       hospitalClinicName: s?.hospitalClinicName,
-      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName) : null,
+      variantsHos: Array.isArray(s?.variants) ? s.variants.map((v: any) => v?.hospitalClinicName) : null,
     })));
     const mapped = (services || []).map((s: Service) => ({
       id: s.id,
@@ -240,9 +240,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       _providerVerified: (typeof (s as any)._providerVerified !== 'undefined')
         ? Boolean((s as any)._providerVerified)
         : (user && String(s.providerId) === String(user.id)
-            && Boolean((user as any)?.isVerified)
-            && Boolean((user as any)?.licenseNumber)
-            && String((user as any)?.licenseNumber).trim() !== ''),
+          && Boolean((user as any)?.isVerified)
+          && Boolean((user as any)?.licenseNumber)
+          && String((user as any)?.licenseNumber).trim() !== ''),
       availability: (s as any).availability || "Physical",
       serviceType: (s as any).serviceType || undefined,
       homeDelivery: (s.providerType === 'pharmacy' || s.providerType === 'laboratory' || s.providerType === 'clinic' || s.providerType === 'doctor') ? Boolean((s as any).homeDelivery) : undefined,
@@ -253,11 +253,11 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       endTime: (s as any).endTime || null,
       days: Array.isArray((s as any).days) ? (s as any).days : null,
     }));
-    console.log('✅ SearchServices.mapServices output[0..2]:', mapped.slice(0,2).map((s:any)=>({
+    console.log('✅ SearchServices.mapServices output[0..2]:', mapped.slice(0, 2).map((s: any) => ({
       id: s?.id,
       name: s?.name,
       hospitalClinicName: s?.hospitalClinicName,
-      variantsHos: Array.isArray(s?.variants)? s.variants.map((v:any)=>v?.hospitalClinicName) : null,
+      variantsHos: Array.isArray(s?.variants) ? s.variants.map((v: any) => v?.hospitalClinicName) : null,
     })));
     return mapped;
   };
@@ -353,9 +353,9 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       setAllFetchedServices(prev => [...prev, ...mapped]);
       const filteredByLoc = (selectedLocation && selectedLocation !== 'all')
         ? mapped.filter(s => {
-            const city = (getDisplayCity(s) || s.city || '').toString().toLowerCase();
-            return city.includes(String(selectedLocation).toLowerCase());
-          })
+          const city = (getDisplayCity(s) || s.city || '').toString().toLowerCase();
+          return city.includes(String(selectedLocation).toLowerCase());
+        })
         : mapped;
       setRealServices(prev => [...prev, ...filteredByLoc]);
       setPage(nextPage);
@@ -383,7 +383,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     const totalSlides = 1 + variants.length;
     const rawIdx = activeIdxById[svc.id] ?? 0;
     const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
-    
+
     // For base slide (idx===0), show ONLY main service schedule; do not fallback to variants
     if (idx === 0) {
       const range = (svc as any).startTime && (svc as any).endTime ? `${formatTo12Hour((svc as any).startTime)} - ${formatTo12Hour((svc as any).endTime)}` : "";
@@ -411,7 +411,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
     const totalSlides = 1 + variants.length;
     const rawIdx = activeIdxById[svc.id] ?? 0;
     const idx = ((rawIdx % totalSlides) + totalSlides) % totalSlides;
-    
+
     // For base slide (idx===0), show ONLY main service time range
     if (idx === 0) {
       const hasBase = (svc as any).startTime && (svc as any).endTime;
@@ -583,7 +583,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       const name = await reverseGeocode(latitude, longitude);
       const finalLoc = name || 'Karachi';
       setSelectedLocation(finalLoc);
-      try { localStorage.setItem('selectedLocation', finalLoc); } catch {}
+      try { localStorage.setItem('selectedLocation', finalLoc); } catch { }
       setIsLocationModalOpen(false);
       setIsDetectingLocation(false);
     }, (err) => {
@@ -600,7 +600,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
         setSelectedLocation(saved);
         return;
       }
-    } catch {}
+    } catch { }
     // Auto-detect silently; do not block UI
     detectLocation();
   }, []);
@@ -697,7 +697,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                   <span className="sr-only">Use Current Location</span>
                 </button>
                 <button
-                  onClick={() => { setSelectedLocation('all'); try { localStorage.setItem('selectedLocation', 'all'); } catch {}; setIsLocationModalOpen(false); }}
+                  onClick={() => { setSelectedLocation('all'); try { localStorage.setItem('selectedLocation', 'all'); } catch { }; setIsLocationModalOpen(false); }}
                   className="flex-1 h-9 rounded-md border border-white/30 text-white/90 hover:bg-white/10 text-sm"
                 >
                   All Pakistan
@@ -727,7 +727,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         const v = customLocation.trim();
                         if (!v) return;
                         setSelectedLocation(v);
-                        try { localStorage.setItem('selectedLocation', v); } catch {}
+                        try { localStorage.setItem('selectedLocation', v); } catch { }
                         setIsLocationModalOpen(false);
                       }}
                       className="w-10 h-11 rounded-none text-green-600 border border-l-0 border-green-500 bg-green-700/20 hover:bg-green-700/30 flex items-center justify-center -ml-px shadow-[0_0_0_1px_rgba(16,185,129,0.35)]"
@@ -751,7 +751,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         key={label}
                         onClick={() => {
                           setSelectedLocation(label);
-                          try { localStorage.setItem('selectedLocation', label); } catch {}
+                          try { localStorage.setItem('selectedLocation', label); } catch { }
                           setIsLocationModalOpen(false);
                         }}
                         className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-none border text-sm transition ${selectedLocation === label ? 'bg-blue-500/30 border-blue-300/60 text-white' : 'bg-white/15 hover:bg-white/25 border-white/30 text-white'}`}
@@ -805,8 +805,8 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                           {service.icon}
                         </div>
                       )}
-                      
-                      
+
+
                       {getSlides(service).length > 1 && (
                         <div className="absolute -bottom-1 right-0 flex items-center gap-0.5">
                           <button
@@ -830,10 +830,10 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                       <div className="flex items-center gap-3 min-w-0">
                         <h4 className="font-semibold text-gray-300 text-base truncate group-hover:text-blue-700 transition-colors duration-300" title={service.name}>{service.name}</h4>
                         <span className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm whitespace-nowrap font-medium">
-                          {service.providerType === 'doctor' ? 'Doctor' : 
-                           service.providerType === 'laboratory' ? 'Lab' :
-                           service.providerType === 'pharmacy' ? 'Pharmacy' : 
-                           service.providerType === 'clinic' ? 'Hospital' : 'Service'}
+                          {service.providerType === 'doctor' ? 'Doctor' :
+                            service.providerType === 'laboratory' ? 'Lab' :
+                              service.providerType === 'pharmacy' ? 'Pharmacy' :
+                                service.providerType === 'clinic' ? 'Hospital' : 'Service'}
                         </span>
                       </div>
                       <div className="mt-1 text-sm text-gray-600 truncate">
