@@ -10,6 +10,7 @@ interface SEOProps {
     canonical?: string;
     jsonLd?: Record<string, any> | Record<string, any>[];
     noindex?: boolean;
+    additionalMeta?: Record<string, string | undefined>;
 }
 
 const SEO = ({
@@ -20,7 +21,8 @@ const SEO = ({
     type = 'website',
     canonical,
     jsonLd,
-    noindex = false
+    noindex = false,
+    additionalMeta
 }: SEOProps) => {
     const location = useLocation();
     const siteUrl = 'https://sehatkor.pk';
@@ -45,6 +47,11 @@ const SEO = ({
             <meta name="keywords" content={finalKeywords} />
             <link rel="canonical" href={finalUrl} />
             {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+            {/* Additional Meta Tags */}
+            {additionalMeta && Object.entries(additionalMeta).map(([key, value]) =>
+                value ? <meta key={key} name={key} content={value} /> : null
+            )}
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content={type} />
