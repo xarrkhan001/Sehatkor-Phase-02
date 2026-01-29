@@ -768,14 +768,14 @@ const DoctorsPage = () => {
         <div className="mb-6">
           <PageSearchHeader
             title={
-              <span className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+              <span className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
                 Find Your Doctor
               </span>
             }
             subtitle="Search from our network of qualified healthcare professionals"
             rightContent={
               <div className="flex flex-col items-end">
-                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-emerald-600 font-nastaliq leading-normal pb-2" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-blue-800 font-nastaliq leading-normal pb-2" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
                   بہترین ڈاکٹر تلاش کریں
                 </h1>
                 <p className="mt-1 text-sm md:text-base text-slate-500 font-nastaliq text-right" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { MapPin, ArrowLeft, Home, Clock, AlertTriangle, Calendar } from "lucide-react";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 import RatingModal from "@/components/RatingModal";
@@ -582,34 +583,34 @@ const ServiceDetailPage = () => {
     // Logic based on Provider Type
     switch (item.providerType) {
       case "doctor":
-        title = `${serviceName} by ${providerName} - ${city} | Sehatkor`;
-        description = `Book appointment for ${serviceName} with ${providerName} in ${city}. Fees: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5 by ${totalRatings} patients.` : ''} Verified PMDC doctor, online booking, instant confirmation. Best ${category || "Doctor"} services in ${city}.`;
-        keywords = `${serviceName}, ${serviceName} ${providerName}, ${providerName}, ${providerName} ${city}, ${serviceName} ${city}, ${serviceName} Sehatkor, Doctor appointment ${city}, ${category} ${city}, ${category} Pakistan, Book ${serviceName}, ${providerName} fees, ${providerName} timings, ${providerName} contact, Online doctor ${city}, PMDC verified doctor, Best doctor ${city}, ${city} میں ڈاکٹر, ${serviceName} آنلائن بکنگ, ڈاکٹر ${city}, صحت کار, Sehatkor doctor, ${providerName} reviews, ${providerName} rating`;
+        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
+        description = `Book ${serviceName} with ${providerName} in ${city} for ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} Verified PMDC doctor. Get instant appointment confirmation on Sehatkor.`;
+        keywords = `${serviceName}, ${serviceName} price, ${serviceName} cost, ${serviceName} charges, ${serviceName} by ${providerName}, ${providerName} fee, ${providerName} contact, ${providerName} ${city}, ${serviceName} ${city}, Best ${category || "Doctor"} in ${city}, Online Doctor Booking Pakistan, Sehatkor`;
         schemaType = "MedicalProcedure";
         providerSchemaType = "Physician";
         break;
 
       case "pharmacy":
-        title = `${serviceName} at ${providerName} - ${city} | Sehatkor`;
-        description = `Buy ${serviceName} from ${providerName} in ${city}. Price: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} ${item.homeDelivery ? 'Home delivery available.' : ''} Check availability and order online on Sehatkor.`;
-        keywords = `${serviceName}, ${serviceName} ${providerName}, ${providerName}, ${providerName} ${city}, ${serviceName} ${city}, ${serviceName} Sehatkor, Pharmacy ${city}, Medicine delivery ${city}, ${category} ${city}, Buy ${serviceName}, ${serviceName} price, ${serviceName} online, Online pharmacy ${city}, Medicine home delivery, ${city} میں فارمیسی, دوائی ڈیلیوری, صحت کار, Sehatkor pharmacy, ${providerName} medicines`;
+        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
+        description = `Buy ${serviceName} from ${providerName} in ${city}. Price: ${priceDisplay}. ${item.homeDelivery ? 'Home delivery available.' : ''} Check availability and order online on Sehatkor.`;
+        keywords = `${serviceName}, ${serviceName} price, ${serviceName} by ${providerName}, ${providerName} pharmacy, Medicine delivery ${city}, Buy ${serviceName} online, ${serviceName} ${city}, Online Pharmacy Pakistan, Sehatkor`;
         schemaType = "Product";
         providerSchemaType = "Organization";
         break;
 
       case "laboratory":
-        title = `${serviceName} at ${providerName} - ${city} | Sehatkor`;
-        description = `Book ${serviceName} test at ${providerName} in ${city}. Price: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} ${item.homeDelivery ? 'Home sample collection available.' : ''} Fast and accurate lab results.`;
-        keywords = `${serviceName}, ${serviceName} ${providerName}, ${providerName}, ${providerName} ${city}, ${serviceName} ${city}, ${serviceName} Sehatkor, Lab test ${city}, ${category} ${city}, Diagnostic lab ${city}, ${serviceName} price, ${serviceName} home collection, Online lab booking ${city}, ${city} میں لیب, لیب ٹیسٹ, صحت کار, Sehatkor lab, ${providerName} tests`;
+        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
+        description = `Book ${serviceName} test at ${providerName} in ${city}. Test Price: ${priceDisplay}. ${item.homeDelivery ? 'Home sample collection available.' : ''} Get accurate results online.`;
+        keywords = `${serviceName}, ${serviceName} test price, ${serviceName} cost, ${serviceName} by ${providerName}, ${providerName} lab test, ${providerName} prices, Lab test ${city}, Chughtai Lab rates, Dow Lab rates, Essa Lab rates, Sehatkor`;
         schemaType = "MedicalTest";
         providerSchemaType = "Organization";
         break;
 
       case "clinic":
       default:
-        title = `${serviceName} at ${providerName} - ${city} | Sehatkor`;
-        description = `Book ${serviceName} at ${providerName} in ${city}. Fees: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} Top rated medical services, verified clinic, online booking available.`;
-        keywords = `${serviceName}, ${serviceName} ${providerName}, ${providerName}, ${providerName} ${city}, ${serviceName} ${city}, ${serviceName} Sehatkor, Clinic ${city}, Hospital ${city}, ${category} ${city}, Medical service ${city}, ${city} میں کلینک, ہسپتال, صحت کار, Sehatkor clinic, ${providerName} services`;
+        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
+        description = `Book ${serviceName} at ${providerName} in ${city}. Charges: ${priceDisplay}. Verified medical services with instant online booking on Sehatkor.`;
+        keywords = `${serviceName}, ${serviceName} charges, ${serviceName} cost, ${serviceName} by ${providerName}, ${providerName} ${city}, Hospital link ${city}, Clinic appointment ${city}, Sehatkor`;
         schemaType = "MedicalProcedure";
         providerSchemaType = "Organization";
         break;
@@ -713,65 +714,53 @@ const ServiceDetailPage = () => {
     };
     jsonLdGraph.push(breadcrumbSchema);
 
-    // 3. FAQ Schema - Common questions about the service
-    const faqQuestions: any[] = [];
+    // 3. FAQ Logic (Reusable for Schema and UI)
+    const faqList: Array<{ question: string; answer: string }> = [];
 
-    // Q1: Price/Fee
     if (serviceName) {
-      faqQuestions.push({
-        "@type": "Question",
-        "name": `What is the ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": `The ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName} is ${priceDisplay}.`
-        }
+      faqList.push({
+        question: `What is the ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName}?`,
+        answer: `The ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName} is ${priceDisplay}.`
       });
     }
 
-    // Q2: Availability / Booking Method
     if (serviceName) {
-      faqQuestions.push({
-        "@type": "Question",
-        "name": `Is ${item.homeDelivery ? 'home delivery' : 'online booking'} available for ${serviceName}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": item.homeDelivery
-            ? `Yes, home delivery is available for ${serviceName} in ${city}.`
-            : item.availability === 'Online'
-              ? `Yes, ${serviceName} is available online.`
-              : `${serviceName} is available at ${providerName} in ${city}. You can book online through Sehatkor.`
-        }
+      faqList.push({
+        question: `Is ${item.homeDelivery ? 'home delivery' : 'online booking'} available for ${serviceName}?`,
+        answer: item.homeDelivery
+          ? `Yes, home delivery is available for ${serviceName} in ${city}.`
+          : item.availability === 'Online'
+            ? `Yes, ${serviceName} is available online.`
+            : `${serviceName} is available at ${providerName} in ${city}. You can book online through Sehatkor.`
       });
     }
 
-    // Q3: How to book
     if (serviceName && providerName) {
-      faqQuestions.push({
-        "@type": "Question",
-        "name": `How can I book ${serviceName} at ${providerName}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": `You can book ${serviceName} at ${providerName} online through Sehatkor. Simply click the "Book Now" button on this page for instant booking confirmation.`
-        }
+      faqList.push({
+        question: `How can I book ${serviceName} at ${providerName}?`,
+        answer: `You can book ${serviceName} at ${providerName} online through Sehatkor. Simply click the "Book Now" button on this page for instant booking confirmation.`
       });
     }
 
-    // Q4: Location (Only if we have a city or address)
     if (providerName && (city || item.address)) {
-      faqQuestions.push({
-        "@type": "Question",
-        "name": `What is the location of ${providerName}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": `${providerName} is located in ${city}, Pakistan.${item.address ? ` Address: ${item.address}` : ''}`
-        }
+      faqList.push({
+        question: `What is the location of ${providerName}?`,
+        answer: `${providerName} is located in ${city}, Pakistan.${item.address ? ` Address: ${item.address}` : ''}`
       });
     }
 
-    if (faqQuestions.length > 0) {
+    // Generate FAQ Schema from faqList
+    if (faqList.length > 0) {
       const faqSchema = {
         "@type": "FAQPage",
-        "mainEntity": faqQuestions
+        "mainEntity": faqList.map(f => ({
+          "@type": "Question",
+          "name": f.question,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.answer
+          }
+        }))
       };
       jsonLdGraph.push(faqSchema);
     }
@@ -857,7 +846,7 @@ const ServiceDetailPage = () => {
       "geo.region": "PK"
     };
 
-    return { title, description, keywords, jsonLd, image: item.image, additionalMeta };
+    return { title, description, keywords, jsonLd, image: item.image, additionalMeta, faqList };
   }, [item]);
 
   if (!item) {
@@ -926,7 +915,7 @@ const ServiceDetailPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50/30">
       {/* Enhanced Dynamic SEO Component */}
       {seoData && (
         <SEO
@@ -946,9 +935,9 @@ const ServiceDetailPage = () => {
           Back
         </Button>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="md:col-span-1">
+          <Card className="md:col-span-1 border border-purple-200/60 shadow-md bg-gradient-to-br from-rose-100/80 via-purple-100/40 to-sky-100/60 h-full">
             <CardContent className="p-3 sm:p-4">
-              <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 rounded-xl bg-muted overflow-hidden flex items-center justify-center relative">
+              <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 rounded-xl bg-white/60 overflow-hidden flex items-center justify-center relative border border-white/50 shadow-sm">
                 {activeSlide.image ? (
                   <img src={activeSlide.image} alt={activeSlide.name} className="w-full h-full object-cover" />
                 ) : (
@@ -966,25 +955,20 @@ const ServiceDetailPage = () => {
                     return `${hour12}:${minutes} ${ampm}`;
                   };
 
-                  // Treat as main when index is 0 OR there is no variant for the current index
-                  const rawVariant = (item as any)?.variants?.[activeVariantIndex - 1];
-                  const isMain = activeVariantIndex === 0 || !Array.isArray((item as any)?.variants) || !rawVariant;
-                  const variant = !isMain ? rawVariant : undefined;
+                  const isMain = activeVariantIndex === -1;
+                  const itemAny = item as any;
+                  // Handle schedule display logic same as before...
+                  const sched = isMain ? itemAny.schedule : (slides[activeVariantIndex] as any)?.schedule;
+                  const days = sched?.days || [];
+                  const timeLabel = sched?.timeLabel;
+                  const startTime = sched?.startTime;
+                  const endTime = sched?.endTime;
 
-                  // Days text
-                  const daysText = (() => {
-                    const d = isMain ? (item as any).days : (variant as any)?.days;
-                    return d ? String(d) : "";
-                  })();
+                  const daysText = Array.isArray(days) && days.length > 0 ? days.join(',') : "";
+                  const range = (startTime && endTime) ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
 
-                  // Time text (label and/or numeric range)
                   const timeText = (() => {
-                    const timeLabel = isMain ? (item as any).timeLabel : (variant as any)?.timeLabel;
-                    const startTime = isMain ? (item as any).startTime : (variant as any)?.startTime;
-                    const endTime = isMain ? (item as any).endTime : (variant as any)?.endTime;
-                    const range = startTime && endTime ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
-
-                    // Derive a reliable period from start/end time to avoid wrong labels from backend
+                    // Logic to derive period if missing
                     const derivePeriod = (t?: string) => {
                       if (!t) return "";
                       const h = parseInt(String(t).split(":")[0] || "0", 10);
@@ -996,18 +980,6 @@ const ServiceDetailPage = () => {
                     const derived = startTime ? derivePeriod(String(startTime)) : (endTime ? derivePeriod(String(endTime)) : "");
                     // Prefer the label coming from the slide (variant/main); fallback to derived if missing
                     const effectiveLabel = (timeLabel ? String(timeLabel) : (derived || ""));
-
-                    try {
-                      console.log('Detail schedule debug:', {
-                        isMain,
-                        timeLabel,
-                        startTime,
-                        endTime,
-                        derived,
-                        effectiveLabel,
-                        range,
-                      });
-                    } catch { }
 
                     if (effectiveLabel && range) return `${effectiveLabel} — ${range}`;
                     return String(effectiveLabel || range || "");
@@ -1076,8 +1048,8 @@ const ServiceDetailPage = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="md:col-span-2">
-            <CardHeader className="pb-3 sm:pb-4">
+          <Card className="md:col-span-2 border border-purple-200/60 shadow-md bg-gradient-to-br from-rose-100/80 via-purple-100/40 to-sky-100/60">
+            <CardHeader className="pb-3 sm:pb-4 border-b border-slate-50/50">
               <div className="flex items-center gap-2 min-w-0">
                 <CardTitle className="text-xl sm:text-2xl md:text-3xl leading-tight break-words">{activeSlide.name}</CardTitle>
                 {(item as any)._providerVerified ? (
@@ -1322,34 +1294,75 @@ const ServiceDetailPage = () => {
               </div>
               <p className="mt-3 sm:mt-4 text-muted-foreground leading-relaxed break-words">{activeSlide.description}</p>
               <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Card>
+                <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-orange-50/50">
                   <CardContent className="p-3 sm:p-4">
-                    <div className="text-sm text-muted-foreground">Best Price Nearby</div>
-                    <div className="text-lg font-semibold mt-1">PKR {Math.max(0, Math.round((Number(activeSlide.price || 0)) * 0.85)).toLocaleString()}</div>
+                    <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-1">Service Price</div>
+                    <div className="text-xl font-bold text-gray-900">
+                      {activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price || 0).toLocaleString()}`}
+                    </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50/50">
                   <CardContent className="p-3 sm:p-4">
-                    <div className="text-sm text-muted-foreground">Top Rated Alternative</div>
-                    <div className="text-lg font-semibold mt-1">4.9 ★</div>
+                    <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Patient Rating</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xl font-bold text-gray-900">{item.rating > 0 ? item.rating.toFixed(1) : "N/A"}</span>
+                      {item.rating > 0 && <span className="text-yellow-500 text-lg">★</span>}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
             </CardContent>
           </Card>
         </div>
+        {/* Visible FAQ Section for SEO Compliance */}
+        {seoData?.faqList && seoData.faqList.length > 0 && (
+          <div className="mt-8">
+            <Card className="border-none shadow-md bg-gradient-to-br from-teal-50 via-cyan-50/30 to-white overflow-hidden">
+              <CardHeader className="bg-transparent border-b border-teal-100/50 pb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-help-circle"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Frequently Asked Questions</CardTitle>
+                    <CardDescription>Common questions about this service</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Accordion type="single" collapsible className="w-full">
+                  {seoData.faqList.map((faq, index) => (
+                    <AccordionItem key={index} value={`item-${index}`} className="border-b border-teal-100/50 last:border-0 px-6 bg-white/50 hover:bg-white/80 transition-colors duration-200">
+                      <AccordionTrigger className="text-left font-semibold text-slate-700 hover:text-emerald-700 hover:no-underline py-5 text-[15px]">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-slate-600 leading-relaxed pb-6 text-[15px]">
+                        <div className="pl-4 border-l-2 border-emerald-500/30">
+                          {faq.answer}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Rating Modal */}
-      {item.isReal && item.providerType && (
-        <RatingModal
-          isOpen={isRatingModalOpen}
-          onClose={() => setIsRatingModalOpen(false)}
-          serviceId={item.id}
-          serviceType={item.providerType}
-          serviceName={item.name}
-        />
-      )}
+      {
+        item.isReal && item.providerType && (
+          <RatingModal
+            isOpen={isRatingModalOpen}
+            onClose={() => setIsRatingModalOpen(false)}
+            serviceId={item.id}
+            serviceType={item.providerType}
+            serviceName={item.name}
+          />
+        )
+      }
 
       {/* Booking Options Modal (opens first on Book Now) */}
       <BookingOptionsModal
@@ -1414,7 +1427,7 @@ const ServiceDetailPage = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 };
 
