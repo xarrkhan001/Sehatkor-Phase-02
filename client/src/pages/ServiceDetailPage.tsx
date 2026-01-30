@@ -583,34 +583,34 @@ const ServiceDetailPage = () => {
     // Logic based on Provider Type
     switch (item.providerType) {
       case "doctor":
-        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
-        description = `Book ${serviceName} with ${providerName} in ${city} for ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} Verified PMDC doctor. Get instant appointment confirmation on Sehatkor.`;
-        keywords = `${serviceName}, ${serviceName} price, ${serviceName} cost, ${serviceName} charges, ${serviceName} by ${providerName}, ${providerName} fee, ${providerName} contact, ${providerName} ${city}, ${serviceName} ${city}, Best ${category || "Doctor"} in ${city}, Online Doctor Booking Pakistan, Sehatkor`;
+        title = `${serviceName} by ${providerName} in ${city} | Best Doctor in ${city}`;
+        description = `Book an appointment for ${serviceName} with ${providerName} in ${city}. Fee: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} Verified PMDC doctor. Get instant confirmation on Sehatkor.`;
+        keywords = `${serviceName}, ${serviceName} in ${city}, ${serviceName} by ${providerName}, ${providerName} ${city}, ${providerName} appointment, Best ${category || "Doctor"} in ${city}, Online Doctor Booking Pakistan, Sehatkor`;
         schemaType = "MedicalProcedure";
         providerSchemaType = "Physician";
         break;
 
       case "pharmacy":
-        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
-        description = `Buy ${serviceName} from ${providerName} in ${city}. Price: ${priceDisplay}. ${item.homeDelivery ? 'Home delivery available.' : ''} Check availability and order online on Sehatkor.`;
-        keywords = `${serviceName}, ${serviceName} price, ${serviceName} by ${providerName}, ${providerName} pharmacy, Medicine delivery ${city}, Buy ${serviceName} online, ${serviceName} ${city}, Online Pharmacy Pakistan, Sehatkor`;
+        title = `${serviceName} by ${providerName} in ${city} | Online Medicine Delivery`;
+        description = `Buy ${serviceName} online from ${providerName} in ${city}. Price: ${priceDisplay}. ${item.homeDelivery ? 'Home delivery available.' : ''} Check availability and order now on Sehatkor.`;
+        keywords = `${serviceName}, ${serviceName} price in ${city}, ${serviceName} by ${providerName}, ${providerName} pharmacy ${city}, Medicine delivery ${city}, Buy ${serviceName} online, Online Pharmacy Pakistan, Sehatkor`;
         schemaType = "Product";
         providerSchemaType = "Organization";
         break;
 
       case "laboratory":
-        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
-        description = `Book ${serviceName} test at ${providerName} in ${city}. Test Price: ${priceDisplay}. ${item.homeDelivery ? 'Home sample collection available.' : ''} Get accurate results online.`;
-        keywords = `${serviceName}, ${serviceName} test price, ${serviceName} cost, ${serviceName} by ${providerName}, ${providerName} lab test, ${providerName} prices, Lab test ${city}, Chughtai Lab rates, Dow Lab rates, Essa Lab rates, Sehatkor`;
+        title = `${serviceName} Test by ${providerName} in ${city} | Lab Tests at Home`;
+        description = `Book ${serviceName} test at ${providerName} in ${city}. Test Price: ${priceDisplay}. ${item.homeDelivery ? 'Home sample collection available.' : ''} Get accurate results online via Sehatkor.`;
+        keywords = `${serviceName} test, ${serviceName} price in ${city}, ${serviceName} by ${providerName}, ${providerName} lab ${city}, Lab test ${city}, Chughtai Lab ${city}, Dow Lab ${city}, Essa Lab ${city}, Sehatkor`;
         schemaType = "MedicalTest";
         providerSchemaType = "Organization";
         break;
 
       case "clinic":
       default:
-        title = `${serviceName} by ${providerName} - ${priceDisplay} | Sehatkor`;
+        title = `${serviceName} by ${providerName} in ${city} | Best Clinic in ${city}`;
         description = `Book ${serviceName} at ${providerName} in ${city}. Charges: ${priceDisplay}. Verified medical services with instant online booking on Sehatkor.`;
-        keywords = `${serviceName}, ${serviceName} charges, ${serviceName} cost, ${serviceName} by ${providerName}, ${providerName} ${city}, Hospital link ${city}, Clinic appointment ${city}, Sehatkor`;
+        keywords = `${serviceName}, ${serviceName} charges in ${city}, ${serviceName} cost, ${serviceName} by ${providerName}, ${providerName} ${city}, Hospital in ${city}, Clinic appointment ${city}, Sehatkor`;
         schemaType = "MedicalProcedure";
         providerSchemaType = "Organization";
         break;
@@ -846,7 +846,10 @@ const ServiceDetailPage = () => {
       "geo.region": "PK"
     };
 
-    return { title, description, keywords, jsonLd, image: item.image, additionalMeta, faqList };
+    // Canonical URL for direct indexing
+    const canonical = `https://sehatkor.pk/service/${item.id}`;
+
+    return { title, description, keywords, jsonLd, image: item.image, additionalMeta, faqList, canonical };
   }, [item]);
 
   if (!item) {
@@ -925,6 +928,7 @@ const ServiceDetailPage = () => {
           image={seoData.image}
           jsonLd={seoData.jsonLd}
           additionalMeta={seoData.additionalMeta}
+          canonical={seoData.canonical}
           type="article"
         />
       )}
