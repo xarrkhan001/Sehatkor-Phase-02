@@ -583,7 +583,7 @@ const ServiceDetailPage = () => {
     // Logic based on Provider Type
     switch (item.providerType) {
       case "doctor":
-        title = `${serviceName} by ${providerName} in ${city} | Best Doctor in ${city}`;
+        title = `${serviceName} by ${providerName} in ${city}`;
         description = `Book an appointment for ${serviceName} with ${providerName} in ${city}. Fee: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} Verified PMDC doctor. Get instant confirmation on Sehatkor.`;
         keywords = `${serviceName}, ${serviceName} in ${city}, ${serviceName} by ${providerName}, ${providerName} ${city}, ${providerName} appointment, Best ${category || "Doctor"} in ${city}, Online Doctor Booking Pakistan, Sehatkor`;
         schemaType = "MedicalProcedure";
@@ -591,7 +591,7 @@ const ServiceDetailPage = () => {
         break;
 
       case "pharmacy":
-        title = `${serviceName} by ${providerName} in ${city} | Online Medicine Delivery`;
+        title = `${serviceName} by ${providerName} in ${city} | Medicine Delivery`;
         description = `Buy ${serviceName} online from ${providerName} in ${city}. Price: ${priceDisplay}. ${item.homeDelivery ? 'Home delivery available.' : ''} Check availability and order now on Sehatkor.`;
         keywords = `${serviceName}, ${serviceName} price in ${city}, ${serviceName} by ${providerName}, ${providerName} pharmacy ${city}, Medicine delivery ${city}, Buy ${serviceName} online, Online Pharmacy Pakistan, Sehatkor`;
         schemaType = "Product";
@@ -599,7 +599,7 @@ const ServiceDetailPage = () => {
         break;
 
       case "laboratory":
-        title = `${serviceName} Test by ${providerName} in ${city} | Lab Tests at Home`;
+        title = `${serviceName} by ${providerName} in ${city}`;
         description = `Book ${serviceName} test at ${providerName} in ${city}. Test Price: ${priceDisplay}. ${item.homeDelivery ? 'Home sample collection available.' : ''} Get accurate results online via Sehatkor.`;
         keywords = `${serviceName} test, ${serviceName} price in ${city}, ${serviceName} by ${providerName}, ${providerName} lab ${city}, Lab test ${city}, Chughtai Lab ${city}, Dow Lab ${city}, Essa Lab ${city}, Sehatkor`;
         schemaType = "MedicalTest";
@@ -608,7 +608,7 @@ const ServiceDetailPage = () => {
 
       case "clinic":
       default:
-        title = `${serviceName} by ${providerName} in ${city} | Best Clinic in ${city}`;
+        title = `${serviceName} by ${providerName} in ${city}`;
         description = `Book ${serviceName} at ${providerName} in ${city}. Charges: ${priceDisplay}. Verified medical services with instant online booking on Sehatkor.`;
         keywords = `${serviceName}, ${serviceName} charges in ${city}, ${serviceName} cost, ${serviceName} by ${providerName}, ${providerName} ${city}, Hospital in ${city}, Clinic appointment ${city}, Sehatkor`;
         schemaType = "MedicalProcedure";

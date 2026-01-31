@@ -49,4 +49,4 @@ Disallow: /dashboard/admin
 Disallow: /*.json$
 
 # Sitemap location
-Sitemap: https://sehatkor.pk/sitemap.xml
+Sitemap: https://sehatkor.pk/api/sitemap.xml
