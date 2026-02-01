@@ -66,6 +66,8 @@ export default defineConfig(({ mode }) => ({
             '@radix-ui/react-tabs',
             '@radix-ui/react-toast',
           ],
+          'animation-vendor': ['framer-motion'],
+          'icons-vendor': ['lucide-react', 'react-icons'],
           'maps-vendor': ['@react-google-maps/api', 'leaflet', 'react-leaflet'],
           'query-vendor': ['@tanstack/react-query', 'axios'],
         },
