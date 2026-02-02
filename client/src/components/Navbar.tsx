@@ -12,6 +12,7 @@ import {
   X,
   Stethoscope,
   Home,
+  Globe,
   Grid3X3,
   UserPlus,
   LogIn,
@@ -122,7 +123,8 @@ const Navbar = () => {
   };
 
   const allNavItems = [
-    { name: "Home", href: "/", icon: Home, color: "text-blue-600" },
+    { name: "Overview", href: "/", icon: Home, color: "text-blue-600" },
+    { name: "مرکزی صفحہ", href: "/urdu", icon: Globe, color: "text-blue-600" },
     { name: "Services", href: "/search", icon: Grid3X3, color: "text-purple-600" },
     { name: "Doctors", href: "/doctors", icon: UserCircle, color: "text-green-600" },
     { name: "Hospitals", href: "/hospitals", icon: Hospital, color: "text-red-600" },
@@ -228,7 +230,7 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
+                  className={`group flex items-center space-x-2 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
                     ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
                     : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                     }`}
@@ -237,7 +239,7 @@ const Navbar = () => {
                     ? "text-white drop-shadow-sm"
                     : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
                     }`} strokeWidth={2.5} />
-                  <span className=" transition-all duration-300">{item.name}</span>
+                  <span className={`transition-all duration-300 ${item.name === "مرکزی صفحہ" ? "text-base font-[nastaliq]" : ""}`}>{item.name}</span>
                 </Link>
               );
             })}
@@ -246,7 +248,7 @@ const Navbar = () => {
             <div className="hidden lg:block relative">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 text-gray-800 hover:text-gray-900 hover:bg-gray-100">
+                  <button className="group flex items-center space-x-2 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 text-gray-800 hover:text-gray-900 hover:bg-gray-100">
                     <MapPin className="w-4 h-4 text-red-500 group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
                     <span>Locations</span>
                   </button>
@@ -398,7 +400,7 @@ const Navbar = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`group flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
+                    className={`group flex items-center space-x-2 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
                       ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
                       : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                       }`}
@@ -407,7 +409,7 @@ const Navbar = () => {
                       ? "text-white drop-shadow-sm"
                       : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
                       }`} strokeWidth={2.5} />
-                    <span className=" transition-all duration-300">{item.name}</span>
+                    <span className={`transition-all duration-300 ${item.name === "مرکزی صفحہ" ? "text-base font-[nastaliq]" : ""}`}>{item.name}</span>
                   </Link>
                 );
               })}
