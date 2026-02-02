@@ -62,6 +62,9 @@ const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
 const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage"));
 const DisclaimerPage = lazy(() => import("./pages/DisclaimerPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const UrduHomePage = lazy(() => import("./pages/UrduHomePage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const CookiesPage = lazy(() => import("./pages/CookiesPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OAuthCallbackPage = lazy(() => import("./pages/auth/OAuthCallbackPage"));
 const DiseaseListPage = lazy(() => import("./pages/DiseaseListPage"));
@@ -93,6 +96,9 @@ const AppShell = () => {
         <Suspense fallback={<HomeSkeleton />}>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/urdu" element={<Suspense fallback={<HomeSkeleton />}><UrduHomePage /></Suspense>} />
+            <Route path="/faq" element={<Suspense fallback={<PageSkeleton />}><FAQPage /></Suspense>} />
+            <Route path="/cookies" element={<Suspense fallback={<PageSkeleton />}><CookiesPage /></Suspense>} />
             <Route path="/diseases" element={<DiseaseListPage />} />
             <Route path="/diseases/:slug" element={<Suspense fallback={<ServiceSkeleton />}><DiseaseDetailPage /></Suspense>} />
             <Route path="/search" element={<Suspense fallback={<PageSkeleton />}><SearchPage /></Suspense>} />
