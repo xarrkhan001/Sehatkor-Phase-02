@@ -58,9 +58,10 @@ type SearchServicesProps = {
   hideCategory?: boolean;
   hideLocationIcon?: boolean;
   light?: boolean; // lighten whites/opacity for hero usage
+  className?: string;
 };
 
-const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light = false }: SearchServicesProps) => {
+const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light = false, className }: SearchServicesProps) => {
   const navigate = useNavigate();
   const locationHook = useLocation();
   const { user } = useAuth();
@@ -82,6 +83,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   const [allFetchedServices, setAllFetchedServices] = useState<SearchService[]>([]);
   const [locationQuery, setLocationQuery] = useState("");
   const [customLocation, setCustomLocation] = useState("");
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
 
   const categories = ["All Categories", "Doctor", "Lab Test", "Medicine", "Surgery"];
 
@@ -608,7 +610,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
   return (
     <div className="relative w-full max-w-[1100px] mx-auto z-[100000]" ref={searchRef}>
       {/* Search Bar */}
-      <Card className={`p-1.5 sm:p-2 ${light ? 'bg-white/80' : 'bg-white/90'} backdrop-blur-md shadow-lg border-0 relative z-[100000]`}>
+      <Card className={`p-1.5 sm:p-2 ${light ? 'bg-white/80' : 'bg-white/90'} backdrop-blur-md shadow-lg border-0 relative z-[100000] ${className || ''}`}>
         <div className="flex flex-row lg:flex-row gap-1.5 sm:gap-0 sm:items-center sm:space-x-1.5">
           {/* Category Dropdown */}
           {!hideCategory && (
@@ -624,272 +626,296 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
             </div>
           )}
 
-          {/* Search Input */}
-          <div className="flex-1 relative flex items-center gap-2">
-            {/* Location trigger at the start (now visible on mobile too) */
-            }
-            <button
-              type="button"
-              onClick={() => setIsLocationModalOpen(true)}
-              className="flex items-center gap-1 px-2 h-9 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50 transition text-xs sm:text-sm"
-              title="Select Location"
-            >
-              {/* Mobile: show only a pin icon; Desktop: chevron + label */}
-              <MapPin className="w-4 h-4 sm:hidden text-gray-700" aria-hidden="true" />
-              <ChevronDown className="w-4 h-4 hidden sm:inline" />
-              <span className="sr-only">{selectedLocation || 'Detecting location'}</span>
-              <span className="hidden sm:inline max-w-[140px] truncate">{selectedLocation || 'Detecting...'}</span>
-            </button>
-            {/* Removed count pill from the search bar as requested */}
-            <Input
-              type="text"
-              placeholder="Search doctors, hospital/clinic, medicines, lab tests..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setIsOpen(true);
-              }}
-              onFocus={() => setIsOpen(true)}
-              className={`h-9 sm:h-10 pl-3 pr-9 border-0 focus:border-transparent active:border-transparent focus:ring-0 focus-visible:ring-0 outline-none focus:outline-none active:outline-none text-sm sm:text-base bg-transparent rounded-md sm:rounded-none placeholder:text-gray-600 placeholder:opacity-100 ${light ? 'text-gray-800' : ''}`}
-            />
-            {!hideLocationIcon && (
-              <MapPin className="absolute right-2 sm:right-14 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            )}
-          </div>
+          {/* Input + Button Wrapper - Dropdown spans this width */}
+          <div className="flex-1 relative flex items-center gap-1.5 sm:gap-0 sm:space-x-1.5">
+            {/* Search Input Inner Wrapper */}
+            <div className="flex-1 relative flex items-center gap-2">
+              {/* Location trigger at the start (now visible on mobile too) */
+              }
+              <button
+                type="button"
+                onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
+                className="flex items-center gap-1 px-3 h-9 rounded-none border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition text-sm font-medium relative"
+                title="Select Location"
+              >
+                {/* Mobile: show only a pin icon; Desktop: chevron + label */}
+                <span className="sr-only">{selectedLocation || 'Location'}</span>
+                <span className="hidden sm:inline max-w-[100px] truncate leading-none text-left">
+                  {selectedLocation || 'All Pakistan'}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+              </button>
 
-          {/* Search Button */}
-          <Button
-            onClick={handleSearch}
-            className="h-9 sm:h-10 px-3 sm:px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-md transition-all duration-300 text-sm"
-          >
-            <SearchIcon className="w-4 h-4 sm:mr-1" />
-            <span className="hidden sm:inline">Search</span>
-          </Button>
-        </div>
-      </Card>
+              {/* Custom Location Dropdown - White & Sharp corners */}
+              {isLocationDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-56 max-h-64 overflow-y-auto bg-white border border-gray-200 shadow-lg rounded-none z-[100002]">
+                  <div
+                    className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm font-medium text-gray-700 border-b border-gray-100 transition-colors"
+                    onClick={() => {
+                      setSelectedLocation(null);
+                      try { localStorage.removeItem('selectedLocation'); } catch { }
+                      setIsLocationDropdownOpen(false);
+                    }}
+                  >
+                    All Pakistan
+                  </div>
+                  {/* User's current location option if available */}
+                  <div
+                    className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-emerald-600 font-medium border-b border-gray-100 flex items-center gap-2 transition-colors"
+                    onClick={() => {
+                      detectLocation();
+                      setIsLocationDropdownOpen(false);
+                    }}
+                  >
+                    <MapPin className="w-3 h-3" /> Detect Location
+                  </div>
 
-      {/* Location Modal */}
-      {isLocationModalOpen && (
-        <div className="fixed inset-0 z-[100003] flex items-start justify-center pt-20 md:pt-24 pb-8 px-4">
-          {/* Dimmed + stronger-blurred overlay for readability */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md backdrop-saturate-150" onClick={() => setIsLocationModalOpen(false)} />
-          {/* Compact glass container with better contrast */}
-          <div className="relative w-full max-w-xl mx-4">
-            <div className="relative rounded-2xl p-4 sm:p-5 bg-white/12 backdrop-blur-2xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Choose Location</h3>
-                  <p className="text-[11px] text-white/70">Filter by your city or search across Pakistan</p>
-                </div>
-                <button onClick={() => setIsLocationModalOpen(false)} className="text-white/80 hover:text-white text-lg leading-none">×</button>
-              </div>
-
-              {/* Quick actions */}
-              <div className="flex gap-2 mb-2">
-                <button
-                  onClick={detectLocation}
-                  className="flex-1 h-9 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm shadow shadow-blue-900/20 flex items-center justify-center gap-2"
-                  disabled={isDetectingLocation}
-                >
-                  {/* Mobile: icon only; Desktop: text */}
-                  <MapPin className="w-4 h-4 sm:hidden text-white" aria-hidden="true" />
-                  <span className="hidden sm:inline">{isDetectingLocation ? 'Detecting...' : 'Use Current Location'}</span>
-                  <span className="sr-only">Use Current Location</span>
-                </button>
-                <button
-                  onClick={() => { setSelectedLocation('all'); try { localStorage.setItem('selectedLocation', 'all'); } catch { }; setIsLocationModalOpen(false); }}
-                  className="flex-1 h-9 rounded-md border border-white/30 text-white/90 hover:bg-white/10 text-sm"
-                >
-                  All Pakistan
-                </button>
-              </div>
-
-              {/* Search and custom entry */}
-              <div className="grid grid-cols-1 sm:grid-cols-6 gap-2 mb-2">
-                <div className="sm:col-span-3 min-w-0">
-                  <input
-                    value={locationQuery}
-                    onChange={(e) => setLocationQuery(e.target.value)}
-                    className="w-full h-11 px-3 rounded-none bg-white/20 text-white placeholder-white/80 border border-white/30 focus:outline-none"
-                    placeholder="Search cities (e.g. Karachi, Lahore)"
-                  />
-                </div>
-                <div className="sm:col-span-3 min-w-0">
-                  <div className="flex items-center min-w-0">
-                    <input
-                      value={customLocation}
-                      onChange={(e) => setCustomLocation(e.target.value)}
-                      className="flex-1 h-11 px-3 rounded-none bg-white/20 text-white placeholder-white/80 border border-white/30 focus:outline-none min-w-0"
-                      placeholder="Enter custom city"
-                    />
-                    <button
+                  {locationOptions.map((opt) => (
+                    <div
+                      key={opt.label}
+                      className={`px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0 flex justify-between items-center transition-colors ${selectedLocation === opt.label ? 'bg-blue-50/50 text-blue-600' : ''}`}
                       onClick={() => {
-                        const v = customLocation.trim();
-                        if (!v) return;
-                        setSelectedLocation(v);
-                        try { localStorage.setItem('selectedLocation', v); } catch { }
-                        setIsLocationModalOpen(false);
+                        setSelectedLocation(opt.label);
+                        try { localStorage.setItem('selectedLocation', opt.label); } catch { }
+                        setIsLocationDropdownOpen(false);
                       }}
-                      className="w-10 h-11 rounded-none text-green-600 border border-l-0 border-green-500 bg-green-700/20 hover:bg-green-700/30 flex items-center justify-center -ml-px shadow-[0_0_0_1px_rgba(16,185,129,0.35)]"
-                      aria-label="Apply custom city"
                     >
-                      {/* Bolder check icon */}
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" className="text-green-600 drop-shadow" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
-                    </button>
-                  </div>
+                      <span>{opt.label}</span>
+                      <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">{opt.count}</span>
+                    </div>
+                  ))}
                 </div>
-              </div>
-
-              {/* Dynamic locations list (slightly taller) */}
-              <div className="max-h-72 overflow-y-auto rounded-none border border-white/30 bg-white/10 glass-scroll">
-                {locationOptions.length ? (
-                  <div className="grid grid-cols-2 gap-x-2 gap-y-2.5 p-2">
-                    {locationOptions.map(({ label, count }) => (
-                      <button
-                        key={label}
-                        onClick={() => {
-                          setSelectedLocation(label);
-                          try { localStorage.setItem('selectedLocation', label); } catch { }
-                          setIsLocationModalOpen(false);
-                        }}
-                        className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-none border text-sm transition ${selectedLocation === label ? 'bg-blue-500/30 border-blue-300/60 text-white' : 'bg-white/15 hover:bg-white/25 border-white/30 text-white'}`}
-                      >
-                        <span className="truncate">{label}</span>
-                        <span className={`inline-flex items-center justify-center w-6 h-6 text-[10px] font-semibold rounded-full border ${getCountBadgeClass()}`}>{count}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-5 text-center text-white/70 text-sm">No matching cities</div>
-                )}
-              </div>
-
-              {geoError ? (
-                <div className="mt-2 text-[11px] text-red-300">{geoError}</div>
-              ) : (
-                <div className="mt-2 text-[11px] text-white/70">Tip: Choose "All Pakistan" to see services across all cities.</div>
+              )}
+              {/* Removed count pill from the search bar as requested */}
+              <Input
+                type="text"
+                placeholder="Search doctors, hospital/clinic, medicines, lab tests..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setIsOpen(true);
+                }}
+                onFocus={() => setIsOpen(true)}
+                className={`h-9 sm:h-10 pl-3 pr-9 border-0 focus:border-transparent active:border-transparent focus:ring-0 focus-visible:ring-0 outline-none focus:outline-none active:outline-none text-sm sm:text-base bg-transparent rounded-md sm:rounded-none placeholder:text-gray-600 placeholder:opacity-100 ${light ? 'text-gray-800' : ''}`}
+              />
+              {!hideLocationIcon && (
+                <MapPin className="absolute right-2 sm:right-14 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               )}
             </div>
+
+            {/* Search Button */}
+            <Button
+              onClick={handleSearch}
+              className="h-9 sm:h-10 px-3 sm:px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-md transition-all duration-300 text-sm flex-none"
+            >
+              <SearchIcon className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Search</span>
+            </Button>
+
+            {/* Dropdown Results - Now spans Input + Button */}
+            {isOpen && (
+              <Card className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] rounded-none max-h-[32rem] overflow-hidden z-[100000] animate-in fade-in-0 zoom-in-95 duration-200">
+                {/* Sticky header */}
+                <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-50/90 to-purple-50/90 backdrop-blur-xl border-b border-blue-100/50 px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-700">Top results</span>
+                  <span className="text-xs text-blue-500 bg-blue-100/50 px-2 py-1 rounded-full">{filteredServices.length} found</span>
+                </div>
+                <div className="max-h-[24rem] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-100/50 [&::-webkit-scrollbar-thumb]:bg-blue-400/70 [&::-webkit-scrollbar-thumb:hover]:bg-blue-300/80">
+                  {filteredServices.length > 0 ? (
+                    filteredServices.map((service) => (
+                      <div
+                        key={service.id}
+                        onClick={() => handleServiceClick(service)}
+                        className="flex items-center gap-4 px-4 py-3 bg-white hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 group transition-all duration-200"
+                      >
+                        {/* Image - Rounded Square */}
+                        <div className="relative shrink-0 w-12 h-12">
+                          {getDisplayImage(service) ? (
+                            <img
+                              src={getDisplayImage(service)!}
+                              alt={service.name}
+                              className="w-full h-full rounded-md object-cover border border-gray-100 shadow-sm"
+                            />
+                          ) : (
+                            <div className="w-full h-full rounded-md bg-slate-100 flex items-center justify-center text-2xl text-slate-400 border border-gray-100">
+                              {service.icon}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info - Clean hierarchy */}
+                        <div className="flex-1 min-w-0 flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-gray-900 text-sm truncate leading-none">{service.name}</h4>
+                            {/* Small Badge */}
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-gray-100 text-gray-500 font-medium uppercase tracking-wider border border-gray-200">
+                              {service.providerType === 'doctor' ? 'Doctor' :
+                                service.providerType === 'laboratory' ? 'Lab' :
+                                  service.providerType === 'pharmacy' ? 'Meds' :
+                                    service.providerType === 'clinic' ? 'Hospital' : 'Service'}
+                            </span>
+                          </div>
+
+                          <div className="text-xs text-gray-500 truncate flex items-center text-nowrap">
+                            <span className="font-medium text-slate-700 truncate max-w-[120px] sm:max-w-none">{service.providerName}</span>
+                            {getDisplayCity(service) && <span className="mx-1.5 text-gray-300">|</span>}
+                            {getDisplayCity(service) && <span className="truncate">{getDisplayCity(service)}</span>}
+                          </div>
+                        </div>
+
+                        {/* Action / Price */}
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          {/* Price clean */}
+                          {getDisplayPrice(service) != null && (
+                            <div className="text-sm font-bold text-gray-900">
+                              {formatPrice(getDisplayPrice(service)!)}
+                            </div>
+                          )}
+                          {/* Button - Minimal */}
+                          <div className="text-xs font-medium text-emerald-600 group-hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded transition-colors">
+                            View Details
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center text-gray-500 text-sm">
+                      <SearchIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                      <p>No services found for "{searchTerm}"</p>
+                      <p className="text-[11px] text-gray-400 mt-1">Try different keywords or categories</p>
+                    </div>
+                  )}
+                </div>
+                {/* Footer CTA */}
+                {hasMore && (
+                  <div className="border-t border-blue-100/50 bg-gradient-to-r from-blue-50/80 to-purple-50/80 backdrop-blur-xl px-4 py-3 text-center">
+                    <button
+                      className="text-sm text-blue-600 hover:text-blue-700 font-semibold bg-white/80 hover:bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105"
+                      onClick={loadMore}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Loading...' : 'Load More Services'}
+                    </button>
+                  </div>
+                )}
+              </Card>
+            )}
+
           </div>
         </div>
-      )}
+      </Card >
 
-      {/* Dropdown Results */}
-      {isOpen && (
-        <Card className="absolute top-full left-0 right-0 mt-2 bg-white/98 backdrop-blur-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border-0 rounded-2xl max-h-[32rem] overflow-hidden z-[100000] animate-in fade-in-0 zoom-in-95 duration-200">
-          {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-50/90 to-purple-50/90 backdrop-blur-xl border-b border-blue-100/50 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm font-medium text-blue-700">Top results</span>
-            <span className="text-xs text-blue-500 bg-blue-100/50 px-2 py-1 rounded-full">{filteredServices.length} found</span>
-          </div>
-          <div className="max-h-[24rem] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-100/50 [&::-webkit-scrollbar-thumb]:bg-blue-400/70 [&::-webkit-scrollbar-thumb:hover]:bg-blue-300/80">
-            {filteredServices.length > 0 ? (
-              filteredServices.map((service) => (
-                <div
-                  key={service.id}
-                  onClick={() => handleServiceClick(service)}
-                  className="px-4 py-3 hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-purple-50/80 cursor-pointer text-sm transition-all duration-300 group active:bg-blue-100/50 border-b border-gray-100/50 last:border-b-0 hover:shadow-sm"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      {getDisplayImage(service) ? (
-                        <img
-                          src={getDisplayImage(service)!}
-                          alt={service.name}
-                          className="w-14 h-14 rounded-xl object-cover shadow-lg ring-2 ring-white group-hover:ring-blue-200 transition-all duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center text-lg ring-2 ring-white group-hover:ring-blue-200 transition-all duration-300 group-hover:scale-105 shadow-lg">
-                          {service.icon}
-                        </div>
-                      )}
+      {/* Location Modal */}
+      {
+        isLocationModalOpen && (
+          <div className="fixed inset-0 z-[100003] flex items-start justify-center pt-20 md:pt-24 pb-8 px-4">
+            {/* Dimmed + stronger-blurred overlay for readability */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md backdrop-saturate-150" onClick={() => setIsLocationModalOpen(false)} />
+            {/* Compact glass container with better contrast */}
+            <div className="relative w-full max-w-xl mx-4">
+              <div className="relative rounded-2xl p-4 sm:p-5 bg-white/12 backdrop-blur-2xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Choose Location</h3>
+                    <p className="text-[11px] text-white/70">Filter by your city or search across Pakistan</p>
+                  </div>
+                  <button onClick={() => setIsLocationModalOpen(false)} className="text-white/80 hover:text-white text-lg leading-none">×</button>
+                </div>
 
+                {/* Quick actions */}
+                <div className="flex gap-2 mb-2">
+                  <button
+                    onClick={detectLocation}
+                    className="flex-1 h-9 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm shadow shadow-blue-900/20 flex items-center justify-center gap-2"
+                    disabled={isDetectingLocation}
+                  >
+                    {/* Mobile: icon only; Desktop: text */}
+                    <MapPin className="w-4 h-4 sm:hidden text-white" aria-hidden="true" />
+                    <span className="hidden sm:inline">{isDetectingLocation ? 'Detecting...' : 'Use Current Location'}</span>
+                    <span className="sr-only">Use Current Location</span>
+                  </button>
+                  <button
+                    onClick={() => { setSelectedLocation('all'); try { localStorage.setItem('selectedLocation', 'all'); } catch { }; setIsLocationModalOpen(false); }}
+                    className="flex-1 h-9 rounded-md border border-white/30 text-white/90 hover:bg-white/10 text-sm"
+                  >
+                    All Pakistan
+                  </button>
+                </div>
 
-                      {getSlides(service).length > 1 && (
-                        <div className="absolute -bottom-1 right-0 flex items-center gap-0.5">
-                          <button
-                            className="px-1 py-0.5 text-[10px] rounded bg-white/90 border border-gray-200 shadow"
-                            onClick={(e) => { e.stopPropagation(); prevVariant(service.id); }}
-                            aria-label="Prev"
-                          >
-                            ‹
-                          </button>
-                          <button
-                            className="px-1 py-0.5 text-[10px] rounded bg-white/90 border border-gray-200 shadow"
-                            onClick={(e) => { e.stopPropagation(); nextVariant(service.id); }}
-                            aria-label="Next"
-                          >
-                            ›
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <h4 className="font-semibold text-gray-300 text-base truncate group-hover:text-blue-700 transition-colors duration-300" title={service.name}>{service.name}</h4>
-                        <span className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm whitespace-nowrap font-medium">
-                          {service.providerType === 'doctor' ? 'Doctor' :
-                            service.providerType === 'laboratory' ? 'Lab' :
-                              service.providerType === 'pharmacy' ? 'Pharmacy' :
-                                service.providerType === 'clinic' ? 'Hospital' : 'Service'}
-                        </span>
-                      </div>
-                      <div className="mt-1 text-sm text-gray-600 truncate">
-                        <button
-                          className="text-gray-500 hover:text-blue-600 hover:underline text-left font-medium transition-colors duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            console.log('Provider clicked:', service.providerId, service.providerName);
-                            if (service.providerId) {
-                              navigate(`/provider/${service.providerId}`);
-                            }
-                          }}
-                        >
-                          {service.providerName}
-                        </button>
-                        {getDisplayCity(service) ? <span className="text-gray-400 ml-2">• {getDisplayCity(service)}</span> : null}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      {getDisplayPrice(service) != null && (
-                        <span className="text-sm px-3 py-1.5 rounded-full bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200 whitespace-nowrap font-semibold shadow-sm">
-                          {formatPrice(getDisplayPrice(service)!)}
-                        </span>
-                      )}
+                {/* Search and custom entry */}
+                <div className="grid grid-cols-1 sm:grid-cols-6 gap-2 mb-2">
+                  <div className="sm:col-span-3 min-w-0">
+                    <input
+                      value={locationQuery}
+                      onChange={(e) => setLocationQuery(e.target.value)}
+                      className="w-full h-11 px-3 rounded-none bg-white/20 text-white placeholder-white/80 border border-white/30 focus:outline-none"
+                      placeholder="Search cities (e.g. Karachi, Lahore)"
+                    />
+                  </div>
+                  <div className="sm:col-span-3 min-w-0">
+                    <div className="flex items-center min-w-0">
+                      <input
+                        value={customLocation}
+                        onChange={(e) => setCustomLocation(e.target.value)}
+                        className="flex-1 h-11 px-3 rounded-none bg-white/20 text-white placeholder-white/80 border border-white/30 focus:outline-none min-w-0"
+                        placeholder="Enter custom city"
+                      />
                       <button
-                        className="text-sm px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                        onClick={(e) => { e.stopPropagation(); handleServiceClick(service); }}
+                        onClick={() => {
+                          const v = customLocation.trim();
+                          if (!v) return;
+                          setSelectedLocation(v);
+                          try { localStorage.setItem('selectedLocation', v); } catch { }
+                          setIsLocationModalOpen(false);
+                        }}
+                        className="w-10 h-11 rounded-none text-green-600 border border-l-0 border-green-500 bg-green-700/20 hover:bg-green-700/30 flex items-center justify-center -ml-px shadow-[0_0_0_1px_rgba(16,185,129,0.35)]"
+                        aria-label="Apply custom city"
                       >
-                        View Details
+                        {/* Bolder check icon */}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" className="text-green-600 drop-shadow" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
                       </button>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="p-8 text-center text-gray-500 text-sm">
-                <SearchIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                <p>No services found for "{searchTerm}"</p>
-                <p className="text-[11px] text-gray-400 mt-1">Try different keywords or categories</p>
+
+                {/* Dynamic locations list (slightly taller) */}
+                <div className="max-h-72 overflow-y-auto rounded-none border border-white/30 bg-white/10 glass-scroll">
+                  {locationOptions.length ? (
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-2.5 p-2">
+                      {locationOptions.map(({ label, count }) => (
+                        <button
+                          key={label}
+                          onClick={() => {
+                            setSelectedLocation(label);
+                            try { localStorage.setItem('selectedLocation', label); } catch { }
+                            setIsLocationModalOpen(false);
+                          }}
+                          className={`flex items-center justify-between gap-2 px-2.5 py-2 rounded-none border text-sm transition ${selectedLocation === label ? 'bg-blue-500/30 border-blue-300/60 text-white' : 'bg-white/15 hover:bg-white/25 border-white/30 text-white'}`}
+                        >
+                          <span className="truncate">{label}</span>
+                          <span className={`inline-flex items-center justify-center w-6 h-6 text-[10px] font-semibold rounded-full border ${getCountBadgeClass()}`}>{count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-5 text-center text-white/70 text-sm">No matching cities</div>
+                  )}
+                </div>
+
+                {geoError ? (
+                  <div className="mt-2 text-[11px] text-red-300">{geoError}</div>
+                ) : (
+                  <div className="mt-2 text-[11px] text-white/70">Tip: Choose "All Pakistan" to see services across all cities.</div>
+                )}
               </div>
-            )}
-          </div>
-          {/* Footer CTA */}
-          {hasMore && (
-            <div className="border-t border-blue-100/50 bg-gradient-to-r from-blue-50/80 to-purple-50/80 backdrop-blur-xl px-4 py-3 text-center">
-              <button
-                className="text-sm text-blue-600 hover:text-blue-700 font-semibold bg-white/80 hover:bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105"
-                onClick={loadMore}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Loading...' : 'Load More Services'}
-              </button>
             </div>
-          )}
-        </Card>
-      )}
+          </div>
+        )
+      }
+
+
 
       {/* Local scrollbar styling for the modal list (transparent track like modal) */}
       <style>
@@ -914,7 +940,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
           }
         `}
       </style>
-    </div>
+    </div >
 
   );
 };

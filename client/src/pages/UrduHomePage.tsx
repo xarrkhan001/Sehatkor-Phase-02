@@ -106,7 +106,7 @@ const UrduHomePage = () => {
             id: 4,
             title: "وزن میں کمی",
             subtitle: "صحت مند زندگی",
-            link: "/search?q=weight",
+            link: "/weight-loss",
             bg: "bg-yellow-100", // Light Yellow
             text: "text-yellow-900",
             subText: "text-yellow-700",
@@ -128,9 +128,9 @@ const UrduHomePage = () => {
         },
         {
             id: 6,
-            title: "ہیلتھ پلس",
-            subtitle: "ایڈوانس کیئر",
-            link: "/services",
+            title: "آن لائن فارمیسی",
+            subtitle: "اصلی ادویات",
+            link: "/pharmacies",
             bg: "bg-pink-100", // Light Pink
             text: "text-pink-900",
             subText: "text-pink-700",
@@ -221,7 +221,7 @@ const UrduHomePage = () => {
                             </h1>
 
                             {/* Search Bar Block - SHARP CORNERS (No rounding) */}
-                            <div className="bg-gray-100 p-1 rounded-none shadow-xl border border-gray-400 flex flex-col md:flex-row items-center gap-0 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]">
+                            <div className="bg-gray-100 p-1 rounded-2xl shadow-xl border border-gray-400 flex flex-col md:flex-row items-center gap-0 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]">
                                 {/* Location */}
                                 <div className="relative w-full md:w-[30%] border-b md:border-b-0 md:border-l border-gray-200">
                                     <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 w-4 h-4 pointer-events-none z-10" />
@@ -245,7 +245,7 @@ const UrduHomePage = () => {
                                 </div>
 
                                 {/* Search Button */}
-                                <Button className="w-full md:w-[20%] h-10 rounded-none bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm m-0 md:ml-1" asChild>
+                                <Button className="w-full md:w-[20%] h-10 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm m-0 md:ml-1" asChild>
                                     <Link to={`/search?q=${searchQuery}`}>
                                         <Search className="w-4 h-4 ml-1" />
                                         تلاش
@@ -296,18 +296,24 @@ const UrduHomePage = () => {
             </section>
 
             {/* Stats Section with Icons - Shifted Up slightly to bridge the gap if needed, or normal padding */}
-            <section className="pt-16 pb-20 bg-white border-b border-slate-100">
-                <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Stats Section - Redesigned */}
+            <section className="py-20 relative overflow-hidden">
+                <div className="absolute inset-0 bg-slate-50 opacity-80 z-0"></div>
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                         {stats.map((stat, idx) => (
-                            <div key={idx} className="flex flex-col items-center text-center group p-6 rounded-3xl hover:bg-slate-50/80 transition-all duration-300 hover:shadow-inner border border-transparent hover:border-slate-100">
-                                <div className={`w-14 h-14 rounded-2xl ${stat.bg} flex items-center justify-center mb-4 transform group-hover:rotate-6 transition-transform`}>
-                                    <stat.icon className={`w-7 h-7 ${stat.color}`} />
+                            <div key={idx} className="relative group p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                                <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.bg.replace('bg-', 'from-')} to-white/0 opacity-20 rounded-bl-[4rem] transition-transform group-hover:scale-110`}></div>
+
+                                <div className="relative z-10 flex flex-col items-center text-center">
+                                    <div className={`w-16 h-16 rounded-2xl ${stat.bg} flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform shadow-sm`}>
+                                        <stat.icon className={`w-8 h-8 ${stat.color}`} />
+                                    </div>
+                                    <h3 className="text-3xl md:text-4xl font-black text-slate-800 mb-2 font-sans tracking-tight">
+                                        {stat.number}
+                                    </h3>
+                                    <p className="text-slate-600 font-bold text-base md:text-lg">{stat.label}</p>
                                 </div>
-                                <h3 className="text-3xl lg:text-4xl font-black text-slate-800 mb-2 font-sans tracking-tight">
-                                    {stat.number}
-                                </h3>
-                                <p className="text-slate-500 font-bold text-lg">{stat.label}</p>
                             </div>
                         ))}
                     </div>
