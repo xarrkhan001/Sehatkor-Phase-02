@@ -103,7 +103,11 @@ const PartnersMarquee = ({ title = "Our Partners", partners, speed = "fast" }: P
         <div className="mb-8 text-center">
 
           <Badge variant="secondary" className="mt-2 mb-2 sm:mb-3 text-[10px] bg-red-100 text-red-700 border-red-200">Join Us</Badge>
-          <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold">{title}</h3>
+          <h3 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
+            {title === "Our Partners" ? (
+              <>Our <span className="text-emerald-600">Partners</span></>
+            ) : title}
+          </h3>
 
           <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
             Partner with SehatKor to advance accessible, high-quality healthcare and reach millions nationwide.
