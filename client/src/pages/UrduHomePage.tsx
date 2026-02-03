@@ -23,7 +23,9 @@ import {
     ArrowRight,
     ShieldCheck,
     Star,
-    Smartphone
+    Smartphone,
+    MapPin,
+    ChevronDown
 } from "lucide-react";
 
 // Animations
@@ -50,6 +52,7 @@ const staggerContainer = {
 const UrduHomePage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const { user } = useAuth();
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 500);
@@ -60,72 +63,80 @@ const UrduHomePage = () => {
         return <HomeSkeleton />;
     }
 
-    const services = [
+    const heroCards = [
         {
-            icon: Stethoscope,
-            title: "ماہر ڈاکٹرز",
-            description: "پاکستان کے بہترین اور مستند ڈاکٹرز",
-            gradient: "from-blue-500 to-blue-600",
-            lightBg: "bg-blue-50",
-            border: "group-hover:border-blue-200",
-            text: "text-blue-600",
-            shadow: "group-hover:shadow-blue-200/50",
-            link: "/doctors"
-        },
-        {
-            icon: FlaskConical,
-            title: "لیب ٹیسٹ",
-            description: "گھر بیٹھے سیمپل دیں",
-            gradient: "from-emerald-500 to-emerald-600",
-            lightBg: "bg-emerald-50",
-            border: "group-hover:border-emerald-200",
-            text: "text-emerald-600",
-            shadow: "group-hover:shadow-emerald-200/50",
-            link: "/labs"
-        },
-        {
-            icon: Pill,
-            title: "ادویات",
-            description: "فوری ہوم ڈیلیوری",
-            gradient: "from-teal-500 to-teal-600",
-            lightBg: "bg-teal-50",
-            border: "group-hover:border-teal-200",
-            text: "text-teal-600",
-            shadow: "group-hover:shadow-teal-200/50",
-            link: "/pharmacies"
-        },
-        {
-            icon: Scissors,
-            title: "سرجریز",
-            description: "جدید سرجیکل سہولیات",
-            gradient: "from-orange-500 to-orange-600",
-            lightBg: "bg-orange-50",
-            border: "group-hover:border-orange-200",
-            text: "text-orange-600",
-            shadow: "group-hover:shadow-orange-200/50",
-            link: "/search"
-        },
-        {
-            icon: Video,
+            id: 1,
             title: "ویڈیو مشاورت",
-            description: "آن لائن چیک اپ",
-            gradient: "from-indigo-500 to-indigo-600",
-            lightBg: "bg-indigo-50",
-            border: "group-hover:border-indigo-200",
-            text: "text-indigo-600",
-            shadow: "group-hover:shadow-indigo-200/50",
-            link: "/doctors?type=video"
+            subtitle: "پی ایم سی تصدیق شدہ", // Shortened for fit
+            link: "/doctors?type=video",
+            bg: "bg-sky-100", // Light Blue
+            text: "text-sky-900",
+            subText: "text-sky-700",
+            image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=400", // Female Doctor
+            gridClass: "md:col-span-3 md:row-span-2 h-56 md:h-full flex-col",
+            imgClass: "absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-32 md:w-40 md:h-40 object-cover rounded-full border-4 border-white shadow-lg",
         },
         {
-            icon: Activity,
-            title: "ہیلتھ کیئر",
-            description: "مکمل صحت کی دیکھ بھال",
-            gradient: "from-rose-500 to-rose-600",
-            lightBg: "bg-rose-50",
-            border: "group-hover:border-rose-200",
-            text: "text-rose-600",
-            shadow: "group-hover:shadow-rose-200/50",
-            link: "/services"
+            id: 2,
+            title: "کلینک پر چیک اپ",
+            subtitle: "اپائنٹمنٹ بک کریں",
+            link: "/doctors",
+            bg: "bg-orange-100", // Peach
+            text: "text-orange-900",
+            subText: "text-orange-700",
+            image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400&h=400", // Male Doctor
+            gridClass: "md:col-span-4 h-32 md:h-36",
+            imgClass: "absolute bottom-3 left-4 w-24 h-24 md:w-32 md:h-32 object-cover rounded-full border-4 border-white shadow-lg",
+            isTall: false
+        },
+        {
+            id: 3,
+            title: "فوری ڈاکٹر",
+            subtitle: "ایک کلک میں آرام",
+            link: "/doctors",
+            bg: "bg-emerald-100", // Mint Green
+            text: "text-emerald-900",
+            subText: "text-emerald-700",
+            image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400&h=400", // Female Doc
+            gridClass: "md:col-span-5 h-32 md:h-36",
+            imgClass: "absolute bottom-3 left-6 w-24 h-24 md:w-32 md:h-32 object-cover rounded-full border-4 border-white shadow-lg",
+            hasBadge: true
+        },
+        {
+            id: 4,
+            title: "وزن میں کمی",
+            subtitle: "صحت مند زندگی",
+            link: "/search?q=weight",
+            bg: "bg-yellow-100", // Light Yellow
+            text: "text-yellow-900",
+            subText: "text-yellow-700",
+            image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=300&h=300", // Fitness/Trainer
+            gridClass: "md:col-span-3 h-32 md:h-36",
+            imgClass: "absolute bottom-2 left-2 w-16 h-16 md:w-20 md:h-20 object-cover rounded-full border-2 border-white/50 shadow-md",
+        },
+        {
+            id: 5,
+            title: "لیب ٹیسٹ",
+            subtitle: "گھر سے سیمپل",
+            link: "/labs",
+            bg: "bg-blue-100", // Light Blue
+            text: "text-blue-900",
+            subText: "text-blue-700",
+            image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=300&h=300", // Lab
+            gridClass: "md:col-span-3 h-32 md:h-36",
+            imgClass: "absolute bottom-2 left-2 w-16 h-16 md:w-20 md:h-20 object-cover rounded-full border-2 border-white/50 shadow-md",
+        },
+        {
+            id: 6,
+            title: "ہیلتھ پلس",
+            subtitle: "ایڈوانس کیئر",
+            link: "/services",
+            bg: "bg-pink-100", // Light Pink
+            text: "text-pink-900",
+            subText: "text-pink-700",
+            image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=300&h=300", // Meds/Heart
+            gridClass: "md:col-span-3 h-32 md:h-36",
+            imgClass: "absolute bottom-2 left-2 w-16 h-16 md:w-20 md:h-20 object-cover rounded-full border-2 border-white/50 shadow-md",
         }
     ];
 
@@ -185,115 +196,107 @@ const UrduHomePage = () => {
                 }}
             />
 
-            {/* Hero Section - Professional Dark Theme */}
-            <section className="relative pt-32 pb-24 lg:pt-44 lg:pb-36 overflow-hidden">
-                {/* DARKISH PROFESSIONAL BACKGROUND */}
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 z-0">
-                    {/* Abstract Glows */}
-                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[100px] animate-pulse"></div>
-                    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[100px]"></div>
-                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+            {/* Hero Section - Redesigned with Bento Grid */}
+            <section className="relative pt-6 pb-12 lg:pt-10 lg:pb-16 overflow-visible">
+                {/* BACKGROUND - Gray 200 as requested */}
+                <div className="absolute inset-0 bg-gray-100 z-0 rounded-b-[2rem] lg:rounded-b-[3rem] shadow-sm overflow-hidden">
+                    {/* Subtle White Glows for depth */}
+                    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white/60 rounded-full blur-[120px]"></div>
                 </div>
 
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="max-w-5xl mx-auto text-center">
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeInUp}
-                        >
-                            <Badge className="mb-8 bg-white/10 text-emerald-300 hover:bg-white/20 border border-white/10 px-4 py-1.5 text-base rounded-full shadow-sm gap-2 backdrop-blur-sm">
-                                <Star className="w-4 h-4 text-emerald-300 fill-emerald-300" />
-                                پاکستان کا سب سے بڑا ہیلتھ نیٹ ورک
-                            </Badge>
-
-                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-8 tracking-wide drop-shadow-xl">
-                                آپ کی صحت، <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">ہماری ذمہ داری</span>
-                            </h1>
-
-                            <p className="text-lg md:text-2xl text-slate-300 leading-loose mb-10 max-w-3xl mx-auto font-light">
-                                بہترین ڈاکٹرز، جدید لیبارٹریز اور مستند ادویات تک آسان رسائی۔
-                                <br className="hidden md:block" />
-                                آج ہی صحت کور کے ساتھ اپنا سفر شروع کریں۔
-                            </p>
-
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-lg mx-auto">
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg h-16 px-10 rounded-2xl shadow-lg shadow-emerald-900/50 transition-all hover:-translate-y-1"
-                                >
-                                    <Link to="/search">
-                                        <Search className="w-5 h-5 ml-2" />
-                                        ڈاکٹر تلاش کریں
-                                    </Link>
-                                </Button>
-
-                                {!user ? (
-                                    <Button
-                                        asChild
-                                        variant="outline"
-                                        size="lg"
-                                        className="w-full sm:w-auto border-white/20 bg-white/5 text-white hover:bg-white/10 font-bold text-lg h-16 px-10 rounded-2xl shadow-lg backdrop-blur-sm transition-all hover:-translate-y-1"
-                                    >
-                                        <Link to="/register">
-                                            <UserPlus className="w-5 h-5 ml-2" />
-                                            اکاؤنٹ بنائیں
-                                        </Link>
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        asChild
-                                        variant="outline"
-                                        size="lg"
-                                        className="w-full sm:w-auto border-white/20 bg-white/5 text-white hover:bg-white/10 font-bold text-lg h-16 px-10 rounded-2xl shadow-lg backdrop-blur-sm transition-all hover:-translate-y-1"
-                                    >
-                                        <Link to="/">
-                                            <Activity className="w-5 h-5 ml-2" />
-                                            انگریزی ہوم
-                                        </Link>
-                                    </Button>
-                                )}
-                            </div>
-                        </motion.div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Services Grid - Restored Cards with Better Colors */}
-            <section className="relative px-4 -mt-20 mb-20 z-20">
-                <div className="container mx-auto">
                     <motion.div
                         initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={staggerContainer}
-                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+                        animate="visible"
+                        variants={fadeInUp}
+                        className="max-w-7xl mx-auto"
                     >
-                        {services.map((service, idx) => (
-                            <motion.div key={idx} variants={fadeInUp}>
-                                <Link to={service.link}>
-                                    <Card className={`h-full border-0 shadow-sm group cursor-pointer overflow-hidden relative bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:bg-none hover:bg-white ring-1 ring-slate-200 ${service.border} ${service.shadow}`}>
-                                        {/* Top colorful bar */}
-                                        <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${service.gradient}`}></div>
+                        <div className="text-center mb-8">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-300 text-emerald-700 mb-4 text-sm shadow-sm">
+                                <span>پاکستان کا نمبر 1 ہیلتھ پلیٹ فارم</span>
+                            </div>
 
-                                        <CardContent className="p-6 flex flex-col items-center text-center h-full justify-center pt-10">
-                                            <div className={`w-16 h-16 rounded-2xl ${service.lightBg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm bg-white`}>
-                                                <service.icon className={`w-8 h-8 ${service.text}`} />
-                                            </div>
-                                            <h3 className="font-bold text-slate-800 text-lg mb-2 group-hover:text-slate-900">{service.title}</h3>
-                                            <p className="text-xs text-slate-600 font-medium line-clamp-2 leading-relaxed">{service.description}</p>
-                                        </CardContent>
-                                    </Card>
+                            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-3">
+                                صحت کے مسائل؟ <span className="text-emerald-600">ہمارے پاس حل ہے!</span>
+                            </h1>
+
+                            {/* Search Bar Block - SHARP CORNERS (No rounding) */}
+                            <div className="bg-gray-100 p-1 rounded-none shadow-xl border border-gray-400 flex flex-col md:flex-row items-center gap-0 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]">
+                                {/* Location */}
+                                <div className="relative w-full md:w-[30%] border-b md:border-b-0 md:border-l border-gray-200">
+                                    <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 w-4 h-4 pointer-events-none z-10" />
+                                    <select className="w-full h-10 bg-transparent border-none pr-9 pl-2 text-gray-700 font-bold focus:ring-0 cursor-pointer text-sm outline-none relative z-20">
+                                        <option>پاکستان بھر میں</option>
+                                        <option>کراچی</option>
+                                        <option>لاہور</option>
+                                        <option>اسلام آباد</option>
+                                    </select>
+                                </div>
+
+                                {/* Main Search Input */}
+                                <div className="relative w-full md:w-[50%]">
+                                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none md:hidden" />
+                                    <input
+                                        type="text"
+                                        placeholder="ڈاکٹر، ہسپتال تلاش کریں..."
+                                        className="w-full h-10 px-3 pr-9 md:pr-3 bg-transparent border-none text-gray-800 placeholder:text-gray-400 text-sm focus:ring-0 outline-none"
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Search Button */}
+                                <Button className="w-full md:w-[20%] h-10 rounded-none bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm m-0 md:ml-1" asChild>
+                                    <Link to={`/search?q=${searchQuery}`}>
+                                        <Search className="w-4 h-4 ml-1" />
+                                        تلاش
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Bento Grid Layout */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                            {heroCards.map((card) => (
+                                <Link
+                                    to={card.link}
+                                    key={card.id}
+                                    className={`relative group overflow-hidden rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${card.bg} ${card.gridClass}`}
+                                >
+                                    <div className="p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
+                                        <h3 className={`font-black text-xl md:text-2xl ${card.text} mb-1 leading-none`}>
+                                            {card.title}
+                                        </h3>
+                                        <p className={`font-bold text-sm ${card.subText} mb-4`}>
+                                            {card.subtitle}
+                                        </p>
+
+                                        {card.hasBadge && (
+                                            <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse">
+                                                NEW
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    {/* Image */}
+                                    <img
+                                        src={card.image}
+                                        alt={card.title}
+                                        className={`transition-transform duration-500 group-hover:scale-105 ${card.imgClass}`}
+                                        loading="lazy"
+                                    />
+
+                                    {/* Gradient Overlay for Text Readability if needed */}
+                                    {!card.isTall && <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>}
                                 </Link>
-                            </motion.div>
-                        ))}
+                            ))}
+                        </div>
+
                     </motion.div>
                 </div>
             </section>
 
-            {/* Stats Section with Icons */}
-            <section className="py-20 bg-white border-y border-slate-100">
+            {/* Stats Section with Icons - Shifted Up slightly to bridge the gap if needed, or normal padding */}
+            <section className="pt-16 pb-20 bg-white border-b border-slate-100">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                         {stats.map((stat, idx) => (
@@ -356,11 +359,19 @@ const UrduHomePage = () => {
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {['کراچی', 'لاہور', 'اسلام آباد', 'پشاور', 'کوئٹہ', 'ملتان'].map((city, idx) => (
+                        {[
+                            { name: 'کراچی', bg: 'bg-blue-50', hover: 'hover:bg-blue-100', text: 'text-blue-700' },
+                            { name: 'لاہور', bg: 'bg-emerald-50', hover: 'hover:bg-emerald-100', text: 'text-emerald-700' },
+                            { name: 'اسلام آباد', bg: 'bg-teal-50', hover: 'hover:bg-teal-100', text: 'text-teal-700' },
+                            { name: 'پشاور', bg: 'bg-violet-50', hover: 'hover:bg-violet-100', text: 'text-violet-700' },
+                            { name: 'کوئٹہ', bg: 'bg-amber-50', hover: 'hover:bg-amber-100', text: 'text-amber-700' },
+                            { name: 'ملتان', bg: 'bg-rose-50', hover: 'hover:bg-rose-100', text: 'text-rose-700' }
+                        ].map((city, idx) => (
                             <Link to="/search" key={idx} className="block group">
-                                <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl p-6 text-center border border-slate-200 hover:border-emerald-500 hover:bg-none hover:bg-white hover:shadow-lg hover:shadow-emerald-50 transition-all cursor-pointer relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-emerald-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    <h3 className="font-bold text-slate-700 text-lg group-hover:text-emerald-700 transition-colors relative z-10">{city}</h3>
+                                <div className={`relative overflow-hidden rounded-2xl p-6 text-center border border-transparent transition-all duration-300 ${city.bg} ${city.hover} hover:scale-105 hover:shadow-lg`}>
+                                    <h3 className={`font-black text-lg md:text-xl ${city.text} transition-colors relative z-10`}>{city.name}</h3>
+                                    {/* Decorative subtle circle background */}
+                                    <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-white/40 rounded-full blur-xl group-hover:blur-2xl transition-all"></div>
                                 </div>
                             </Link>
                         ))}
