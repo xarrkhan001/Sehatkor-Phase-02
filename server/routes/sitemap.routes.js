@@ -2,6 +2,7 @@ import express from 'express';
 import DoctorService from '../models/DoctorService.js';
 import Medicine from '../models/Medicine.js';
 import LaboratoryTest from '../models/LaboratoryTest.js';
+import ClinicService from '../models/ClinicService.js';
 
 const router = express.Router();
 
@@ -16,10 +17,11 @@ router.get('/sitemap.xml', async (req, res) => {
     const currentDate = new Date().toISOString().split('T')[0];
 
     // Fetch all services from all provider types
-    const [doctorServices, medicines, labTests] = await Promise.all([
+    const [doctorServices, medicines, labTests, clinicServices] = await Promise.all([
       DoctorService.find({}).select('_id updatedAt').lean(),
       Medicine.find({}).select('_id updatedAt').lean(),
-      LaboratoryTest.find({}).select('_id updatedAt').lean()
+      LaboratoryTest.find({}).select('_id updatedAt').lean(),
+      ClinicService.find({}).select('_id updatedAt').lean()
     ]);
 
     // Collect all service URLs
@@ -55,6 +57,20 @@ router.get('/sitemap.xml', async (req, res) => {
 
     // Add lab tests
     labTests.forEach(service => {
+      if (service._id) {
+        serviceUrls.push({
+          loc: `${baseUrl}/service/${service._id}`,
+          lastmod: service.updatedAt 
+            ? new Date(service.updatedAt).toISOString().split('T')[0] 
+            : currentDate,
+          changefreq: 'weekly',
+          priority: '0.8'
+        });
+      }
+    });
+
+    // Add clinic services
+    clinicServices.forEach(service => {
       if (service._id) {
         serviceUrls.push({
           loc: `${baseUrl}/service/${service._id}`,
@@ -115,19 +131,21 @@ router.get('/sitemap.xml', async (req, res) => {
  */
 router.get('/sitemap/stats', async (req, res) => {
   try {
-    const [doctorCount, medicineCount, labTestCount] = await Promise.all([
+    const [doctorCount, medicineCount, labTestCount, clinicCount] = await Promise.all([
       DoctorService.countDocuments({}),
       Medicine.countDocuments({}),
-      LaboratoryTest.countDocuments({})
+      LaboratoryTest.countDocuments({}),
+      ClinicService.countDocuments({})
     ]);
 
-    const totalServices = doctorCount + medicineCount + labTestCount;
+    const totalServices = doctorCount + medicineCount + labTestCount + clinicCount;
 
     res.json({
       services: {
         doctorServices: doctorCount,
         medicines: medicineCount,
         labTests: labTestCount,
+        clinicServices: clinicCount,
         total: totalServices
       },
       sitemapUrls: {
