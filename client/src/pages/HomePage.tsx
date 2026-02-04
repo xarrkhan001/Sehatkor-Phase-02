@@ -73,40 +73,33 @@ const HomePage = () => {
   const heroCards = [
     {
       id: 1,
-      title: "Video Consultation",
+      title: "Online Video Consultation",
       subtitle: "PMC Verified",
       link: "/doctors?type=video",
       bg: "bg-sky-100",
       text: "text-sky-900",
       subText: "text-sky-700",
       image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=400",
-      gridClass: "md:col-span-3 md:row-span-2 h-56 md:h-full flex-col",
-      imgClass: "absolute bottom-4 right-1/2 translate-x-1/2 w-32 h-32 md:w-40 md:h-40 object-cover rounded-full border-4 border-white shadow-lg",
     },
     {
       id: 2,
-      title: "Clinic Visit",
+      title: "Book Clinic Appointment",
       subtitle: "Book Appointment",
       link: "/doctors",
       bg: "bg-orange-100",
       text: "text-orange-900",
       subText: "text-orange-700",
       image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400&h=400",
-      gridClass: "md:col-span-4 h-32 md:h-36",
-      imgClass: "absolute bottom-3 right-4 w-24 h-24 md:w-32 md:h-32 object-cover rounded-full border-4 border-white shadow-lg",
-      isTall: false
     },
     {
       id: 3,
-      title: "Instant Doctor",
+      title: "Get Instant Doctor",
       subtitle: "One Click Relief",
       link: "/doctors",
       bg: "bg-emerald-100",
       text: "text-emerald-900",
       subText: "text-emerald-700",
       image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400&h=400",
-      gridClass: "md:col-span-5 h-32 md:h-36",
-      imgClass: "absolute bottom-3 right-4 w-24 h-24 md:w-32 md:h-32 object-cover rounded-full border-4 border-white shadow-lg",
       hasBadge: true
     },
     {
@@ -118,8 +111,6 @@ const HomePage = () => {
       text: "text-yellow-900",
       subText: "text-yellow-700",
       image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=300&h=300",
-      gridClass: "md:col-span-3 h-32 md:h-36",
-      imgClass: "absolute bottom-2 right-2 w-16 h-16 md:w-20 md:h-20 object-cover rounded-full border-2 border-white/50 shadow-md",
     },
     {
       id: 5,
@@ -130,20 +121,16 @@ const HomePage = () => {
       text: "text-blue-900",
       subText: "text-blue-700",
       image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=300&h=300",
-      gridClass: "md:col-span-3 h-32 md:h-36",
-      imgClass: "absolute bottom-2 right-2 w-16 h-16 md:w-20 md:h-20 object-cover rounded-full border-2 border-white/50 shadow-md",
     },
     {
       id: 6,
-      title: "Online Pharmacy",
+      title: "Buy Medicine Online",
       subtitle: "Genuine Medicines",
       link: "/pharmacies",
       bg: "bg-pink-100",
       text: "text-pink-900",
       subText: "text-pink-700",
       image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=300&h=300",
-      gridClass: "md:col-span-3 h-32 md:h-36",
-      imgClass: "absolute bottom-2 right-2 w-16 h-16 md:w-20 md:h-20 object-cover rounded-full border-2 border-white/50 shadow-md",
     }
   ];
 
@@ -261,7 +248,7 @@ const HomePage = () => {
       />
 
       {/* Hero Section */}
-      <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-visible">
+      <section className="relative pt-20 pb-12 lg:pt-24 lg:pb-16 overflow-visible">
         {/* BACKGROUND */}
         <div className="absolute inset-0 bg-gray-100 z-0 rounded-b-[2rem] lg:rounded-b-[3rem] shadow-sm overflow-hidden">
           <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-white/60 rounded-full blur-[120px]"></div>
@@ -292,39 +279,105 @@ const HomePage = () => {
               />
             </div>
 
-            {/* Bento Grid Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {heroCards.map((card) => (
+            {/* Bento Grid Layout - Mobile: Marham Style (Video left 2cols, 2 cards right 3cols), Desktop: Bento Grid */}
+            <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-4">
+              {/* Video Consultation - Left side, spans 2 rows on mobile, 2 columns wide */}
+              <Link
+                to={heroCards[0].link}
+                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[0].bg} 
+                  col-span-2 row-span-2 h-auto md:col-span-3 md:row-span-2 md:h-full`}
+              >
+                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[65%]">
+                  <h3 className={`font-black text-sm md:text-2xl ${heroCards[0].text} mb-0.5 md:mb-1 leading-tight`}>
+                    {heroCards[0].title}
+                  </h3>
+                  <p className={`font-bold text-[10px] md:text-sm ${heroCards[0].subText} mb-2 md:mb-4`}>
+                    {heroCards[0].subtitle}
+                  </p>
+                </div>
+                <img
+                  src={heroCards[0].image}
+                  alt={heroCards[0].title}
+                  className="absolute bottom-2 right-2 w-20 h-20 md:right-1/2 md:translate-x-1/2 md:bottom-4 md:w-40 md:h-40 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
+              </Link>
+
+              {/* Clinic Visit - Right side, top, 3 columns wide */}
+              <Link
+                to={heroCards[1].link}
+                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[1].bg} 
+                  col-span-3 h-24 md:col-span-4 md:h-36`}
+              >
+                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[65%]">
+                  <h3 className={`font-black text-sm md:text-2xl ${heroCards[1].text} mb-0.5 md:mb-1 leading-tight`}>
+                    {heroCards[1].title}
+                  </h3>
+                  <p className={`font-bold text-[10px] md:text-sm ${heroCards[1].subText} mb-1 md:mb-4`}>
+                    {heroCards[1].subtitle}
+                  </p>
+                </div>
+                <img
+                  src={heroCards[1].image}
+                  alt={heroCards[1].title}
+                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
+              </Link>
+
+              {/* Instant Doctor - Right side, bottom, 3 columns wide */}
+              <Link
+                to={heroCards[2].link}
+                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[2].bg} 
+                  col-span-3 h-24 md:col-span-5 md:h-36`}
+              >
+                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[65%]">
+                  <h3 className={`font-black text-sm md:text-2xl ${heroCards[2].text} mb-0.5 md:mb-1 leading-tight`}>
+                    {heroCards[2].title}
+                  </h3>
+                  <p className={`font-bold text-[10px] md:text-sm ${heroCards[2].subText} mb-1 md:mb-4`}>
+                    {heroCards[2].subtitle}
+                  </p>
+                  {heroCards[2].hasBadge && (
+                    <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse text-[9px] px-1.5 py-0.5 md:text-xs md:px-2 md:py-1">
+                      NEW
+                    </Badge>
+                  )}
+                </div>
+                <img
+                  src={heroCards[2].image}
+                  alt={heroCards[2].title}
+                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
+              </Link>
+
+              {/* Remaining cards - Alternating widths, last card full width */}
+              {heroCards.slice(3).map((card, index) => (
                 <Link
                   to={card.link}
                   key={card.id}
-                  className={`relative group overflow-hidden rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${card.bg} ${card.gridClass}`}
+                  className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${card.bg} 
+                    ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-24 md:col-span-3 md:h-36`}
                 >
-                  <div className="p-5 relative z-10 h-full flex flex-col items-start text-left w-full">
-                    <h3 className={`font-black text-xl md:text-2xl ${card.text} mb-1 leading-none`}>
+                  <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[60%]">
+                    <h3 className={`font-black text-sm md:text-2xl ${card.text} mb-0.5 md:mb-1 leading-tight`}>
                       {card.title}
                     </h3>
-                    <p className={`font-bold text-sm ${card.subText} mb-4`}>
+                    <p className={`font-bold text-[10px] md:text-sm ${card.subText} mb-1 md:mb-4`}>
                       {card.subtitle}
                     </p>
-
-                    {card.hasBadge && (
-                      <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse">
-                        NEW
-                      </Badge>
-                    )}
                   </div>
-
-                  {/* Image */}
                   <img
                     src={card.image}
                     alt={card.title}
-                    className={`transition-transform duration-500 group-hover:scale-105 ${card.imgClass}`}
+                    className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
-
-                  {/* Gradient Overlay */}
-                  {!card.isTall && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
                 </Link>
               ))}
             </div>

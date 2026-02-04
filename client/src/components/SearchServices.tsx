@@ -9,6 +9,7 @@ import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ServiceManager, { Service } from "@/lib/serviceManager";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SearchService {
   id: string;
@@ -63,6 +64,7 @@ type SearchServicesProps = {
 
 const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light = false, className }: SearchServicesProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const locationHook = useLocation();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
@@ -588,6 +590,14 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
       try { localStorage.setItem('selectedLocation', finalLoc); } catch { }
       setIsLocationModalOpen(false);
       setIsDetectingLocation(false);
+      const { dismiss } = toast({
+        title: "Location Verified 📍",
+        description: `Location detected as ${finalLoc}. You can now search in this area.`,
+        className: "bg-emerald-50 border-emerald-200 text-emerald-800",
+      });
+      setTimeout(() => {
+        dismiss();
+      }, 3000);
     }, (err) => {
       setGeoError(err.message || 'Failed to detect location');
       setIsDetectingLocation(false);
@@ -655,6 +665,12 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                       setSelectedLocation(null);
                       try { localStorage.removeItem('selectedLocation'); } catch { }
                       setIsLocationDropdownOpen(false);
+                      const { dismiss } = toast({
+                        title: "All Pakistan Selected 🇵🇰",
+                        description: "You are now searching across all of Pakistan.",
+                        className: "bg-emerald-50 border-emerald-200 text-emerald-800",
+                      });
+                      setTimeout(() => { dismiss(); }, 3000);
                     }}
                   >
                     All Pakistan
@@ -678,6 +694,12 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
                         setSelectedLocation(opt.label);
                         try { localStorage.setItem('selectedLocation', opt.label); } catch { }
                         setIsLocationDropdownOpen(false);
+                        const { dismiss } = toast({
+                          title: "Location Selected 📍",
+                          description: `Location set to ${opt.label}. You can now search here.`,
+                          className: "bg-emerald-50 border-emerald-200 text-emerald-800",
+                        });
+                        setTimeout(() => { dismiss(); }, 3000);
                       }}
                     >
                       <span>{opt.label}</span>
@@ -706,7 +728,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
             {/* Search Button */}
             <Button
               onClick={handleSearch}
-              className="h-9 sm:h-10 px-3 sm:px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-md transition-all duration-300 text-sm flex-none"
+              className="h-9 sm:h-10 px-3 sm:px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-md transition-all duration-300 text-sm flex-none"
             >
               <SearchIcon className="w-4 h-4 sm:mr-1" />
               <span className="hidden sm:inline">Search</span>
