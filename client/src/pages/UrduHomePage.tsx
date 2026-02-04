@@ -221,9 +221,9 @@ const UrduHomePage = () => {
                             </h1>
 
                             {/* Search Bar Block - SHARP CORNERS (No rounding) */}
-                            <div className="bg-gray-100 p-1 rounded-2xl shadow-xl border border-gray-400 flex flex-col md:flex-row items-center gap-0 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]">
+                            <div className="bg-gray-100 p-1 rounded-none shadow-xl border border-gray-400 flex flex-row items-center gap-0 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]">
                                 {/* Location */}
-                                <div className="relative w-full md:w-[30%] border-b md:border-b-0 md:border-l border-gray-200">
+                                <div className="relative w-auto md:w-[30%] border-l border-gray-200">
                                     <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 w-4 h-4 pointer-events-none z-10" />
                                     <select className="w-full h-10 bg-transparent border-none pr-9 pl-2 text-gray-700 font-bold focus:ring-0 cursor-pointer text-sm outline-none relative z-20">
                                         <option>پاکستان بھر میں</option>
@@ -234,7 +234,7 @@ const UrduHomePage = () => {
                                 </div>
 
                                 {/* Main Search Input */}
-                                <div className="relative w-full md:w-[50%]">
+                                <div className="relative flex-1 md:w-[50%] border-l border-gray-200">
                                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none md:hidden" />
                                     <input
                                         type="text"
@@ -245,48 +245,114 @@ const UrduHomePage = () => {
                                 </div>
 
                                 {/* Search Button */}
-                                <Button className="w-full md:w-[20%] h-10 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm m-0 md:ml-1" asChild>
+                                <Button className="w-auto md:w-[20%] h-10 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm m-0 md:ml-1" asChild>
                                     <Link to={`/search?q=${searchQuery}`}>
                                         <Search className="w-4 h-4 ml-1" />
-                                        تلاش
+                                        <span className="hidden md:inline">تلاش</span>
                                     </Link>
                                 </Button>
                             </div>
                         </div>
 
-                        {/* Bento Grid Layout */}
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                            {heroCards.map((card) => (
+                        {/* Bento Grid Layout - Mobile: Marham Style (Video right 2cols, 2 cards left 3cols - RTL), Desktop: Bento Grid */}
+                        <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-4">
+                            {/* Video Consultation - Right side (RTL), spans 2 rows on mobile, 2 columns wide */}
+                            <Link
+                                to={heroCards[0].link}
+                                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[0].bg} 
+                                    col-span-2 row-span-2 h-auto md:col-span-3 md:row-span-2 md:h-full`}
+                            >
+                                <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
+                                    <h3 className={`font-black text-sm md:text-2xl ${heroCards[0].text} mb-0.5 md:mb-1 leading-tight`}>
+                                        {heroCards[0].title}
+                                    </h3>
+                                    <p className={`font-bold text-[10px] md:text-sm ${heroCards[0].subText} mb-2 md:mb-4`}>
+                                        {heroCards[0].subtitle}
+                                    </p>
+                                </div>
+                                <img
+                                    src={heroCards[0].image}
+                                    alt={heroCards[0].title}
+                                    className="absolute bottom-2 left-2 w-20 h-20 md:left-1/2 md:-translate-x-1/2 md:bottom-4 md:w-40 md:h-40 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
+                            </Link>
+
+                            {/* Clinic Visit - Left side (RTL), top, 3 columns wide */}
+                            <Link
+                                to={heroCards[1].link}
+                                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[1].bg} 
+                                    col-span-3 h-24 md:col-span-4 md:h-36`}
+                            >
+                                <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
+                                    <h3 className={`font-black text-sm md:text-2xl ${heroCards[1].text} mb-0.5 md:mb-1 leading-tight`}>
+                                        {heroCards[1].title}
+                                    </h3>
+                                    <p className={`font-bold text-[10px] md:text-sm ${heroCards[1].subText} mb-1 md:mb-4`}>
+                                        {heroCards[1].subtitle}
+                                    </p>
+                                </div>
+                                <img
+                                    src={heroCards[1].image}
+                                    alt={heroCards[1].title}
+                                    className="absolute bottom-1.5 left-1.5 w-14 h-14 md:bottom-3 md:left-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
+                            </Link>
+
+                            {/* Instant Doctor - Left side (RTL), bottom, 3 columns wide */}
+                            <Link
+                                to={heroCards[2].link}
+                                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[2].bg} 
+                                    col-span-3 h-24 md:col-span-5 md:h-36`}
+                            >
+                                <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
+                                    <h3 className={`font-black text-sm md:text-2xl ${heroCards[2].text} mb-0.5 md:mb-1 leading-tight`}>
+                                        {heroCards[2].title}
+                                    </h3>
+                                    <p className={`font-bold text-[10px] md:text-sm ${heroCards[2].subText} mb-1 md:mb-4`}>
+                                        {heroCards[2].subtitle}
+                                    </p>
+                                    {heroCards[2].hasBadge && (
+                                        <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse text-[9px] px-1.5 py-0.5 md:text-xs md:px-2 md:py-1">
+                                            NEW
+                                        </Badge>
+                                    )}
+                                </div>
+                                <img
+                                    src={heroCards[2].image}
+                                    alt={heroCards[2].title}
+                                    className="absolute bottom-1.5 left-1.5 w-14 h-14 md:bottom-3 md:left-6 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
+                            </Link>
+
+                            {/* Remaining cards - Alternating widths, last card full width */}
+                            {heroCards.slice(3).map((card, index) => (
                                 <Link
                                     to={card.link}
                                     key={card.id}
-                                    className={`relative group overflow-hidden rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${card.bg} ${card.gridClass}`}
+                                    className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${card.bg} 
+                                        ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-24 md:col-span-3 md:h-36`}
                                 >
-                                    <div className="p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
-                                        <h3 className={`font-black text-xl md:text-2xl ${card.text} mb-1 leading-none`}>
+                                    <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
+                                        <h3 className={`font-black text-sm md:text-2xl ${card.text} mb-0.5 md:mb-1 leading-tight`}>
                                             {card.title}
                                         </h3>
-                                        <p className={`font-bold text-sm ${card.subText} mb-4`}>
+                                        <p className={`font-bold text-[10px] md:text-sm ${card.subText} mb-1 md:mb-4`}>
                                             {card.subtitle}
                                         </p>
-
-                                        {card.hasBadge && (
-                                            <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse">
-                                                NEW
-                                            </Badge>
-                                        )}
                                     </div>
-
-                                    {/* Image */}
                                     <img
                                         src={card.image}
                                         alt={card.title}
-                                        className={`transition-transform duration-500 group-hover:scale-105 ${card.imgClass}`}
+                                        className="absolute bottom-1.5 left-1.5 w-14 h-14 md:bottom-3 md:left-2 md:w-20 md:h-20 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
                                         loading="lazy"
                                     />
-
-                                    {/* Gradient Overlay for Text Readability if needed */}
-                                    {!card.isTall && <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>}
+                                    <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
                                 </Link>
                             ))}
                         </div>

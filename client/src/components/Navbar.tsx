@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import UserBadge from "@/components/UserBadge";
@@ -210,7 +211,7 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg group-hover:shadow-red-200 group-hover:scale-105 transition-all duration-300">
+            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg group-hover:shadow-emerald-200 group-hover:scale-105 transition-all duration-300">
               <Stethoscope className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
@@ -231,13 +232,13 @@ const Navbar = () => {
                   key={item.name}
                   to={item.href}
                   className={`group flex items-center space-x-2 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
-                    ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-200"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200"
                     : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                     }`}
                 >
                   <Icon className={`w-4 h-4 transition-all duration-300 ${isActive(item.href)
                     ? "text-white drop-shadow-sm"
-                    : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
+                    : `${item.color} group-hover:text-emerald-500 group-hover:scale-110 group-hover:drop-shadow-sm`
                     }`} strokeWidth={2.5} />
                   <span className={`transition-all duration-300 ${item.name === "مرکزی صفحہ" ? "text-base font-[nastaliq]" : ""}`}>{item.name}</span>
                 </Link>
@@ -249,7 +250,7 @@ const Navbar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="group flex items-center space-x-2 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 text-gray-800 hover:text-gray-900 hover:bg-gray-100">
-                    <MapPin className="w-4 h-4 text-red-500 group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
+                    <MapPin className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
                     <span>Locations</span>
                   </button>
                 </DropdownMenuTrigger>
@@ -424,20 +425,20 @@ const Navbar = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-10 h-10 p-0 rounded-xl bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-red-200"
+                    className="w-10 h-10 p-0 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-emerald-200 lg:flex hidden"
                   >
                     <User className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72 bg-gray-50/95 backdrop-blur-xl border border-gray-100/40 shadow-xl rounded-2xl mt-3 p-0 overflow-hidden animate-in slide-in-from-top-2 duration-300" sideOffset={8} alignOffset={-15}>
-                  {/* Header Section with Enhanced Gray Gradient */}
-                  <div className="relative bg-gradient-to-br from-gray-200 via-blue-200 to-blue-300 px-6 py-5 border-b border-blue-300/50">
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/30 to-transparent"></div>
+                <DropdownMenuContent align="end" className="w-80 bg-gray-50/95 backdrop-blur-xl border border-gray-100/40 shadow-xl rounded-2xl mt-3 p-0 overflow-hidden animate-in slide-in-from-top-2 duration-300" sideOffset={8} alignOffset={-15}>
+                  {/* Header Section with Enhanced Teal Gradient */}
+                  <div className="relative bg-gradient-to-br from-emerald-400 via-teal-400 to-teal-500 px-6 py-5 border-b border-teal-400/50">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent"></div>
                     <DropdownMenuLabel className="font-normal relative z-10">
                       <div className="flex items-start gap-4">
-                        <div className="relative p-1 bg-gradient-to-r from-green-400 via-cyan-400 to-blue-500 rounded-full shadow-lg shadow-cyan-400/50 mt-1">
+                        <div className="relative p-1 bg-gradient-to-b from-white/40 to-white/10 rounded-full shadow-lg shadow-black/10 mt-1">
                           <Avatar
-                            className="h-16 w-16 shadow-xl cursor-pointer transition-all duration-300 hover:scale-105"
+                            className="h-16 w-16 shadow-xl cursor-pointer transition-all duration-300 hover:scale-105 ring-2 ring-white/30"
                             onClick={() => {
                               if (user) {
                                 if (user.role === 'patient') {
@@ -449,43 +450,43 @@ const Navbar = () => {
                             }}
                           >
                             <AvatarImage src={user.avatar || (user as any).avatar} alt={user.name} className="object-cover" />
-                            <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold text-xl">
+                            <AvatarFallback className="bg-white text-teal-700 font-bold text-xl">
                               {user.name?.charAt(0) ?? 'U'}
                             </AvatarFallback>
                           </Avatar>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="space-y-1">
-                            <p className="text-base font-bold leading-tight text-gray-900 truncate">{user.name}</p>
-                            <p className="text-sm leading-tight text-gray-600 truncate">{user.email}</p>
+                            <p className="text-base font-bold leading-tight text-white truncate drop-shadow-sm">{user.name}</p>
+                            <p className="text-sm leading-tight text-teal-50 truncate opacity-90">{user.email}</p>
                           </div>
 
                           {/* Provider Type & Verification Section */}
                           <div className="mt-3 space-y-2">
                             <div className="flex items-center justify-start gap-1.5">
-                              <div className="rounded-full px-1.5 py-0.5 h-5 flex items-center min-w-fit">
-                                <UserBadge role={(user as any).role} />
+                              <div className="flex items-center min-w-fit">
+                                <UserBadge role={(user as any).role} className="shadow-sm" />
                               </div>
                               {(() => {
                                 const verified = Boolean(navVerification?.isVerified);
                                 const status = navVerification?.status;
                                 if (verified) {
                                   return (
-                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-green-200 to-green-300 border border-green-400/50 px-1.5 py-0.5 text-xs font-medium text-green-900 h-5 min-w-fit">
+                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/30 px-1.5 py-0.5 text-xs font-medium text-white h-5 min-w-fit backdrop-blur-md">
                                       <BadgeCheck className="h-2.5 w-2.5" /> Verified
                                     </span>
                                   );
                                 }
                                 if (user.role !== 'patient' && status === 'pending') {
                                   return (
-                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-200 to-orange-300 border border-orange-400/50 px-1.5 py-0.5 text-xs font-medium text-orange-900 h-5 min-w-fit">
+                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-orange-400/20 border border-orange-300/30 px-1.5 py-0.5 text-xs font-medium text-orange-50 h-5 min-w-fit backdrop-blur-md">
                                       <X className="h-2.5 w-2.5" /> Pending
                                     </span>
                                   );
                                 }
                                 if (user.role !== 'patient' && !verified) {
                                   return (
-                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-red-200 to-rose-300 border border-red-400/50 px-1.5 py-0.5 text-xs font-medium text-red-900 h-5 min-w-fit">
+                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-red-400/20 border border-red-300/30 px-1.5 py-0.5 text-xs font-medium text-red-50 h-5 min-w-fit backdrop-blur-md">
                                       Unverified
                                     </span>
                                   );
@@ -497,8 +498,8 @@ const Navbar = () => {
                             {/* Specialization Section */}
                             {user?.specialization && (
                               <div className="pt-1">
-                                <div className="bg-gradient-to-r from-blue-100 to-indigo-200 border border-blue-300/50 rounded-lg px-2 py-1.5 overflow-hidden">
-                                  <p className="text-xs font-medium text-blue-900 whitespace-nowrap truncate">
+                                <div className="bg-teal-700/30 border border-teal-300/20 rounded-lg px-2 py-1.5 overflow-hidden backdrop-blur-sm">
+                                  <p className="text-xs font-medium text-teal-50 whitespace-nowrap truncate">
                                     {user.specialization} Specialist
                                   </p>
                                 </div>
@@ -564,203 +565,244 @@ const Navbar = () => {
                   <Menu className="w-5 h-5 text-gray-600" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 bg-gray-50/95 backdrop-blur-md overflow-y-auto">
-                <div className="flex items-center mb-6">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
-                      <Stethoscope className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
+              <SheetContent side="left" className="w-[85vw] sm:w-[400px] p-0 border-r-0 bg-white shadow-2xl overflow-hidden flex flex-col h-full">
+                {/* Custom Header Area */}
+                <div className="relative bg-white pt-6 pb-2 px-6 shadow-sm z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 group">
+                      <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg group-hover:shadow-emerald-200 group-hover:scale-105 transition-all duration-300">
+                        <Stethoscope className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="text-xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent transform origin-left group-hover:scale-105 transition-transform">SehatKor</span>
+                    </Link>
+
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-2.5 rounded-full bg-gray-50 border border-gray-200 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-300 shadow-sm group"
+                      aria-label="Close menu"
+                    >
+                      <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
-                          ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
-                          : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                          }`}
-                      >
-                        <Icon className={`w-5 h-5 transition-all duration-300 ${isActive(item.href)
-                          ? "text-white drop-shadow-sm"
-                          : `${item.color} group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm`
-                          }`} strokeWidth={2.5} />
-                        <span className="group-hover:font-semibold transition-all duration-300">{item.name}</span>
-                      </Link>
-                    );
-                  })}
-
-                  {/* Additional Info Links - Mobile Only */}
-                  <Link
-                    to="/how-it-works"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive('/how-it-works')
-                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
-                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                      }`}
-                  >
-                    <HelpCircle className={`w-5 h-5 transition-all duration-300 ${isActive('/how-it-works')
-                      ? "text-white drop-shadow-sm"
-                      : "text-cyan-600 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
-                      }`} strokeWidth={2.5} />
-                    <span className="group-hover:font-semibold transition-all duration-300">How it Works</span>
-                  </Link>
-
-                  <Link
-                    to="/disclaimer"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive('/disclaimer')
-                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
-                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                      }`}
-                  >
-                    <FileText className={`w-5 h-5 transition-all duration-300 ${isActive('/disclaimer')
-                      ? "text-white drop-shadow-sm"
-                      : "text-amber-600 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
-                      }`} strokeWidth={2.5} />
-                    <span className="group-hover:font-semibold transition-all duration-300">Disclaimer</span>
-                  </Link>
-
-                  <Link
-                    to="/privacy"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`group flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive('/privacy')
-                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
-                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                      }`}
-                  >
-                    <Shield className={`w-5 h-5 transition-all duration-300 ${isActive('/privacy')
-                      ? "text-white drop-shadow-sm"
-                      : "text-green-600 group-hover:text-red-500 group-hover:scale-110 group-hover:drop-shadow-sm"
-                      }`} strokeWidth={2.5} />
-                    <span className="group-hover:font-semibold transition-all duration-300">Privacy Policy</span>
-                  </Link>
-
-                  {/* Locations Section - Collapsible */}
-                  <div className="border-t border-gray-200 my-4"></div>
-                  <div>
-                    <button
-                      onClick={() => setIsLocationsExpanded(!isLocationsExpanded)}
-                      className="group flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:bg-gray-100 text-gray-800"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <MapPin className="w-5 h-5 text-red-500 group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
-                        <span className="group-hover:font-semibold transition-all duration-300">Locations</span>
-                      </div>
-                      <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isLocationsExpanded ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {isLocationsExpanded && (
-                      <div className="px-4 py-3 animate-in slide-in-from-top-2 duration-300">
-                        <div className="grid grid-cols-2 gap-2">
-                          <Link to="/karachi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-blue-600" />
-                            <span className="text-xs font-medium text-gray-900">Karachi</span>
-                          </Link>
-                          <Link to="/lahore" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-green-600" />
-                            <span className="text-xs font-medium text-gray-900">Lahore</span>
-                          </Link>
-                          <Link to="/islamabad" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-purple-600" />
-                            <span className="text-xs font-medium text-gray-900">Islamabad</span>
-                          </Link>
-                          <Link to="/peshawar" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-orange-600" />
-                            <span className="text-xs font-medium text-gray-900">Peshawar</span>
-                          </Link>
-                          <Link to="/mardan" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-teal-600" />
-                            <span className="text-xs font-medium text-gray-900">Mardan</span>
-                          </Link>
-                          <Link to="/swat" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-emerald-600" />
-                            <span className="text-xs font-medium text-gray-900">Swat</span>
-                          </Link>
-                          <Link to="/chitral" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-indigo-600" />
-                            <span className="text-xs font-medium text-gray-900">Chitral</span>
-                          </Link>
-                          <Link to="/noshera" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-rose-600" />
-                            <span className="text-xs font-medium text-gray-900">Noshera</span>
-                          </Link>
-                          <Link to="/swabi" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors">
-                            <MapPin className="w-3 h-3 text-amber-600" />
-                            <span className="text-xs font-medium text-gray-900">Swabi</span>
-                          </Link>
-                          <Link to="/azad-kashmir" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors col-span-2">
-                            <MapPin className="w-3 h-3 text-cyan-600" />
-                            <span className="text-xs font-medium text-gray-900">Azad Kashmir</span>
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
+                {/* Scrollable Content */}
+                <div className="overflow-y-auto flex-1 custom-scrollbar pb-20">
+                  {/* User Profile Card (if logged in) */}
                   {user && (
-                    <>
-                      <div className="border-t border-gray-200 my-4"></div>
-                      <div className="px-4 py-2">
-                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                        <div className="mt-2 flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <UserBadge role={(user as any).role} />
-                            {(() => {
-                              const verified = Boolean(navVerification?.isVerified);
-                              const status = navVerification?.status;
-                              if (verified) {
-                                return (
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                                    <BadgeCheck className="h-3 w-3" /> Verified
-                                  </span>
-                                );
-                              }
-                              if (user.role !== 'patient' && status === 'pending') {
-                                return (
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
-                                    <X className="h-3 w-3" /> Pending
-                                  </span>
-                                );
-                              }
-                              if (user.role !== 'patient' && !verified) {
-                                return (
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                                    <X className="h-3 w-3" /> Unverified
-                                  </span>
-                                );
-                              }
-                              return null;
-                            })()}
+                    <div className="mx-4 mt-6 mb-4">
+                      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-300 via-teal-300 to-teal-400 text-white shadow-xl shadow-teal-500/20 p-5 border border-teal-400/50 group">
+                        {/* Decorative Background Effects */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-20"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 opacity-20"></div>
+
+                        <div className="relative z-10 flex items-center gap-4">
+                          <div className="relative">
+                            <Avatar className="h-16 w-16 border-2 border-white/30 shadow-md ring-1 ring-white/20">
+                              <AvatarImage src={user.avatar || (user as any).avatar} className="object-cover" />
+                              <AvatarFallback className="bg-white text-teal-700 font-bold text-xl">
+                                {user.name?.charAt(0) ?? 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            {/* Verified Badge Absolute */}
+                            {navVerification?.isVerified && (
+                              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm ring-1 ring-teal-100">
+                                <BadgeCheck className="w-5 h-5 text-emerald-500 fill-emerald-50" />
+                              </div>
+                            )}
                           </div>
-                          {user?.specialization && (
-                            <div className="flex items-center gap-2 mt-1.5">
-                              <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-[9px] font-normal">
-                                {user.specialization} Specialist
+
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-lg leading-tight truncate text-white drop-shadow-sm">{user.name}</h3>
+                            <p className="text-teal-50 text-xs truncate mb-2 opacity-90">{user.email}</p>
+
+                            <div className="flex flex-wrap gap-1.5">
+                              <span className="px-2 py-0.5 rounded-md bg-white/20 text-white text-[10px] font-medium border border-white/20 uppercase tracking-wide backdrop-blur-md">
+                                {user.role}
                               </span>
+                              {user.role !== 'patient' && navVerification?.status === 'pending' && (
+                                <span className="px-2 py-0.5 rounded-md bg-orange-400/30 text-orange-50 text-[10px] font-medium border border-orange-300/30 backdrop-blur-md">
+                                  Pending
+                                </span>
+                              )}
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="mt-4 pt-4 border-t border-white/20 grid grid-cols-2 gap-2">
+                          {/* Dashboard Link */}
+                          <Link
+                            to={getDashboardPath()}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white hover:bg-teal-50 border border-transparent hover:border-teal-200 transition-all text-xs font-bold text-teal-800 shadow-sm"
+                          >
+                            <LayoutDashboard className="w-3.5 h-3.5 text-teal-600" />
+                            Dashboard
+                          </Link>
+
+                          {/* Mode Switch (Simplified) */}
+                          {user.role !== 'patient' && (
+                            <button
+                              onClick={handleModeToggle}
+                              className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition-all text-xs font-bold text-white shadow-sm backdrop-blur-sm"
+                            >
+                              <Repeat className="w-3.5 h-3.5 text-white" />
+                              {mode === 'patient' ? 'Provider' : 'Patient'}
+                            </button>
                           )}
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Navigation Links - Animated */}
+                  <div className="px-4 py-2">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Menu</h4>
+                    <motion.div
+                      className="space-y-1.5"
+                      initial="hidden"
+                      animate="visible"
+                      variants={{
+                        visible: { transition: { staggerChildren: 0.05 } }
+                      }}
+                    >
+                      {navItems.filter(item => !['Dashboard'].includes(item.name)).map((item) => {
+                        const Icon = item.icon;
+                        const active = isActive(item.href);
+                        return (
+                          <motion.div
+                            key={item.name}
+                            variants={{
+                              hidden: { opacity: 0, x: -10 },
+                              visible: { opacity: 1, x: 0 }
+                            }}
+                          >
+                            <Link
+                              to={item.href}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className={`relative overflow-hidden flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group
+                                ${active
+                                  ? "bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-900 shadow-sm border border-emerald-100"
+                                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-transparent"
+                                }`
+                              }
+                            >
+                              <div className={`
+                                w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm
+                                ${active
+                                  ? "bg-white text-emerald-600 shadow-emerald-100"
+                                  : "bg-gray-100/80 text-gray-500 group-hover:bg-white group-hover:shadow-md group-hover:scale-110 " + item.color.replace('text-', 'text-')
+                                }
+                              `}>
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <span className={`font-medium text-base ${item.name === "مرکزی صفحہ" ? "font-[nastaliq] text-lg mt-1" : ""}`}>
+                                {item.name}
+                              </span>
+
+                              {active && (
+                                <div className="absolute right-4 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
+                              )}
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  </div>
+
+                  {/* Locations Accordion - Enhanced */}
+                  <div className="mx-4 mt-4 mb-2">
+                    <div className="rounded-2xl border border-gray-100 bg-gray-50/50 overflow-hidden">
+                      <button
+                        onClick={() => setIsLocationsExpanded(!isLocationsExpanded)}
+                        className="w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                            <MapPin className="w-4 h-4 text-red-600" />
+                          </div>
+                          <span className="font-bold text-gray-800 text-sm">Find by City</span>
+                        </div>
+                        <div className={`w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center transition-transform duration-300 ${isLocationsExpanded ? 'rotate-180 bg-red-100 text-red-600' : 'text-gray-500'}`}>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </div>
+                      </button>
+
+                      <AnimatePresence>
+                        {isLocationsExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="p-3 bg-gray-50/50 grid grid-cols-2 gap-2 border-t border-gray-100">
+                              {[
+                                { name: 'Karachi', path: '/karachi', color: 'bg-blue-100 text-blue-700' },
+                                { name: 'Lahore', path: '/lahore', color: 'bg-green-100 text-green-700' },
+                                { name: 'Islamabad', path: '/islamabad', color: 'bg-purple-100 text-purple-700' },
+                                { name: 'Peshawar', path: '/peshawar', color: 'bg-orange-100 text-orange-700' },
+                                { name: 'Mardan', path: '/mardan', color: 'bg-teal-100 text-teal-700' },
+                                { name: 'Swat', path: '/swat', color: 'bg-emerald-100 text-emerald-700' },
+                                { name: 'Chitral', path: '/chitral', color: 'bg-indigo-100 text-indigo-700' },
+                                { name: 'Noshera', path: '/noshera', color: 'bg-rose-100 text-rose-700' },
+                                { name: 'Swabi', path: '/swabi', color: 'bg-amber-100 text-amber-700' },
+                                { name: 'Azad Kashmir', path: '/azad-kashmir', color: 'bg-cyan-100 text-cyan-700' },
+                              ].map((city) => (
+                                <Link
+                                  key={city.name}
+                                  to={city.path}
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                                  className={`flex items-center justify-center px-2 py-2.5 rounded-xl text-xs font-bold leading-none transition-all hover:scale-105 hover:shadow-sm ${city.color}`}
+                                >
+                                  {city.name}
+                                </Link>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  {/* Support Links */}
+                  <div className="px-6 py-4 space-y-3">
+                    {[
+                      { name: "How it Works", href: "/how-it-works", icon: HelpCircle, color: "text-blue-500" },
+                      { name: "Privacy Policy", href: "/privacy", icon: Shield, color: "text-green-500" },
+                      { name: "Disclaimer", href: "/disclaimer", icon: FileText, color: "text-amber-500" }
+                    ].map((link) => (
+                      <Link
+                        key={link.name}
+                        to={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors group"
+                      >
+                        <link.icon className={`w-4 h-4 ${link.color} group-hover:scale-110 transition-transform`} />
+                        {link.name}
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Footer Logout */}
+                  {user && (
+                    <div className="px-6 pb-6 pt-2">
                       <button
                         onClick={() => {
                           handleLogout();
                           setIsMobileMenuOpen(false);
                         }}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-300 w-full"
+                        className="w-full py-3.5 rounded-xl border border-red-100 bg-red-50 text-red-600 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-100 hover:shadow-md transition-all active:scale-95"
                       >
-                        <LogOut className="w-5 h-5" />
-                        <span>Logout</span>
+                        <LogOut className="w-4 h-4" />
+                        Log Out
                       </button>
-                    </>
+                    </div>
                   )}
+
+                  <div className="h-12"></div> {/* Bottom Spacer */}
                 </div>
               </SheetContent>
             </Sheet>
