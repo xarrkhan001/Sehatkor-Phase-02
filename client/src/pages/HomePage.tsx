@@ -36,7 +36,12 @@ import {
   HeartHandshake,
   UserRound,
   Phone,
-  X
+  X,
+  HeartPulse,
+  Baby,
+  Smile,
+  Bone,
+  Sparkles
 } from "lucide-react";
 
 // Animations
@@ -425,34 +430,31 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={staggerContainer}
-        className="py-12 sm:py-16 bg-white"
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                className="text-center group hover:scale-105 transition-transform duration-300"
-              >
-                <div className="relative">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2 group-hover:text-emerald-600 transition-colors">
-                    {stat.number}
-                  </div>
-                  <div className="absolute inset-0 bg-emerald-100 blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-300 rounded-full"></div>
+      {/* Stats Section - Professional Sober Redesign */}
+      <section className="py-20 bg-white border-y border-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            {[
+              { number: "10,000+", label: "Registered Users", icon: UserRound },
+              { number: "2,000+", label: "Expert Doctors", icon: Stethoscope },
+              { number: "20k+", label: "Bookings Done", icon: CheckCircle2 },
+              { number: "50+", label: "Cities Covered", icon: MapPin }
+            ].map((stat, index) => (
+              <div key={index} className="flex flex-col items-center text-center group hover:-translate-y-1 transition-transform duration-300">
+                <div className="mb-4 p-4 bg-emerald-50 rounded-2xl text-emerald-600 group-hover:bg-emerald-100 transition-colors shadow-sm">
+                  <stat.icon className="w-8 h-8" />
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
-              </motion.div>
+                <h3 className="text-3xl md:text-5xl font-black text-gray-600 mb-2 tracking-tight">
+                  {stat.number}
+                </h3>
+                <p className="text-gray-500 font-bold text-xs md:text-sm uppercase tracking-wider">
+                  {stat.label}
+                </p>
+              </div>
             ))}
           </div>
         </div>
-      </motion.section >
+      </section>
 
       {/* Popular Searches Section */}
       <section className="py-20 relative overflow-hidden">
@@ -476,87 +478,130 @@ const HomePage = () => {
               {
                 title: "Cardiologist",
                 desc: "Heart Specialist",
-                img: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=300&h=300",
+                icon: HeartPulse,
                 link: "/doctors?specialty=Cardiologist",
                 color: "text-red-600",
                 bg: "bg-red-50",
-                border: "group-hover:border-red-200"
+                border: "group-hover:border-red-200",
+                shadow: "group-hover:shadow-red-500/10"
               },
               {
                 title: "Pediatrician",
                 desc: "Child Specialist",
-                img: "https://plus.unsplash.com/premium_photo-1661764878654-3d0fc2eefcca?auto=format&fit=crop&q=80&w=300&h=300",
+                icon: Baby,
                 link: "/doctors?specialty=Pediatrician",
                 color: "text-blue-600",
                 bg: "bg-blue-50",
-                border: "group-hover:border-blue-200"
+                border: "group-hover:border-blue-200",
+                shadow: "group-hover:shadow-blue-500/10"
               },
               {
                 title: "Gynecologist",
                 desc: "Women's Health",
-                img: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=300&h=300",
+                icon: Stethoscope,
                 link: "/doctors?specialty=Gynecologist",
                 color: "text-pink-600",
                 bg: "bg-pink-50",
-                border: "group-hover:border-pink-200"
+                border: "group-hover:border-pink-200",
+                shadow: "group-hover:shadow-pink-500/10"
               },
               {
                 title: "Dermatologist",
                 desc: "Skin Specialist",
-                img: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&q=80&w=300&h=300",
+                icon: Sparkles,
                 link: "/doctors?specialty=Dermatologist",
                 color: "text-amber-600",
                 bg: "bg-amber-50",
-                border: "group-hover:border-amber-200"
+                border: "group-hover:border-amber-200",
+                shadow: "group-hover:shadow-amber-500/10"
               },
               {
                 title: "Dentist",
                 desc: "Dental Care",
-                img: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=300&h=300",
+                icon: Smile,
                 link: "/doctors?specialty=Dentist",
                 color: "text-teal-600",
                 bg: "bg-teal-50",
-                border: "group-hover:border-teal-200"
+                border: "group-hover:border-teal-200",
+                shadow: "group-hover:shadow-teal-500/10"
               },
               {
                 title: "Orthopedic",
                 desc: "Bone Specialist",
-                img: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=300&h=300",
+                icon: Bone,
                 link: "/doctors?specialty=Orthopedic",
                 color: "text-indigo-600",
                 bg: "bg-indigo-50",
-                border: "group-hover:border-indigo-200"
+                border: "group-hover:border-indigo-200",
+                shadow: "group-hover:shadow-indigo-500/10"
               }
             ].map((item, index) => (
-              <Link to={item.link} key={index} className="group relative">
-                <div className={`h-full bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col items-center p-4 text-center hover:-translate-y-1 ${item.border}`}>
-                  <div className="relative w-24 h-24 mb-4 rounded-full overflow-hidden shadow-inner ring-4 ring-gray-50 group-hover:scale-105 transition-transform duration-500">
-                    <img
-                      src={item.img}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
+              <Link to={item.link} key={index} className="group relative block w-full">
+                <div className={`h-full bg-white rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] ${item.shadow} transition-all duration-300 overflow-hidden flex flex-col items-center pt-8 pb-6 px-4 text-center hover:-translate-y-1.5 ${item.border}`}>
+
+                  {/* Decorative Background Blend */}
+                  <div className={`absolute top-0 inset-x-0 h-24 ${item.bg} rounded-b-[100%] opacity-60 scale-x-150 -translate-y-[40%] group-hover:scale-x-125 transition-transform duration-700 ease-out`}></div>
+
+                  {/* Image Container */}
+                  {/* Icon Container */}
+                  <div className={`relative w-20 h-20 mb-5 rounded-full flex items-center justify-center bg-white shadow-md group-hover:scale-105 transition-transform duration-500 z-10 border-4 border-white`}>
+                    <div className={`absolute inset-0 rounded-full opacity-20 ${item.bg}`}></div>
+                    <item.icon className={`w-9 h-9 ${item.color}`} />
                   </div>
-                  <h3 className={`font-bold text-gray-900 group-hover:text-emerald-700 transition-colors mb-1`}>{item.title}</h3>
-                  <p className="text-xs text-gray-500 font-medium">{item.desc}</p>
+
+                  {/* Text Content */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <h3 className={`text-lg font-black text-gray-900 group-hover:${item.color} transition-colors mb-1`}>
+                      {item.title}
+                    </h3>
+                    <div className="h-0.5 w-6 bg-gray-200 rounded-full mb-2 group-hover:bg-current group-hover:w-12 transition-all duration-300"></div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                      {item.desc}
+                    </p>
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
 
           {/* City Searches - Styled */}
-          <div className="mt-16">
-            <h3 className="text-xl font-bold mb-8 text-center text-gray-900">Find Doctors by City</h3>
-            <div className="flex flex-wrap justify-center gap-3">
+          {/* City Searches - Styled */}
+          <div className="mt-20 pt-10 border-t border-gray-100/60 relative">
+            {/* Background blur decoration */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-emerald-50/30 blur-[100px] -z-10 rounded-full pointer-events-none"></div>
+
+            <div className="text-center mb-10">
+              <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-3 tracking-tight">
+                Find Doctors by <span className="text-emerald-600">City</span>
+              </h3>
+              <p className="text-sm md:text-base text-gray-500 max-w-lg mx-auto">
+                Access top-rated healthcare providers in major cities across Pakistan.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
               {["Karachi", "Lahore", "Islamabad", "Peshawar", "Mardan", "Swat", "Multan", "Faisalabad"].map((city) => (
                 <Link
                   key={city}
                   to={`/${city.toLowerCase()}`}
-                  className="px-6 py-3 bg-white rounded-full shadow-sm text-gray-600 font-medium border border-gray-200 hover:border-emerald-500 hover:text-emerald-600 hover:shadow-md hover:bg-emerald-50 transition-all duration-300 flex items-center gap-2"
+                  className="group relative p-4 bg-white rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 hover:border-emerald-100 hover:-translate-y-1 transition-all duration-300 flex items-center gap-3 overflow-hidden"
                 >
-                  <MapPin className="w-4 h-4 opacity-70" />
-                  {city}
+                  <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-emerald-50/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:scale-110 transition-all duration-300 flex-shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+
+                  <div className="flex-1 min-w-0 flex flex-col items-start relative z-10">
+                    <span className="font-bold text-gray-800 group-hover:text-emerald-700 transition-colors truncate w-full text-left">
+                      {city}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-medium group-hover:text-emerald-500/70 transition-colors uppercase tracking-wider">
+                      Pakistan
+                    </span>
+                  </div>
+
+                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all duration-300" />
                 </Link>
               ))}
             </div>
@@ -576,16 +621,21 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-4 px-2 md:px-0">
             {diseaseIntro.map((d) => {
               const Icon = d.icon as any;
               return (
-                <Link key={d.slug} to={`/all-diseases`} className="group">
-                  <div className={`h-full p-4 rounded-2xl border border-gray-100 bg-white hover:border-emerald-200 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center group-hover:-translate-y-1`}>
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-110 ${d.bgClass}`}>
-                      <Icon className={`w-6 h-6 ${d.colorClass}`} />
+                <Link key={d.slug} to={`/all-diseases`} className="group relative">
+                  <div className={`h-full p-4 rounded-3xl bg-white border border-gray-100/50 shadow-sm hover:shadow-[0_8px_25px_rgba(0,0,0,0.05)] transition-all duration-300 flex flex-col items-center text-center hover:-translate-y-2 relative overflow-hidden`}>
+
+                    {/* Soft Hover Gradient Background */}
+                    <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-b ${d.bgClass.replace('100', '50')} to-transparent pointer-events-none`}></div>
+
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm ${d.bgClass} relative z-10`}>
+                      <Icon className={`w-7 h-7 ${d.colorClass} stroke-[1.5px]`} />
                     </div>
-                    <span className="font-bold text-gray-800 text-sm group-hover:text-emerald-700 transition-colors line-clamp-2 md:line-clamp-1">
+
+                    <span className="font-bold text-gray-700 text-xs md:text-sm group-hover:text-gray-900 transition-colors line-clamp-2 leading-tight relative z-10">
                       {d.name}
                     </span>
                   </div>
@@ -725,11 +775,11 @@ const HomePage = () => {
             </button>
 
             <a href="tel:+923141521115" className="flex items-center gap-2 w-full">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-400 to-rose-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
                 <Phone className="w-3.5 h-3.5 text-white fill-white/20 animate-bounce" />
               </div>
               <div className="text-left flex-1 min-w-0">
-                <p className="text-[9px] uppercase tracking-wider text-red-500 font-bold leading-none mb-0.5">SehatKor Helpline</p>
+                <p className="text-[9px] uppercase tracking-wider text-red-600 font-bold leading-none mb-0.5">SehatKor Helpline</p>
                 <p className="text-xs font-black text-gray-600 leading-none tracking-tight">+92 314 1521115</p>
               </div>
             </a>
