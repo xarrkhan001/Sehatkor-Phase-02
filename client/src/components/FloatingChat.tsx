@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, X, Send, ImageIcon, Search, User, Stethoscope, Camera, Copy, Forward, Trash2, Loader2, ChevronLeft, Download, MoreVertical, UserPlus, UserX, CornerUpLeft } from "lucide-react";
+import { MessageCircle, X, Send, ImageIcon, Search, User, Stethoscope, Camera, Copy, Forward, Trash2, Loader2, ChevronLeft, Download, MoreVertical, UserPlus, UserX, CornerUpLeft, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -1186,7 +1186,26 @@ const FloatingChat = () => {
                           disabled={loadingUsers}
                         />
                       </div>
-                      {usersError && <div className="text-xs text-destructive">{usersError}</div>}
+                      {usersError && (
+                        <div className="mx-4 my-3">
+                          <div className="bg-gradient-to-br from-red-50 via-rose-50 to-orange-50 border border-red-100 rounded-xl p-6 text-center shadow-sm">
+                            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                              <LogIn className="w-8 h-8 text-white" />
+                            </div>
+                            <h3 className="text-base font-bold text-gray-900 mb-2">Login Required</h3>
+                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                              Please login to your account to start chatting with verified healthcare professionals
+                            </p>
+                            <Button
+                              onClick={() => window.location.href = '/login'}
+                              className="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                            >
+                              <LogIn className="w-4 h-4 mr-2" />
+                              Login Now
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                       {!loadingUsers && !usersError && users.length === 0 && (
                         <div className="text-xs text-muted-foreground">No verified users found</div>
                       )}
