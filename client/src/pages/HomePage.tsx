@@ -250,7 +250,7 @@ const HomePage = () => {
       />
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-12 lg:pt-24 lg:pb-16 overflow-visible">
+      <section className="relative pt-16 md:pt-20 pb-8 md:pb-12 lg:pt-24 lg:pb-16 overflow-visible">
         {/* BACKGROUND */}
         <div className="absolute inset-0 bg-gray-100 z-0 rounded-b-[2rem] lg:rounded-b-[3rem] shadow-sm overflow-hidden">
           <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-white/60 rounded-full blur-[120px]"></div>
@@ -264,31 +264,35 @@ const HomePage = () => {
             className="max-w-7xl mx-auto"
           >
             {/* Welcome Greeting - Always generic green icon and Welcome text */}
-            <div className="flex items-center gap-3 mb-6 relative z-20 md:mb-0 md:absolute md:left-4 md:top-0">
+            <div className="flex items-center gap-2 mt-2 -ml-1 mb-1 relative z-20 md:mb-0 md:mt-0 md:ml-0 md:absolute md:left-4 md:top-0">
               <div className="p-0.5 bg-white rounded-full shadow-md">
-                <Avatar className="h-10 w-10 md:h-11 md:w-11 border-2 border-emerald-50">
-                  <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-lg flex items-center justify-center">
-                    {user ? <UserRound className="w-6 h-6 text-white" /> : "G"}
+                <Avatar className="h-8 w-8 md:h-11 md:w-11 border-2 border-emerald-50">
+                  <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-xs md:text-lg flex items-center justify-center">
+                    {user ? <UserRound className="w-4 h-4 md:w-6 md:h-6 text-white" /> : "G"}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="text-left">
-                <p className="text-sm md:text-base font-bold text-gray-900 leading-none">
+                <p className="text-xs md:text-base font-bold text-gray-900 leading-none">
                   Welcome
                 </p>
-                <p className="text-[10px] md:text-xs text-gray-500 font-medium mt-0.5">
+                <p className="text-[9px] md:text-xs text-gray-500 font-medium mt-0.5">
                   Glad to have you here
                 </p>
               </div>
             </div>
 
             {/* Header Content */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-300 text-emerald-700 mb-4 text-sm shadow-sm">
-                <span>Pakistan's #1 Health Platform</span>
+            <div className="text-center mb-2 md:mb-8">
+              <div className="absolute right-4 top-0 mt-3 md:static md:mt-0 flex items-center justify-center gap-1 md:gap-2 mb-1 md:mb-4">
+                <ShieldCheck className="w-3.5 h-3.5 md:w-5 md:h-5 text-emerald-600" />
+                <span className="text-[10px] font-bold text-emerald-700 md:text-lg">
+                  <span className="md:hidden">Pakistan's #1 Platform</span>
+                  <span className="hidden md:inline">Pakistan's #1 Health Platform</span>
+                </span>
               </div>
 
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-3">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-1 md:mb-3">
                 Health Issues? <span className="text-emerald-600">We Have The Solution!</span>
               </h1>
 
