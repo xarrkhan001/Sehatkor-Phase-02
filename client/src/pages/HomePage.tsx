@@ -34,7 +34,9 @@ import {
   UserCheck,
   Zap,
   HeartHandshake,
-  UserRound
+  UserRound,
+  Phone,
+  X
 } from "lucide-react";
 
 // Animations
@@ -62,6 +64,7 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showMobileHelpline, setShowMobileHelpline] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 500);
@@ -282,6 +285,17 @@ const HomePage = () => {
               </div>
             </div>
 
+            {/* Helpline Widget - Desktop Only (Right Side) */}
+            <div className="hidden md:flex items-center gap-2 absolute right-4 top-0 z-20 bg-white pl-1 pr-4 py-1 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-red-50/50 hover:shadow-[0_4px_12px_rgba(239,68,68,0.15)] transition-all duration-300 cursor-pointer group hover:-translate-y-0.5 animate-pulse-slow">
+              <div className="w-9 h-9 bg-gradient-to-br from-red-400 to-rose-500 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ring-4 ring-red-50">
+                <Phone className="w-3.5 h-3.5 text-white fill-white/20 animate-bounce" />
+              </div>
+              <div className="text-left">
+                <p className="text-[9px] uppercase tracking-wider text-red-500 font-bold leading-none mb-0.5 group-hover:text-red-600 transition-colors">SehatKor Helpline</p>
+                <p className="text-xs font-black text-gray-500 leading-none group-hover:text-red-700 transition-colors tracking-tight">+92 314 1521115</p>
+              </div>
+            </div>
+
             {/* Header Content */}
             <div className="text-center mb-2 md:mb-8">
               <div className="absolute right-4 top-0 mt-3 md:static md:mt-0 flex items-center justify-center gap-1 md:gap-2 mb-1 md:mb-4">
@@ -292,7 +306,7 @@ const HomePage = () => {
                 </span>
               </div>
 
-              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-1 md:mb-3">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight pt-2 md:pt-0 mb-1 md:mb-3">
                 Health Issues? <span className="text-emerald-600">We Have The Solution!</span>
               </h1>
 
@@ -305,7 +319,7 @@ const HomePage = () => {
             </div>
 
             {/* Bento Grid Layout - Mobile: Marham Style (Video left 2cols, 2 cards right 3cols), Desktop: Bento Grid */}
-            <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-4">
+            <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-4 pt-2 md:pt-0">
               {/* Video Consultation - Left side, spans 2 rows on mobile, 2 columns wide */}
               <Link
                 to={heroCards[0].link}
@@ -694,6 +708,34 @@ const HomePage = () => {
       <HomeCTA />
 
       <CompareTray />
+
+      {/* Floating Mobile Helpline - Bottom Center */}
+      {showMobileHelpline && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] md:hidden max-w-[240px]">
+          <div className="relative bg-white pl-1 pr-3 py-1.5 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.15)] border border-red-50 flex items-center gap-2 animate-pulse-slow">
+            {/* Close Button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowMobileHelpline(false);
+              }}
+              className="absolute -top-1 -right-1 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full p-0.5 shadow-sm border border-gray-200 transition-colors"
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
+
+            <a href="tel:+923141521115" className="flex items-center gap-2 w-full">
+              <div className="w-8 h-8 bg-gradient-to-br from-red-400 to-rose-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+                <Phone className="w-3.5 h-3.5 text-white fill-white/20 animate-bounce" />
+              </div>
+              <div className="text-left flex-1 min-w-0">
+                <p className="text-[9px] uppercase tracking-wider text-red-500 font-bold leading-none mb-0.5">SehatKor Helpline</p>
+                <p className="text-xs font-black text-gray-600 leading-none tracking-tight">+92 314 1521115</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
