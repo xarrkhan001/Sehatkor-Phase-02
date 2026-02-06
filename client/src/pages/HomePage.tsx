@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import SearchServices from "@/components/SearchServices";
 import CompareTray from "@/components/CompareTray";
@@ -32,7 +33,8 @@ import {
   Clock,
   UserCheck,
   Zap,
-  HeartHandshake
+  HeartHandshake,
+  UserRound
 } from "lucide-react";
 
 // Animations
@@ -261,6 +263,25 @@ const HomePage = () => {
             variants={fadeInUp}
             className="max-w-7xl mx-auto"
           >
+            {/* Welcome Greeting - Always generic green icon and Welcome text */}
+            <div className="flex items-center gap-3 mb-6 relative z-20 md:mb-0 md:absolute md:left-4 md:top-0">
+              <div className="p-0.5 bg-white rounded-full shadow-md">
+                <Avatar className="h-10 w-10 md:h-11 md:w-11 border-2 border-emerald-50">
+                  <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-lg flex items-center justify-center">
+                    {user ? <UserRound className="w-6 h-6 text-white" /> : "G"}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <div className="text-left">
+                <p className="text-sm md:text-base font-bold text-gray-900 leading-none">
+                  Welcome
+                </p>
+                <p className="text-[10px] md:text-xs text-gray-500 font-medium mt-0.5">
+                  Glad to have you here
+                </p>
+              </div>
+            </div>
+
             {/* Header Content */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-300 text-emerald-700 mb-4 text-sm shadow-sm">

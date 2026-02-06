@@ -37,6 +37,12 @@ const BlogPage = lazy(() => import("./pages/BlogPage"));
 const BlogHowToBookDoctor = lazy(() => import("./pages/blog/how-to-book-doctor-online-pakistan"));
 const BlogBestLabTests = lazy(() => import("./pages/blog/best-lab-tests-routine-checkup-pakistan"));
 const BlogTopHospitals = lazy(() => import("./pages/blog/top-10-hospitals-pakistan-2025"));
+const BlogDengueFever = lazy(() => import("./pages/blog/dengue-fever-pakistan-complete-guide"));
+const BlogDiabetesManagement = lazy(() => import("./pages/blog/diabetes-management-pakistan-complete-guide"));
+const BlogHeartDisease = lazy(() => import("./pages/blog/heart-disease-pakistan-complete-guide"));
+const BlogPregnancy = lazy(() => import("./pages/blog/pregnancy-care-pakistan-complete-guide"));
+const BlogChildFever = lazy(() => import("./pages/blog/child-fever-when-to-see-doctor-pakistan"));
+const BlogBloodTest = lazy(() => import("./pages/blog/blood-test-at-home-pakistan-guide"));
 const KarachiPage = lazy(() => import("./pages/locations/KarachiPage"));
 const LahorePage = lazy(() => import("./pages/locations/LahorePage"));
 const IslamabadPage = lazy(() => import("./pages/locations/IslamabadPage"));
@@ -131,6 +137,12 @@ const AppShell = () => {
             <Route path="/blog/how-to-book-doctor-online-pakistan" element={<Suspense fallback={<BlogSkeleton />}><BlogHowToBookDoctor /></Suspense>} />
             <Route path="/blog/best-lab-tests-routine-checkup-pakistan" element={<Suspense fallback={<BlogSkeleton />}><BlogBestLabTests /></Suspense>} />
             <Route path="/blog/top-10-hospitals-pakistan-2025" element={<Suspense fallback={<BlogSkeleton />}><BlogTopHospitals /></Suspense>} />
+            <Route path="/blog/dengue-fever-pakistan-complete-guide" element={<Suspense fallback={<BlogSkeleton />}><BlogDengueFever /></Suspense>} />
+            <Route path="/blog/diabetes-management-pakistan-complete-guide" element={<Suspense fallback={<BlogSkeleton />}><BlogDiabetesManagement /></Suspense>} />
+            <Route path="/blog/heart-disease-pakistan-complete-guide" element={<Suspense fallback={<BlogSkeleton />}><BlogHeartDisease /></Suspense>} />
+            <Route path="/blog/pregnancy-care-pakistan-complete-guide" element={<Suspense fallback={<BlogSkeleton />}><BlogPregnancy /></Suspense>} />
+            <Route path="/blog/child-fever-when-to-see-doctor-pakistan" element={<Suspense fallback={<BlogSkeleton />}><BlogChildFever /></Suspense>} />
+            <Route path="/blog/blood-test-at-home-pakistan-guide" element={<Suspense fallback={<BlogSkeleton />}><BlogBloodTest /></Suspense>} />
             <Route path="/karachi" element={<Suspense fallback={<PageSkeleton />}><KarachiPage /></Suspense>} />
             <Route path="/lahore" element={<Suspense fallback={<PageSkeleton />}><LahorePage /></Suspense>} />
             <Route path="/islamabad" element={<Suspense fallback={<PageSkeleton />}><IslamabadPage /></Suspense>} />
