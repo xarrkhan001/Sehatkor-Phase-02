@@ -254,42 +254,49 @@ const Navbar = () => {
                     <span>Locations</span>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent side="bottom" align="end" className="w-64 max-h-[80vh] overflow-y-auto custom-scrollbar bg-gray-50/95 backdrop-blur-xl border border-gray-100/40 shadow-xl rounded-2xl mt-2 p-2 animate-in slide-in-from-top-2 duration-300">
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500">Major Cities</DropdownMenuLabel>
-                  <div className="grid grid-cols-2 gap-1">
-                    {[
-                      { name: 'Karachi', path: '/karachi', color: 'text-blue-600', bg: 'bg-blue-100' },
-                      { name: 'Lahore', path: '/lahore', color: 'text-green-600', bg: 'bg-green-100' },
-                      { name: 'Islamabad', path: '/islamabad', color: 'text-purple-600', bg: 'bg-purple-100' },
-                      { name: 'Peshawar', path: '/peshawar', color: 'text-orange-600', bg: 'bg-orange-100' },
-                    ].map((city) => (
-                      <DropdownMenuItem key={city.name} asChild className="rounded-lg">
-                        <Link to={city.path} className="flex items-center space-x-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
-                          <MapPin className={`w-3 h-3 ${city.color}`} />
-                          <span className="text-xs font-medium text-gray-700">{city.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
+                <DropdownMenuContent side="bottom" align="end" className="w-72 bg-gray-200 border-2 border-gray-300 shadow-2xl mt-2 p-0 animate-in slide-in-from-top-2 duration-300">
+                  <div className="py-2">
+                    <div className="px-5 py-2">
+                      <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Major Cities</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 px-2">
+                      {[
+                        { name: 'Karachi', path: '/karachi', color: 'text-blue-600', bg: 'bg-blue-100' },
+                        { name: 'Lahore', path: '/lahore', color: 'text-green-600', bg: 'bg-green-100' },
+                        { name: 'Islamabad', path: '/islamabad', color: 'text-purple-600', bg: 'bg-purple-100' },
+                        { name: 'Peshawar', path: '/peshawar', color: 'text-orange-600', bg: 'bg-orange-100' },
+                      ].map((city) => (
+                        <DropdownMenuItem key={city.name} asChild>
+                          <Link to={city.path} className="flex items-center space-x-2 px-3 py-2.5 hover:bg-white transition-all duration-200 cursor-pointer">
+                            <MapPin className={`w-4 h-4 ${city.color}`} strokeWidth={2.5} />
+                            <span className="text-sm font-semibold text-gray-900">{city.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
 
-                  <DropdownMenuSeparator className="my-2" />
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500">KPK & Others</DropdownMenuLabel>
-                  <div className="grid grid-cols-2 gap-1">
-                    {[
-                      { name: 'Mardan', path: '/mardan', color: 'text-teal-600', bg: 'bg-teal-100' },
-                      { name: 'Swat', path: '/swat', color: 'text-emerald-600', bg: 'bg-emerald-100' },
-                      { name: 'Chitral', path: '/chitral', color: 'text-indigo-600', bg: 'bg-indigo-100' },
-                      { name: 'Noshera', path: '/noshera', color: 'text-rose-600', bg: 'bg-rose-100' },
-                      { name: 'Swabi', path: '/swabi', color: 'text-amber-600', bg: 'bg-amber-100' },
-                      { name: 'Azad Kashmir', path: '/azad-kashmir', color: 'text-cyan-600', bg: 'bg-cyan-100' }
-                    ].map((city) => (
-                      <DropdownMenuItem key={city.name} asChild className="rounded-lg">
-                        <Link to={city.path} className="flex items-center space-x-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
-                          <MapPin className={`w-3 h-3 ${city.color}`} />
-                          <span className="text-xs font-medium text-gray-700">{city.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
+                    <div className="my-2 mx-5 border-t border-gray-400"></div>
+
+                    <div className="px-5 py-2">
+                      <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">KPK & Others</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 px-2">
+                      {[
+                        { name: 'Mardan', path: '/mardan', color: 'text-teal-600', bg: 'bg-teal-100' },
+                        { name: 'Swat', path: '/swat', color: 'text-emerald-600', bg: 'bg-emerald-100' },
+                        { name: 'Chitral', path: '/chitral', color: 'text-indigo-600', bg: 'bg-indigo-100' },
+                        { name: 'Noshera', path: '/noshera', color: 'text-rose-600', bg: 'bg-rose-100' },
+                        { name: 'Swabi', path: '/swabi', color: 'text-amber-600', bg: 'bg-amber-100' },
+                        { name: 'Azad Kashmir', path: '/azad-kashmir', color: 'text-cyan-600', bg: 'bg-cyan-100' }
+                      ].map((city) => (
+                        <DropdownMenuItem key={city.name} asChild>
+                          <Link to={city.path} className="flex items-center space-x-2 px-3 py-2.5 hover:bg-white transition-all duration-200 cursor-pointer">
+                            <MapPin className={`w-4 h-4 ${city.color}`} strokeWidth={2.5} />
+                            <span className="text-sm font-semibold text-gray-900">{city.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -306,82 +313,90 @@ const Navbar = () => {
                         } text-gray-500 group-hover:text-red-500`} />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-72 max-h-80 overflow-y-auto custom-scrollbar bg-gray-50/95 backdrop-blur-xl border border-gray-100/40 shadow-xl rounded-2xl mt-3 p-0 animate-in slide-in-from-top-2 duration-300" sideOffset={8} alignOffset={-15}>
-                    <div className="p-1">
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/about" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50">
-                            <BadgeCheck className="w-4 h-4 text-blue-500" />
+                  <DropdownMenuContent align="end" className="w-80 bg-gray-200 border-2 border-gray-300 shadow-2xl mt-3 p-0 animate-in slide-in-from-top-2 duration-300" sideOffset={8} alignOffset={-15}>
+                    <div className="py-2">
+                      <DropdownMenuItem asChild>
+                        <Link to="/about" className="flex items-center space-x-3 w-full px-5 py-3.5 hover:bg-white transition-all duration-200">
+                          <div className="flex items-center justify-center w-9 h-9 bg-blue-100">
+                            <BadgeCheck className="w-5 h-5 text-blue-600" strokeWidth={2.5} />
                           </div>
-                          <div>
-                            <span className="font-medium text-gray-900">About</span>
-                            <p className="text-xs text-gray-500">Our mission & vision</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/blog" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50">
-                            <BookOpen className="w-4 h-4 text-indigo-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Blog</span>
-                            <p className="text-xs text-gray-500">Health articles & tips</p>
+                          <div className="flex-1">
+                            <span className="block font-semibold text-gray-900 text-sm">About</span>
+                            <p className="text-xs text-gray-600 mt-0.5">Our mission & vision</p>
                           </div>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/contact" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50">
-                            <Phone className="w-4 h-4 text-emerald-600" />
+
+                      <DropdownMenuItem asChild>
+                        <Link to="/blog" className="flex items-center space-x-3 w-full px-5 py-3.5 hover:bg-white transition-all duration-200">
+                          <div className="flex items-center justify-center w-9 h-9 bg-indigo-100">
+                            <BookOpen className="w-5 h-5 text-indigo-600" strokeWidth={2.5} />
                           </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Contact</span>
-                            <p className="text-xs text-gray-500">Get in touch with us</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/developers" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50">
-                            <User className="w-4 h-4 text-purple-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Developers</span>
-                            <p className="text-xs text-gray-500">Meet our development team</p>
+                          <div className="flex-1">
+                            <span className="block font-semibold text-gray-900 text-sm">Blog</span>
+                            <p className="text-xs text-gray-600 mt-0.5">Health articles & tips</p>
                           </div>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/how-it-works" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-50">
-                            <HelpCircle className="w-4 h-4 text-cyan-600" />
+
+                      <DropdownMenuItem asChild>
+                        <Link to="/contact" className="flex items-center space-x-3 w-full px-5 py-3.5 hover:bg-white transition-all duration-200">
+                          <div className="flex items-center justify-center w-9 h-9 bg-emerald-100">
+                            <Phone className="w-5 h-5 text-emerald-600" strokeWidth={2.5} />
                           </div>
-                          <div>
-                            <span className="font-medium text-gray-900">How it Works</span>
-                            <p className="text-xs text-gray-500">Learn how to use Sehatkor</p>
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/disclaimer" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50">
-                            <FileText className="w-4 h-4 text-amber-600" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Disclaimer</span>
-                            <p className="text-xs text-gray-500">Legal information</p>
+                          <div className="flex-1">
+                            <span className="block font-semibold text-gray-900 text-sm">Contact</span>
+                            <p className="text-xs text-gray-600 mt-0.5">Get in touch with us</p>
                           </div>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="rounded-lg">
-                        <Link to="/privacy" className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-50">
-                            <Shield className="w-4 h-4 text-green-600" />
+
+                      <DropdownMenuItem asChild>
+                        <Link to="/developers" className="flex items-center space-x-3 w-full px-5 py-3.5 hover:bg-white transition-all duration-200">
+                          <div className="flex items-center justify-center w-9 h-9 bg-purple-100">
+                            <User className="w-5 h-5 text-purple-600" strokeWidth={2.5} />
                           </div>
-                          <div>
-                            <span className="font-medium text-gray-900">Privacy Policy</span>
-                            <p className="text-xs text-gray-500">Your data protection</p>
+                          <div className="flex-1">
+                            <span className="block font-semibold text-gray-900 text-sm">Developers</span>
+                            <p className="text-xs text-gray-600 mt-0.5">Meet our development team</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <div className="my-2 mx-5 border-t border-gray-400"></div>
+
+                      <DropdownMenuItem asChild>
+                        <Link to="/how-it-works" className="flex items-center space-x-3 w-full px-5 py-3.5 hover:bg-white transition-all duration-200">
+                          <div className="flex items-center justify-center w-9 h-9 bg-cyan-100">
+                            <HelpCircle className="w-5 h-5 text-cyan-600" strokeWidth={2.5} />
+                          </div>
+                          <div className="flex-1">
+                            <span className="block font-semibold text-gray-900 text-sm">How it Works</span>
+                            <p className="text-xs text-gray-600 mt-0.5">Learn how to use Sehatkor</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild>
+                        <Link to="/disclaimer" className="flex items-center space-x-3 w-full px-5 py-3.5 hover:bg-white transition-all duration-200">
+                          <div className="flex items-center justify-center w-9 h-9 bg-amber-100">
+                            <FileText className="w-5 h-5 text-amber-600" strokeWidth={2.5} />
+                          </div>
+                          <div className="flex-1">
+                            <span className="block font-semibold text-gray-900 text-sm">Disclaimer</span>
+                            <p className="text-xs text-gray-600 mt-0.5">Legal information</p>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem asChild>
+                        <Link to="/privacy" className="flex items-center space-x-3 w-full px-5 py-3.5 hover:bg-white transition-all duration-200">
+                          <div className="flex items-center justify-center w-9 h-9 bg-green-100">
+                            <Shield className="w-5 h-5 text-green-600" strokeWidth={2.5} />
+                          </div>
+                          <div className="flex-1">
+                            <span className="block font-semibold text-gray-900 text-sm">Privacy Policy</span>
+                            <p className="text-xs text-gray-600 mt-0.5">Your data protection</p>
                           </div>
                         </Link>
                       </DropdownMenuItem>
@@ -592,37 +607,37 @@ const Navbar = () => {
                   {/* User Profile Card (if logged in) */}
                   {user && (
                     <div className="mx-4 mt-6 mb-4">
-                      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-300 via-teal-300 to-teal-400 text-white shadow-xl shadow-teal-500/20 p-5 border border-teal-400/50 group">
-                        {/* Decorative Background Effects */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-20"></div>
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 opacity-20"></div>
+                      <div className="relative overflow-hidden rounded-2xl bg-gray-100 text-gray-900 shadow-xl border-2 border-gray-300 p-5 group">
+                        {/* Decorative Background Effects - Subtle */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gray-200 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-30"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gray-200 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 opacity-30"></div>
 
                         <div className="relative z-10 flex items-center gap-4">
                           <div className="relative">
-                            <Avatar className="h-16 w-16 border-2 border-white/30 shadow-md ring-1 ring-white/20">
+                            <Avatar className="h-16 w-16 border-2 border-gray-400 shadow-md ring-1 ring-gray-300">
                               <AvatarImage src={user.avatar || (user as any).avatar} className="object-cover" />
-                              <AvatarFallback className="bg-white text-teal-700 font-bold text-xl">
+                              <AvatarFallback className="bg-white text-gray-700 font-bold text-xl">
                                 {user.name?.charAt(0) ?? 'U'}
                               </AvatarFallback>
                             </Avatar>
                             {/* Verified Badge Absolute */}
                             {navVerification?.isVerified && (
-                              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm ring-1 ring-teal-100">
+                              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm ring-1 ring-gray-300">
                                 <BadgeCheck className="w-5 h-5 text-emerald-500 fill-emerald-50" />
                               </div>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-lg leading-tight truncate text-white drop-shadow-sm">{user.name}</h3>
-                            <p className="text-teal-50 text-xs truncate mb-2 opacity-90">{user.email}</p>
+                            <h3 className="font-bold text-lg leading-tight truncate text-gray-900">{user.name}</h3>
+                            <p className="text-gray-600 text-xs truncate mb-2">{user.email}</p>
 
                             <div className="flex flex-wrap gap-1.5">
-                              <span className="px-2 py-0.5 rounded-md bg-white/20 text-white text-[10px] font-medium border border-white/20 uppercase tracking-wide backdrop-blur-md">
+                              <span className="px-2 py-0.5 rounded-md bg-gray-300 text-gray-900 text-[10px] font-medium border border-gray-400 uppercase tracking-wide">
                                 {user.role}
                               </span>
                               {user.role !== 'patient' && navVerification?.status === 'pending' && (
-                                <span className="px-2 py-0.5 rounded-md bg-orange-400/30 text-orange-50 text-[10px] font-medium border border-orange-300/30 backdrop-blur-md">
+                                <span className="px-2 py-0.5 rounded-md bg-orange-200 text-orange-900 text-[10px] font-medium border border-orange-300">
                                   Pending
                                 </span>
                               )}
@@ -631,14 +646,14 @@ const Navbar = () => {
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="mt-4 pt-4 border-t border-white/20 grid grid-cols-2 gap-2">
+                        <div className="mt-4 pt-4 border-t-2 border-gray-400 grid grid-cols-2 gap-2">
                           {/* Dashboard Link */}
                           <Link
                             to={getDashboardPath()}
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white hover:bg-teal-50 border border-transparent hover:border-teal-200 transition-all text-xs font-bold text-teal-800 shadow-sm"
+                            className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white hover:bg-gray-100 border-2 border-gray-300 hover:border-gray-400 transition-all text-xs font-bold text-gray-900 shadow-sm"
                           >
-                            <LayoutDashboard className="w-3.5 h-3.5 text-teal-600" />
+                            <LayoutDashboard className="w-3.5 h-3.5 text-gray-700" />
                             Dashboard
                           </Link>
 
@@ -646,9 +661,9 @@ const Navbar = () => {
                           {user.role !== 'patient' && (
                             <button
                               onClick={handleModeToggle}
-                              className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition-all text-xs font-bold text-white shadow-sm backdrop-blur-sm"
+                              className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white hover:bg-gray-100 border-2 border-gray-300 hover:border-gray-400 transition-all text-xs font-bold text-gray-900 shadow-sm"
                             >
-                              <Repeat className="w-3.5 h-3.5 text-white" />
+                              <Repeat className="w-3.5 h-3.5 text-gray-700" />
                               {mode === 'patient' ? 'Provider' : 'Patient'}
                             </button>
                           )}
