@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight, Calendar, Share2 } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
@@ -865,6 +865,22 @@ const DoctorsPage = () => {
                       Doctor
                     </Badge>
                   </div>
+
+                  {/* Share button - bottom-right corner */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const serviceDetailUrl = `${window.location.origin}/service/${service.id}`;
+                      const message = `Check out this Doctor service on Sehatkor:\n\n*${service.name}*\nProvider: ${service.provider}\nLocation: ${getDisplayForService(service).location}\nPrice: ${getDisplayForService(service).price === 0 ? 'Free' : `PKR ${Number(getDisplayForService(service).price).toLocaleString()}`}\n\n${serviceDetailUrl}`;
+                      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                      window.open(whatsappUrl, '_blank');
+                    }}
+                    className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110 z-10"
+                    title="Share on WhatsApp"
+                    aria-label="Share service on WhatsApp"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
                   {/* Variant slider controls */}
                   {(() => { const v = (service as any).variants as any[] | undefined; const total = 1 + (Array.isArray(v) ? v.length : 0); return total > 1; })() && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2">

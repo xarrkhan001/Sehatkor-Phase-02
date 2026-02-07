@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock, Star } from "lucide-react";
+import { MapPin, Minimize2, Maximize2, X, Search, Home, Clock, Star, Share2 } from "lucide-react";
 import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -583,6 +583,22 @@ const PharmaciesPage = () => {
                       Pharmacy
                     </Badge>
                   </div>
+
+                  {/* Share button - bottom-right corner */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const serviceDetailUrl = `${window.location.origin}/service/${service.id}`;
+                      const message = `Check out this Pharmacy service on Sehatkor:\n\n*${service.name}*\nProvider: ${service.provider}\nLocation: ${service.location}\nPrice: ${service.price === 0 ? 'Free' : `PKR ${service.price.toLocaleString()}`}\n\n${serviceDetailUrl}`;
+                      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                      window.open(whatsappUrl, '_blank');
+                    }}
+                    className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110 z-10"
+                    title="Share on WhatsApp"
+                    aria-label="Share service on WhatsApp"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
                 </div>
 
                 {/* Title and Provider */}
