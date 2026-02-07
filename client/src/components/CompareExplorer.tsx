@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { MapPin, Star, CheckCircle, ArrowRight, X, Search } from "lucide-react";
+import { MapPin, Star, CheckCircle, ArrowRight, X, Search, Share2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button as UIButton } from "@/components/ui/button";
 import ServiceManager from "@/lib/serviceManager";
@@ -500,7 +500,7 @@ const CompareExplorer = () => {
     const aRecommended = Boolean((a as any).recommended);
     const bRecommended = Boolean((b as any).recommended);
     if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-    
+
     return a.price - b.price;
   })[0] : undefined), [selected]);
   const bestRated = useMemo(() => (selected.length ? [...selected].sort((a, b) => {
@@ -508,646 +508,665 @@ const CompareExplorer = () => {
     const aRecommended = Boolean((a as any).recommended);
     const bRecommended = Boolean((b as any).recommended);
     if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-    
+
     return b.rating - a.rating;
   })[0] : undefined), [selected]);
 
   return (
-    <div 
+    <div
       className="p-0 rounded-2xl"
     >
       <div className="container mx-auto max-w-7xl">
-          {/* Centered Search Section */}
-          <div className="w-full flex justify-center">
-            <div className="w-full max-w-xl">
-              <div className="space-y-3">
-                <div className="relative w-11/12 mx-auto">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <Search className="w-5 h-5" />
-                  </div>
-                  <Input
-                    placeholder="Search service name"
-                    value={nameQuery}
-                    onChange={(e) => { setNameQuery(e.target.value); setIsSuggestionsOpen(true); }}
-                    onFocus={() => setIsSuggestionsOpen(true)}
-                    onBlur={() => setTimeout(() => setIsSuggestionsOpen(false), 150)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && filteredNames.length > 0) {
-                        setSelectedName(filteredNames[0]);
-                        setNameQuery(filteredNames[0]);
-                        setIsSuggestionsOpen(false);
-                      }
-                    }}
-                    className="pl-10 h-12 rounded-none w-full bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:border-gray-500/70 focus:ring-0 focus-visible:ring-0 outline-none shadow-sm transition-all placeholder:text-gray-400"
-                  />
-                  {isSuggestionsOpen && nameQuery && filteredNames.length > 0 && (
-                    <div className="absolute z-10 mt-2 w-full rounded-xl border border-gray-200/50 bg-white/90 backdrop-blur shadow-xl max-h-60 overflow-auto divide-y">
-                      {filteredNames.slice(0, 8).map((n) => (
-                        <button
-                          key={n}
-                          type="button"
-                          className="w-full text-left px-4 py-2.5 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setSelectedName(n);
-                            setNameQuery(n);
-                            setIsSuggestionsOpen(false);
-                          }}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+        {/* Centered Search Section */}
+        <div className="w-full flex justify-center">
+          <div className="w-full max-w-xl">
+            <div className="space-y-3">
+              <div className="relative w-11/12 mx-auto">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Search className="w-5 h-5" />
                 </div>
-                {/* Inline filters: Location + Price */}
-                {effectiveSelectedName && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end w-11/12 mx-auto">
-                    {/* Location Filter */}
-                    <div>
-                      <label className="text-xs text-gray-600">Location</label>
-                      <Select value={locFilter} onValueChange={setLocFilter}>
-                        <SelectTrigger className="mt-1 h-10 w-full rounded-none bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
-                          <SelectValue placeholder="All locations" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LOCATION_OPTIONS.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {/* Price Filter (Preset Ranges + Custom) */}
-                    <div>
-                      <label className="text-xs text-gray-600">Price Range</label>
-                      <Select
-                        value={priceFilter}
-                        onValueChange={(value) => {
-                          setPriceFilter(value);
-                          if (value === 'all') setPriceRange([0, maxPrice]);
-                          else if (value === 'free') setPriceRange([0, 0]);
-                          else if (value === '0-500') setPriceRange([0, 500]);
-                          else if (value === '500-1000') setPriceRange([500, 1000]);
-                          else if (value === '1000-2000') setPriceRange([1000, 2000]);
-                          else if (value === '2000-5000') setPriceRange([2000, 5000]);
-                          else if (value === '5000+') setPriceRange([5000, maxPrice]);
-                          // For custom, keep current range; inputs below will commit
-                          else if (value === 'custom') {
-                            setCustomFrom("");
-                            setCustomTo("");
-                          }
+                <Input
+                  placeholder="Search service name"
+                  value={nameQuery}
+                  onChange={(e) => { setNameQuery(e.target.value); setIsSuggestionsOpen(true); }}
+                  onFocus={() => setIsSuggestionsOpen(true)}
+                  onBlur={() => setTimeout(() => setIsSuggestionsOpen(false), 150)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && filteredNames.length > 0) {
+                      setSelectedName(filteredNames[0]);
+                      setNameQuery(filteredNames[0]);
+                      setIsSuggestionsOpen(false);
+                    }
+                  }}
+                  className="pl-10 h-12 rounded-none w-full bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:border-gray-500/70 focus:ring-0 focus-visible:ring-0 outline-none shadow-sm transition-all placeholder:text-gray-400"
+                />
+                {isSuggestionsOpen && nameQuery && filteredNames.length > 0 && (
+                  <div className="absolute z-10 mt-2 w-full rounded-xl border border-gray-200/50 bg-white/90 backdrop-blur shadow-xl max-h-60 overflow-auto divide-y">
+                    {filteredNames.slice(0, 8).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        className="w-full text-left px-4 py-2.5 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSelectedName(n);
+                          setNameQuery(n);
+                          setIsSuggestionsOpen(false);
                         }}
                       >
-                        <SelectTrigger className="mt-1 h-10 w-full rounded-none bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
-                          <SelectValue placeholder="Price Range" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Prices</SelectItem>
-                          <SelectItem value="free">Free</SelectItem>
-                          <SelectItem value="0-500">PKR 0-500</SelectItem>
-                          <SelectItem value="500-1000">PKR 500-1K</SelectItem>
-                          <SelectItem value="1000-2000">PKR 1K-2K</SelectItem>
-                          <SelectItem value="2000-5000">PKR 2K-5K</SelectItem>
-                          <SelectItem value="5000+">PKR 5K+</SelectItem>
-                          <SelectItem value="custom">Custom Range</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {priceFilter === 'custom' && (
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <div>
-                            <div className="text-[11px] text-gray-600">From (PKR)</div>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={maxPrice}
-                              value={customFrom}
-                              placeholder={String(0)}
-                              onChange={(e) => setCustomFrom(e.target.value)}
-                              onBlur={() => {
-                                const parsed = customFrom.trim() === '' ? null : Number(customFrom);
-                                const n = parsed != null && Number.isFinite(parsed) ? parsed : 0;
-                                const clamped = Math.max(0, Math.min(n, maxPrice));
-                                const newFrom = Math.min(clamped, priceRange[1]);
-                                setPriceRange([newFrom, priceRange[1]]);
-                                setCustomFrom(String(newFrom));
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                              }}
-                              className="h-9 rounded-none"
-                            />
-                          </div>
-                          <div>
-                            <div className="text-[11px] text-gray-600">To (PKR)</div>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={maxPrice}
-                              value={customTo}
-                              placeholder={String(maxPrice)}
-                              onChange={(e) => setCustomTo(e.target.value)}
-                              onBlur={() => {
-                                const parsed = customTo.trim() === '' ? null : Number(customTo);
-                                const n = parsed != null && Number.isFinite(parsed) ? parsed : maxPrice;
-                                const clamped = Math.max(0, Math.min(n, maxPrice));
-                                const newTo = Math.max(clamped, priceRange[0]);
-                                setPriceRange([priceRange[0], newTo]);
-                                setCustomTo(String(newTo));
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                              }}
-                              className="h-9 rounded-none"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                        {n}
+                      </button>
+                    ))}
                   </div>
                 )}
-                <Select value={effectiveSelectedName} onValueChange={(v) => { setSelectedName(v); setNameQuery(v); }}>
-                  <SelectTrigger className="h-12 rounded-none w-11/12 mx-auto bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none shadow-sm transition-colors">
-                    <SelectValue placeholder="Select service name" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {names.map(n => (
-                      <SelectItem key={n} value={n}>{n}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="text-xs text-gray-600 text-center h-4">{effectiveSelectedName ? `Showing ${offerings.length} providers` : ""}</div>
               </div>
+              {/* Inline filters: Location + Price */}
+              {effectiveSelectedName && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end w-11/12 mx-auto">
+                  {/* Location Filter */}
+                  <div>
+                    <label className="text-xs text-gray-600">Location</label>
+                    <Select value={locFilter} onValueChange={setLocFilter}>
+                      <SelectTrigger className="mt-1 h-10 w-full rounded-none bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
+                        <SelectValue placeholder="All locations" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LOCATION_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* Price Filter (Preset Ranges + Custom) */}
+                  <div>
+                    <label className="text-xs text-gray-600">Price Range</label>
+                    <Select
+                      value={priceFilter}
+                      onValueChange={(value) => {
+                        setPriceFilter(value);
+                        if (value === 'all') setPriceRange([0, maxPrice]);
+                        else if (value === 'free') setPriceRange([0, 0]);
+                        else if (value === '0-500') setPriceRange([0, 500]);
+                        else if (value === '500-1000') setPriceRange([500, 1000]);
+                        else if (value === '1000-2000') setPriceRange([1000, 2000]);
+                        else if (value === '2000-5000') setPriceRange([2000, 5000]);
+                        else if (value === '5000+') setPriceRange([5000, maxPrice]);
+                        // For custom, keep current range; inputs below will commit
+                        else if (value === 'custom') {
+                          setCustomFrom("");
+                          setCustomTo("");
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="mt-1 h-10 w-full rounded-none bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none">
+                        <SelectValue placeholder="Price Range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Prices</SelectItem>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="0-500">PKR 0-500</SelectItem>
+                        <SelectItem value="500-1000">PKR 500-1K</SelectItem>
+                        <SelectItem value="1000-2000">PKR 1K-2K</SelectItem>
+                        <SelectItem value="2000-5000">PKR 2K-5K</SelectItem>
+                        <SelectItem value="5000+">PKR 5K+</SelectItem>
+                        <SelectItem value="custom">Custom Range</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {priceFilter === 'custom' && (
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <div>
+                          <div className="text-[11px] text-gray-600">From (PKR)</div>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={maxPrice}
+                            value={customFrom}
+                            placeholder={String(0)}
+                            onChange={(e) => setCustomFrom(e.target.value)}
+                            onBlur={() => {
+                              const parsed = customFrom.trim() === '' ? null : Number(customFrom);
+                              const n = parsed != null && Number.isFinite(parsed) ? parsed : 0;
+                              const clamped = Math.max(0, Math.min(n, maxPrice));
+                              const newFrom = Math.min(clamped, priceRange[1]);
+                              setPriceRange([newFrom, priceRange[1]]);
+                              setCustomFrom(String(newFrom));
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                            }}
+                            className="h-9 rounded-none"
+                          />
+                        </div>
+                        <div>
+                          <div className="text-[11px] text-gray-600">To (PKR)</div>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={maxPrice}
+                            value={customTo}
+                            placeholder={String(maxPrice)}
+                            onChange={(e) => setCustomTo(e.target.value)}
+                            onBlur={() => {
+                              const parsed = customTo.trim() === '' ? null : Number(customTo);
+                              const n = parsed != null && Number.isFinite(parsed) ? parsed : maxPrice;
+                              const clamped = Math.max(0, Math.min(n, maxPrice));
+                              const newTo = Math.max(clamped, priceRange[0]);
+                              setPriceRange([priceRange[0], newTo]);
+                              setCustomTo(String(newTo));
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                            }}
+                            className="h-9 rounded-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <Select value={effectiveSelectedName} onValueChange={(v) => { setSelectedName(v); setNameQuery(v); }}>
+                <SelectTrigger className="h-12 rounded-none w-11/12 mx-auto bg-gradient-to-br from-slate-50 via-zinc-50 to-white border border-gray-400/60 hover:from-slate-100 hover:via-zinc-50 hover:to-white focus:ring-0 focus-visible:ring-0 focus:border-gray-500/70 outline-none shadow-sm transition-colors">
+                  <SelectValue placeholder="Select service name" />
+                </SelectTrigger>
+                <SelectContent>
+                  {names.map(n => (
+                    <SelectItem key={n} value={n}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="text-xs text-gray-600 text-center h-4">{effectiveSelectedName ? `Showing ${offerings.length} providers` : ""}</div>
             </div>
           </div>
-          {/* Offerings shown only after selection/search */}
-          {effectiveSelectedName && (
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:gap-6">
-              {limitedOfferings.map((item) => {
-                const isSelected = selectedIds.includes(item.id);
-                return (
-                  <Card
-                    key={item.id}
-                    className={`h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 ${isSelected ? 'ring-2 ring-blue-400/60' : ''}`}
-                  >
-                    <CardContent className="p-5 flex flex-col h-full">
-                      {/* Image with variant slider */}
-                      <div className="relative w-full h-40 sm:h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-4">
-                        {getDisplayImage(item) ? (
-                          <img src={getDisplayImage(item)!} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="flex items-center justify-center w-full h-full bg-gray-200">
-                            <span className="text-gray-400 text-sm">No Image Available</span>
-                          </div>
-                        )}
-                        {/* Top-right time/date overlay to match doctors services style */}
-                        {(() => {
-                          const info = getDisplayTimeInfo(item);
-                          return info ? (
-                            <div className="absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] bg-black/60 text-white shadow-md backdrop-blur-sm flex items-center gap-1.5">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden className="shrink-0">
-                                <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.25" />
-                                <path d="M12 7v5l4 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <span className="leading-none">{info}</span>
-                            </div>
-                          ) : null;
-                        })()}
-                        
-                        {/* Top-left recommended overlay */}
-                        {item.recommended && (
-                          <div className="absolute top-1.5 left-1.5 z-10">
-                            <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                              </svg>
-                              <div className="flex flex-col leading-tight">
-                                <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
-                                <span className="font-bold text-amber-800 text-[10px]">by SehatKor</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Availability badge moved to action row below */}
-                        {getSlides(item).length > 1 && (
-                          <>
-                            <button
-                              type="button"
-                              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-7 h-7 flex items-center justify-center"
-                              onClick={(e) => { e.stopPropagation(); prevVariant(item.id); }}
-                              aria-label="Previous variant"
-                            >
-                              ‹
-                            </button>
-                            <button
-                              type="button"
-                              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-7 h-7 flex items-center justify-center"
-                              onClick={(e) => { e.stopPropagation(); nextVariant(item.id); }}
-                              aria-label="Next variant"
-                            >
-                              ›
-                            </button>
-                           
-                          </>
-                        )}
-                      </div>
-
-                      {/* Title and Provider */}
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
-                        <div className="mb-2 sm:mb-0">
-                          <h3 className="text-lg font-semibold flex items-center gap-2">
-                            {item.name}
-                            {item._providerVerified ? (
-                              <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
-                            ) : (
-                              <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Unverified</Badge>
-                            )}
-                            {isSelected && (
-                              <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">Selected</Badge>
-                            )}
-                          </h3>
-                          <p className="text-sm text-gray-500">{item.provider}</p>
-                          {/* Department Display for Hospital Services */}
-                          {item._providerType === 'clinic' && item.department && (<div className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true" className="shrink-0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z"/></svg><span className="truncate">{item.department}</span></div>)}
+        </div>
+        {/* Offerings shown only after selection/search */}
+        {effectiveSelectedName && (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:gap-6">
+            {limitedOfferings.map((item) => {
+              const isSelected = selectedIds.includes(item.id);
+              return (
+                <Card
+                  key={item.id}
+                  className={`h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 ${isSelected ? 'ring-2 ring-blue-400/60' : ''}`}
+                >
+                  <CardContent className="p-5 flex flex-col h-full">
+                    {/* Image with variant slider */}
+                    <div className="relative w-full h-40 sm:h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-4">
+                      {getDisplayImage(item) ? (
+                        <img src={getDisplayImage(item)!} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-full bg-gray-200">
+                          <span className="text-gray-400 text-sm">No Image Available</span>
                         </div>
-                        <div className="text-left sm:text-right">
-                          <div className="text-lg font-bold text-primary">
-                            {getDisplayPrice(item) === 0 ? 'Free' : `PKR ${getDisplayPrice(item).toLocaleString()}`}
-                          </div>
-                          <Badge variant="outline" className="text-xs px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100">
-                            {(item._providerType === 'pharmacy' && item.pharmacyCategory)
-                              ? item.pharmacyCategory
-                              : (item._providerType === 'laboratory' && item.labCategory)
-                                ? item.labCategory
-                                : (item._providerType === 'doctor' && item.doctorCategory)
-                                  ? item.doctorCategory
-                                  : (item._providerType === 'clinic' && item.clinicCategory)
-                                    ? item.clinicCategory
-                                    : item.type}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.description}</p>
-
-                      {/* Hospital/Clinic Name */}
+                      )}
+                      {/* Top-right time/date overlay to match doctors services style */}
                       {(() => {
-                        const activeSlide = getActiveSlide(item);
-                        const hospitalClinicName = activeSlide?.hospitalClinicName || item.hospitalClinicName;
-                        return hospitalClinicName ? (
-                          <div className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="14"
-                              height="14"
-                              aria-hidden="true"
-                              className="shrink-0"
-                            >
-                              <circle cx="12" cy="12" r="11" fill="#ef4444" />
-                              <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
-                              <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                        const info = getDisplayTimeInfo(item);
+                        return info ? (
+                          <div className="absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] bg-black/60 text-white shadow-md backdrop-blur-sm flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden className="shrink-0">
+                              <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.25" />
+                              <path d="M12 7v5l4 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
-                            <span className="truncate">{hospitalClinicName}</span>
+                            <span className="leading-none">{info}</span>
                           </div>
                         ) : null;
                       })()}
 
-                      {/* Badges and actions – unified 3-row layout */}
-                      <div className="space-y-3 mb-4 text-sm">
-                        {/* Row 1: Rating ↔ Location (desktop/tablet only) */}
-                        <div className="hidden sm:flex justify-between items-center min-h-[24px]">
-                          <div className="flex-shrink-0">
+                      {/* Top-left recommended overlay */}
+                      {item.recommended && (
+                        <div className="absolute top-1.5 left-1.5 z-10">
+                          <div className="px-3 py-1.5 text-[11px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1.5 backdrop-blur-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" className="text-amber-900">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            <div className="flex flex-col leading-tight">
+                              <span className="font-black text-amber-900 text-[11px] tracking-wider font-extrabold">RECOMMENDED</span>
+                              <span className="font-bold text-amber-800 text-[10px]">by SehatKor</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Availability badge moved to action row below */}
+                      {getSlides(item).length > 1 && (
+                        <>
+                          <button
+                            type="button"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-7 h-7 flex items-center justify-center"
+                            onClick={(e) => { e.stopPropagation(); prevVariant(item.id); }}
+                            aria-label="Previous variant"
+                          >
+                            ‹
+                          </button>
+                          <button
+                            type="button"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-7 h-7 flex items-center justify-center"
+                            onClick={(e) => { e.stopPropagation(); nextVariant(item.id); }}
+                            aria-label="Next variant"
+                          >
+                            ›
+                          </button>
+
+                        </>
+                      )}
+
+                      {/* Share button - bottom-right corner */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const serviceDetailUrl = `${window.location.origin}/service/${item.id}`;
+                          const price = getDisplayPrice(item);
+                          const location = getDisplayLocation(item);
+                          const displayPrice = price === 0 ? 'Free' : `PKR ${Number(price).toLocaleString()}`;
+                          const message = `Check out this Service on Sehatkor:\n\n*${item.name}*\nProvider: ${item.provider}\nLocation: ${location}\nPrice: ${displayPrice}\n\n${serviceDetailUrl}`;
+                          const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                          window.open(whatsappUrl, '_blank');
+                        }}
+                        className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110 z-10"
+                        title="Share on WhatsApp"
+                        aria-label="Share service on WhatsApp"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Title and Provider */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+                      <div className="mb-2 sm:mb-0">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          {item.name}
+                          {item._providerVerified ? (
+                            <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
+                          ) : (
+                            <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Unverified</Badge>
+                          )}
+                          {isSelected && (
+                            <Badge className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-100">Selected</Badge>
+                          )}
+                        </h3>
+                        <p className="text-sm text-gray-500">{item.provider}</p>
+                        {/* Department Display for Hospital Services */}
+                        {item._providerType === 'clinic' && item.department && (<div className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true" className="shrink-0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-4v-4H6v-2h4V7h4v4h4v2h-4v4z" /></svg><span className="truncate">{item.department}</span></div>)}
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <div className="text-lg font-bold text-primary">
+                          {getDisplayPrice(item) === 0 ? 'Free' : `PKR ${getDisplayPrice(item).toLocaleString()}`}
+                        </div>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100">
+                          {(item._providerType === 'pharmacy' && item.pharmacyCategory)
+                            ? item.pharmacyCategory
+                            : (item._providerType === 'laboratory' && item.labCategory)
+                              ? item.labCategory
+                              : (item._providerType === 'doctor' && item.doctorCategory)
+                                ? item.doctorCategory
+                                : (item._providerType === 'clinic' && item.clinicCategory)
+                                  ? item.clinicCategory
+                                  : item.type}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.description}</p>
+
+                    {/* Hospital/Clinic Name */}
+                    {(() => {
+                      const activeSlide = getActiveSlide(item);
+                      const hospitalClinicName = activeSlide?.hospitalClinicName || item.hospitalClinicName;
+                      return hospitalClinicName ? (
+                        <div className="text-sm text-blue-600 font-medium mb-2 flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="14"
+                            height="14"
+                            aria-hidden="true"
+                            className="shrink-0"
+                          >
+                            <circle cx="12" cy="12" r="11" fill="#ef4444" />
+                            <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
+                            <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
+                          </svg>
+                          <span className="truncate">{hospitalClinicName}</span>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Badges and actions – unified 3-row layout */}
+                    <div className="space-y-3 mb-4 text-sm">
+                      {/* Row 1: Rating ↔ Location (desktop/tablet only) */}
+                      <div className="hidden sm:flex justify-between items-center min-h-[24px]">
+                        <div className="flex-shrink-0">
+                          <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
+                          <MapPin className="w-3 h-3 md:w-4 md:h-4" />
+                          <span>{getDisplayLocation(item)}</span>
+                        </div>
+                      </div>
+
+                      {/* Row 2: Service Type */}
+                      <div className="flex justify-start items-center min-h-[24px]">
+                        <div className="flex-shrink-0">
+                          {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.serviceType ? (
+                            <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
+                          ) : (
+                            <div className="h-6"></div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Row 3: Home Delivery ↔ Availability */}
+                      <div className="flex justify-between items-center min-h-[24px]">
+                        <div className="flex-shrink-0">
+                          {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.homeDelivery && (
+                            <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
+                              <span className="leading-none">🏠</span>
+                              <span className="leading-none">Home Delivery</span>
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          {(() => {
+                            // Variant-aware availability
+                            const activeSlide = getActiveSlide(item);
+                            const availability = activeSlide?.availability || item.availability;
+                            if (!availability) return <div className="h-6"></div>;
+                            return <AvailabilityBadge availability={availability} size="sm" />;
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Row 4: Diseases ↔ Rate Button + WhatsApp */}
+                      <div className="flex items-center justify-between gap-2 min-h-[24px]">
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {/* Mobile: show rating badge here */}
+                          <div className="sm:hidden">
                             <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
                           </div>
-                          <div className="flex items-center gap-1 text-gray-500 flex-shrink-0">
-                            <MapPin className="w-3 h-3 md:w-4 md:h-4" />
-                            <span>{getDisplayLocation(item)}</span>
-                          </div>
-                        </div>
-
-                        {/* Row 2: Service Type */}
-                        <div className="flex justify-start items-center min-h-[24px]">
-                          <div className="flex-shrink-0">
-                            {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.serviceType ? (
-                              <ServiceTypeBadge serviceType={item.serviceType} size="sm" />
-                            ) : (
-                              <div className="h-6"></div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Row 3: Home Delivery ↔ Availability */}
-                        <div className="flex justify-between items-center min-h-[24px]">
-                          <div className="flex-shrink-0">
-                            {(item._providerType === 'pharmacy' || item._providerType === 'laboratory' || item._providerType === 'clinic' || item._providerType === 'doctor') && item.homeDelivery && (
-                              <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
-                                <span className="leading-none">🏠</span>
-                                <span className="leading-none">Home Delivery</span>
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex-shrink-0">
-                            {(() => {
-                              // Variant-aware availability
-                              const activeSlide = getActiveSlide(item);
-                              const availability = activeSlide?.availability || item.availability;
-                              if (!availability) return <div className="h-6"></div>;
-                              return <AvailabilityBadge availability={availability} size="sm" />;
-                            })()}
-                          </div>
-                        </div>
-
-                        {/* Row 4: Diseases ↔ Rate Button + WhatsApp */}
-                        <div className="flex items-center justify-between gap-2 min-h-[24px]">
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {/* Mobile: show rating badge here */}
-                            <div className="sm:hidden">
-                              <RatingBadge rating={item.rating} totalRatings={item.totalRatings} size="sm" ratingBadge={item.ratingBadge as any} />
-                            </div>
-                            {Array.isArray((item as any).diseases) && (item as any).diseases.length > 0 && (
-                              <div className="relative">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        type="button"
-                                        title="View diseases"
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setExpandedDiseases(expandedDiseases === item.id ? null : item.id);
-                                        }}
-                                      >
-                                        <VirusIcon className="w-4 h-4" />
-                                        <span className="hidden sm:inline text-xs font-medium">Diseases</span>
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top" className="max-w-xs hidden sm:block">
-                                      <div className="text-xs text-emerald-800">
-                                        <div className="mb-1 font-medium">Diseases</div>
-                                        <div className="flex flex-col gap-1">
-                                          {((item as any).diseases as string[]).map((d, i) => (
-                                            <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                              {d}
-                                            </span>
-                                          ))}
-                                        </div>
+                          {Array.isArray((item as any).diseases) && (item as any).diseases.length > 0 && (
+                            <div className="relative">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      title="View diseases"
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setExpandedDiseases(expandedDiseases === item.id ? null : item.id);
+                                      }}
+                                    >
+                                      <VirusIcon className="w-4 h-4" />
+                                      <span className="hidden sm:inline text-xs font-medium">Diseases</span>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs hidden sm:block">
+                                    <div className="text-xs text-emerald-800">
+                                      <div className="mb-1 font-medium">Diseases</div>
+                                      <div className="flex flex-col gap-1">
+                                        {((item as any).diseases as string[]).map((d, i) => (
+                                          <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            {d}
+                                          </span>
+                                        ))}
                                       </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                                {/* Mobile click-to-show diseases list as tooltip/popover */}
-                                {expandedDiseases === item.id && (
-                                  <div className="absolute sm:hidden left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-56 p-2 bg-white border border-emerald-200 rounded-md shadow-lg"><div className="text-xs text-emerald-800"><div className="mb-1 font-medium">Diseases</div><div className="flex flex-col gap-1">{((item as any).diseases as string[]).map((d, i) => (<span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">{d}</span>))}</div></div></div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {/* Desktop only: Rate button; Mobile focuses on Rating + Diseases + WhatsApp */}
-                            {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== item._providerId) && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleRateService(item); }}
-                                className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm"
-                                title="Rate this service"
-                              >
-                                <Star className="w-4 h-4" />
-                                <span className="hidden lg:inline text-xs font-medium">Rate</span>
-                              </button>
-                            )}
-                            {item.providerPhone && (
-                              <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} serviceId={item.id} providerId={item._providerId} />
-                            )}
-                          </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              {/* Mobile click-to-show diseases list as tooltip/popover */}
+                              {expandedDiseases === item.id && (
+                                <div className="absolute sm:hidden left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-56 p-2 bg-white border border-emerald-200 rounded-md shadow-lg"><div className="text-xs text-emerald-800"><div className="mb-1 font-medium">Diseases</div><div className="flex flex-col gap-1">{((item as any).diseases as string[]).map((d, i) => (<span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">{d}</span>))}</div></div></div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {/* Desktop only: Rate button; Mobile focuses on Rating + Diseases + WhatsApp */}
+                          {user && (user.role === 'patient' || mode === 'patient') && (user?.id !== item._providerId) && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRateService(item); }}
+                              className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm"
+                              title="Rate this service"
+                            >
+                              <Star className="w-4 h-4" />
+                              <span className="hidden lg:inline text-xs font-medium">Rate</span>
+                            </button>
+                          )}
+                          {item.providerPhone && (
+                            <ServiceWhatsAppButton phoneNumber={item.providerPhone} serviceName={item.name} providerName={item.provider} serviceId={item.id} providerId={item._providerId} />
+                          )}
                         </div>
                       </div>
-
-                      {/* Buttons */}
-                      <div className="mt-auto space-y-2">
-                        <div className="grid grid-cols-3 sm:flex gap-2">
-                          <Button
-                            size="sm"
-                            className="flex-1 h-8 md:h-9 text-[11px] md:text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center gap-1.5"
-                            onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}
-                          >
-                            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="10"/>
-                              <polyline points="12,6 12,12 16,14"/>
-                            </svg>
-                            Book
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 h-8 md:h-9 text-[11px] md:text-xs border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-full flex items-center justify-center gap-.5"
-                            onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}
-                          >
-                            <MapPin className="w-4 h-4" />
-                            Location
-                          </Button>
-                          <Button
-                            size="sm" variant="secondary" className="flex-1 h-8 md:h-9 text-[11px] md:text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center gap-1.5"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const currentVariantIndex = activeIdxById[item.id] ?? 0;
-                              navigate(`/service/${item.id}`, {
-                                state: {
-                                  from: window.location.pathname + window.location.search,
-                                  fromCompare: true,
-                                  initialVariantIndex: currentVariantIndex,
-                                  service: {
-                                    id: item.id,
-                                    name: item.name,
-                                    description: item.description,
-                                    price: item.price,
-                                    rating: item.rating,
-                                    provider: item.provider,
-                                    image: item.image,
-                                    type: item.type,
-                                    providerType: item._providerType,
-                                    _providerVerified: item._providerVerified,
-                                    isReal: true,
-                                    ratingBadge: item.ratingBadge ?? null,
-                                    location: item.city ?? item.location,
-                                    address: item.detailAddress ?? undefined,
-                                    hospitalClinicName: item.hospitalClinicName ?? undefined,
-                                    providerPhone: item.providerPhone ?? undefined,
-                                    googleMapLink: item.googleMapLink ?? undefined,
-                                    availability: item.availability ?? undefined,
-                                    serviceType: item.serviceType,
-                                    homeDelivery: item.homeDelivery,
-                                    timeLabel: item.timeLabel || null,
-                                    startTime: item.startTime || null,
-                                    endTime: item.endTime || null,
-                                    days: item.days || null,
-                                    variants: item.variants || [],
-                                    diseases: Array.isArray((item as any).diseases) ? (item as any).diseases : [],
-                                    department: (item._providerType === 'clinic') ? (item.department || undefined) : undefined,
-                                  }
-                                }
-                              });
-                            }}
-                          >
-                            Details
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Loading state - show only during search */}
-          {loading && (effectiveSelectedName || nameQuery) && (
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i} className="bg-gray-100">
-                  <CardContent className="p-4">
-                    <Skeleton className="h-28 w-full rounded mb-3" />
-                    <Skeleton className="h-4 w-2/3 mb-2" />
-                    <Skeleton className="h-3 w-1/2 mb-3" />
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-4 w-12" />
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      <Skeleton className="h-8 w-full" />
-                      <Skeleton className="h-8 w-full" />
+
+                    {/* Buttons */}
+                    <div className="mt-auto space-y-2">
+                      <div className="grid grid-cols-3 sm:flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 h-8 md:h-9 text-[11px] md:text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center gap-1.5"
+                          onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}
+                        >
+                          <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12,6 12,12 16,14" />
+                          </svg>
+                          Book
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 h-8 md:h-9 text-[11px] md:text-xs border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-full flex items-center justify-center gap-.5"
+                          onClick={(e) => { e.stopPropagation(); setShowLocationMap(item.id); }}
+                        >
+                          <MapPin className="w-4 h-4" />
+                          Location
+                        </Button>
+                        <Button
+                          size="sm" variant="secondary" className="flex-1 h-8 md:h-9 text-[11px] md:text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center gap-1.5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const currentVariantIndex = activeIdxById[item.id] ?? 0;
+                            navigate(`/service/${item.id}`, {
+                              state: {
+                                from: window.location.pathname + window.location.search,
+                                fromCompare: true,
+                                initialVariantIndex: currentVariantIndex,
+                                service: {
+                                  id: item.id,
+                                  name: item.name,
+                                  description: item.description,
+                                  price: item.price,
+                                  rating: item.rating,
+                                  provider: item.provider,
+                                  image: item.image,
+                                  type: item.type,
+                                  providerType: item._providerType,
+                                  _providerVerified: item._providerVerified,
+                                  isReal: true,
+                                  ratingBadge: item.ratingBadge ?? null,
+                                  location: item.city ?? item.location,
+                                  address: item.detailAddress ?? undefined,
+                                  hospitalClinicName: item.hospitalClinicName ?? undefined,
+                                  providerPhone: item.providerPhone ?? undefined,
+                                  googleMapLink: item.googleMapLink ?? undefined,
+                                  availability: item.availability ?? undefined,
+                                  serviceType: item.serviceType,
+                                  homeDelivery: item.homeDelivery,
+                                  timeLabel: item.timeLabel || null,
+                                  startTime: item.startTime || null,
+                                  endTime: item.endTime || null,
+                                  days: item.days || null,
+                                  variants: item.variants || [],
+                                  diseases: Array.isArray((item as any).diseases) ? (item as any).diseases : [],
+                                  department: (item._providerType === 'clinic') ? (item.department || undefined) : undefined,
+                                }
+                              }
+                            });
+                          }}
+                        >
+                          Details
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+        )}
 
-          {selected.length >= 2 && (
-            <div className="mt-8">
-              <Card className="bg-gray-100">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    Comparison
-                  </CardTitle>
-                  <CardDescription>Side-by-side comparison of your selected services</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="p-4 text-left">Field</th>
-                          {selected.map(s => (
-                            <th key={s.id} className="p-4 text-left min-w-56">
-                              <div className="flex items-center justify-between gap-2">
-                                <div>
-                                  <div className="font-semibold line-clamp-1">{s.name}</div>
-                                  <div className="text-xs text-muted-foreground line-clamp-1">{s.provider}</div>
-                                </div>
-                                <Button size="sm" variant="ghost" onClick={() => toggleSelect(s.id)}>Remove</Button>
+        {/* Loading state - show only during search */}
+        {loading && (effectiveSelectedName || nameQuery) && (
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="bg-gray-100">
+                <CardContent className="p-4">
+                  <Skeleton className="h-28 w-full rounded mb-3" />
+                  <Skeleton className="h-4 w-2/3 mb-2" />
+                  <Skeleton className="h-3 w-1/2 mb-3" />
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {selected.length >= 2 && (
+          <div className="mt-8">
+            <Card className="bg-gray-100">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Comparison
+                </CardTitle>
+                <CardDescription>Side-by-side comparison of your selected services</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="p-4 text-left">Field</th>
+                        {selected.map(s => (
+                          <th key={s.id} className="p-4 text-left min-w-56">
+                            <div className="flex items-center justify-between gap-2">
+                              <div>
+                                <div className="font-semibold line-clamp-1">{s.name}</div>
+                                <div className="text-xs text-muted-foreground line-clamp-1">{s.provider}</div>
                               </div>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="border-b">
-                          <td className="p-4 font-medium">Price</td>
-                          {selected.map(s => (
-                            <td key={s.id} className={`p-4 font-semibold ${cheapest?.id === s.id ? 'text-primary' : ''}`}>{s.price === 0 ? "Free" : `PKR ${s.price.toLocaleString()}`}</td>
-                          ))}
-                        </tr>
-                        <tr className="border-b">
-                          <td className="p-4 font-medium">Rating</td>
-                          {selected.map(s => (
-                            <td key={s.id} className={`p-4 ${bestRated?.id === s.id ? 'bg-yellow-50/60 rounded' : ''}`}>
-                              <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                {s.rating}
-                              </div>
-                            </td>
-                          ))}
-                        </tr>
-                        <tr className="border-b">
-                          <td className="p-4 font-medium">Location</td>
-                          {selected.map(s => (
-                            <td key={s.id} className="p-4">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate">{s.location}</span>
-                                <UIButton
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-7 px-2 ml-2"
-                                  onClick={() => {
-                                    if (s.googleMapLink) {
-                                      window.open(s.googleMapLink, '_blank', 'noopener,noreferrer');
-                                    } else {
-                                      setShowLocationMap(s.id);
-                                    }
-                                  }}>
-                                  View Location
-                                </UIButton>
-                              </div>
-                            </td>
-                          ))}
-                        </tr>
-                        <tr className="border-b">
-                          <td className="p-4 font-medium">Type</td>
-                          {selected.map(s => (
-                            <td key={s.id} className="p-4">
-                              <Badge variant="outline">{s.type}</Badge>
-                            </td>
-                          ))}
-                        </tr>
-                        <tr className="border-b">
-                          <td className="p-4 font-medium">Schedule</td>
-                          {selected.map(s => (
-                            <td key={s.id} className="p-4">
-                              <div className="text-sm">
-                                {getDisplayTimeInfo(s) || 'Not specified'}
-                              </div>
-                            </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="p-4 font-medium">Action</td>
-                          {selected.map(s => (
-                            <td key={s.id} className="p-4">
-                              <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => {
-                                const currentVariantIndex = activeIdxById[s.id] ?? 0;
-                                console.log('🔍 CompareExplorer: Navigating to service detail:', s.id, 'with variant index:', currentVariantIndex);
-                                console.log('🔍 CompareExplorer: Service data:', s);
-                                console.log('🔍 CompareExplorer: Main service schedule fields:');
-                                console.log('  - timeLabel:', s.timeLabel);
-                                console.log('  - startTime:', s.startTime);
-                                console.log('  - endTime:', s.endTime);
-                                console.log('  - days:', s.days);
-                                console.log('  - variants:', s.variants);
-                                
-                                // Check if main service has schedule data, if not get from first variant
-                                let mainTimeLabel = s.timeLabel;
-                                let mainStartTime = s.startTime;
-                                let mainEndTime = s.endTime;
-                                let mainDays = s.days;
-                                
-                                if (!mainTimeLabel && !mainStartTime && !mainEndTime && !mainDays && s.variants && s.variants.length > 0) {
-                                  console.log('🔍 CompareExplorer: Main service has no schedule, checking variants...');
-                                  const firstVariant = s.variants[0];
-                                  console.log('🔍 CompareExplorer: First variant schedule:', firstVariant);
-                                  
-                                  // If we're on main slide (index 0), use main service schedule if available
-                                  // If main service has no schedule, keep it null to show proper fallback in ServiceDetailPage
-                                  if (currentVariantIndex === 0) {
-                                    console.log('🔍 CompareExplorer: On main slide, keeping main schedule as null for proper fallback');
+                              <Button size="sm" variant="ghost" onClick={() => toggleSelect(s.id)}>Remove</Button>
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="p-4 font-medium">Price</td>
+                        {selected.map(s => (
+                          <td key={s.id} className={`p-4 font-semibold ${cheapest?.id === s.id ? 'text-primary' : ''}`}>{s.price === 0 ? "Free" : `PKR ${s.price.toLocaleString()}`}</td>
+                        ))}
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-4 font-medium">Rating</td>
+                        {selected.map(s => (
+                          <td key={s.id} className={`p-4 ${bestRated?.id === s.id ? 'bg-yellow-50/60 rounded' : ''}`}>
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                              {s.rating}
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-4 font-medium">Location</td>
+                        {selected.map(s => (
+                          <td key={s.id} className="p-4">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 flex-shrink-0" />
+                              <span className="truncate">{s.location}</span>
+                              <UIButton
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 ml-2"
+                                onClick={() => {
+                                  if (s.googleMapLink) {
+                                    window.open(s.googleMapLink, '_blank', 'noopener,noreferrer');
                                   } else {
-                                    // If we're on variant slide, we'll use variant schedule anyway
-                                    console.log('🔍 CompareExplorer: On variant slide, will use variant schedule');
+                                    setShowLocationMap(s.id);
                                   }
+                                }}>
+                                View Location
+                              </UIButton>
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-4 font-medium">Type</td>
+                        {selected.map(s => (
+                          <td key={s.id} className="p-4">
+                            <Badge variant="outline">{s.type}</Badge>
+                          </td>
+                        ))}
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-4 font-medium">Schedule</td>
+                        {selected.map(s => (
+                          <td key={s.id} className="p-4">
+                            <div className="text-sm">
+                              {getDisplayTimeInfo(s) || 'Not specified'}
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-medium">Action</td>
+                        {selected.map(s => (
+                          <td key={s.id} className="p-4">
+                            <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={() => {
+                              const currentVariantIndex = activeIdxById[s.id] ?? 0;
+                              console.log('🔍 CompareExplorer: Navigating to service detail:', s.id, 'with variant index:', currentVariantIndex);
+                              console.log('🔍 CompareExplorer: Service data:', s);
+                              console.log('🔍 CompareExplorer: Main service schedule fields:');
+                              console.log('  - timeLabel:', s.timeLabel);
+                              console.log('  - startTime:', s.startTime);
+                              console.log('  - endTime:', s.endTime);
+                              console.log('  - days:', s.days);
+                              console.log('  - variants:', s.variants);
+
+                              // Check if main service has schedule data, if not get from first variant
+                              let mainTimeLabel = s.timeLabel;
+                              let mainStartTime = s.startTime;
+                              let mainEndTime = s.endTime;
+                              let mainDays = s.days;
+
+                              if (!mainTimeLabel && !mainStartTime && !mainEndTime && !mainDays && s.variants && s.variants.length > 0) {
+                                console.log('🔍 CompareExplorer: Main service has no schedule, checking variants...');
+                                const firstVariant = s.variants[0];
+                                console.log('🔍 CompareExplorer: First variant schedule:', firstVariant);
+
+                                // If we're on main slide (index 0), use main service schedule if available
+                                // If main service has no schedule, keep it null to show proper fallback in ServiceDetailPage
+                                if (currentVariantIndex === 0) {
+                                  console.log('🔍 CompareExplorer: On main slide, keeping main schedule as null for proper fallback');
+                                } else {
+                                  // If we're on variant slide, we'll use variant schedule anyway
+                                  console.log('🔍 CompareExplorer: On variant slide, will use variant schedule');
                                 }
-                                navigate(`/service/${s.id}`, {
+                              }
+                              navigate(`/service/${s.id}`, {
                                 state: {
                                   from: window.location.pathname + window.location.search,
                                   fromCompare: true,
@@ -1182,41 +1201,41 @@ const CompareExplorer = () => {
                                   }
                                 }
                               });
-                              }}>
-                                View Details
-                                <ArrowRight className="w-4 h-4 ml-1" />
-                              </Button>
-                            </td>
-                          ))}
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                            }}>
+                              View Details
+                              <ArrowRight className="w-4 h-4 ml-1" />
+                            </Button>
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    {bestRated && (
-                      <div className="p-3 rounded border bg-green-50/80">
-                        <div className="flex items-center gap-2 text-green-700">
-                          <CheckCircle className="w-4 h-4" />
-                          <div className="font-semibold">Best Overall (Rating)</div>
-                        </div>
-                        <div className="text-sm mt-1">{bestRated.name} — {bestRated.provider} ({bestRated.location})</div>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {bestRated && (
+                    <div className="p-3 rounded border bg-green-50/80">
+                      <div className="flex items-center gap-2 text-green-700">
+                        <CheckCircle className="w-4 h-4" />
+                        <div className="font-semibold">Best Overall (Rating)</div>
                       </div>
-                    )}
-                    {cheapest && (
-                      <div className="p-3 rounded border bg-blue-50/80">
-                        <div className="flex items-center gap-2 text-blue-700">
-                          <CheckCircle className="w-4 h-4" />
-                          <div className="font-semibold">Cheapest</div>
-                        </div>
-                        <div className="text-sm mt-1">{cheapest.name} — {cheapest.provider} ({cheapest.location})</div>
+                      <div className="text-sm mt-1">{bestRated.name} — {bestRated.provider} ({bestRated.location})</div>
+                    </div>
+                  )}
+                  {cheapest && (
+                    <div className="p-3 rounded border bg-blue-50/80">
+                      <div className="flex items-center gap-2 text-blue-700">
+                        <CheckCircle className="w-4 h-4" />
+                        <div className="font-semibold">Cheapest</div>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                      <div className="text-sm mt-1">{cheapest.name} — {cheapest.provider} ({cheapest.location})</div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
       {showLocationMap && currentMapService && (
         <div

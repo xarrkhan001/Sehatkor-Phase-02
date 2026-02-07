@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { Separator } from "@/components/ui/separator";
 
-import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Star, MapPin, Home, Filter, Search, Clock, X, Maximize2, Minimize2, ChevronLeft, ChevronRight, Calendar, Share2 } from "lucide-react";
 
 import RatingBadge from "@/components/RatingBadge";
 
@@ -3193,6 +3193,27 @@ const SearchPage = () => {
                           {/* Availability removed from image overlay */}
 
                         </div>
+
+                        {/* Share button - bottom-right corner */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const serviceDetailUrl = `${window.location.origin}/service/${service.id}`;
+                            const providerType = (service as any)._providerType === 'doctor' ? 'Doctor'
+                              : (service as any)._providerType === 'clinic' ? 'Hospital'
+                                : (service as any)._providerType === 'laboratory' ? 'Lab'
+                                  : (service as any)._providerType === 'pharmacy' ? 'Pharmacy'
+                                    : 'Provider';
+                            const message = `Check out this ${providerType} service on Sehatkor:\n\n*${service.name}*\nProvider: ${service.provider}\nLocation: ${getDisplayLocation(service)}\nPrice: ${getDisplayPrice(service) === 0 ? 'Free' : `PKR ${getDisplayPrice(service).toLocaleString()}`}\n\n${serviceDetailUrl}`;
+                            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                            window.open(whatsappUrl, '_blank');
+                          }}
+                          className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110 z-10"
+                          title="Share on WhatsApp"
+                          aria-label="Share service on WhatsApp"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
 
 
 
