@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { MapPin, ArrowLeft, Home, Clock, AlertTriangle, Calendar } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { MapPin, ArrowLeft, Home, Clock, AlertTriangle, Calendar, User, Building2, Banknote, Star, Activity, ShieldCheck, Layers, Crosshair } from "lucide-react";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 import RatingModal from "@/components/RatingModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +18,7 @@ import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
 import ServiceWhatsAppButton from "@/components/ServiceWhatsAppButton";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+
 import { toast } from "sonner";
 
 type ServiceVariant = {
@@ -102,6 +103,8 @@ const ServiceDetailPage = () => {
   const [fetchedService, setFetchedService] = useState<Unified | null>(null);
   const [isLoadingService, setIsLoadingService] = useState(false);
   const [serviceNotFound, setServiceNotFound] = useState(false);
+  const [relatedServices, setRelatedServices] = useState<Unified[]>([]);
+  const [isLoadingRelated, setIsLoadingRelated] = useState(false);
 
   // Helper functions for variant display
   const getSlides = (service: Unified) => {
@@ -542,6 +545,86 @@ const ServiceDetailPage = () => {
     console.log('🧬 ServiceDetailPage: final diseases to render:', arr);
   }, [hydratedDiseases, item?.id]);
 
+  // Fetch Related Services
+  useEffect(() => {
+    const fetchRelated = async () => {
+      if (!item?.id || !item?.providerType) return;
+
+      setIsLoadingRelated(true);
+      try {
+        const category = item.doctorCategory || item.pharmacyCategory || (item as any).labCategory || (item as any).clinicCategory || item.type;
+        const result = await ServiceManager.fetchPublicServices({
+          type: item.providerType,
+          category: category,
+          limit: 4
+        });
+
+        // Filter out current service and map to Unified
+        const filtered = result.services
+          .filter(s => s.id !== item.id)
+          .map(s => ({
+            id: s.id,
+            name: s.name,
+            description: s.description,
+            price: Number(s.price || 0),
+            rating: s.averageRating || s.rating || 0,
+            location: s.city || s.location || "Karachi",
+            provider: s.providerName,
+            image: s.image,
+            type: s.providerType === "doctor" ? "Treatment" : s.providerType === "pharmacy" ? "Medicine" : s.providerType === "laboratory" ? "Test" : "Treatment",
+            providerType: s.providerType,
+            isReal: true,
+            providerId: s.providerId,
+            totalRatings: s.totalRatings || 0,
+            hospitalClinicName: (s as any).hospitalClinicName,
+            availability: s.availability,
+          } as Unified));
+
+        setRelatedServices(filtered);
+      } catch (error) {
+        console.error("Error fetching related services:", error);
+      } finally {
+        setIsLoadingRelated(false);
+      }
+    };
+
+    fetchRelated();
+  }, [item?.id, item?.providerType, item?.type, item?.doctorCategory, item?.pharmacyCategory]);
+
+  const urduSummary = useMemo(() => {
+    if (!item) return "";
+
+    const city = item.location || "پاکستان";
+    const priceDisplay = item.price === 0 ? "مفت" : `${Number(item.price).toLocaleString()} روپے`;
+    const providerName = item.provider || "صحت کار فراہم کنندہ";
+    const serviceName = item.name;
+    const hospitalName = (item as any).hospitalClinicName || "";
+    const hospitalPart = hospitalName ? ` جو کہ ${hospitalName} میں موجود ہیں،` : "";
+
+    if (item.providerType === 'doctor') {
+      return `${providerName}${hospitalPart} سے ${serviceName} کے لیے ابھی اپائنٹمنٹ بک کریں۔ اس مشورے کی فیس ${priceDisplay} ہے اور یہ ${city} میں دستیاب ہے۔`;
+    } else if (item.providerType === 'pharmacy') {
+      return `${providerName} سے ${serviceName} کے بارے میں معلومات حاصل کریں اور اسے ${city} میں حاصل کریں۔ اس کی قیمت ${priceDisplay} ہے۔`;
+    } else if (item.providerType === 'laboratory') {
+      return `${providerName} سے ${serviceName} ٹیسٹ بک کریں۔ اس ٹیسٹ کی قیمت ${priceDisplay} ہے اور یہ ${city} میں دستیاب ہے۔`;
+    }
+    return `${providerName} سے ${serviceName} کی خدمات حاصل کریں۔ فیس ${priceDisplay} ہے اور یہ ${city} میں دستیاب ہے۔`;
+  }, [item]);
+
+  const shortUrduSummary = useMemo(() => {
+    if (!item) return "";
+    const priceVal = Number(item.price).toLocaleString();
+    const priceDisplay = item.price === 0 ? "مفت" : `${priceVal} روپے`;
+
+    // Strict Truncation (Exactly 20 chars)
+    let pRaw = item.provider || "فراہم کنندہ";
+    let sRaw = item.name || "";
+    const providerName = pRaw.length > 20 ? pRaw.substring(0, 20) + "..." : pRaw;
+    const serviceName = sRaw.length > 20 ? sRaw.substring(0, 20) + "..." : sRaw;
+
+    return `${serviceName} بذریعہ ${providerName} - فیس: ${priceDisplay}`;
+  }, [item]);
+
   const handleBookNow = (svc: Unified) => {
     if (!user) {
       toast.error('Please login to book services');
@@ -567,12 +650,18 @@ const ServiceDetailPage = () => {
     if (!item) return null;
 
     const city = item.location || "Pakistan";
-    const priceDisplay = item.price === 0 ? "Free" : `PKR ${item.price}`;
+    const priceDisplay = item.price === 0 ? "Free" : `PKR ${Number(item.price).toLocaleString()}`;
     const providerName = item.provider || "Sehatkor Provider";
     const serviceName = item.name;
     const rating = item.rating || 0;
     const totalRatings = item.totalRatings || 0;
     const category = item.doctorCategory || item.pharmacyCategory || (item as any).labCategory || (item as any).clinicCategory || "";
+
+    // Resolve Hospital/Clinic Name for SEO
+    const variantsArr: any[] = Array.isArray((item as any)?.variants) ? (item as any).variants : [];
+    const firstVariantWithHospital = variantsArr.find(v => v?.hospitalClinicName);
+    const hospitalName = (item as any).hospitalClinicName || (firstVariantWithHospital ? firstVariantWithHospital.hospitalClinicName : "");
+    const hospitalSuffix = hospitalName ? ` at ${hospitalName}` : "";
 
     let title = "";
     let description = "";
@@ -583,34 +672,34 @@ const ServiceDetailPage = () => {
     // Logic based on Provider Type
     switch (item.providerType) {
       case "doctor":
-        title = `${serviceName} by ${providerName} in ${city}`;
-        description = `Book an appointment for ${serviceName} with ${providerName} in ${city}. Fee: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5.` : ''} Verified PMDC doctor. Get instant confirmation on Sehatkor.`;
-        keywords = `${serviceName}, ${serviceName} in ${city}, ${serviceName} by ${providerName}, ${providerName} ${city}, ${providerName} appointment, Best ${category || "Doctor"} in ${city}, Online Doctor Booking Pakistan, Sehatkor`;
+        title = `${serviceName} by ${providerName}${hospitalSuffix} in ${city} | Fee: ${priceDisplay}`;
+        description = `Book an appointment for ${serviceName} with ${providerName}${hospitalSuffix} in ${city}. Fee: ${priceDisplay}. ${rating > 0 ? `Rated ${rating.toFixed(1)}/5 by ${totalRatings} patients.` : ''} Verified PMDC doctor. Get instant confirmation on Sehatkor.`;
+        keywords = `${serviceName}, ${serviceName} in ${city}, ${serviceName} by ${providerName}, ${providerName} ${city}, ${providerName} appointment, Best ${category || "Doctor"} in ${city}, Online Doctor Booking Pakistan, Sehatkor, ڈاکٹر بکنگ`;
         schemaType = "MedicalProcedure";
         providerSchemaType = "Physician";
         break;
 
       case "pharmacy":
-        title = `${serviceName} by ${providerName} in ${city} | Medicine Delivery`;
-        description = `Buy ${serviceName} online from ${providerName} in ${city}. Price: ${priceDisplay}. ${item.homeDelivery ? 'Home delivery available.' : ''} Check availability and order now on Sehatkor.`;
-        keywords = `${serviceName}, ${serviceName} price in ${city}, ${serviceName} by ${providerName}, ${providerName} pharmacy ${city}, Medicine delivery ${city}, Buy ${serviceName} online, Online Pharmacy Pakistan, Sehatkor`;
+        title = `${serviceName} at ${providerName} in ${city} | Price: ${priceDisplay}`;
+        description = `Buy ${serviceName} online from ${providerName} in ${city}. Price: ${priceDisplay}. ${item.homeDelivery ? 'Home delivery available.' : ''} Check availability and order now on Sehatkor. Fast medicine delivery in ${city}.`;
+        keywords = `${serviceName}, ${serviceName} price in ${city}, ${serviceName} at ${providerName}, ${providerName} pharmacy ${city}, Medicine delivery ${city}, Buy ${serviceName} online, Online Pharmacy Pakistan, Sehatkor, دوائی آنلائن`;
         schemaType = "Product";
         providerSchemaType = "Organization";
         break;
 
       case "laboratory":
-        title = `${serviceName} by ${providerName} in ${city}`;
-        description = `Book ${serviceName} test at ${providerName} in ${city}. Test Price: ${priceDisplay}. ${item.homeDelivery ? 'Home sample collection available.' : ''} Get accurate results online via Sehatkor.`;
-        keywords = `${serviceName} test, ${serviceName} price in ${city}, ${serviceName} by ${providerName}, ${providerName} lab ${city}, Lab test ${city}, Chughtai Lab ${city}, Dow Lab ${city}, Essa Lab ${city}, Sehatkor`;
+        title = `${serviceName} at ${providerName} in ${city} | Fee: ${priceDisplay}`;
+        description = `Book ${serviceName} test at ${providerName} in ${city}. Test Price: ${priceDisplay}. ${item.homeDelivery ? 'Home sample collection available.' : ''} Get accurate results online via Sehatkor. Reliable clinical laboratory in ${city}.`;
+        keywords = `${serviceName} test, ${serviceName} price in ${city}, ${serviceName} at ${providerName}, ${providerName} lab ${city}, Lab test ${city}, Chughtai Lab ${city}, Dow Lab ${city}, Essa Lab ${city}, Sehatkor, لیب ٹیسٹ`;
         schemaType = "MedicalTest";
         providerSchemaType = "Organization";
         break;
 
       case "clinic":
       default:
-        title = `${serviceName} by ${providerName} in ${city}`;
-        description = `Book ${serviceName} at ${providerName} in ${city}. Charges: ${priceDisplay}. Verified medical services with instant online booking on Sehatkor.`;
-        keywords = `${serviceName}, ${serviceName} charges in ${city}, ${serviceName} cost, ${serviceName} by ${providerName}, ${providerName} ${city}, Hospital in ${city}, Clinic appointment ${city}, Sehatkor`;
+        title = `${serviceName} at ${providerName}${hospitalSuffix} in ${city} | Fee: ${priceDisplay}`;
+        description = `Book ${serviceName} at ${providerName}${hospitalSuffix} in ${city}. Charges: ${priceDisplay}. Verified medical services with instant online booking on Sehatkor. Healthcare in ${city}.`;
+        keywords = `${serviceName}, ${serviceName} charges in ${city}, ${serviceName} cost, ${serviceName} at ${providerName}, ${providerName} ${city}, Hospital in ${city}, Clinic appointment ${city}, Sehatkor, ہسپتال`;
         schemaType = "MedicalProcedure";
         providerSchemaType = "Organization";
         break;
@@ -634,9 +723,14 @@ const ServiceDetailPage = () => {
     const providerSchema: any = {
       "@type": providerSchemaType,
       "name": providerName,
+      "memberOf": hospitalName ? {
+        "@type": "MedicalOrganization",
+        "name": hospitalName
+      } : undefined,
       "address": {
         "@type": "PostalAddress",
         "addressLocality": city,
+        "streetAddress": item.address || undefined,
         "addressCountry": "PK"
       }
     };
@@ -720,7 +814,7 @@ const ServiceDetailPage = () => {
     if (serviceName) {
       faqList.push({
         question: `What is the ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName}?`,
-        answer: `The ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName} is ${priceDisplay}.`
+        answer: `The ${item.providerType === 'doctor' ? 'consultation fee' : 'price'} for ${serviceName}${hospitalSuffix} is ${priceDisplay}.`
       });
     }
 
@@ -728,17 +822,17 @@ const ServiceDetailPage = () => {
       faqList.push({
         question: `Is ${item.homeDelivery ? 'home delivery' : 'online booking'} available for ${serviceName}?`,
         answer: item.homeDelivery
-          ? `Yes, home delivery is available for ${serviceName} in ${city}.`
+          ? `Yes, home delivery is available for ${serviceName} in ${city} via ${providerName}.`
           : item.availability === 'Online'
             ? `Yes, ${serviceName} is available online.`
-            : `${serviceName} is available at ${providerName} in ${city}. You can book online through Sehatkor.`
+            : `${serviceName} is available at ${providerName}${hospitalSuffix} in ${city}. You can book online through Sehatkor.`
       });
     }
 
     if (serviceName && providerName) {
       faqList.push({
         question: `How can I book ${serviceName} at ${providerName}?`,
-        answer: `You can book ${serviceName} at ${providerName} online through Sehatkor. Simply click the "Book Now" button on this page for instant booking confirmation.`
+        answer: `You can book ${serviceName} at ${providerName}${hospitalSuffix} online through Sehatkor. Simply click the "Book Now" button on this page for instant booking confirmation.`
       });
     }
 
@@ -933,424 +1027,468 @@ const ServiceDetailPage = () => {
         />
       )}
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-8 pb-24 md:pb-8">
-        <Button variant="ghost" className="mb-4" onClick={handleBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="md:col-span-1 border border-purple-200/60 shadow-md bg-gradient-to-br from-rose-100/80 via-purple-100/40 to-sky-100/60 h-full">
-            <CardContent className="p-3 sm:p-4">
-              <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 rounded-xl bg-white/60 overflow-hidden flex items-center justify-center relative border border-white/50 shadow-sm">
-                {activeSlide.image ? (
-                  <img src={activeSlide.image} alt={activeSlide.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-muted-foreground">No Image</span>
-                )}
-
-                {/* Schedule overlays: days (top-left) and time (bottom-left) */}
-                {(() => {
-                  const formatTo12Hour = (time24?: string): string => {
-                    if (!time24) return "";
-                    const [hours, minutes] = time24.split(':');
-                    const hour24 = parseInt(hours, 10);
-                    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
-                    const ampm = hour24 >= 12 ? 'PM' : 'AM';
-                    return `${hour12}:${minutes} ${ampm}`;
-                  };
-
-                  const isMain = activeVariantIndex === -1;
-                  const itemAny = item as any;
-                  // Handle schedule display logic same as before...
-                  const sched = isMain ? itemAny.schedule : (slides[activeVariantIndex] as any)?.schedule;
-                  const days = sched?.days || [];
-                  const timeLabel = sched?.timeLabel;
-                  const startTime = sched?.startTime;
-                  const endTime = sched?.endTime;
-
-                  const daysText = Array.isArray(days) && days.length > 0 ? days.join(',') : "";
-                  const range = (startTime && endTime) ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
-
-                  const timeText = (() => {
-                    // Logic to derive period if missing
-                    const derivePeriod = (t?: string) => {
-                      if (!t) return "";
-                      const h = parseInt(String(t).split(":")[0] || "0", 10);
-                      if (h >= 20 || h < 4) return "Night";      // 8 PM - 3:59 AM
-                      if (h >= 16) return "Evening";             // 4 PM - 7:59 PM
-                      if (h >= 12) return "Afternoon";           // 12 PM - 3:59 PM
-                      return "Morning";                           // 4 AM - 11:59 AM
-                    };
-                    const derived = startTime ? derivePeriod(String(startTime)) : (endTime ? derivePeriod(String(endTime)) : "");
-                    // Prefer the label coming from the slide (variant/main); fallback to derived if missing
-                    const effectiveLabel = (timeLabel ? String(timeLabel) : (derived || ""));
-
-                    if (effectiveLabel && range) return `${effectiveLabel} — ${range}`;
-                    return String(effectiveLabel || range || "");
-                  })();
-
-                  return (
-                    <>
-                      {daysText && (
-                        <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span className="truncate max-w-[220px] sm:max-w-[280px]">{daysText}</span>
-                        </div>
-                      )}
-                      {timeText && (
-                        <div className="absolute left-2 bottom-2 bg-black/60 text-white text-[10px] sm:text-xs px-2 py-1 rounded flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span className="truncate max-w-[220px] sm:max-w-[280px]">{timeText}</span>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-
-                {/* Variant slider controls */}
-                {hasVariants && (
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                    {slides.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          console.log('🔧 ServiceDetailPage: Setting activeVariantIndex to:', index);
-                          setActiveVariantIndex(index);
-                        }}
-                        className={`w-2 h-2 rounded-full transition-all ${activeVariantIndex === index
-                          ? 'bg-white shadow-lg'
-                          : 'bg-white/50 hover:bg-white/70'
-                          }`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* Footer info under image */}
-              <div className="mt-8 hidden md:block">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-3xl font-semibold text-gray-600 truncate" title={activeSlide.name}>
-                    {activeSlide.name}
-                  </h2>
-                  {(item as any)._providerVerified ? (
-                    <Badge className="px-1.5 py-0.5 text-[10px] bg-green-50 text-green-600 border border-green-100">
-                      Verified
-                    </Badge>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-20 relative">
+        <div className="max-w-7xl mx-auto pt-6">
+          {/* Unified Premium Service Detail Card - Shifted Higher */}
+          <Card className="overflow-hidden border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-white rounded-[2rem] mb-8 max-h-fit lg:max-h-[620px] lg:-mt-1">
+            <div className="flex flex-col lg:flex-row h-full">
+              {/* Left Column: Image/Visuals - Compact Height */}
+              <div className="lg:w-[42%] relative bg-slate-100 flex items-center justify-center p-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-4 left-4 bg-white/60 backdrop-blur-md text-slate-700 hover:bg-white/80 transition-all h-8 z-30 rounded-full shadow-sm"
+                  onClick={handleBack}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1.5" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-900">Back</span>
+                </Button>
+                <div className="w-full h-full max-h-[380px] lg:max-h-full overflow-hidden relative rounded-xl">
+                  {activeSlide.image ? (
+                    <img
+                      src={activeSlide.image}
+                      alt={`${activeSlide.name} by ${item.provider}`}
+                      className="w-full h-full object-contain transition-transform duration-700 hover:scale-105"
+                    />
                   ) : (
-                    <Badge className="px-1.5 py-0.5 text-[10px] bg-red-50 text-red-600 border border-red-100">
-                      Unverified
-                    </Badge>
+                    <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
+                      No Image Available
+                    </div>
                   )}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {item.providerType === 'laboratory' ? 'Lab' :
-                    item.providerType === 'pharmacy' ? 'Pharmacy' :
-                      item.providerType === 'doctor' ? 'Doctor' :
-                        item.providerType === 'clinic' ? 'Clinic' :
-                          item.type}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="md:col-span-2 border border-purple-200/60 shadow-md bg-gradient-to-br from-rose-100/80 via-purple-100/40 to-sky-100/60">
-            <CardHeader className="pb-3 sm:pb-4 border-b border-slate-50/50">
-              <div className="flex items-center gap-2 min-w-0">
-                <CardTitle className="text-xl sm:text-2xl md:text-3xl leading-tight break-words">{activeSlide.name}</CardTitle>
-                {(item as any)._providerVerified ? (
-                  <Badge className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-100">Verified</Badge>
-                ) : (
-                  <Badge className="text-xs px-1.5 py-0.5 bg-red-50 text-red-600 border-red-100">Unverified</Badge>
-                )}
-              </div>
-              <CardDescription className="break-words leading-snug text-sm sm:text-base">{item.provider}</CardDescription>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 pt-0 pb-4 sm:pb-6">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 sm:gap-5">
-                <div className="space-y-2 min-w-0">
-                  {/* Price */}
-                  <div className="text-primary font-bold text-xl mb-4">{activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price || 0).toLocaleString()}`}</div>
 
-                  {/* Hospital/Clinic Name */}
+                  {/* Overlays on Image */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+                  {/* Badges on Image */}
+                  <div className="absolute top-4 left-4 flex flex-col gap-2">
+                    {(() => {
+                      const isMain = activeVariantIndex === -1;
+                      const itemAny = item as any;
+                      const sched = isMain ? itemAny.schedule : (slides[activeVariantIndex] as any)?.schedule;
+                      const days = sched?.days || [];
+                      const daysText = Array.isArray(days) && days.length > 0 ? days.join(',') : "";
+
+                      return daysText ? (
+                        <div className="bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 uppercase tracking-wider">
+                          <Calendar className="w-3 h-3 text-primary" />
+                          {daysText}
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+
+                  {/* Time Overlay */}
                   {(() => {
-                    // Prefer active slide; if empty on main slide, fallback to first variant that has a name
-                    const variantsArr: any[] = Array.isArray((item as any)?.variants) ? (item as any).variants : [];
-                    const firstVariantWithName = variantsArr.find(v => v?.hospitalClinicName);
-                    const displayHospitalClinicName = (activeSlide as any).hospitalClinicName
-                      || (item as any).hospitalClinicName
-                      || (firstVariantWithName ? firstVariantWithName.hospitalClinicName : undefined);
-                    return displayHospitalClinicName ? (
-                      <div className="text-sm text-blue-600 font-medium mb-3 flex items-center gap-2">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="16"
-                          height="16"
-                          aria-hidden="true"
-                          className="shrink-0"
-                        >
-                          <circle cx="12" cy="12" r="11" fill="#ef4444" />
-                          <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
-                          <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
-                        </svg>
-                        <span className="truncate">{displayHospitalClinicName}</span>
+                    const isMain = activeVariantIndex === -1;
+                    const itemAny = item as any;
+                    const sched = isMain ? itemAny.schedule : (slides[activeVariantIndex] as any)?.schedule;
+                    const startTime = sched?.startTime;
+                    const endTime = sched?.endTime;
+
+                    const formatTo12Hour = (time24?: string): string => {
+                      if (!time24) return "";
+                      const [hours, minutes] = time24.split(':');
+                      const hour24 = parseInt(hours, 10);
+                      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+                      return `${hour12}:${minutes} ${hour24 >= 12 ? 'PM' : 'AM'}`;
+                    };
+
+                    const range = (startTime && endTime) ? `${formatTo12Hour(String(startTime))} - ${formatTo12Hour(String(endTime))}` : "";
+
+                    return range ? (
+                      <div className="absolute bottom-6 left-6 text-white z-10">
+                        <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium">
+                          <Clock className="w-4 h-4" />
+                          {range}
+                        </div>
                       </div>
                     ) : null;
                   })()}
 
-                  {/* Category Badge */}
-                  <div className="mb-4">
-                    <Badge
-                      variant="outline"
-                      className="text-[11px] px-2 py-0.5 bg-rose-50 text-rose-600 border-rose-100"
-                    >
-                      {(item.providerType === 'pharmacy' && (item.pharmacyCategory || resolvedPharmacyCategory))
-                        ? (item.pharmacyCategory || resolvedPharmacyCategory)
-                        : (item.providerType === 'laboratory' && ((item as any).labCategory || resolvedLabCategory))
-                          ? (((item as any).labCategory || resolvedLabCategory) as string)
-                          : (item.providerType === 'doctor' && ((item as any).doctorCategory || resolvedDoctorCategory))
-                            ? (((item as any).doctorCategory || resolvedDoctorCategory) as string)
-                            : (item.providerType === 'clinic' && ((item as any).clinicCategory || resolvedClinicCategory))
-                              ? (((item as any).clinicCategory || resolvedClinicCategory) as string)
-                              : item.type}
-                    </Badge>
-                    {/* Department badge for clinic services */}
-                    {item.providerType === 'clinic' && (item as any).department && (
-                      <Badge className="mt-2 w-1/2 flex items-center gap-3 bg-purple-50 text-purple-700 border-purple-200 text-[11px] px-2 py-0.5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="12"
-                          height="12"
-                          aria-hidden="true"
-                          className="shrink-0"
-                        >
-                          <circle cx="12" cy="12" r="11" fill="#8b5cf6" />
-                          <rect x="11" y="6" width="2" height="12" fill="#ffffff" rx="1" />
-                          <rect x="6" y="11" width="12" height="2" fill="#ffffff" rx="1" />
-                        </svg>
-                        {(item as any).department}
-                      </Badge>
-                    )}
+                  {/* Variant Controls Component */}
+                  {hasVariants && (
+                    <div className="absolute bottom-6 right-6 flex gap-2 z-20">
+                      {slides.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setActiveVariantIndex(index)}
+                          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${activeVariantIndex === index
+                            ? 'bg-white scale-125 shadow-lg'
+                            : 'bg-white/40 hover:bg-white/60'
+                            }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Detailed Info - Clean White Background */}
+              <div className="lg:w-[58%] p-5 sm:p-6 lg:p-8 flex flex-col justify-center bg-white">
+                <div className="flex flex-col gap-3 sm:gap-4">
+                  {/* Header Area */}
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-100 hover:shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 cursor-default border border-emerald-400/20">
+                        {item.providerType === 'doctor' ? <User className="w-4 h-4" /> :
+                          item.providerType === 'pharmacy' ? <Activity className="w-4 h-4" /> :
+                            <Building2 className="w-4 h-4" />}
+                        <span className="text-[11px] font-black uppercase tracking-[0.05em]">
+                          {item.providerType === 'doctor' ? 'Professional Doctor' :
+                            item.providerType === 'pharmacy' ? 'Certified Pharmacy' :
+                              item.providerType === 'laboratory' ? 'Medical Lab' :
+                                item.providerType === 'clinic' ? 'Hospital / Clinic' : item.type}
+                        </span>
+                      </div>
+
+                      {(item as any)._providerVerified && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border-2 border-emerald-100 text-emerald-700 hover:bg-emerald-100 transition-all duration-300 cursor-default">
+                          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                          <span className="text-[11px] font-black uppercase tracking-[0.1em]">Verified</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] leading-[1.1] mb-3 tracking-[-0.03em] drop-shadow-[0_1px_1px_rgba(0,0,0,0.05)] cursor-help" style={{ fontFamily: '"Plus Jakarta Sans", "Outfit", "Inter", sans-serif' }}>
+                            {activeSlide.name.length > 20 ? activeSlide.name.substring(0, 20) + "..." : activeSlide.name}
+                          </h1>
+                        </TooltipTrigger>
+                        {activeSlide.name.length > 20 && (
+                          <TooltipContent side="bottom" align="start" sideOffset={10} className="bg-slate-900 text-white border-none px-4 py-2 rounded-xl shadow-xl max-w-[280px] z-50">
+                            <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{activeSlide.name}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm sm:text-[15px] text-slate-500 font-medium">
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors cursor-help">
+                              <User className="w-3.5 h-3.5 opacity-60" />
+                              {item.provider.length > 20 ? item.provider.substring(0, 20) + "..." : item.provider}
+                            </span>
+                          </TooltipTrigger>
+                          {item.provider.length > 20 && (
+                            <TooltipContent side="bottom" align="start" sideOffset={10} className="bg-indigo-600 text-white border-none px-4 py-2 rounded-xl shadow-xl max-w-[280px] z-50">
+                              <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{item.provider}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                      {(() => {
+                        const hospitalName = (activeSlide as any).hospitalClinicName || (item as any).hospitalClinicName;
+                        return hospitalName ? (
+                          <div className="flex items-center">
+                            <span className="w-1 h-1 bg-slate-300 rounded-full mx-1.5 hidden sm:block" />
+                            <span className="flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors">
+                              <Building2 className="w-3.5 h-3.5 opacity-60" />
+                              {hospitalName}
+                            </span>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
                   </div>
 
-                  {/* Unified 3-row badge layout */}
-                  <div className="space-y-3 mb-4 text-sm">
-                    {/* Row 1: Rating ↔ Location */}
-                    <div className="flex justify-between items-center min-h-[24px]">
-                      <div className="flex-shrink-0">
-                        <RatingBadge
-                          rating={item.rating}
-                          ratingBadge={item.ratingBadge as any}
-                          totalRatings={item.totalRatings}
-                          yourBadge={(yourBadge ?? item.myBadge) || null}
-                          size="sm"
-                          layout="column-compact"
-                        />
+                  {/* Quick Stats Row - Premium Icon-Driven Design */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-5 border-y border-slate-100">
+                    {/* Price Stat */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                        <Banknote className="w-5 h-5 text-emerald-600" />
                       </div>
-                      <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
-                        <MapPin className="w-4 h-4" />
-                        <span>{activeSlide.location}</span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Price</span>
+                        <span className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">
+                          {activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price).toLocaleString()}`}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Row 2: Service Type only */}
-                    <div className="flex justify-start items-center min-h-[24px]">
-                      <div className="flex-shrink-0">
-                        {(item.serviceType ?? resolvedServiceType) ? (
-                          <ServiceTypeBadge serviceType={item.serviceType ?? resolvedServiceType} size="sm" />
-                        ) : (
-                          <div className="h-6"></div>
-                        )}
+                    {/* Rating Stat */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                        <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
                       </div>
-                    </div>
-
-                    {/* Row 3: Home Delivery ↔ Availability ↔ WhatsApp */}
-                    <div className="flex justify-between items-center min-h-[24px]">
-                      <div className="flex-shrink-0">
-                        {(item.homeDelivery === true) && (
-                          <span className="flex items-center gap-1 text-emerald-700 font-semibold text-[12px]">
-                            <span className="leading-none">🏠</span>
-                            <span className="leading-none">Home Delivery</span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rating</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">
+                            {item.rating > 0 ? item.rating.toFixed(1) : "5.0"}
                           </span>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0">
-                        {activeSlide.availability ? (
-                          <AvailabilityBadge availability={activeSlide.availability} size="sm" />
-                        ) : (
-                          <div className="h-6"></div>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0">
-                        {item.providerPhone && (
-                          <ServiceWhatsAppButton
-                            phoneNumber={item.providerPhone}
-                            serviceName={item.name}
-                            providerName={item.provider}
-                            providerId={item.providerId}
-                            serviceId={item.id}
-                          />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Row 4: Diseases (for doctor services) */}
-                    {item.providerType === 'doctor' && (
-                      <div className="flex justify-start items-center min-h-[24px] mt-3">
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {(() => {
-                            const diseases = (hydratedDiseases ?? ((item as any)?.diseases || [])) as string[];
-                            return Array.isArray(diseases) && diseases.length > 0 ? (
-                              <div className="relative">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        type="button"
-                                        title="View diseases"
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          // Toggle diseases visibility for small screens
-                                          setExpandedDiseases(expandedDiseases === item.id ? null : item.id);
-                                        }}
-                                      >
-                                        <VirusIcon className="w-4 h-4" />
-                                        <span className="text-xs font-medium">Diseases</span>
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top" className="max-w-xs hidden sm:block">
-                                      <div className="text-xs text-emerald-800">
-                                        <div className="mb-1 font-medium">Diseases</div>
-                                        <div className="flex flex-col gap-1">
-                                          {diseases.map((d, i) => (
-                                            <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                              {d}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                                {/* Mobile click-to-show diseases list as tooltip/popover */}
-                                {expandedDiseases === item.id && (
-                                  <div className="absolute sm:hidden left-0 top-[110%] z-50 w-56 p-2 bg-white border border-emerald-200 rounded-md shadow-lg">
-                                    <div className="text-xs text-emerald-800">
-                                      <div className="mb-1 font-medium">Diseases</div>
-                                      <div className="flex flex-col gap-1">
-                                        {diseases.map((d, i) => (
-                                          <span key={`${d}-${i}`} className="flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            {d}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ) : null;
-                          })()}
+                          <span className="text-[10px] text-slate-400 font-bold mt-0.5">/ 5.0</span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Location Stat */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                        <MapPin className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">City</span>
+                        <span className="text-sm sm:text-base font-bold text-slate-700 truncate leading-none">
+                          {activeSlide.location}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Status Stat */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                        <Activity className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
+                        <span className="text-sm sm:text-base font-bold text-emerald-600 leading-none">
+                          Available
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Badges/Tags Area - Premium Icon-Driven Design */}
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {/* Category Badge */}
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/60 text-slate-600 hover:bg-slate-200/80 transition-all duration-300">
+                      <Layers className="w-3.5 h-3.5" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider">
+                        {(item.providerType === 'pharmacy' && (item.pharmacyCategory || resolvedPharmacyCategory))
+                          ? (item.pharmacyCategory || resolvedPharmacyCategory)
+                          : (item.providerType === 'laboratory' && ((item as any).labCategory || resolvedLabCategory))
+                            ? (((item as any).labCategory || resolvedLabCategory) as string)
+                            : (item.providerType === 'doctor' && ((item as any).doctorCategory || resolvedDoctorCategory))
+                              ? (((item as any).doctorCategory || resolvedDoctorCategory) as string)
+                              : (item.providerType === 'clinic' && ((item as any).clinicCategory || resolvedClinicCategory))
+                                ? (((item as any).clinicCategory || resolvedClinicCategory) as string)
+                                : item.type}
+                      </span>
+                    </div>
+
+                    {/* Service Type Badge (Private/Public) */}
+                    {(item.serviceType ?? resolvedServiceType) && (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-100/80 transition-all duration-300">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">
+                          {item.serviceType ?? resolvedServiceType}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Availability Badge */}
+                    {item.availability && (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 hover:bg-blue-100/80 transition-all duration-300">
+                        <Crosshair className="w-3.5 h-3.5" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">
+                          {activeSlide.availability || item.availability}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Home Delivery Badge */}
+                    {item.homeDelivery && (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 hover:bg-emerald-100/80 transition-all duration-300">
+                        <Home className="w-3.5 h-3.5" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">Home Delivery</span>
+                      </div>
                     )}
                   </div>
 
-                  {/* Rating counts */}
-                  {freshCounts && (
-                    <div className="flex items-center gap-2 text-xs text-gray-600 mb-4">
-                      <span>Excellent: {freshCounts.excellent}</span>
-                      <span>Good: {freshCounts.good}</span>
-                      <span>Fair: {freshCounts.fair}</span>
+                  {/* Description & Urdu Summary - More integrated */}
+                  <div className="space-y-3">
+                    <p className="text-slate-600 text-xs sm:text-sm leading-relaxed line-clamp-2 hover:line-clamp-none transition-all duration-300">
+                      {activeSlide.description}
+                    </p>
+
+                    {/* Urdu Quick Intro - Responsive Premium Design */}
+                    <div className="flex justify-center sm:justify-end pt-2">
+                      <div className="inline-flex relative group max-w-full">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 rounded-2xl sm:rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-700"></div>
+                        <div className="relative px-5 sm:px-6 py-2.5 bg-gradient-to-r from-emerald-50/90 to-teal-50/90 backdrop-blur-xl border border-emerald-100/80 rounded-2xl sm:rounded-full shadow-sm flex items-start sm:items-center gap-3 group-hover:border-emerald-200/90 transition-all duration-500 h-auto">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 animate-pulse shrink-0 mt-2 sm:mt-0"></div>
+                          <p className="text-emerald-950 text-sm sm:text-base lg:text-[17px] font-bold whitespace-normal sm:whitespace-nowrap tracking-normal leading-snug sm:leading-none text-right" dir="rtl" style={{ fontFamily: '"Noto Nastaliq Urdu", "Urdu Typesetting", "Jameel Noori Nastaleeq", serif' }}>
+                            {shortUrduSummary}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  {activeSlide.address && (
-                    <div className="text-sm text-muted-foreground">{activeSlide.address}</div>
-                  )}
-                  {activeSlide.googleMapLink && (
+                  </div>
+
+                  {/* Actions Area - Better Mobile Layout - Clean Divider */}
+                  <div className="flex flex-row items-center gap-2 pt-3 border-t border-slate-100">
                     <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-1 w-full sm:w-auto bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-teal-100 hover:text-emerald-800"
-                      onClick={() => window.open(activeSlide.googleMapLink!, '_blank')}
+                      size="lg"
+                      className="flex-[2.5] sm:flex-1 bg-gradient-to-r from-indigo-600 via-violet-500 to-indigo-600 bg-[length:200%_auto] hover:bg-right transition-all duration-500 text-white shadow-[0_10px_30px_rgba(79,70,229,0.25)] hover:shadow-[0_15px_35px_rgba(139,92,246,0.35)] rounded-2xl font-extrabold h-14 text-sm sm:text-lg tracking-wide uppercase group px-2 border border-white/10"
+                      onClick={() => handleBookNow(item)}
                     >
-                      <MapPin className="w-4 h-4 mr-1" /> Open in Google Maps
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 group-hover:rotate-12 transition-transform" />
+                      <span className="hidden sm:inline">Book Appointment</span>
+                      <span className="sm:hidden">Book Now</span>
                     </Button>
-                  )}
-                </div>
-                <div className="flex w-full md:w-auto gap-2">
-                  <Button
-                    className="flex-1 min-w-[100px] bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-300/30 hover:shadow-blue-400/40 hover:brightness-[1.03] focus-visible:ring-2 focus-visible:ring-blue-400 md:flex-none"
-                    onClick={() => handleBookNow(item)}
-                  >
-                    <Clock className="w-4 h-4 mr-1" /> Book Now
-                  </Button>
-                  {canRate && (
-                    <Button
-                      variant="outline"
-                      className="flex-1 min-w-[100px] md:flex-none"
-                      onClick={() => setIsRatingModalOpen(true)}
-                    >
-                      Rate
-                    </Button>
-                  )}
+
+                    <div className="flex flex-1 gap-1.5 justify-end">
+                      {item.providerPhone && (
+                        <ServiceWhatsAppButton
+                          phoneNumber={item.providerPhone}
+                          serviceName={item.name}
+                          providerName={item.provider}
+                          providerId={item.providerId}
+                          serviceId={item.id}
+                          className="h-14 w-14 rounded-2xl p-[2px] bg-gradient-to-br from-blue-500/20 via-primary/20 to-teal-500/20 border border-slate-200 hover:border-primary/30 transition-all shadow-sm"
+                        />
+                      )}
+                      {activeSlide.googleMapLink && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-14 w-10 sm:w-14 rounded-2xl border border-slate-200 hover:bg-slate-100 shrink-0"
+                          onClick={() => window.open(activeSlide.googleMapLink!, '_blank')}
+                          title="Open in Maps"
+                        >
+                          <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                        </Button>
+                      )
+                      }
+                      {canRate && (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="px-3 sm:px-8 rounded-2xl font-bold border-slate-200 h-14 text-xs sm:text-sm shrink-0"
+                          onClick={() => setIsRatingModalOpen(true)}
+                        >
+                          Rate
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <p className="mt-3 sm:mt-4 text-muted-foreground leading-relaxed break-words">{activeSlide.description}</p>
-              <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-orange-50/50">
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-1">Service Price</div>
-                    <div className="text-xl font-bold text-gray-900">
-                      {activeSlide.price === 0 ? "Free" : `PKR ${Number(activeSlide.price || 0).toLocaleString()}`}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50/50">
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Patient Rating</div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xl font-bold text-gray-900">{item.rating > 0 ? item.rating.toFixed(1) : "N/A"}</span>
-                      {item.rating > 0 && <span className="text-yellow-500 text-lg">★</span>}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
+            </div>
           </Card>
         </div>
-        {/* Visible FAQ Section for SEO Compliance */}
+
+        {/* Related Services Section - Premium Grid */}
+        {relatedServices.length > 0 && (
+          <div className="mt-20 mb-20">
+            <div className="bg-slate-50/50 rounded-[3rem] p-8 sm:p-12 border border-slate-100">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-10 h-1 bg-indigo-600 rounded-full"></span>
+                    <span className="text-indigo-600 font-bold tracking-widest text-xs uppercase">Discover More</span>
+                  </div>
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", "Outfit", "Inter", sans-serif' }}>
+                    Similar Services Nearby
+                  </h2>
+                  <p className="text-slate-500 font-medium mt-3 text-lg max-w-2xl">Explore highly-rated healthcare providers in your area offering similar quality care.</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="group border-slate-200 hover:border-indigo-600 hover:bg-indigo-600 hover:text-white transition-all duration-300 rounded-full px-8 h-12 font-bold shadow-sm"
+                  onClick={() => navigate('/services')}
+                >
+                  View All Services
+                  <ArrowLeft className="w-5 h-5 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
+                {relatedServices.map((svc) => (
+                  <div
+                    key={svc.id}
+                    className="group cursor-pointer bg-white rounded-3xl border border-slate-100 shadow-[0_2px_15px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(79,70,229,0.1)] hover:-translate-y-1.5 transition-all duration-500 overflow-hidden flex flex-col h-full"
+                    onClick={() => {
+                      navigate(`/service/${svc.id}`, { state: { service: svc, from: locationHook.pathname } });
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    <div className="relative h-56 overflow-hidden">
+                      {svc.image ? (
+                        <img
+                          src={svc.image}
+                          alt={svc.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                      <div className="absolute top-4 right-4 z-10">
+                        <div className="bg-white/95 backdrop-blur-md text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg ring-1 ring-black/5">
+                          PKR {Number(svc.price).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 rounded-full text-amber-600 text-[11px] font-bold border border-amber-100">
+                          <span>{svc.rating > 0 ? svc.rating.toFixed(1) : "5.0"}</span>
+                          <span className="text-amber-400 text-xs">★</span>
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wide">({svc.totalRatings || 'New'})</span>
+                      </div>
+                      <h3 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors text-[17px] leading-[1.3] line-clamp-2 mb-2" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{svc.name}</h3>
+                      <p className="text-xs text-slate-500 mb-5 flex items-center gap-1.5 font-medium">
+                        <User className="w-3.5 h-3.5 text-indigo-400" />
+                        {svc.provider}
+                      </p>
+                      <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-slate-500 max-w-[70%]">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span className="text-xs font-bold truncate">{svc.location}</span>
+                        </div>
+                        <div className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-indigo-300 group-hover:shadow-lg">
+                          <ArrowLeft className="w-4 h-4 rotate-180" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FAQ Section */}
         {seoData?.faqList && seoData.faqList.length > 0 && (
-          <div className="mt-8">
-            <Card className="border-none shadow-md bg-gradient-to-br from-teal-50 via-cyan-50/30 to-white overflow-hidden">
-              <CardHeader className="bg-transparent border-b border-teal-100/50 pb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-help-circle"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
+          <div className="mt-16 w-full mb-24">
+            <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-100 p-8 sm:p-10">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                  <div className="p-3.5 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-600/20 ring-4 ring-indigo-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-help-circle"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
                   </div>
                   <div>
-                    <CardTitle className="text-xl">Frequently Asked Questions</CardTitle>
-                    <CardDescription>Common questions about this service</CardDescription>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans", "Outfit", "Inter", sans-serif' }}>Frequently Asked Questions</h2>
+                    <p className="text-slate-500 font-medium mt-1.5 text-lg">Everything you need to know about this service</p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
+              </div>
+              <div className="p-0">
                 <Accordion type="single" collapsible className="w-full">
                   {seoData.faqList.map((faq, index) => (
-                    <AccordionItem key={index} value={`item-${index}`} className="border-b border-teal-100/50 last:border-0 px-6 bg-white/50 hover:bg-white/80 transition-colors duration-200">
-                      <AccordionTrigger className="text-left font-semibold text-slate-700 hover:text-emerald-700 hover:no-underline py-5 text-[15px]">
+                    <AccordionItem key={index} value={`item-${index}`} className="border-b border-slate-100 last:border-0 px-8 sm:px-10 hover:bg-slate-50/60 transition-colors duration-300 group">
+                      <AccordionTrigger className="text-left font-bold text-slate-700 group-hover:text-indigo-700 hover:no-underline py-6 text-base sm:text-lg">
                         {faq.question}
                       </AccordionTrigger>
-                      <AccordionContent className="text-slate-600 leading-relaxed pb-6 text-[15px]">
-                        <div className="pl-4 border-l-2 border-emerald-500/30">
+                      <AccordionContent className="text-slate-600 leading-relaxed pb-8 text-[15px] sm:text-base">
+                        <div className="pl-6 border-l-[3px] border-indigo-500/20 py-1">
                           {faq.answer}
                         </div>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
       </div>
