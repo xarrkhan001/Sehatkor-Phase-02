@@ -1,13 +1,23 @@
-import { type LucideIcon, Bug, Thermometer, Syringe, Droplet, Biohazard, Heart, Zap, Activity, Shield, AlertTriangle, Wind, Utensils, HeartPulse, Stethoscope } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
+import {
+  DengueIcon,
+  FluIcon,
+  MalariaIcon,
+  CovidIcon,
+  HepatitisIcon,
+  TyphoidIcon,
+  DiabetesIcon,
+  HypertensionIcon
+} from "@/components/DiseaseIcons";
 
 export type Disease = {
   slug: string;
   name: string;
   category: "Viral" | "Bacterial" | "Parasitic" | "Chronic" | "Other";
-  icon: LucideIcon;
-  colorClass: string; // tailwind text color class for icon
-  bgClass: string; // background/gradient class for circle
-  ringClass?: string; // optional ring color class
+  icon: any;
+  colorClass: string;
+  bgClass: string;
+  ringClass?: string;
   description: string;
   symptoms: string[];
   causes: string[];
@@ -19,36 +29,21 @@ export const diseases: Disease[] = [
     slug: "dengue",
     name: "Dengue",
     category: "Viral",
-    icon: Thermometer,
+    icon: DengueIcon,
     colorClass: "text-rose-600",
     bgClass: "bg-rose-100",
     ringClass: "ring-rose-200",
     description:
       "Dengue is a mosquito-borne viral infection causing high fever, severe headache, pain behind the eyes, muscle and joint pains, and rash.",
-    symptoms: [
-      "High fever",
-      "Severe headache",
-      "Pain behind the eyes",
-      "Joint and muscle pain",
-      "Nausea and vomiting",
-      "Skin rash"
-    ],
-    causes: [
-      "Infection by dengue virus transmitted by Aedes mosquitoes",
-      "Mosquito bites in stagnant water areas"
-    ],
-    prevention: [
-      "Avoid mosquito bites",
-      "Use insect repellent",
-      "Remove standing water",
-      "Wear long sleeves and pants"
-    ]
+    symptoms: ["High fever", "Severe headache", "Pain behind the eyes", "Joint and muscle pain", "Nausea and vomiting", "Skin rash"],
+    causes: ["Infection by dengue virus transmitted by Aedes mosquitoes", "Mosquito bites in stagnant water areas"],
+    prevention: ["Avoid mosquito bites", "Use insect repellent", "Remove standing water", "Wear long sleeves and pants"]
   },
   {
     slug: "influenza",
     name: "Influenza (Flu)",
     category: "Viral",
-    icon: Wind,
+    icon: FluIcon,
     colorClass: "text-sky-600",
     bgClass: "bg-sky-100",
     ringClass: "ring-sky-200",
@@ -62,7 +57,7 @@ export const diseases: Disease[] = [
     slug: "malaria",
     name: "Malaria",
     category: "Parasitic",
-    icon: Bug,
+    icon: MalariaIcon,
     colorClass: "text-emerald-600",
     bgClass: "bg-emerald-100",
     ringClass: "ring-emerald-200",
@@ -76,7 +71,7 @@ export const diseases: Disease[] = [
     slug: "covid-19",
     name: "COVID-19",
     category: "Viral",
-    icon: Biohazard,
+    icon: CovidIcon,
     colorClass: "text-purple-600",
     bgClass: "bg-purple-100",
     ringClass: "ring-purple-200",
@@ -90,7 +85,7 @@ export const diseases: Disease[] = [
     slug: "hepatitis-a",
     name: "Hepatitis A",
     category: "Viral",
-    icon: Droplet,
+    icon: HepatitisIcon,
     colorClass: "text-amber-600",
     bgClass: "bg-amber-100",
     ringClass: "ring-amber-200",
@@ -104,7 +99,7 @@ export const diseases: Disease[] = [
     slug: "typhoid",
     name: "Typhoid Fever",
     category: "Bacterial",
-    icon: Utensils,
+    icon: TyphoidIcon,
     colorClass: "text-orange-600",
     bgClass: "bg-orange-100",
     ringClass: "ring-orange-200",
@@ -118,7 +113,7 @@ export const diseases: Disease[] = [
     slug: "diabetes",
     name: "Diabetes",
     category: "Chronic",
-    icon: Syringe,
+    icon: DiabetesIcon,
     colorClass: "text-blue-600",
     bgClass: "bg-blue-100",
     ringClass: "ring-blue-200",
@@ -132,7 +127,7 @@ export const diseases: Disease[] = [
     slug: "hypertension",
     name: "Hypertension",
     category: "Chronic",
-    icon: HeartPulse,
+    icon: HypertensionIcon,
     colorClass: "text-red-600",
     bgClass: "bg-red-100",
     ringClass: "ring-red-200",
@@ -149,5 +144,3 @@ export function getDiseaseBySlug(slug: string) {
 }
 
 export const popularDiseases = diseases.slice(0, 8);
-
-
