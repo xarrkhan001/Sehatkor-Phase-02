@@ -158,6 +158,7 @@ const ServiceDetailPage = () => {
     if (!rawStateService) return undefined;
     const normalized: Unified = {
       ...(rawStateService as any),
+      name: rawStateService.name || "Healthcare Service",
       // Normalize providerType coming from list pages where it may be `_providerType`
       providerType: (rawStateService.providerType ?? rawStateService._providerType) as Unified['providerType'],
       provider: rawStateService.provider || rawStateService.providerName || "Provider",
@@ -1163,7 +1164,7 @@ const ServiceDetailPage = () => {
                         </TooltipTrigger>
                         {(activeSlide.name || "").length > 20 && (
                           <TooltipContent side="bottom" align="start" sideOffset={10} className="bg-slate-900 text-white border-none px-4 py-2 rounded-xl shadow-xl max-w-[280px] z-50">
-                            <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{activeSlide.name}</p>
+                            <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{activeSlide.name || "Service Name"}</p>
                           </TooltipContent>
                         )}
                       </Tooltip>
@@ -1180,7 +1181,7 @@ const ServiceDetailPage = () => {
                           </TooltipTrigger>
                           {(item.provider || "").length > 20 && (
                             <TooltipContent side="bottom" align="start" sideOffset={10} className="bg-indigo-600 text-white border-none px-4 py-2 rounded-xl shadow-xl max-w-[280px] z-50">
-                              <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{item.provider}</p>
+                              <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{item.provider || "Provider"}</p>
                             </TooltipContent>
                           )}
                         </Tooltip>
