@@ -11,6 +11,7 @@ import CompareExplorer from "@/components/CompareExplorer";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
 import HomeCTA from "@/components/HomeCTA";
 import SEO from "@/components/SEO";
+import FeaturedHealthcare from "@/components/FeaturedHealthcare";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { popularDiseases } from "@/data/diseases";
@@ -45,16 +46,16 @@ import {
 } from "lucide-react";
 
 // Animations
-const fadeInUp = {
+const fadeInUp: any = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
+    transition: { duration: 0.6 }
   }
 };
 
-const staggerContainer = {
+const staggerContainer: any = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -608,6 +609,8 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      <FeaturedHealthcare />
 
       {/* Diseases & Symptoms Section */}
       <section className="py-20 relative overflow-hidden bg-white">

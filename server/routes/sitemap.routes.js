@@ -32,11 +32,15 @@ router.get('/sitemap.xml', async (req, res) => {
       if (service._id) {
         serviceUrls.push({
           loc: `${baseUrl}/service/${service._id}`,
-          lastmod: service.updatedAt 
-            ? new Date(service.updatedAt).toISOString().split('T')[0] 
+          lastmod: service.updatedAt
+            ? new Date(service.updatedAt).toISOString().split('T')[0]
             : currentDate,
           changefreq: 'weekly',
-          priority: '0.8'
+          priority: '0.8',
+          image: service.image ? {
+            loc: service.image.startsWith('http') ? service.image : `${baseUrl}${service.image}`,
+            title: service.name
+          } : null
         });
       }
     });
@@ -46,11 +50,15 @@ router.get('/sitemap.xml', async (req, res) => {
       if (service._id) {
         serviceUrls.push({
           loc: `${baseUrl}/service/${service._id}`,
-          lastmod: service.updatedAt 
-            ? new Date(service.updatedAt).toISOString().split('T')[0] 
+          lastmod: service.updatedAt
+            ? new Date(service.updatedAt).toISOString().split('T')[0]
             : currentDate,
           changefreq: 'weekly',
-          priority: '0.8'
+          priority: '0.8',
+          image: service.image ? {
+            loc: service.image.startsWith('http') ? service.image : `${baseUrl}${service.image}`,
+            title: service.name
+          } : null
         });
       }
     });
@@ -60,11 +68,15 @@ router.get('/sitemap.xml', async (req, res) => {
       if (service._id) {
         serviceUrls.push({
           loc: `${baseUrl}/service/${service._id}`,
-          lastmod: service.updatedAt 
-            ? new Date(service.updatedAt).toISOString().split('T')[0] 
+          lastmod: service.updatedAt
+            ? new Date(service.updatedAt).toISOString().split('T')[0]
             : currentDate,
           changefreq: 'weekly',
-          priority: '0.8'
+          priority: '0.8',
+          image: service.image ? {
+            loc: service.image.startsWith('http') ? service.image : `${baseUrl}${service.image}`,
+            title: service.name
+          } : null
         });
       }
     });
@@ -74,11 +86,15 @@ router.get('/sitemap.xml', async (req, res) => {
       if (service._id) {
         serviceUrls.push({
           loc: `${baseUrl}/service/${service._id}`,
-          lastmod: service.updatedAt 
-            ? new Date(service.updatedAt).toISOString().split('T')[0] 
+          lastmod: service.updatedAt
+            ? new Date(service.updatedAt).toISOString().split('T')[0]
             : currentDate,
           changefreq: 'weekly',
-          priority: '0.8'
+          priority: '0.8',
+          image: service.image ? {
+            loc: service.image.startsWith('http') ? service.image : `${baseUrl}${service.image}`,
+            title: service.name
+          } : null
         });
       }
     });
@@ -100,7 +116,7 @@ router.get('/sitemap.xml', async (req, res) => {
 
     // Generate XML
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
 
     allUrls.forEach(url => {
       xml += '  <url>\n';
@@ -108,6 +124,14 @@ router.get('/sitemap.xml', async (req, res) => {
       xml += `    <lastmod>${url.lastmod}</lastmod>\n`;
       xml += `    <changefreq>${url.changefreq}</changefreq>\n`;
       xml += `    <priority>${url.priority}</priority>\n`;
+
+      if (url.image) {
+        xml += '    <image:image>\n';
+        xml += `      <image:loc>${url.image.loc}</image:loc>\n`;
+        xml += `      <image:title>${url.image.title}</image:title>\n`;
+        xml += '    </image:image>\n';
+      }
+
       xml += '  </url>\n';
     });
 

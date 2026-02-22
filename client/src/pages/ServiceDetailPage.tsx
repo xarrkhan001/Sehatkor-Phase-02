@@ -160,6 +160,7 @@ const ServiceDetailPage = () => {
       ...(rawStateService as any),
       // Normalize providerType coming from list pages where it may be `_providerType`
       providerType: (rawStateService.providerType ?? rawStateService._providerType) as Unified['providerType'],
+      provider: rawStateService.provider || rawStateService.providerName || "Provider",
       // Treat real services coming from API as real unless explicitly stated otherwise
       isReal: (rawStateService.isReal ?? true),
       // Normalize common optional fields
@@ -954,6 +955,10 @@ const ServiceDetailPage = () => {
     if (isLoadingService) {
       return (
         <div className="min-h-screen bg-background">
+          <SEO
+            title="Loading Service..."
+            description="Please wait while we fetch the healthcare service details for you on Sehatkor."
+          />
           <div className="container mx-auto px-4 py-12">
             <div className="text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -1153,10 +1158,10 @@ const ServiceDetailPage = () => {
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
                           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] leading-[1.1] mb-3 tracking-[-0.03em] drop-shadow-[0_1px_1px_rgba(0,0,0,0.05)] cursor-help" style={{ fontFamily: '"Plus Jakarta Sans", "Outfit", "Inter", sans-serif' }}>
-                            {activeSlide.name.length > 20 ? activeSlide.name.substring(0, 20) + "..." : activeSlide.name}
+                            {(activeSlide.name || "").length > 20 ? (activeSlide.name || "").substring(0, 20) + "..." : (activeSlide.name || "")}
                           </h1>
                         </TooltipTrigger>
-                        {activeSlide.name.length > 20 && (
+                        {(activeSlide.name || "").length > 20 && (
                           <TooltipContent side="bottom" align="start" sideOffset={10} className="bg-slate-900 text-white border-none px-4 py-2 rounded-xl shadow-xl max-w-[280px] z-50">
                             <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{activeSlide.name}</p>
                           </TooltipContent>
@@ -1170,10 +1175,10 @@ const ServiceDetailPage = () => {
                           <TooltipTrigger asChild>
                             <span className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors cursor-help">
                               <User className="w-3.5 h-3.5 opacity-60" />
-                              {item.provider.length > 20 ? item.provider.substring(0, 20) + "..." : item.provider}
+                              {(item.provider || "").length > 20 ? (item.provider || "").substring(0, 20) + "..." : (item.provider || "Provider")}
                             </span>
                           </TooltipTrigger>
-                          {item.provider.length > 20 && (
+                          {(item.provider || "").length > 20 && (
                             <TooltipContent side="bottom" align="start" sideOffset={10} className="bg-indigo-600 text-white border-none px-4 py-2 rounded-xl shadow-xl max-w-[280px] z-50">
                               <p className="text-[13px] sm:text-xs font-bold leading-relaxed">{item.provider}</p>
                             </TooltipContent>

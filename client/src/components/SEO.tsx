@@ -37,7 +37,7 @@ const SEO = ({
     const finalDescription = description || defaultDescription;
     const finalKeywords = keywords || defaultKeywords;
     const finalImage = image ? (image.startsWith('http') ? image : `${siteUrl}${image}`) : defaultImage;
-    const finalUrl = canonical || `${siteUrl}${location.pathname}`;
+    const finalUrl = (canonical || `${siteUrl}${location.pathname}`).replace(/\/$/, "");
 
     return (
         <Helmet>
