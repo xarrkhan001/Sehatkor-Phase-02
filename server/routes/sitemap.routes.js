@@ -106,13 +106,57 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: `${baseUrl}/pharmacies`, lastmod: currentDate, changefreq: 'daily', priority: '0.9' },
       { loc: `${baseUrl}/labs`, lastmod: currentDate, changefreq: 'daily', priority: '0.9' },
       { loc: `${baseUrl}/hospitals`, lastmod: currentDate, changefreq: 'daily', priority: '0.9' },
+      { loc: `${baseUrl}/blog`, lastmod: currentDate, changefreq: 'weekly', priority: '0.8' },
+      { loc: `${baseUrl}/urdu`, lastmod: currentDate, changefreq: 'weekly', priority: '0.8' },
+      { loc: `${baseUrl}/diseases`, lastmod: currentDate, changefreq: 'weekly', priority: '0.8' },
+      { loc: `${baseUrl}/all-diseases`, lastmod: currentDate, changefreq: 'weekly', priority: '0.7' },
       { loc: `${baseUrl}/about`, lastmod: currentDate, changefreq: 'monthly', priority: '0.5' },
       { loc: `${baseUrl}/contact`, lastmod: currentDate, changefreq: 'monthly', priority: '0.5' },
-      { loc: `${baseUrl}/blog`, lastmod: currentDate, changefreq: 'weekly', priority: '0.7' }
+      { loc: `${baseUrl}/faq`, lastmod: currentDate, changefreq: 'monthly', priority: '0.5' },
+      { loc: `${baseUrl}/how-it-works`, lastmod: currentDate, changefreq: 'monthly', priority: '0.5' },
+      { loc: `${baseUrl}/privacy`, lastmod: currentDate, changefreq: 'monthly', priority: '0.1' },
+      { loc: `${baseUrl}/cookies`, lastmod: currentDate, changefreq: 'monthly', priority: '0.1' }
     ];
 
+    // City Pages
+    const cities = ["karachi", "lahore", "islamabad", "peshawar", "mardan", "swat", "chitral", "noshera", "swabi", "azad-kashmir"];
+    const cityPages = cities.map(city => ({
+      loc: `${baseUrl}/${city}`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.8'
+    }));
+
+    // Disease Pages (from the static list we know)
+    const diseasesList = ["dengue", "influenza", "malaria", "covid-19", "hepatitis-a", "typhoid", "diabetes", "hypertension"];
+    const diseasePages = diseasesList.map(slug => ({
+      loc: `${baseUrl}/diseases/${slug}`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.7'
+    }));
+
+    // Blog Post Pages (from App.tsx)
+    const blogPosts = [
+      "how-to-book-doctor-online-pakistan",
+      "best-lab-tests-routine-checkup-pakistan",
+      "top-10-hospitals-pakistan-2025",
+      "dengue-fever-pakistan-complete-guide",
+      "diabetes-management-pakistan-complete-guide",
+      "heart-disease-pakistan-complete-guide",
+      "pregnancy-care-pakistan-complete-guide",
+      "child-fever-when-to-see-doctor-pakistan",
+      "blood-test-at-home-pakistan-guide"
+    ];
+    const blogPages = blogPosts.map(slug => ({
+      loc: `${baseUrl}/blog/${slug}`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.6'
+    }));
+
     // Combine all URLs
-    const allUrls = [...staticPages, ...serviceUrls];
+    const allUrls = [...staticPages, ...cityPages, ...diseasePages, ...blogPages, ...serviceUrls];
 
     // Generate XML
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -162,7 +206,11 @@ router.get('/sitemap/stats', async (req, res) => {
       ClinicService.countDocuments({})
     ]);
 
-    const totalServices = doctorCount + medicineCount + labTestCount + clinicCount;
+    const staticCount = 15;
+    const cityCount = 10;
+    const diseaseCount = 8;
+    const blogCount = 9;
+    const totalExtra = staticCount + cityCount + diseaseCount + blogCount;
 
     res.json({
       services: {
@@ -173,9 +221,12 @@ router.get('/sitemap/stats', async (req, res) => {
         total: totalServices
       },
       sitemapUrls: {
-        staticPages: 8,
+        staticPages: staticCount,
+        cityPages: cityCount,
+        diseasePages: diseaseCount,
+        blogPages: blogCount,
         servicePages: totalServices,
-        total: 8 + totalServices
+        total: totalExtra + totalServices
       }
     });
   } catch (error) {

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { getDiseaseBySlug } from "@/data/diseases";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import SEO from "@/components/SEO";
 
 const DiseaseDetailPage = () => {
   useEffect(() => {
@@ -27,6 +28,11 @@ const DiseaseDetailPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-12">
+      <SEO
+        title={`${disease.name} Symptoms, Causes and Treatment in Pakistan`}
+        description={`Learn everything about ${disease.name} in Pakistan. Symptoms: ${disease.symptoms.slice(0, 3).join(', ')}. Causes: ${disease.causes.slice(0, 2).join(', ')}. Find best doctors for ${disease.name} on Sehatkor.`}
+        keywords={`${disease.name}, ${disease.name} symptoms Pakistan, ${disease.name} causes, treatment for ${disease.name}, best doctors for ${disease.name}, sehatkor diseases`}
+      />
       <div className="mb-8 flex items-center gap-4">
         <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center">
           <Icon className={`w-8 h-8 ${disease.colorClass}`} />
