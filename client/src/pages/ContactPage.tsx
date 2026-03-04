@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Clock, 
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
   Send,
   MessageCircle,
   Headphones,
@@ -23,6 +23,7 @@ import {
   Stethoscope
 } from "lucide-react";
 import { apiUrl } from '@/config/api';
+import SEO from "@/components/SEO";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -41,7 +42,7 @@ const staggerContainer = {
 
 const ContactPage = () => {
   const [isMounted, setIsMounted] = useState(false);
-  
+
   useEffect(() => {
     setIsMounted(true);
     return () => setIsMounted(false);
@@ -64,7 +65,7 @@ const ContactPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.email || !formData.message) {
       toast({
         title: "Error",
@@ -169,10 +170,16 @@ const ContactPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <SEO
+        title="Contact Us - Sehatkor | Healthcare Support & Inquiries"
+        description="Get in touch with Sehatkor for any medical inquiries, healthcare support, or feedback. We're here to help you find the best medical services in Pakistan."
+        keywords="contact sehatkor, healthcare support Pakistan, medical inquiries, sehatkor customer service"
+        canonical="https://sehatkor.pk/contact"
+      />
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-200 text-gray-900 py-16">
         <div className="container mx-auto px-4 text-center">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -180,7 +187,7 @@ const ContactPage = () => {
           >
             We're Here to Help
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -193,7 +200,7 @@ const ContactPage = () => {
 
       <div className="container mx-auto px-4 py-12 -mt-10">
         {/* Quick Help Section */}
-        <motion.div 
+        <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
@@ -238,7 +245,7 @@ const ContactPage = () => {
 
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Contact Information */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -293,7 +300,7 @@ const ContactPage = () => {
           </motion.div>
 
           {/* Contact Form */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -401,8 +408,8 @@ const ContactPage = () => {
                         <p className="text-sm text-gray-500 mb-4 sm:mb-0">
                           We'll get back to you within 24 hours
                         </p>
-                        <Button 
-                          type="submit" 
+                        <Button
+                          type="submit"
                           disabled={isSubmitting}
                           className="w-full sm:w-auto px-8 py-6 text-base font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
                         >

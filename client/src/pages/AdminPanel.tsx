@@ -1,6 +1,7 @@
 import { useState, useEffect, memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,11 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // removed unused mock data import
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Users, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Users,
   ShieldCheck,
   Search,
   Filter,
@@ -78,7 +79,7 @@ const AddPartnerDialog = memo(function AddPartnerDialog({
       <DialogTrigger asChild>
         <Button>Add Partner</Button>
       </DialogTrigger>
-      <DialogContent onOpenAutoFocus={(e)=>e.preventDefault()} onPointerDownOutside={(e)=>e.preventDefault()} onInteractOutside={(e)=>e.preventDefault()}>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Add Partner</DialogTitle>
           <DialogDescription>Upload PNG logo. Company name is optional.</DialogDescription>
@@ -86,11 +87,11 @@ const AddPartnerDialog = memo(function AddPartnerDialog({
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium">Company Name (optional)</label>
-            <UiInput autoComplete="off" value={name} onChange={(e:any)=>setName(e.target.value)} placeholder="e.g., TCS" />
+            <UiInput autoComplete="off" value={name} onChange={(e: any) => setName(e.target.value)} placeholder="e.g., TCS" />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">PNG Logo</label>
-            <input type="file" accept="image/png" onChange={(e:any)=> handleFile(e.target.files?.[0]||null)} />
+            <input type="file" accept="image/png" onChange={(e: any) => handleFile(e.target.files?.[0] || null)} />
             {previewUrl && (
               <div className="mt-2 flex items-center gap-3">
                 <img src={previewUrl} className="h-16 w-16 rounded-full object-contain ring-1 ring-gray-200" />
@@ -187,7 +188,7 @@ const AdminPanel = () => {
           ...(token && { 'Authorization': `Bearer ${token}` })
         }
       });
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           toast({ title: 'Authentication Error', description: 'Please login to access admin panel', variant: 'destructive' });
@@ -195,7 +196,7 @@ const AdminPanel = () => {
         }
         throw new Error('Failed to fetch pending users');
       }
-      
+
       const data = await res.json();
       setUsers(data);
     } catch (err) {
@@ -215,7 +216,7 @@ const AdminPanel = () => {
           ...(token && { 'Authorization': `Bearer ${token}` })
         }
       });
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           toast({ title: 'Authentication Error', description: 'Please login to access admin panel', variant: 'destructive' });
@@ -223,7 +224,7 @@ const AdminPanel = () => {
         }
         throw new Error('Failed to fetch admin stats');
       }
-      
+
       const data = await res.json();
       setStats(data.stats);
     } catch (err) {
@@ -232,8 +233,8 @@ const AdminPanel = () => {
   };
 
   // Fetch on mount
-  useEffect(() => { 
-    fetchPendingUsers(); 
+  useEffect(() => {
+    fetchPendingUsers();
     fetchAdminStats();
     fetchPendingDocuments();
     fetchPartners();
@@ -273,7 +274,7 @@ const AdminPanel = () => {
         </div>
         <div className="flex justify-between items-center" id="partners-section">
           <h3 className="font-semibold">Add New Partner</h3>
-          <AddPartnerDialog open={openAddModal} onOpenChange={setOpenAddModal} onSave={({name, logo})=>handleCreatePartner(name, logo)} />
+          <AddPartnerDialog open={openAddModal} onOpenChange={setOpenAddModal} onSave={({ name, logo }) => handleCreatePartner(name, logo)} />
         </div>
 
         <Table>
@@ -285,17 +286,17 @@ const AdminPanel = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(partners||[]).map((p:any)=> (
+            {(partners || []).map((p: any) => (
               <TableRow key={p._id}>
                 <TableCell>
                   <img src={p.logoUrl} alt={p.name} className="h-12 w-12 rounded-full object-contain" />
                 </TableCell>
                 <TableCell>
-                  <UiInput defaultValue={p.name} onBlur={(e:any)=>handleReplaceLogo(p._id, null, e.target.value)} />
+                  <UiInput defaultValue={p.name} onBlur={(e: any) => handleReplaceLogo(p._id, null, e.target.value)} />
                 </TableCell>
                 <TableCell className="space-x-2">
-                  <input type="file" accept="image/png" onChange={(e:any)=>handleReplaceLogo(p._id, e.target.files?.[0]||null)} />
-                  <Button variant="destructive" onClick={()=>handleDeletePartner(p._id)}>Delete</Button>
+                  <input type="file" accept="image/png" onChange={(e: any) => handleReplaceLogo(p._id, e.target.files?.[0] || null)} />
+                  <Button variant="destructive" onClick={() => handleDeletePartner(p._id)}>Delete</Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -310,7 +311,7 @@ const AdminPanel = () => {
       const res = await fetch(apiUrl('/api/partners'));
       const data = await res.json();
       if (res.ok && data?.success) setPartners(data.partners || []);
-    } catch {}
+    } catch { }
   };
 
   const handleCreatePartner = async (name: string, logo: File) => {
@@ -380,7 +381,7 @@ const AdminPanel = () => {
       const token = getAuthToken();
       const res = await fetch(apiUrl(`/api/admin/verify/${userId}`), {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
         },
@@ -407,7 +408,7 @@ const AdminPanel = () => {
       const token = getAuthToken();
       const res = await fetch(apiUrl(`/api/admin/verify/${userId}`), {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
         },
@@ -479,20 +480,21 @@ const AdminPanel = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-200 via-gray-200 to-slate-300">
+      <SEO title="Admin Panel - Sehatkor" noindex={true} />
       {/* Decorative Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Animated Gradient Orbs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-indigo-300/25 to-purple-300/25 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-purple-300/25 to-pink-300/25 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-blue-300/20 to-cyan-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
-        
+
         {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.025)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        
+
         {/* Subtle Noise Texture */}
         <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')]" />
       </div>
-      
+
       {/* Gate Modal Overlay */}
       {showGate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 overflow-hidden">
@@ -559,13 +561,13 @@ const AdminPanel = () => {
         <div className="relative overflow-hidden rounded-3xl mb-8 bg-white shadow-xl border border-gray-100">
           {/* Subtle Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-pink-50/50" />
-          
+
           {/* Animated Background Pattern */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
-          
+
           {/* Content */}
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-8">
             <div className="flex items-center gap-4">
@@ -573,7 +575,7 @@ const AdminPanel = () => {
               <div className="hidden sm:flex w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 items-center justify-center shadow-lg">
                 <ShieldCheck className="w-8 h-8 text-white drop-shadow-lg" />
               </div>
-              
+
               {/* Text Content */}
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 flex items-center gap-3">
@@ -587,14 +589,14 @@ const AdminPanel = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 hover:from-green-600 hover:to-emerald-600 transition-all shadow-md">
                 <ShieldCheck className="w-4 h-4 mr-1" />
                 Admin Access
               </Badge>
-              <Button 
+              <Button
                 onClick={handleAdminLogout}
                 className="bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 hover:scale-105 transition-all shadow-md font-semibold border-0"
               >
@@ -602,7 +604,7 @@ const AdminPanel = () => {
               </Button>
             </div>
           </div>
-          
+
           {/* Bottom Gradient Accent Line */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
         </div>
@@ -621,14 +623,14 @@ const AdminPanel = () => {
               >
                 {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${getCardGradient(stat.color)} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />
-                
+
                 {/* Shimmer Effect on Hover */}
                 <div className={`absolute inset-0 bg-gradient-to-r ${getShimmerGradient(stat.color)} opacity-0 group-hover:opacity-20 transition-opacity duration-700`} />
-                
+
                 {/* Decorative Circles */}
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
                 <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-                
+
                 {/* Content */}
                 <div className="relative p-6 text-white">
                   {/* Icon */}
@@ -638,7 +640,7 @@ const AdminPanel = () => {
                     </div>
                     <div className="w-2 h-2 rounded-full bg-white/40 group-hover:scale-150 transition-transform duration-300" />
                   </div>
-                  
+
                   {/* Stats */}
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-white/80 uppercase tracking-wider">
@@ -651,7 +653,7 @@ const AdminPanel = () => {
                       {stat.change || 'from last month'}
                     </p>
                   </div>
-                  
+
                   {/* Bottom Accent Line */}
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 group-hover:h-1.5 transition-all duration-300" />
                 </div>
@@ -662,9 +664,9 @@ const AdminPanel = () => {
 
         {/* Stylish Navigation Cards - Light Pastel Theme */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-          
+
           {/* Verify Entities Card */}
-          <div 
+          <div
             className="group cursor-pointer bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-green-100 hover:border-green-200"
             onClick={() => navigate('/admin/verifications')}
           >
@@ -680,7 +682,7 @@ const AdminPanel = () => {
           </div>
 
           {/* Documents Card */}
-          <div 
+          <div
             className="group cursor-pointer bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-purple-100 hover:border-purple-200"
             onClick={() => navigate('/admin/documents')}
           >
@@ -696,7 +698,7 @@ const AdminPanel = () => {
           </div>
 
           {/* Payment Management Card */}
-          <div 
+          <div
             className="group cursor-pointer bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-blue-100 hover:border-blue-200"
             onClick={() => navigate('/admin/payments')}
           >
@@ -712,7 +714,7 @@ const AdminPanel = () => {
           </div>
 
           {/* User Management Card */}
-          <div 
+          <div
             className="group cursor-pointer bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-red-100 hover:border-red-200"
             onClick={() => navigate('/admin/user-management')}
           >
@@ -728,7 +730,7 @@ const AdminPanel = () => {
           </div>
 
           {/* Recommended Services Card */}
-          <div 
+          <div
             className="group cursor-pointer bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-amber-100 hover:border-amber-200"
             onClick={() => navigate('/admin/recommended-services')}
           >
@@ -744,7 +746,7 @@ const AdminPanel = () => {
           </div>
 
           {/* Hero Images Card */}
-          <div 
+          <div
             className="group cursor-pointer bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-indigo-100 hover:border-indigo-200"
             onClick={() => navigate('/admin/hero-images')}
           >
@@ -760,7 +762,7 @@ const AdminPanel = () => {
           </div>
 
           {/* Partners Marquee Card */}
-          <div 
+          <div
             className="group cursor-pointer bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-pink-100 hover:border-pink-200"
             onClick={() => navigate('/admin/partners')}
           >

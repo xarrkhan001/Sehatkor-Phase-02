@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -207,37 +207,29 @@ const HowItWorksPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <Helmet>
-        <title>How It Works - Sehatkor | Complete Guide to Online Healthcare Booking</title>
-        <meta 
-          name="description" 
-          content="Learn how Sehatkor works. Step-by-step guide for patients to book doctors, hospitals, labs & pharmacies online. Guide for healthcare providers to register and manage services. آن لائن ڈاکٹر بک کرنے کا طریقہ۔" 
-        />
-        <meta 
-          name="keywords" 
-          content="how to book doctor online Pakistan, sehatkor guide, online appointment booking guide, healthcare booking process, doctor booking steps, کیسے کام کرتا ہے, آن لائن ڈاکٹر بکنگ کا طریقہ, how to use sehatkor, patient guide, provider guide, healthcare platform tutorial" 
-        />
-        <link rel="canonical" href="https://sehatkor.pk/how-it-works" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "HowTo",
-            "name": "How to Book Healthcare Services on Sehatkor",
-            "description": "Complete guide to booking doctors, hospitals, labs, and pharmacies online in Pakistan",
-            "step": patientSteps.map(step => ({
-              "@type": "HowToStep",
-              "position": step.step,
-              "name": step.title,
-              "text": step.description,
-              "itemListElement": step.details.map((detail, idx) => ({
-                "@type": "HowToDirection",
-                "position": idx + 1,
-                "text": detail
-              }))
+      <SEO
+        title="How It Works - Sehatkor | Complete Guide to Online Healthcare Booking"
+        description="Learn how Sehatkor works. Step-by-step guide for patients to book doctors, hospitals, labs & pharmacies online. Guide for healthcare providers to register and manage services. آن لائن ڈاکٹر بک کرنے کا طریقہ۔"
+        keywords="how to book doctor online Pakistan, sehatkor guide, online appointment booking guide, healthcare booking process, doctor booking steps, کیسے کام کرتا ہے, آن لائن ڈاکٹر بکنگ کا طریقہ, how to use sehatkor, patient guide, provider guide, healthcare platform tutorial"
+        canonical="https://sehatkor.pk/how-it-works"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "HowTo",
+          "name": "How to Book Healthcare Services on Sehatkor",
+          "description": "Complete guide to booking doctors, hospitals, labs, and pharmacies online in Pakistan",
+          "step": patientSteps.map(step => ({
+            "@type": "HowToStep",
+            "position": step.step,
+            "name": step.title,
+            "text": step.description,
+            "itemListElement": step.details.map((detail, idx) => ({
+              "@type": "HowToDirection",
+              "position": idx + 1,
+              "text": detail
             }))
-          })}
-        </script>
-      </Helmet>
+          }))
+        }}
+      />
 
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">
@@ -286,7 +278,7 @@ const HowItWorksPage = () => {
               {userType === "patient" ? "Patient Journey" : "Provider Journey"}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {userType === "patient" 
+              {userType === "patient"
                 ? "Follow these simple steps to book and receive healthcare services"
                 : "Get started as a healthcare provider on Sehatkor"}
             </p>
@@ -300,16 +292,13 @@ const HowItWorksPage = () => {
                   <CardHeader>
                     <div className="flex items-start gap-6">
                       <div className="flex-shrink-0">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                          userType === "patient" ? "bg-blue-100" : "bg-green-100"
-                        }`}>
-                          <Icon className={`w-8 h-8 ${
-                            userType === "patient" ? "text-blue-600" : "text-green-600"
-                          }`} />
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center ${userType === "patient" ? "bg-blue-100" : "bg-green-100"
+                          }`}>
+                          <Icon className={`w-8 h-8 ${userType === "patient" ? "text-blue-600" : "text-green-600"
+                            }`} />
                         </div>
-                        <div className={`mt-2 text-center font-bold text-lg ${
-                          userType === "patient" ? "text-blue-600" : "text-green-600"
-                        }`}>
+                        <div className={`mt-2 text-center font-bold text-lg ${userType === "patient" ? "text-blue-600" : "text-green-600"
+                          }`}>
                           Step {step.step}
                         </div>
                       </div>

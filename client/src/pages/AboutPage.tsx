@@ -3,18 +3,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Heart, 
-  Shield, 
-  Users, 
-  Stethoscope, 
-  Hospital, 
-  FlaskConical, 
-  Pill, 
-  MapPin, 
-  Clock, 
-  Star, 
-  CheckCircle, 
+import {
+  Heart,
+  Shield,
+  Users,
+  Stethoscope,
+  Hospital,
+  FlaskConical,
+  Pill,
+  MapPin,
+  Clock,
+  Star,
+  CheckCircle,
   Zap,
   Globe,
   Award,
@@ -32,10 +32,11 @@ import {
   Eye,
   Lightbulb
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import SEO from "@/components/SEO";
 
 const AboutPage = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -174,6 +175,11 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      <SEO
+        title="About Us | Sehatkor - Our Mission and Vision"
+        description="Learn about Sehatkor, Pakistan's leading healthcare platform. Our mission is to democratize healthcare access through technology."
+        keywords="about sehatkor, healthcare pakistan mission, verified doctors network, sehatkor foundation, medical technology pakistan"
+      />
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-green-600/10"></div>
@@ -373,16 +379,16 @@ const AboutPage = () => {
               <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-2xl border border-blue-200">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">The Challenge</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Healthcare accessibility in Pakistan faced significant challenges - patients struggled to find verified providers, 
-                  compare services, and book appointments efficiently. Traditional methods were time-consuming and often unreliable, 
+                  Healthcare accessibility in Pakistan faced significant challenges - patients struggled to find verified providers,
+                  compare services, and book appointments efficiently. Traditional methods were time-consuming and often unreliable,
                   leading to delayed treatments and suboptimal healthcare experiences.
                 </p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-8 rounded-2xl border border-green-200">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">The Solution</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  SehatKor was created to revolutionize this landscape by providing a comprehensive digital platform that connects 
-                  patients with verified healthcare providers. Our technology-driven approach ensures transparency, convenience, 
+                  SehatKor was created to revolutionize this landscape by providing a comprehensive digital platform that connects
+                  patients with verified healthcare providers. Our technology-driven approach ensures transparency, convenience,
                   and quality in every healthcare interaction.
                 </p>
               </div>
@@ -397,7 +403,7 @@ const AboutPage = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700">
-                    Every healthcare provider on our platform undergoes rigorous verification including license validation, 
+                    Every healthcare provider on our platform undergoes rigorous verification including license validation,
                     credential checks, and quality assessments to ensure patients receive the best care possible.
                   </p>
                 </CardContent>
@@ -411,7 +417,7 @@ const AboutPage = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700">
-                    From major metropolitan areas to smaller cities, SehatKor's network spans across Pakistan, 
+                    From major metropolitan areas to smaller cities, SehatKor's network spans across Pakistan,
                     bringing quality healthcare access to communities that need it most.
                   </p>
                 </CardContent>

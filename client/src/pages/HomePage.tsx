@@ -240,9 +240,11 @@ const HomePage = () => {
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <SEO
         title="Sehatkor - Pakistan's #1 Healthcare Platform | Online Doctor Pakistan"
-        description="Book doctors, lab tests, and medicines online. Best healthcare facilities now within your reach to Sehatkor. Book an appointment now."
-        keywords="online doctor, doctor appointment, lab test, home lab test, medicines, Sehatkor, Pakistan, hospital, best doctors, doctors in pakistan, online doctor karachi, sehatkor english"
+        description="Pakistan's trusted healthcare platform. Book verified doctors, home lab tests, and medicines online in Karachi, Lahore, Islamabad. Your health, our priority."
+        keywords="online doctor Pakistan, book doctor online, doctor appointment Pakistan, home lab test, online pharmacy Pakistan, Sehatkor, best doctors Pakistan"
         canonical="https://sehatkor.pk/"
+        lang="en"
+        dir="ltr"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebSite",

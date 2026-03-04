@@ -1,20 +1,15 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
+import SEO from "@/components/SEO";
 
 const ChitralPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white">
-            <Helmet>
-                <title>Best Doctors in Chitral | چترال میں ڈاکٹر | Book Doctor Appointment Online</title>
-                <meta name="description" content="Find and book top-rated doctors in Chitral. 150+ PMDC verified doctors. چترال میں بہترین ڈاکٹر۔ Online appointments, 24/7 support." />
-                <meta name="keywords" content="doctor in Chitral, best doctor Chitral, Chitral doctor appointment, چترال ڈاکٹر, آنلائن ڈاکٹر چترال, lady doctor Chitral, child specialist Chitral, Chitral hospital, KPK doctors" />
-                <link rel="canonical" href="https://sehatkor.pk/chitral" />
-                <meta property="og:title" content="Best Doctors in Chitral | Book Online" />
-                <meta property="og:description" content="150+ verified doctors in Chitral. Online appointments, 24/7 support." />
-                <meta property="og:url" content="https://sehatkor.pk/chitral" />
-            </Helmet>
+            <SEO
+                title="Best Doctors in Chitral | چترال میں ڈاکٹر | Sehatkor"
+                description="Find and book 150+ top-rated PMDC verified doctors in Chitral. 24/7 doctor appointments and health services on Sehatkor."
+                keywords="doctors in Chitral, best doctor Chitral, Chitral doctor appointment, چترال ڈاکٹر, Chitral hospital, KPK doctors"
+            />
 
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-16">

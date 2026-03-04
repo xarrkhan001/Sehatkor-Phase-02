@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
@@ -435,18 +435,18 @@ const PharmaciesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Helmet>
-        <title>{
+      <SEO
+        title={
           searchTerm
             ? `${searchTerm} - Online Pharmacy & Medicines | Sehatkor`
             : `Online Pharmacy in Pakistan | Buy Medicine Online | Home Delivery`
-        }</title>
-        <meta name="description" content={
+        }
+        description={
           searchTerm
             ? `Buy ${searchTerm} online in Pakistan. Check price, availability and get home delivery from trusted pharmacies. Genuine medicines, 100% authentic.`
             : `Pakistan's most trusted online pharmacy. Buy medicines, vitamins, and healthcare products with fast home delivery. Upload prescription and get medicines at your doorstep.`
-        } />
-        <meta name="keywords" content={(() => {
+        }
+        keywords={(() => {
           const baseKeywords = [
             // Core Pharmacy Terms
             "online pharmacy Pakistan", "buy medicine online", "medicine delivery",
@@ -493,9 +493,9 @@ const PharmaciesPage = () => {
           }
 
           return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
-        })()} />
-        <link rel="canonical" href={`https://sehatkor.pk/pharmacies${searchTerm ? `?search=${searchTerm}` : ''}`} />
-      </Helmet>
+        })()}
+        canonical={`https://sehatkor.pk/pharmacies${searchTerm ? `?search=${searchTerm}` : ''}`}
+      />
       <div className="container mx-auto px-4 py-4">
         {/* Header */}
         <div className="mb-6">

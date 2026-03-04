@@ -1,27 +1,28 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { icons, Search, X } from 'lucide-react';
+import SEO from "@/components/SEO";
 
 type Icon = React.FC<React.SVGProps<SVGSVGElement>>;
 
 const categoryIconMap: { [key: string]: string } = {
-    "Cardiology": "HeartPulse",
-    "Neurology": "BrainCircuit",
-    "Orthopedics": "Bone",
-    "Dermatology / Cosmetology": "Sparkles",
-    "Gastroenterology": "Stomach",
-    "Pulmonology": "Lungs",
-    "Nephrology": "Filter",
-    "Oncology": "Radiation",
-    "Pediatrics": "Baby",
-    "Gynecology": "Pregnant",
-    "Urology": "Droplets",
-    "ENT (Ear, Nose, and Throat)": "Ear",
-    "Eye Care": "Eye",
-    "Dentistry": "Tooth",
-    "Psychiatry": "BrainCog",
-    "Endocrinology": "Biohazard",
-    "Hematology": "Droplet",
+  "Cardiology": "HeartPulse",
+  "Neurology": "BrainCircuit",
+  "Orthopedics": "Bone",
+  "Dermatology / Cosmetology": "Sparkles",
+  "Gastroenterology": "Stomach",
+  "Pulmonology": "Lungs",
+  "Nephrology": "Filter",
+  "Oncology": "Radiation",
+  "Pediatrics": "Baby",
+  "Gynecology": "Pregnant",
+  "Urology": "Droplets",
+  "ENT (Ear, Nose, and Throat)": "Ear",
+  "Eye Care": "Eye",
+  "Dentistry": "Tooth",
+  "Psychiatry": "BrainCog",
+  "Endocrinology": "Biohazard",
+  "Hematology": "Droplet",
 };
 
 // Define the disease categories and their items
@@ -1086,277 +1087,277 @@ const diseaseCategories = [
 ];
 
 const diseaseIconMap: { [key: string]: string } = {
-    // Acupuncture
-    "Different Forms Of Chronic Pain": "Activity",
-    "Head Aches Like Migrane": "BrainCircuit",
-    "Nausea": "Frown",
-    "Vomiting": "Frown",
-    "Dental Pain": "Tooth",
-    "Painful Periods": "CalendarHeart",
-    "Allergic Rhinitis": "Wind",
-    "Morning Sickness": "Sunrise",
-    "Sprains": "Bone",
-    "Strokes": "Brain",
+  // Acupuncture
+  "Different Forms Of Chronic Pain": "Activity",
+  "Head Aches Like Migrane": "BrainCircuit",
+  "Nausea": "Frown",
+  "Vomiting": "Frown",
+  "Dental Pain": "Tooth",
+  "Painful Periods": "CalendarHeart",
+  "Allergic Rhinitis": "Wind",
+  "Morning Sickness": "Sunrise",
+  "Sprains": "Bone",
+  "Strokes": "Brain",
 
-    // Anesthesiology
-    "Acute Pain": "AlertTriangle",
-    "Chronic Pain": "Activity",
-    "Labor Pain": "Baby",
-    "Post-operative Pain": "Bandage",
-    "Pain Management During Surgery": "Syringe",
+  // Anesthesiology
+  "Acute Pain": "AlertTriangle",
+  "Chronic Pain": "Activity",
+  "Labor Pain": "Baby",
+  "Post-operative Pain": "Bandage",
+  "Pain Management During Surgery": "Syringe",
 
-    // Audiology
-    "Hearing Loss": "EarOff",
-    "Tinnitus": "Ear",
-    "Balance Disorders": "PersonStanding",
-    "Auditory Processing Disorders": "BrainCog",
+  // Audiology
+  "Hearing Loss": "EarOff",
+  "Tinnitus": "Ear",
+  "Balance Disorders": "PersonStanding",
+  "Auditory Processing Disorders": "BrainCog",
 
-    // Cardiology
-    "Hypertension": "HeartPulse",
-    "Heart Failure": "HeartCrack",
-    "Arrhythmia": "HeartPulse",
-    "Coronary Artery Disease": "Heart",
-    "Angina": "HeartOff",
+  // Cardiology
+  "Hypertension": "HeartPulse",
+  "Heart Failure": "HeartCrack",
+  "Arrhythmia": "HeartPulse",
+  "Coronary Artery Disease": "Heart",
+  "Angina": "HeartOff",
 
-    // Dentistry
-    "Tooth Decay": "Tooth",
-    "Gum Disease": "Virus",
-    "Root Canal Treatment": "Wrench",
-    "Dental Implants": "Anchor",
-    "Teeth Whitening": "Sparkles",
+  // Dentistry
+  "Tooth Decay": "Tooth",
+  "Gum Disease": "Virus",
+  "Root Canal Treatment": "Wrench",
+  "Dental Implants": "Anchor",
+  "Teeth Whitening": "Sparkles",
 
-    // Dermatology / Cosmetology
-    "Acne": "Dot",
-    "Eczema": "ShieldAlert",
-    "Psoriasis": "Layers",
-    "Skin Cancer": "ShieldOff",
-    "Hair Loss": "Scissors",
-    "Laser Hair Removal": "Zap",
-    "Botox": "Syringe",
+  // Dermatology / Cosmetology
+  "Acne": "Dot",
+  "Eczema": "ShieldAlert",
+  "Psoriasis": "Layers",
+  "Skin Cancer": "ShieldOff",
+  "Hair Loss": "Scissors",
+  "Laser Hair Removal": "Zap",
+  "Botox": "Syringe",
 
-    // Dietetics
-    "Obesity": "Weight",
-    "Diabetes": "TestTube2",
-    "Nutritional Deficiencies": "Apple",
-    "Eating Disorders": "UtensilsCrossed",
-    "Weight Management": "Scale",
+  // Dietetics
+  "Obesity": "Weight",
+  "Diabetes": "TestTube2",
+  "Nutritional Deficiencies": "Apple",
+  "Eating Disorders": "UtensilsCrossed",
+  "Weight Management": "Scale",
 
-    // Endocrinology
-    "Thyroid Disorders": "Biohazard",
-    "PCOS": "Pregnant",
-    "Growth Disorders": "StretchHorizontal",
-    "Adrenal Disorders": "Shield",
+  // Endocrinology
+  "Thyroid Disorders": "Biohazard",
+  "PCOS": "Pregnant",
+  "Growth Disorders": "StretchHorizontal",
+  "Adrenal Disorders": "Shield",
 
-    // ENT (Ear, Nose, and Throat)
-    "Sinusitis": "Wind",
-    "Tonsillitis": "Mic",
-    "Nosebleeds": "Droplet",
-    "Voice Disorders": "Voicemail",
+  // ENT (Ear, Nose, and Throat)
+  "Sinusitis": "Wind",
+  "Tonsillitis": "Mic",
+  "Nosebleeds": "Droplet",
+  "Voice Disorders": "Voicemail",
 
-    // Eye Care
-    "Cataracts": "EyeOff",
-    "Glaucoma": "Eye",
-    "Refractive Errors": "ScanEye",
-    "Diabetic Retinopathy": "Eye",
+  // Eye Care
+  "Cataracts": "EyeOff",
+  "Glaucoma": "Eye",
+  "Refractive Errors": "ScanEye",
+  "Diabetic Retinopathy": "Eye",
 
-    // Gastroenterology
-    "Acid Reflux": "Flame",
-    "Irritable Bowel Syndrome": "Stomach",
-    "Hepatitis": "Virus",
-    "Ulcers": "CircleDot",
+  // Gastroenterology
+  "Acid Reflux": "Flame",
+  "Irritable Bowel Syndrome": "Stomach",
+  "Hepatitis": "Virus",
+  "Ulcers": "CircleDot",
 
-    // General Medicine
-    "Common Cold": "Thermometer",
-    "Flu": "ThermometerSnow",
-    "Fever": "Thermometer",
-    "Infections": "Virus",
+  // General Medicine
+  "Common Cold": "Thermometer",
+  "Flu": "ThermometerSnow",
+  "Fever": "Thermometer",
+  "Infections": "Virus",
 
-    // General Surgery
-    "Appendicitis": "Stomach",
-    "Hernia": "MoveRight",
-    "Gallstones": "Gem",
-    "Thyroid Surgery": "Scissors",
+  // General Surgery
+  "Appendicitis": "Stomach",
+  "Hernia": "MoveRight",
+  "Gallstones": "Gem",
+  "Thyroid Surgery": "Scissors",
 
-    // Internal Medicine
-    "Asthma": "Wind",
-    "Pneumonia": "Lungs",
-    "COPD": "Wind",
+  // Internal Medicine
+  "Asthma": "Wind",
+  "Pneumonia": "Lungs",
+  "COPD": "Wind",
 
-    // Vascular Surgery
-    "Varicose Veins": "Spline",
-    "Aneurysms": "Bomb",
-    "Peripheral Artery Disease": "Foot",
+  // Vascular Surgery
+  "Varicose Veins": "Spline",
+  "Aneurysms": "Bomb",
+  "Peripheral Artery Disease": "Foot",
 
-    // Laparoscopic Surgery
-    "Gallbladder Removal": "Gem",
-    "Hernia Repair": "Wrench",
-    "Appendectomy": "Stomach",
+  // Laparoscopic Surgery
+  "Gallbladder Removal": "Gem",
+  "Hernia Repair": "Wrench",
+  "Appendectomy": "Stomach",
 
-    // Infectious Diseases
-    "HIV/AIDS": "Ribbon",
-    "Tuberculosis": "Lungs",
-    "Malaria": "BugOff",
-    "Dengue Fever": "Bug",
+  // Infectious Diseases
+  "HIV/AIDS": "Ribbon",
+  "Tuberculosis": "Lungs",
+  "Malaria": "BugOff",
+  "Dengue Fever": "Bug",
 
-    // Rehabilitation Medicine
-    "Spinal Cord Injury": "Accessibility",
-    "Brain Injury": "Brain",
-    "Stroke Rehabilitation": "PersonStanding",
+  // Rehabilitation Medicine
+  "Spinal Cord Injury": "Accessibility",
+  "Brain Injury": "Brain",
+  "Stroke Rehabilitation": "PersonStanding",
 
-    // Diabetology
-    "Type 1 Diabetes": "TestTube",
-    "Type 2 Diabetes": "TestTube2",
-    "Gestational Diabetes": "Baby",
+  // Diabetology
+  "Type 1 Diabetes": "TestTube",
+  "Type 2 Diabetes": "TestTube2",
+  "Gestational Diabetes": "Baby",
 
-    // Kidney Transplant
-    "Kidney Failure": "FilterOff",
-    "Post-transplant Care": "ShieldCheck",
+  // Kidney Transplant
+  "Kidney Failure": "FilterOff",
+  "Post-transplant Care": "ShieldCheck",
 
-    // Liver Transplant
-    "Cirrhosis": "Bot",
-    "Liver Cancer": "ShieldOff",
+  // Liver Transplant
+  "Cirrhosis": "Bot",
+  "Liver Cancer": "ShieldOff",
 
-    // Bariatric / Weight Loss Surgery
-    "Gastric Bypass": "Scissors",
-    "Sleeve Gastrectomy": "Minus",
+  // Bariatric / Weight Loss Surgery
+  "Gastric Bypass": "Scissors",
+  "Sleeve Gastrectomy": "Minus",
 
-    // Vaccine Specialization
-    "Childhood Immunizations": "Baby",
-    "Travel Vaccines": "Plane",
-    "Flu Shots": "Syringe",
+  // Vaccine Specialization
+  "Childhood Immunizations": "Baby",
+  "Travel Vaccines": "Plane",
+  "Flu Shots": "Syringe",
 
-    // Genetics
-    "Genetic Counseling": "Users",
-    "Inherited Disorders": "GitBranch",
-    "Prenatal Testing": "Dna",
+  // Genetics
+  "Genetic Counseling": "Users",
+  "Inherited Disorders": "GitBranch",
+  "Prenatal Testing": "Dna",
 
-    // Gynecology
-    "Menstrual Disorders": "CalendarDays",
-    "Infertility": "Baby",
-    "Cervical Cancer": "Ribbon",
+  // Gynecology
+  "Menstrual Disorders": "CalendarDays",
+  "Infertility": "Baby",
+  "Cervical Cancer": "Ribbon",
 
-    // Hematology
-    "Anemia": "Droplets",
-    "Leukemia": "Droplet",
-    "Hemophilia": "Droplet",
+  // Hematology
+  "Anemia": "Droplets",
+  "Leukemia": "Droplet",
+  "Hemophilia": "Droplet",
 
-    // Hepatology
-    "Fatty Liver Disease": "Stomach",
-    "Viral Hepatitis": "Virus",
+  // Hepatology
+  "Fatty Liver Disease": "Stomach",
+  "Viral Hepatitis": "Virus",
 
-    // Hijama Therapy
-    "Cupping Therapy": "Circle",
+  // Hijama Therapy
+  "Cupping Therapy": "Circle",
 
-    // Homeopathy
-    "Homeopathic Remedies": "Leaf",
+  // Homeopathy
+  "Homeopathic Remedies": "Leaf",
 
-    // Immunology
-    "Allergies": "Wind",
-    "Autoimmune Diseases": "ShieldAlert",
-    "Immunodeficiency": "ShieldOff",
+  // Immunology
+  "Allergies": "Wind",
+  "Autoimmune Diseases": "ShieldAlert",
+  "Immunodeficiency": "ShieldOff",
 
-    // Nephrology
-    "Chronic Kidney Disease": "Filter",
-    "Kidney Stones": "Gem",
-    "Dialysis": "Recycle",
+  // Nephrology
+  "Chronic Kidney Disease": "Filter",
+  "Kidney Stones": "Gem",
+  "Dialysis": "Recycle",
 
-    // Neurology
-    "Epilepsy": "BrainCog",
-    "Alzheimer's Disease": "Brain",
-    "Parkinson's Disease": "PersonStanding",
-    "Multiple Sclerosis": "BrainCircuit",
+  // Neurology
+  "Epilepsy": "BrainCog",
+  "Alzheimer's Disease": "Brain",
+  "Parkinson's Disease": "PersonStanding",
+  "Multiple Sclerosis": "BrainCircuit",
 
-    // Oncology
-    "Breast Cancer": "Ribbon",
-    "Lung Cancer": "Lungs",
-    "Chemotherapy": "FlaskConical",
-    "Radiation Therapy": "Radiation",
+  // Oncology
+  "Breast Cancer": "Ribbon",
+  "Lung Cancer": "Lungs",
+  "Chemotherapy": "FlaskConical",
+  "Radiation Therapy": "Radiation",
 
-    // Orthopedics
-    "Fractures": "Bone",
-    "Arthritis": "Bone",
-    "Joint Replacement": "Wrench",
-    "Sports Injuries": "Foot",
+  // Orthopedics
+  "Fractures": "Bone",
+  "Arthritis": "Bone",
+  "Joint Replacement": "Wrench",
+  "Sports Injuries": "Foot",
 
-    // Pediatrics
-    "Newborn Care": "Baby",
-    "Childhood Illnesses": "Virus",
-    "Developmental Delays": "Puzzle",
+  // Pediatrics
+  "Newborn Care": "Baby",
+  "Childhood Illnesses": "Virus",
+  "Developmental Delays": "Puzzle",
 
-    // Physiotherapy
-    "Back Pain": "PersonStanding",
-    "Neck Pain": "PersonStanding",
-    "Post-surgery Rehabilitation": "Bed",
+  // Physiotherapy
+  "Back Pain": "PersonStanding",
+  "Neck Pain": "PersonStanding",
+  "Post-surgery Rehabilitation": "Bed",
 
-    // Occupational Therapy
-    "Fine Motor Skills": "Pen",
-    "Cognitive Rehabilitation": "BrainCog",
-    "Activities of Daily Living": "Home",
+  // Occupational Therapy
+  "Fine Motor Skills": "Pen",
+  "Cognitive Rehabilitation": "BrainCog",
+  "Activities of Daily Living": "Home",
 
-    // Psychiatry
-    "Depression": "Frown",
-    "Anxiety": "AlertCircle",
-    "Bipolar Disorder": "GitCompare",
-    "Schizophrenia": "Users",
+  // Psychiatry
+  "Depression": "Frown",
+  "Anxiety": "AlertCircle",
+  "Bipolar Disorder": "GitCompare",
+  "Schizophrenia": "Users",
 
-    // Psychology
-    "Stress Management": "ZapOff",
-    "Relationship Counseling": "HeartHandshake",
-    "Grief Counseling": "UserMinus",
+  // Psychology
+  "Stress Management": "ZapOff",
+  "Relationship Counseling": "HeartHandshake",
+  "Grief Counseling": "UserMinus",
 
-    // Counseling
-    "Family Counseling": "Users",
-    "Individual Counseling": "User",
-    "Substance Abuse Counseling": "WineOff",
+  // Counseling
+  "Family Counseling": "Users",
+  "Individual Counseling": "User",
+  "Substance Abuse Counseling": "WineOff",
 
-    // Pulmonology
-    "Sleep Apnea": "BedDouble",
-    "Pulmonary Fibrosis": "Lungs",
+  // Pulmonology
+  "Sleep Apnea": "BedDouble",
+  "Pulmonary Fibrosis": "Lungs",
 
-    // Radiology
-    "X-ray": "RectangleHorizontal",
-    "CT Scan": "Scan",
-    "MRI": "Scan",
-    "Ultrasound": "Waves",
+  // Radiology
+  "X-ray": "RectangleHorizontal",
+  "CT Scan": "Scan",
+  "MRI": "Scan",
+  "Ultrasound": "Waves",
 
-    // Rheumatology
-    "Rheumatoid Arthritis": "Bone",
-    "Lupus": "ShieldAlert",
-    "Gout": "Foot",
+  // Rheumatology
+  "Rheumatoid Arthritis": "Bone",
+  "Lupus": "ShieldAlert",
+  "Gout": "Foot",
 
-    // Speech Therapy
-    "Stuttering": "Voicemail",
-    "Speech Sound Disorders": "Mic",
-    "Language Delays": "MessageSquare",
+  // Speech Therapy
+  "Stuttering": "Voicemail",
+  "Speech Sound Disorders": "Mic",
+  "Language Delays": "MessageSquare",
 
-    // Urology
-    "Urinary Tract Infections": "ShowerHead",
-    "Prostate Issues": "User",
-    "Erectile Dysfunction": "Bed",
-    "Infertility In Men": "UserX",
-    "Andropause": "UserMinus",
-    "Benign Prostatic Hyperplasia": "User",
-    "Bladder Cancer": "ShieldOff",
-    "Bladder Stones": "Gem",
-    "Circumcision": "Scissors",
-    "Dyspareunia": "HeartCrack",
-    "Fertility Issues In Men": "Users",
-    "Gynaecomastia": "User",
-    "Hypogonadism": "UserMinus",
-    "Impotence": "Bed",
-    "Klinefelter's Syndrome": "Users"
+  // Urology
+  "Urinary Tract Infections": "ShowerHead",
+  "Prostate Issues": "User",
+  "Erectile Dysfunction": "Bed",
+  "Infertility In Men": "UserX",
+  "Andropause": "UserMinus",
+  "Benign Prostatic Hyperplasia": "User",
+  "Bladder Cancer": "ShieldOff",
+  "Bladder Stones": "Gem",
+  "Circumcision": "Scissors",
+  "Dyspareunia": "HeartCrack",
+  "Fertility Issues In Men": "Users",
+  "Gynaecomastia": "User",
+  "Hypogonadism": "UserMinus",
+  "Impotence": "Bed",
+  "Klinefelter's Syndrome": "Users"
 };
 
 
 const colorPalette = [
-    { bg: "bg-blue-100", text: "text-blue-600" },
-    { bg: "bg-red-100", text: "text-red-600" },
-    { bg: "bg-green-100", text: "text-green-600" },
-    { bg: "bg-purple-100", text: "text-purple-600" },
-    { bg: "bg-yellow-100", text: "text-yellow-600" },
-    { bg: "bg-indigo-100", text: "text-indigo-600" },
-    { bg: "bg-pink-100", text: "text-pink-600" },
-    { bg: "bg-teal-100", text: "text-teal-600" },
+  { bg: "bg-blue-100", text: "text-blue-600" },
+  { bg: "bg-red-100", text: "text-red-600" },
+  { bg: "bg-green-100", text: "text-green-600" },
+  { bg: "bg-purple-100", text: "text-purple-600" },
+  { bg: "bg-yellow-100", text: "text-yellow-600" },
+  { bg: "bg-indigo-100", text: "text-indigo-600" },
+  { bg: "bg-pink-100", text: "text-pink-600" },
+  { bg: "bg-teal-100", text: "text-teal-600" },
 ];
 
 const getRandomColorPair = () => colorPalette[Math.floor(Math.random() * colorPalette.length)];
@@ -1388,6 +1389,12 @@ const AllDiseasesPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <SEO
+        title="All Diseases & Symptoms in Pakistan | Find Specialist Doctors - Sehatkor"
+        description="Browse 500+ diseases and health conditions treated across Pakistan. Find specialist doctors for Cardiology, Neurology, Dermatology, Gynecology, Diabetes, and more on Sehatkor."
+        keywords="diseases Pakistan, symptoms Pakistan, find doctor by disease, specialist doctors Pakistan, health conditions, sehatkor diseases, امراض, بیماریاں پاکستان"
+        canonical="https://sehatkor.pk/all-diseases"
+      />
       <h1 className="text-4xl font-bold text-center mb-6 text-gray-800">All Diseases</h1>
 
       <div className="mx-auto max-w-3xl mb-10">

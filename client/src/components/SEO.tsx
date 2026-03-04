@@ -11,6 +11,8 @@ interface SEOProps {
     jsonLd?: Record<string, any> | Record<string, any>[];
     noindex?: boolean;
     additionalMeta?: Record<string, string | undefined>;
+    lang?: string;
+    dir?: 'ltr' | 'rtl';
 }
 
 const SEO = ({
@@ -22,7 +24,9 @@ const SEO = ({
     canonical,
     jsonLd,
     noindex = false,
-    additionalMeta
+    additionalMeta,
+    lang = 'en',
+    dir = 'ltr'
 }: SEOProps) => {
     const location = useLocation();
     const siteUrl = 'https://sehatkor.pk';
@@ -40,7 +44,12 @@ const SEO = ({
     const finalUrl = (canonical || `${siteUrl}${location.pathname}`).replace(/\/$/, "");
 
     return (
-        <Helmet>
+        <Helmet
+            htmlAttributes={{
+                lang,
+                dir
+            }}
+        >
             {/* Standard Meta Tags */}
             <title>{finalTitle}</title>
             <meta name="description" content={finalDescription} />
