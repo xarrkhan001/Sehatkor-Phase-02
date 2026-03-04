@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
+import SEO from "@/components/SEO";
 import axios from 'axios';
 
 const ForgotPasswordPage: React.FC = () => {
@@ -120,15 +120,11 @@ const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Helmet>
-        <title>Forgot Password - Sehatkor | Reset Your Account Password</title>
-        <meta
-          name="description"
-          content="Reset your Sehatkor account password. Enter your email to receive password reset instructions. Secure password recovery for healthcare platform users."
-        />
-        <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://sehatkor.pk/forgot-password" />
-      </Helmet>
+      <SEO
+        title="Forgot Password - Sehatkor | Reset Your Account Password"
+        description="Reset your Sehatkor account password. Enter your email to receive password reset instructions. Secure password recovery for healthcare platform users."
+        canonical="https://sehatkor.pk/forgot-password"
+      />
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">

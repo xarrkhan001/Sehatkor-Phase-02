@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Home, Search, ArrowLeft, Stethoscope } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const NotFound = () => {
   const location = useLocation();
@@ -16,6 +17,11 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <SEO
+        title="404 - Page Not Found | Sehatkor"
+        description="The page you are looking for does not exist. Return to Sehatkor and find the best doctors, hospitals, labs, and pharmacies in Pakistan."
+        noindex={true}
+      />
       <Card className="w-full max-w-md card-healthcare text-center">
         <CardContent className="p-8">
           <div className="mb-6">
@@ -28,7 +34,7 @@ const NotFound = () => {
               The page you're looking for doesn't exist or has been moved.
             </p>
           </div>
-          
+
           <div className="space-y-3">
             <Button asChild className="w-full">
               <Link to="/">
@@ -42,8 +48,8 @@ const NotFound = () => {
                 Search Services
               </Link>
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => window.history.back()}
               className="w-full"
             >

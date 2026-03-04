@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import BookingOptionsModal from "@/components/BookingOptionsModal";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
+import SEO from "@/components/SEO";
 
 type SortKey = "price" | "rating" | "location";
 
@@ -166,7 +167,7 @@ const ComparePage = () => {
       const aRecommended = Boolean((a as any).recommended);
       const bRecommended = Boolean((b as any).recommended);
       if (aRecommended !== bRecommended) return bRecommended ? 1 : -1;
-      
+
       if (sortKey === "location") {
         return (getDisplayLocation(a) || "").localeCompare(getDisplayLocation(b) || "");
       }
@@ -246,7 +247,7 @@ const ComparePage = () => {
       toast.error('You cannot book your own service.');
       return;
     }
-    
+
     // Prepare service data with required fields
     const serviceWithProviderInfo = {
       ...item,
@@ -282,6 +283,12 @@ const ComparePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-sky-50 to-emerald-50 bg-fixed">
+      <SEO
+        title="Compare Healthcare Services - Sehatkor | Price & Rating Comparison"
+        description="Compare doctors, hospitals, labs, and pharmacies in Pakistan side-by-side. Compare prices, ratings, locations, and services to make the best choice for your health."
+        keywords="compare doctors, hospital comparison, medical service prices Pakistan, health service ratings"
+        canonical="https://sehatkor.pk/compare"
+      />
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -326,7 +333,7 @@ const ComparePage = () => {
                                 {(item as any).recommended && (
                                   <div className="px-2 py-1 text-[10px] shadow-lg bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 border border-amber-400/60 rounded-md flex items-center gap-1 backdrop-blur-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="11" height="11" fill="currentColor" className="text-amber-900">
-                                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
                                     <div className="flex flex-col leading-tight">
                                       <span className="font-black text-amber-900 text-[10px] tracking-wider font-extrabold">RECOMMENDED</span>
@@ -376,8 +383,8 @@ const ComparePage = () => {
                                 (((item as any).availability) === 'Online'
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                   : ((item as any).availability) === 'Physical'
-                                  ? 'bg-violet-50 text-violet-700 border-violet-200'
-                                  : 'bg-indigo-50 text-indigo-700 border-indigo-200')
+                                    ? 'bg-violet-50 text-violet-700 border-violet-200'
+                                    : 'bg-indigo-50 text-indigo-700 border-indigo-200')
                               }
                             >
                               {(item as any).availability}

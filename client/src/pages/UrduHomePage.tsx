@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 // Animations
-const fadeInUp = {
+const fadeInUp: any = {
     hidden: { opacity: 0, y: 30 },
     visible: {
         opacity: 1,
@@ -181,6 +181,8 @@ const UrduHomePage = () => {
                 description="ڈاکٹرز، لیب ٹیسٹ اور ادویات کی آن لائن بکنگ۔ صحت کور کے ساتھ بہترین طبی سہولیات اب آپ کی پہنچ میں۔ ابھی اپائنٹمنٹ بک کریں۔"
                 keywords="آن لائن ڈاکٹر, ڈاکٹر کی اپائنٹمنٹ, لیب ٹیسٹ, گھر پر لیب ٹیسٹ, ادویات, صحت کور, پاکستان, ہسپتال, بہترین ڈاکٹرز, doctors in pakistan, online doctor urdu, sehatkor urdu"
                 canonical="https://sehatkor.pk/urdu"
+                lang="ur"
+                dir="rtl"
                 jsonLd={{
                     "@context": "https://schema.org",
                     "@type": "WebSite",

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { diseases } from "@/data/diseases";
 import { useEffect } from "react";
+import SEO from "@/components/SEO";
 
 const DiseaseListPage = () => {
   useEffect(() => {
@@ -9,6 +10,12 @@ const DiseaseListPage = () => {
   }, []);
   return (
     <div className="container mx-auto px-4 py-12">
+      <SEO
+        title="Diseases & Symptoms Guide Pakistan | Healthcare Information - Sehatkor"
+        description="Explore our comprehensive guide on common diseases in Pakistan. Learn about symptoms, causes, and find the right doctors for treatment on Sehatkor."
+        keywords="diseases in Pakistan, symptoms and causes, health information, Pakistan medical guide"
+        canonical="https://sehatkor.pk/diseases"
+      />
       <div className="text-center mb-10">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">Diseases & Symptoms</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">

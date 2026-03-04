@@ -14,14 +14,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { GoogleLogin } from '@react-oauth/google';
 import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Lock, 
-  IdCard, 
-  MapPin, 
-  Upload, 
+import {
+  User,
+  Mail,
+  Phone,
+  Lock,
+  IdCard,
+  MapPin,
+  Upload,
   UserCheck,
   Building,
   FlaskConical,
@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { generateUserId } from "@/data/mockData";
 import { apiUrl } from '@/config/api';
+import SEO from "@/components/SEO";
 
 // Validation Schema
 const getValidationSchema = (role: string) => {
@@ -73,7 +74,7 @@ const getValidationSchema = (role: string) => {
 
   if (role === 'doctor') {
     roleSpecificSchema.licenseNumber = Yup.string()
-      .test('min-length-if-provided', 'License number must be at least 3 characters', function(value) {
+      .test('min-length-if-provided', 'License number must be at least 3 characters', function (value) {
         if (!value || value.trim() === '') return true; // Allow empty
         return value.length >= 3; // Validate only if provided
       })
@@ -92,7 +93,7 @@ const getValidationSchema = (role: string) => {
       .min(2, 'Business name must be at least 2 characters')
       .required('Business name is required');
     roleSpecificSchema.licenseNumber = Yup.string()
-      .test('min-length-if-provided', 'License number must be at least 3 characters', function(value) {
+      .test('min-length-if-provided', 'License number must be at least 3 characters', function (value) {
         if (!value || value.trim() === '') return true; // Allow empty
         return value.length >= 3; // Validate only if provided
       })
@@ -250,7 +251,7 @@ const RegisterPage = () => {
   const isProviderRole = (role: string) => ['clinic/hospital', 'laboratory', 'pharmacy'].includes(role);
 
   const servicesOptions = [
-    "OPD Consultation", "IPD / Admissions", "Emergency Services", "Lab Tests", 
+    "OPD Consultation", "IPD / Admissions", "Emergency Services", "Lab Tests",
     "Radiology (X-ray, CT, MRI, etc.)", "Pharmacy / Medicine Supply", "Home Sample Collection",
     "Online Consultation", "Vaccination", "Physiotherapy", "Aesthetic Procedure", "Dentistry"
   ];
@@ -420,18 +421,18 @@ const RegisterPage = () => {
       } else {
         // Patients: log them in immediately
         await login({ ...data.user, id: data.user._id }, data.token);
-        toast({ 
-          title: 'Welcome!', 
-          description: 'Successfully signed in with Google.' 
+        toast({
+          title: 'Welcome!',
+          description: 'Successfully signed in with Google.'
         });
         setShowGoogleAdditionalFields(false);
         navigate('/');
       }
     } catch (err: any) {
-      toast({ 
-        title: 'Google Registration Failed', 
-        description: err?.message || 'Try again', 
-        variant: 'destructive' 
+      toast({
+        title: 'Google Registration Failed',
+        description: err?.message || 'Try again',
+        variant: 'destructive'
       });
     } finally {
       setGoogleLoading(false);
@@ -665,7 +666,7 @@ const RegisterPage = () => {
             <Building className="w-5 h-5" />
             Business Information
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               name="businessName"
@@ -709,7 +710,7 @@ const RegisterPage = () => {
             <MapPin className="w-5 h-5" />
             Address & Location
           </h3>
-          
+
           <FormField
             name="address"
             label="Complete Address"
@@ -770,7 +771,7 @@ const RegisterPage = () => {
             <Stethoscope className="w-5 h-5" />
             Services Offered
           </h3>
-          
+
           <Field name="servicesOffered">
             {({ field, form }: any) => (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -795,7 +796,7 @@ const RegisterPage = () => {
             <Users className="w-5 h-5" />
             Staff Details (Optional)
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField name="staffDetails.doctors" label="Number of Doctors">
               <FormikInput
@@ -828,7 +829,7 @@ const RegisterPage = () => {
             <CreditCard className="w-5 h-5" />
             Bank/Payment Information (Optional)
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField name="bankDetails.bankName" label="Bank Name">
               <FormikInput
@@ -1004,267 +1005,606 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
-              <Stethoscope className="w-7 h-7 text-white" />
+    <div className="min-h-screen bg-slate-50">
+      <SEO
+        title="Register - Sehatkor | Create Your Healthcare Account"
+        description="Join Sehatkor today. Register as a patient or healthcare provider (doctor, hospital, lab, pharmacy). Access online healthcare services, manage appointments, and digital records in Pakistan."
+        keywords="sehatkor registration, join sehatkor, create healthcare account, doctor registration Pakistan, patient signup, medical platform registration"
+        canonical="https://sehatkor.pk/register"
+      />
+      <div className="container mx-auto px-4 py-10 lg:py-16">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
+                <Stethoscope className="w-7 h-7 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</h1>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</h1>
+            <p className="text-xl text-muted-foreground">
+              Create your account and become part of Pakistan's largest healthcare network
+            </p>
           </div>
-          <p className="text-xl text-muted-foreground">
-            Create your account and become part of Pakistan's largest healthcare network
-          </p>
-        </div>
 
-        <Card className="card-healthcare border shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl">Health Services Provider Registration</CardTitle>
-            <CardDescription>
-              Fill in the details below to register your healthcare facility or service
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Social signup */}
-            <div className="mb-6">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <div className="w-full sm:w-[280px]">
-                  <GoogleLogin
-                  onSuccess={async (cred) => {
-                    try {
-                      setGoogleLoading(true);
-                      const idToken = cred?.credential as string;
-                      if (!idToken) throw new Error('Missing Google credential');
-                      
+          <Card className="card-healthcare border shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl">Health Services Provider Registration</CardTitle>
+              <CardDescription>
+                Fill in the details below to register your healthcare facility or service
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Social signup */}
+              <div className="mb-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <div className="w-full sm:w-[280px]">
+                    <GoogleLogin
+                      onSuccess={async (cred) => {
+                        try {
+                          setGoogleLoading(true);
+                          const idToken = cred?.credential as string;
+                          if (!idToken) throw new Error('Missing Google credential');
 
-                      // First, try to authenticate with Google (without additional fields)
-                      const res = await fetch(apiUrl('/api/auth/google'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ idToken, role: currentFormValues.role || 'patient' })
-                      });
-                      const data = await res.json();
-                      
 
-                      if (res.ok) {
-                        // User already exists, log them in
-                        await login({ ...data.user, id: data.user._id }, data.token);
-                        toast({ title: 'Welcome back!', description: 'Signed in with Google.' });
-                        navigate('/');
-                      } else if (data.requiresAdditionalFields) {
-                        // New user, need additional fields
-                        setGoogleProfile(data.profile);
-                        setGoogleIdToken(idToken);
-                        setCurrentFormValues((prev) => ({
-                          ...prev,
-                          name: data.profile.name,
-                          email: data.profile.email,
-                        }));
-                        setShowGoogleAdditionalFields(true);
-                        toast({ 
-                          title: 'Additional Information Required', 
-                          description: 'Please fill in the required fields to complete your registration.' 
-                        });
-                      } else {
-                        throw new Error(data.message || 'Google signup failed');
+                          // First, try to authenticate with Google (without additional fields)
+                          const res = await fetch(apiUrl('/api/auth/google'), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ idToken, role: currentFormValues.role || 'patient' })
+                          });
+                          const data = await res.json();
+
+
+                          if (res.ok) {
+                            // User already exists, log them in
+                            await login({ ...data.user, id: data.user._id }, data.token);
+                            toast({ title: 'Welcome back!', description: 'Signed in with Google.' });
+                            navigate('/');
+                          } else if (data.requiresAdditionalFields) {
+                            // New user, need additional fields
+                            setGoogleProfile(data.profile);
+                            setGoogleIdToken(idToken);
+                            setCurrentFormValues((prev) => ({
+                              ...prev,
+                              name: data.profile.name,
+                              email: data.profile.email,
+                            }));
+                            setShowGoogleAdditionalFields(true);
+                            toast({
+                              title: 'Additional Information Required',
+                              description: 'Please fill in the required fields to complete your registration.'
+                            });
+                          } else {
+                            throw new Error(data.message || 'Google signup failed');
+                          }
+                        } catch (err: any) {
+                          toast({ title: 'Google Sign-in Failed', description: err.message || 'Try again', variant: 'destructive' });
+                        } finally {
+                          setGoogleLoading(false);
+                        }
+                      }}
+                      onError={() => toast({ title: 'Google Sign-in Failed', description: 'Try again', variant: 'destructive' })}
+                      theme="filled_blue"
+                      shape="rectangular"
+                      size="large"
+                      text="continue_with"
+                      useOneTap
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="default"
+                    className="w-full sm:w-[280px] flex items-center justify-center rounded-md bg-[#145DBF] hover:bg-[#0F4CA1] text-white shadow-sm"
+                    disabled={facebookLoading}
+                    onClick={() => {
+                      try {
+                        setFacebookLoading(true);
+                        const role = currentFormValues.role || 'patient';
+                        // Start OAuth flow on backend; backend will redirect to Facebook and then back to client callback
+                        window.location.href = apiUrl(`/api/auth/facebook?role=${encodeURIComponent(role)}`);
+                      } finally {
+                        // loading state will be cleared after redirect; this is a safety noop
                       }
-                    } catch (err: any) {
-                      toast({ title: 'Google Sign-in Failed', description: err.message || 'Try again', variant: 'destructive' });
-                    } finally {
-                      setGoogleLoading(false);
-                    }
-                  }}
-                  onError={() => toast({ title: 'Google Sign-in Failed', description: 'Try again', variant: 'destructive' })}
-                  theme="filled_blue"
-                  shape="rectangular"
-                  size="large"
-                  text="continue_with"
-                  useOneTap
-                  />
+                    }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                      <g transform="translate(-4 -4) scale(1.25)">
+                        <path d="M22 16.1C22 13.1 19.9 11 16.9 11C14.1 11 12 13.1 12 16.1C12 18.7 13.7 20.6 16.1 20.9V17.2H14.7V16.1H16.1V15.2C16.1 13.9 16.8 13.3 18 13.3C18.5 13.3 18.9 13.4 19 13.4V14.7H18.3C17.7 14.7 17.6 15 17.6 15.3V16.1H19L18.8 17.2H17.6V20.9C20 20.6 22 18.7 22 16.1Z" fill="white" />
+                      </g>
+                    </svg>
+                    Continue with Facebook
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="default"
-                  className="w-full sm:w-[280px] flex items-center justify-center rounded-md bg-[#145DBF] hover:bg-[#0F4CA1] text-white shadow-sm"
-                  disabled={facebookLoading}
-                  onClick={() => {
-                    try {
-                      setFacebookLoading(true);
-                      const role = currentFormValues.role || 'patient';
-                      // Start OAuth flow on backend; backend will redirect to Facebook and then back to client callback
-                      window.location.href = apiUrl(`/api/auth/facebook?role=${encodeURIComponent(role)}`);
-                    } finally {
-                      // loading state will be cleared after redirect; this is a safety noop
-                    }
-                  }}
-                >
-                  <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                    <g transform="translate(-4 -4) scale(1.25)">
-                      <path d="M22 16.1C22 13.1 19.9 11 16.9 11C14.1 11 12 13.1 12 16.1C12 18.7 13.7 20.6 16.1 20.9V17.2H14.7V16.1H16.1V15.2C16.1 13.9 16.8 13.3 18 13.3C18.5 13.3 18.9 13.4 19 13.4V14.7H18.3C17.7 14.7 17.6 15 17.6 15.3V16.1H19L18.8 17.2H17.6V20.9C20 20.6 22 18.7 22 16.1Z" fill="white"/>
-                    </g>
-                  </svg>
-                  Continue with Facebook
-                </Button>
-              </div>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">or continue with email</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Google Additional Fields Form */}
-            {showGoogleAdditionalFields && (
-              <div className="mb-8 p-4 sm:p-6 border-2 border-blue-200 rounded-lg bg-blue-50">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-blue-600" />
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-blue-900">Complete Your Google Registration</h3>
-                    <p className="text-sm text-blue-700">
-                      Welcome {googleProfile?.name}! Please provide additional information to complete your registration.
-                    </p>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-muted-foreground">or continue with email</span>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-6">
-                  {/* Role Selection for Google Users */}
-                  <div>
-                    <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-                      {roles.map((role) => {
-                        const Icon = role.icon;
-                        const isSelected = currentFormValues.role === role.value;
-                        return (
-                          <div
-                            key={role.value}
-                            className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${
-                              isSelected ? "scale-105" : ""
-                            }`}
-                            onClick={() => {
-                            setGoogleErrors({});
-                            handleGoogleFieldChange("role", role.value);
-                          }}
-                          >
-                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-auto sm:h-[120px] ${
-                              isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
-                            }`}>
-                              <div className={`bg-white rounded-lg p-2 sm:p-3 w-full h-full flex flex-col items-center justify-center ${
-                                isSelected ? role.bgColor : "hover:" + role.bgColor
-                              } transition-all duration-300`}>
-                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${
-                                  isSelected ? "scale-110" : "group-hover:scale-110"
-                                }`}>
-                                  <Icon className="w-4 h-4 text-white" />
-                                </div>
-                                
-                                <h3 className={`text-sm font-bold text-center mb-1 break-words ${role.iconColor} transition-colors duration-300`}>
-                                  {role.label}
-                                </h3>
-                                
-                                <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
-                                  {role.description}
-                                </p>
-                                
-                                {isSelected && (
-                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
-                                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+              {/* Google Additional Fields Form */}
+              {showGoogleAdditionalFields && (
+                <div className="mb-8 p-4 sm:p-6 border-2 border-blue-200 rounded-lg bg-blue-50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-900">Complete Your Google Registration</h3>
+                      <p className="text-sm text-blue-700">
+                        Welcome {googleProfile?.name}! Please provide additional information to complete your registration.
+                      </p>
                     </div>
                   </div>
 
-                  {/* Required Fields for Google Registration */}
-                  <div className="space-y-4">
-                    <h4 className="text-md font-semibold">Required Information</h4>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="google-phone">Phone Number *</Label>
-                        <div className="flex gap-2">
-                          <div className="w-24 sm:w-28 md:w-32">
-                            <Select value={currentFormValues.phoneCountryCode} onValueChange={(value) => handleGoogleFieldChange("phoneCountryCode", value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Code" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {countryCodes.map((country) => (
-                                  <SelectItem key={country.code} value={country.code}>
-                                    <span className="flex items-center gap-2">
-                                      <span>{country.flag}</span>
-                                      <span>{country.code}</span>
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                  <div className="space-y-6">
+                    {/* Role Selection for Google Users */}
+                    <div>
+                      <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+                        {roles.map((role) => {
+                          const Icon = role.icon;
+                          const isSelected = currentFormValues.role === role.value;
+                          return (
+                            <div
+                              key={role.value}
+                              className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected ? "scale-105" : ""
+                                }`}
+                              onClick={() => {
+                                setGoogleErrors({});
+                                handleGoogleFieldChange("role", role.value);
+                              }}
+                            >
+                              <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-auto sm:h-[120px] ${isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
+                                }`}>
+                                <div className={`bg-white rounded-lg p-2 sm:p-3 w-full h-full flex flex-col items-center justify-center ${isSelected ? role.bgColor : "hover:" + role.bgColor
+                                  } transition-all duration-300`}>
+                                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${isSelected ? "scale-110" : "group-hover:scale-110"
+                                    }`}>
+                                    <Icon className="w-4 h-4 text-white" />
+                                  </div>
+
+                                  <h3 className={`text-sm font-bold text-center mb-1 break-words ${role.iconColor} transition-colors duration-300`}>
+                                    {role.label}
+                                  </h3>
+
+                                  <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
+                                    {role.description}
+                                  </p>
+
+                                  {isSelected && (
+                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
+                                      <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Required Fields for Google Registration */}
+                    <div className="space-y-4">
+                      <h4 className="text-md font-semibold">Required Information</h4>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="google-phone">Phone Number *</Label>
+                          <div className="flex gap-2">
+                            <div className="w-24 sm:w-28 md:w-32">
+                              <Select value={currentFormValues.phoneCountryCode} onValueChange={(value) => handleGoogleFieldChange("phoneCountryCode", value)}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Code" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {countryCodes.map((country) => (
+                                    <SelectItem key={country.code} value={country.code}>
+                                      <span className="flex items-center gap-2">
+                                        <span>{country.flag}</span>
+                                        <span>{country.code}</span>
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex-1">
+                              <Input
+                                id="google-phone"
+                                value={currentFormValues.phone}
+                                onChange={(e) => handleGoogleFieldChange("phone", e.target.value)}
+                                placeholder="300 1234567"
+                                required
+                              />
+                              {googleErrors.phone && (
+                                <p className="text-xs text-red-600 mt-1">{googleErrors.phone}</p>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex-1">
+                        </div>
+                        <div>
+                          <Label htmlFor="google-cnic">CNIC Number *</Label>
+                          <Input
+                            id="google-cnic"
+                            value={currentFormValues.cnic}
+                            onChange={(e) => handleGoogleFieldChange("cnic", e.target.value)}
+                            placeholder="12345-1234567-1"
+                            required
+                          />
+                          {googleErrors.cnic && (
+                            <p className="text-xs text-red-600 mt-1">{googleErrors.cnic}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="google-address">
+                          Complete Address {['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) ? '*' : ''}
+                        </Label>
+                        <Textarea
+                          id="google-address"
+                          value={currentFormValues.address}
+                          onChange={(e) => handleGoogleFieldChange("address", e.target.value)}
+                          placeholder="Enter complete address"
+                          rows={3}
+                          required={['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role)}
+                        />
+                        {googleErrors.address && (
+                          <p className="text-xs text-red-600 mt-1">{googleErrors.address}</p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="google-city">City *</Label>
+                          <Select value={currentFormValues.city} onValueChange={(value) => handleGoogleFieldChange("city", value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your city" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Karachi">Karachi</SelectItem>
+                              <SelectItem value="Lahore">Lahore</SelectItem>
+                              <SelectItem value="Islamabad">Islamabad</SelectItem>
+                              <SelectItem value="Faisalabad">Faisalabad</SelectItem>
+                              <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
+                              <SelectItem value="Multan">Multan</SelectItem>
+                              <SelectItem value="Peshawar">Peshawar</SelectItem>
+                              <SelectItem value="Quetta">Quetta</SelectItem>
+                              <SelectItem value="Mardan">Mardan</SelectItem>
+                              <SelectItem value="Abbottabad">Abbottabad</SelectItem>
+                              <SelectItem value="Bahawalpur">Bahawalpur</SelectItem>
+                              <SelectItem value="Bannu">Bannu</SelectItem>
+                              <SelectItem value="Chiniot">Chiniot</SelectItem>
+                              <SelectItem value="Dera Ghazi Khan">Dera Ghazi Khan</SelectItem>
+                              <SelectItem value="Dera Ismail Khan">Dera Ismail Khan</SelectItem>
+                              <SelectItem value="Gujranwala">Gujranwala</SelectItem>
+                              <SelectItem value="Gujrat">Gujrat</SelectItem>
+                              <SelectItem value="Hyderabad">Hyderabad</SelectItem>
+                              <SelectItem value="Jhang">Jhang</SelectItem>
+                              <SelectItem value="Jhelum">Jhelum</SelectItem>
+                              <SelectItem value="Kasur">Kasur</SelectItem>
+                              <SelectItem value="Kohat">Kohat</SelectItem>
+                              <SelectItem value="Larkana">Larkana</SelectItem>
+                              <SelectItem value="Mirpur Khas">Mirpur Khas</SelectItem>
+                              <SelectItem value="Muzaffarabad">Muzaffarabad</SelectItem>
+                              <SelectItem value="Nawabshah">Nawabshah</SelectItem>
+                              <SelectItem value="Okara">Okara</SelectItem>
+                              <SelectItem value="Pakpattan">Pakpattan</SelectItem>
+                              <SelectItem value="Sahiwal">Sahiwal</SelectItem>
+                              <SelectItem value="Sargodha">Sargodha</SelectItem>
+                              <SelectItem value="Sheikhupura">Sheikhupura</SelectItem>
+                              <SelectItem value="Sialkot">Sialkot</SelectItem>
+                              <SelectItem value="Sukkur">Sukkur</SelectItem>
+                              <SelectItem value="Swat">Swat</SelectItem>
+                              <SelectItem value="Taxila">Taxila</SelectItem>
+                              <SelectItem value="Turbat">Turbat</SelectItem>
+                              <SelectItem value="Wah Cantonment">Wah Cantonment</SelectItem>
+                              <SelectItem value="Zhob">Zhob</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {googleErrors.city && (
+                            <p className="text-xs text-red-600 mt-1">{googleErrors.city}</p>
+                          )}
+                        </div>
+                        <div>
+                          <Label htmlFor="google-province">
+                            Province *{['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) ? '*' : ''}
+                          </Label>
+                          <Select value={currentFormValues.province} onValueChange={(value) => handleGoogleFieldChange("province", value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select province" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {provinces.map((province) => (
+                                <SelectItem key={province} value={province}>{province}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {googleErrors.province && (
+                            <p className="text-xs text-red-600 mt-1">{googleErrors.province}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Role-specific fields for Google registration */}
+                      {currentFormValues.role === 'doctor' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="google-license">License Number *</Label>
                             <Input
-                              id="google-phone"
-                              value={currentFormValues.phone}
-                              onChange={(e) => handleGoogleFieldChange("phone", e.target.value)}
-                              placeholder="300 1234567"
+                              id="google-license"
+                              value={currentFormValues.licenseNumber}
+                              onChange={(e) => handleGoogleFieldChange("licenseNumber", e.target.value)}
+                              placeholder="Enter license number"
                               required
                             />
-                            {googleErrors.phone && (
-                              <p className="text-xs text-red-600 mt-1">{googleErrors.phone}</p>
+                            {googleErrors.licenseNumber && (
+                              <p className="text-xs text-red-600 mt-1">{googleErrors.licenseNumber}</p>
+                            )}
+                          </div>
+                          <div>
+                            <Label htmlFor="google-designation">Designation *</Label>
+                            <Input
+                              id="google-designation"
+                              value={currentFormValues.designation}
+                              onChange={(e) => handleGoogleFieldChange("designation", e.target.value)}
+                              placeholder="e.g., Medical Officer, Consultant"
+                              required
+                            />
+                            {googleErrors.designation && (
+                              <p className="text-xs text-red-600 mt-1">{googleErrors.designation}</p>
                             )}
                           </div>
                         </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="google-cnic">CNIC Number *</Label>
-                        <Input
-                          id="google-cnic"
-                          value={currentFormValues.cnic}
-                          onChange={(e) => handleGoogleFieldChange("cnic", e.target.value)}
-                          placeholder="12345-1234567-1"
-                          required
-                        />
-                        {googleErrors.cnic && (
-                          <p className="text-xs text-red-600 mt-1">{googleErrors.cnic}</p>
-                        )}
-                      </div>
-                    </div>
+                      )}
 
-                    <div>
-                      <Label htmlFor="google-address">
-                        Complete Address {['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) ? '*' : ''}
-                      </Label>
-                      <Textarea
-                        id="google-address"
-                        value={currentFormValues.address}
-                        onChange={(e) => handleGoogleFieldChange("address", e.target.value)}
-                        placeholder="Enter complete address"
-                        rows={3}
-                        required={['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role)}
-                      />
-                      {googleErrors.address && (
-                        <p className="text-xs text-red-600 mt-1">{googleErrors.address}</p>
+                      {['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="google-business">Business Name *</Label>
+                            <Input
+                              id="google-business"
+                              value={currentFormValues.businessName}
+                              onChange={(e) => handleGoogleFieldChange("businessName", e.target.value)}
+                              placeholder="Enter business/facility name"
+                              required
+                            />
+                            {googleErrors.businessName && (
+                              <p className="text-xs text-red-600 mt-1">{googleErrors.businessName}</p>
+                            )}
+                          </div>
+                          <div>
+                            <Label htmlFor="google-license-provider">License Number *</Label>
+                            <Input
+                              id="google-license-provider"
+                              value={currentFormValues.licenseNumber}
+                              onChange={(e) => handleGoogleFieldChange("licenseNumber", e.target.value)}
+                              placeholder="Enter license number"
+                              required
+                            />
+                            {googleErrors.licenseNumber && (
+                              <p className="text-xs text-red-600 mt-1">{googleErrors.licenseNumber}</p>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="google-city">City *</Label>
-                        <Select value={currentFormValues.city} onValueChange={(value) => handleGoogleFieldChange("city", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your city" />
-                          </SelectTrigger>
-                          <SelectContent>
+                    {/* Terms and Conditions */}
+                    <div className="flex items-start space-x-2">
+                      <Checkbox
+                        id="google-terms"
+                        checked={acceptTerms}
+                        onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                      />
+                      <Label htmlFor="google-terms" className="text-sm leading-relaxed">
+                        I agree to the{" "}
+                        <Link to="/terms" className="text-primary hover:underline">
+                          Terms and Conditions
+                        </Link>{" "}
+                        and{" "}
+                        <Link to="/privacy" className="text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                      </Label>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setShowGoogleAdditionalFields(false);
+                          setGoogleProfile(null);
+                          setGoogleIdToken('');
+                        }}
+                        className="w-full sm:flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleGoogleRegistrationComplete}
+                        disabled={googleLoading}
+                        className="w-full sm:flex-1"
+                      >
+                        {googleLoading ? "Completing Registration..." : "Complete Registration"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <Formik
+                initialValues={initialValues}
+                validate={(values) => {
+                  try {
+                    getValidationSchema(values.role).validateSync(values, { abortEarly: false });
+                    return {};
+                  } catch (err: any) {
+                    const errors: Record<string, any> = {};
+                    if (err.inner && Array.isArray(err.inner)) {
+                      err.inner.forEach((e: any) => {
+                        if (e.path && !errors[e.path]) errors[e.path] = e.message;
+                      });
+                    } else if (err.path) {
+                      errors[err.path] = err.message;
+                    }
+                    return errors;
+                  }
+                }}
+                onSubmit={handleFormSubmit}
+              >
+                {({ values, setFieldValue, errors, touched, setFieldTouched, submitForm, validateForm, setTouched }) => (
+                  <Form className="space-y-8" style={{ display: showGoogleAdditionalFields ? 'none' : 'block' }}>
+                    {/* Role Selection */}
+                    <div>
+                      <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
+                      <Field name="role">
+                        {({ field, form }: any) => (
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {roles.map((role) => {
+                              const Icon = role.icon;
+                              const isSelected = field.value === role.value;
+                              return (
+                                <div
+                                  key={role.value}
+                                  className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected ? "scale-105" : ""
+                                    }`}
+                                  onClick={() => {
+                                    form.setFieldValue('role', role.value);
+                                    form.setFieldTouched('role', true);
+                                    // Force re-validation with new schema
+                                    setTimeout(() => {
+                                      form.validateForm();
+                                    }, 0);
+                                  }}
+                                >
+                                  <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[110px] sm:h-[120px] ${isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
+                                    }`}>
+                                    <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${isSelected ? role.bgColor : "hover:" + role.bgColor
+                                      } transition-all duration-300`}>
+                                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${isSelected ? "scale-110" : "group-hover:scale-110"
+                                        }`}>
+                                        <Icon className="w-4 h-4 text-white" />
+                                      </div>
+
+                                      <h3 className={`text-sm font-bold text-center mb-1 ${role.iconColor} transition-colors duration-300`}>
+                                        {role.label}
+                                      </h3>
+
+                                      <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
+                                        {role.description}
+                                      </p>
+
+                                      {isSelected && (
+                                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
+                                          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                          </svg>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </Field>
+                      <ErrorMessage name="role" component="div" className="text-sm text-red-500 mt-2" />
+                    </div>
+
+                    {/* Basic Information */}
+                    <div className="space-y-4 rounded-xl border bg-white/60 p-5">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <User className="w-5 h-5" />
+                        Basic Information
+                      </h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField name="name" label="Full Name" required>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                              <User className="w-4 h-4" />
+                            </span>
+                            <FormikInput
+                              name="name"
+                              className="pl-9"
+                              placeholder="Enter full name"
+                            />
+                          </div>
+                        </FormField>
+                        <FormField name="email" label="Email Address" required>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                              <Mail className="w-4 h-4" />
+                            </span>
+                            <FormikInput
+                              name="email"
+                              type="email"
+                              className="pl-9"
+                              placeholder="Enter email address"
+                            />
+                          </div>
+                        </FormField>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField name="phone" label="Whatsapp Number" required>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
+                              <Phone className="w-4 h-4" />
+                            </span>
+                            <div className="pl-9">
+                              <PhoneInputWithCountryCode
+                                phoneName="phone"
+                                countryCodeName="phoneCountryCode"
+                                placeholder="300 1234567"
+                                required
+                              />
+                            </div>
+                          </div>
+                        </FormField>
+                        <FormField name="phoneAlternate" label="Alternate Phone Numbers">
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
+                              <Phone className="w-4 h-4" />
+                            </span>
+                            <div className="pl-9">
+                              <PhoneInputWithCountryCode
+                                phoneName="phoneAlternate"
+                                countryCodeName="phoneAlternateCountryCode"
+                                placeholder="300 1234567"
+                              />
+                            </div>
+                          </div>
+                        </FormField>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField name="cnic" label="CNIC Number" required>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                              <IdCard className="w-4 h-4" />
+                            </span>
+                            <FormikInput
+                              name="cnic"
+                              className="pl-9"
+                              placeholder="12345-1234567-1"
+                            />
+                          </div>
+                        </FormField>
+                        <FormField name="city" label="City" required>
+                          <FormikSelect name="city" placeholder="Select your city">
                             <SelectItem value="Karachi">Karachi</SelectItem>
                             <SelectItem value="Lahore">Lahore</SelectItem>
                             <SelectItem value="Islamabad">Islamabad</SelectItem>
@@ -1303,559 +1643,220 @@ const RegisterPage = () => {
                             <SelectItem value="Turbat">Turbat</SelectItem>
                             <SelectItem value="Wah Cantonment">Wah Cantonment</SelectItem>
                             <SelectItem value="Zhob">Zhob</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {googleErrors.city && (
-                          <p className="text-xs text-red-600 mt-1">{googleErrors.city}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="google-province">
-                          Province *{['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) ? '*' : ''}
-                        </Label>
-                        <Select value={currentFormValues.province} onValueChange={(value) => handleGoogleFieldChange("province", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select province" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {provinces.map((province) => (
-                              <SelectItem key={province} value={province}>{province}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {googleErrors.province && (
-                          <p className="text-xs text-red-600 mt-1">{googleErrors.province}</p>
-                        )}
+                          </FormikSelect>
+                        </FormField>
                       </div>
                     </div>
 
-                    {/* Role-specific fields for Google registration */}
-                    {currentFormValues.role === 'doctor' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="google-license">License Number *</Label>
-                          <Input
-                            id="google-license"
-                            value={currentFormValues.licenseNumber}
-                            onChange={(e) => handleGoogleFieldChange("licenseNumber", e.target.value)}
-                            placeholder="Enter license number"
-                            required
-                          />
-                          {googleErrors.licenseNumber && (
-                            <p className="text-xs text-red-600 mt-1">{googleErrors.licenseNumber}</p>
-                          )}
-                        </div>
-                        <div>
-                          <Label htmlFor="google-designation">Designation *</Label>
-                          <Input
-                            id="google-designation"
-                            value={currentFormValues.designation}
-                            onChange={(e) => handleGoogleFieldChange("designation", e.target.value)}
-                            placeholder="e.g., Medical Officer, Consultant"
-                            required
-                          />
-                          {googleErrors.designation && (
-                            <p className="text-xs text-red-600 mt-1">{googleErrors.designation}</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                    {getRoleSpecificFields(values, setFieldValue)}
 
-                    {['clinic/hospital', 'laboratory', 'pharmacy'].includes(currentFormValues.role) && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="google-business">Business Name *</Label>
-                          <Input
-                            id="google-business"
-                            value={currentFormValues.businessName}
-                            onChange={(e) => handleGoogleFieldChange("businessName", e.target.value)}
-                            placeholder="Enter business/facility name"
-                            required
-                          />
-                          {googleErrors.businessName && (
-                            <p className="text-xs text-red-600 mt-1">{googleErrors.businessName}</p>
-                          )}
-                        </div>
-                        <div>
-                          <Label htmlFor="google-license-provider">License Number *</Label>
-                          <Input
-                            id="google-license-provider"
-                            value={currentFormValues.licenseNumber}
-                            onChange={(e) => handleGoogleFieldChange("licenseNumber", e.target.value)}
-                            placeholder="Enter license number"
-                            required
-                          />
-                          {googleErrors.licenseNumber && (
-                            <p className="text-xs text-red-600 mt-1">{googleErrors.licenseNumber}</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                    {/* Security */}
+                    <div className="space-y-4 rounded-xl border bg-white/60 p-5">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Lock className="w-5 h-5" />
+                        Security
+                      </h3>
 
-                  {/* Terms and Conditions */}
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      id="google-terms"
-                      checked={acceptTerms}
-                      onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField name="password" label="Password" required>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                              <Lock className="w-4 h-4" />
+                            </span>
+                            <FormikInput
+                              name="password"
+                              type="password"
+                              className="pl-9"
+                              placeholder="Create a strong password"
+                            />
+                          </div>
+                        </FormField>
+                        <FormField name="confirmPassword" label="Confirm Password" required>
+                          <div className="relative">
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                              <Lock className="w-4 h-4" />
+                            </span>
+                            <FormikInput
+                              name="confirmPassword"
+                              type="password"
+                              className="pl-9"
+                              placeholder="Confirm your password"
+                            />
+                          </div>
+                        </FormField>
+                      </div>
+                    </div>
+
+                    {/* Agreement */}
+                    <div className="space-y-4 rounded-xl border bg-white/60 p-5">
+                      <h3 className="text-lg font-semibold">Agreement & Declaration</h3>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          I hereby declare that all information provided is true and valid to the best of my knowledge.
+                          I agree to abide by the platform's guidelines and ensure patient safety, privacy, and quality care.
+                        </p>
+                      </div>
+
+                      <div className="flex items-start space-x-2">
+                        <Checkbox
+                          id="terms"
+                          checked={acceptTerms}
+                          onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                        />
+                        <Label htmlFor="terms" className="text-sm leading-relaxed">
+                          I agree to the{" "}
+                          <Link to="/terms" className="text-primary hover:underline">
+                            Terms and Conditions
+                          </Link>{" "}
+                          and{" "}
+                          <Link to="/privacy" className="text-primary hover:underline">
+                            Privacy Policy
+                          </Link>
+                        </Label>
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <Button
+                      type="button"
+                      className="w-full py-6 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+                      disabled={isSubmitting}
+                      onClick={async () => {
+                        // Validate form before attempting submit to surface errors via toast
+                        const validationErrors = await validateForm();
+                        if (validationErrors && Object.keys(validationErrors).length > 0) {
+                          // Mark all fields as touched so errors show up
+                          setTouched(
+                            Object.keys(validationErrors).reduce((acc: any, key: string) => {
+                              acc[key] = true;
+                              return acc;
+                            }, {}),
+                            true
+                          );
+                          toast({ title: 'Please fix the highlighted errors', description: 'Some required fields are missing or invalid.', variant: 'destructive' });
+                          return;
+                        }
+                        await submitForm();
+                      }}
+                    >
+                      {isSubmitting ? "Submitting Registration..." : "Submit Registration"}
+                    </Button>
+                  </Form>
+                )}
+              </Formik>
+
+              {/* Document Upload Modal for Providers */}
+              <Dialog open={showDocModal} onOpenChange={setShowDocModal}>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Upload Verification Document</DialogTitle>
+                    <DialogDescription>
+                      Please upload your business/clinic verification document. You can also skip and submit now; you may be asked to provide it later during verification.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="rounded-xl border-2 border-dashed p-6 text-center bg-gradient-to-br from-gray-50 to-white">
+                    <input
+                      ref={fileInputRef}
+                      id="providerDocModal"
+                      type="file"
+                      className="hidden"
+                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0] || null;
+                        if (f && f.size > 25 * 1024 * 1024) {
+                          toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                          setProviderDoc(null);
+                          return;
+                        }
+                        setProviderDoc(f);
+                      }}
                     />
-                    <Label htmlFor="google-terms" className="text-sm leading-relaxed">
-                      I agree to the{" "}
-                      <Link to="/terms" className="text-primary hover:underline">
-                        Terms and Conditions
-                      </Link>{" "}
-                      and{" "}
-                      <Link to="/privacy" className="text-primary hover:underline">
-                        Privacy Policy
-                      </Link>
-                    </Label>
+
+                    <label
+                      htmlFor="providerDocModal"
+                      className="group inline-flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all"
+                    >
+                      <span className="w-9 h-9 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
+                        <Upload className="w-5 h-5 text-white" />
+                      </span>
+                      <span className="text-sm text-gray-700">
+                        <span className="font-medium">Click to upload</span>
+                        <span className="text-muted-foreground"> • PDF, DOC, DOCX • up to 25MB</span>
+                      </span>
+                    </label>
+
+                    {providerDoc && (
+                      <div className="mt-4 flex items-center justify-center">
+                        <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 border">
+                          <span className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                            <FileText className="w-4 h-4 text-white" />
+                          </span>
+                          <div className="text-left">
+                            <p className="text-sm font-medium truncate max-w-[260px]" title={providerDoc.name}>{providerDoc.name}</p>
+                            <p className="text-xs text-muted-foreground">{(providerDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="ml-1"
+                            onClick={() => {
+                              setProviderDoc(null);
+                              if (fileInputRef.current) fileInputRef.current.value = '';
+                            }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="mt-3 text-xs text-muted-foreground">Only one file allowed. Accepted types: PDF/DOC/DOCX. Max 25MB.</p>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <DialogFooter>
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => {
-                        setShowGoogleAdditionalFields(false);
-                        setGoogleProfile(null);
-                        setGoogleIdToken('');
+                        setShowDocModal(false);
+                        performRegistration();
                       }}
-                      className="w-full sm:flex-1"
+                      disabled={isSubmitting}
                     >
-                      Cancel
+                      Skip and Submit
                     </Button>
                     <Button
                       type="button"
-                      onClick={handleGoogleRegistrationComplete}
-                      disabled={googleLoading}
-                      className="w-full sm:flex-1"
+                      onClick={async () => {
+                        if (!providerDoc) {
+                          toast({ title: 'No file selected', description: 'Please choose a document to upload or skip.', variant: 'destructive' });
+                          return;
+                        }
+                        setShowDocModal(false);
+                        await performRegistration();
+                      }}
+                      disabled={isSubmitting}
                     >
-                      {googleLoading ? "Completing Registration..." : "Complete Registration"}
+                      Upload & Submit
                     </Button>
-                  </div>
-                </div>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <div className="mt-6 text-center">
+                <p className="text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-primary hover:underline font-medium">
+                    Sign in here
+                  </Link>
+                </p>
               </div>
-            )}
-
-            <Formik
-              initialValues={initialValues}
-              validate={(values) => {
-                try {
-                  getValidationSchema(values.role).validateSync(values, { abortEarly: false });
-                  return {};
-                } catch (err: any) {
-                  const errors: Record<string, any> = {};
-                  if (err.inner && Array.isArray(err.inner)) {
-                    err.inner.forEach((e: any) => {
-                      if (e.path && !errors[e.path]) errors[e.path] = e.message;
-                    });
-                  } else if (err.path) {
-                    errors[err.path] = err.message;
-                  }
-                  return errors;
-                }
-              }}
-              onSubmit={handleFormSubmit}
-            >
-              {({ values, setFieldValue, errors, touched, setFieldTouched, submitForm, validateForm, setTouched }) => (
-                <Form className="space-y-8" style={{ display: showGoogleAdditionalFields ? 'none' : 'block' }}>
-              {/* Role Selection */}
-              <div>
-                <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
-                <Field name="role">
-                  {({ field, form }: any) => (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                      {roles.map((role) => {
-                        const Icon = role.icon;
-                        const isSelected = field.value === role.value;
-                        return (
-                          <div
-                            key={role.value}
-                            className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${
-                              isSelected ? "scale-105" : ""
-                            }`}
-                            onClick={() => {
-                              form.setFieldValue('role', role.value);
-                              form.setFieldTouched('role', true);
-                              // Force re-validation with new schema
-                              setTimeout(() => {
-                                form.validateForm();
-                              }, 0);
-                            }}
-                          >
-                            <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[110px] sm:h-[120px] ${
-                              isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
-                            }`}>
-                              <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${
-                                isSelected ? role.bgColor : "hover:" + role.bgColor
-                              } transition-all duration-300`}>
-                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${
-                                  isSelected ? "scale-110" : "group-hover:scale-110"
-                                }`}>
-                                  <Icon className="w-4 h-4 text-white" />
-                                </div>
-                                
-                                <h3 className={`text-sm font-bold text-center mb-1 ${role.iconColor} transition-colors duration-300`}>
-                                  {role.label}
-                                </h3>
-                                
-                                <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
-                                  {role.description}
-                                </p>
-                                
-                                {isSelected && (
-                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
-                                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </Field>
-                <ErrorMessage name="role" component="div" className="text-sm text-red-500 mt-2" />
-              </div>
-
-              {/* Basic Information */}
-              <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Basic Information
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField name="name" label="Full Name" required>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        <User className="w-4 h-4" />
-                      </span>
-                      <FormikInput
-                        name="name"
-                        className="pl-9"
-                        placeholder="Enter full name"
-                      />
-                    </div>
-                  </FormField>
-                  <FormField name="email" label="Email Address" required>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        <Mail className="w-4 h-4" />
-                      </span>
-                      <FormikInput
-                        name="email"
-                        type="email"
-                        className="pl-9"
-                        placeholder="Enter email address"
-                      />
-                    </div>
-                  </FormField>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField name="phone" label="Whatsapp Number" required>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
-                        <Phone className="w-4 h-4" />
-                      </span>
-                      <div className="pl-9">
-                        <PhoneInputWithCountryCode
-                          phoneName="phone"
-                          countryCodeName="phoneCountryCode"
-                          placeholder="300 1234567"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </FormField>
-                  <FormField name="phoneAlternate" label="Alternate Phone Numbers">
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
-                        <Phone className="w-4 h-4" />
-                      </span>
-                      <div className="pl-9">
-                        <PhoneInputWithCountryCode
-                          phoneName="phoneAlternate"
-                          countryCodeName="phoneAlternateCountryCode"
-                          placeholder="300 1234567"
-                        />
-                      </div>
-                    </div>
-                  </FormField>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField name="cnic" label="CNIC Number" required>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        <IdCard className="w-4 h-4" />
-                      </span>
-                      <FormikInput
-                        name="cnic"
-                        className="pl-9"
-                        placeholder="12345-1234567-1"
-                      />
-                    </div>
-                  </FormField>
-                  <FormField name="city" label="City" required>
-                    <FormikSelect name="city" placeholder="Select your city">
-                      <SelectItem value="Karachi">Karachi</SelectItem>
-                      <SelectItem value="Lahore">Lahore</SelectItem>
-                      <SelectItem value="Islamabad">Islamabad</SelectItem>
-                      <SelectItem value="Faisalabad">Faisalabad</SelectItem>
-                      <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
-                      <SelectItem value="Multan">Multan</SelectItem>
-                      <SelectItem value="Peshawar">Peshawar</SelectItem>
-                      <SelectItem value="Quetta">Quetta</SelectItem>
-                            <SelectItem value="Mardan">Mardan</SelectItem>
-                            <SelectItem value="Abbottabad">Abbottabad</SelectItem>
-                            <SelectItem value="Bahawalpur">Bahawalpur</SelectItem>
-                            <SelectItem value="Bannu">Bannu</SelectItem>
-                            <SelectItem value="Chiniot">Chiniot</SelectItem>
-                            <SelectItem value="Dera Ghazi Khan">Dera Ghazi Khan</SelectItem>
-                            <SelectItem value="Dera Ismail Khan">Dera Ismail Khan</SelectItem>
-                            <SelectItem value="Gujranwala">Gujranwala</SelectItem>
-                            <SelectItem value="Gujrat">Gujrat</SelectItem>
-                            <SelectItem value="Hyderabad">Hyderabad</SelectItem>
-                            <SelectItem value="Jhang">Jhang</SelectItem>
-                            <SelectItem value="Jhelum">Jhelum</SelectItem>
-                            <SelectItem value="Kasur">Kasur</SelectItem>
-                            <SelectItem value="Kohat">Kohat</SelectItem>
-                            <SelectItem value="Larkana">Larkana</SelectItem>
-                            <SelectItem value="Mirpur Khas">Mirpur Khas</SelectItem>
-                            <SelectItem value="Muzaffarabad">Muzaffarabad</SelectItem>
-                            <SelectItem value="Nawabshah">Nawabshah</SelectItem>
-                            <SelectItem value="Okara">Okara</SelectItem>
-                            <SelectItem value="Pakpattan">Pakpattan</SelectItem>
-                            <SelectItem value="Sahiwal">Sahiwal</SelectItem>
-                            <SelectItem value="Sargodha">Sargodha</SelectItem>
-                            <SelectItem value="Sheikhupura">Sheikhupura</SelectItem>
-                            <SelectItem value="Sialkot">Sialkot</SelectItem>
-                            <SelectItem value="Sukkur">Sukkur</SelectItem>
-                            <SelectItem value="Swat">Swat</SelectItem>
-                            <SelectItem value="Taxila">Taxila</SelectItem>
-                            <SelectItem value="Turbat">Turbat</SelectItem>
-                            <SelectItem value="Wah Cantonment">Wah Cantonment</SelectItem>
-                            <SelectItem value="Zhob">Zhob</SelectItem>
-                    </FormikSelect>
-                  </FormField>
-                </div>
-              </div>
-
-              {getRoleSpecificFields(values, setFieldValue)}
-
-              {/* Security */}
-              <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Lock className="w-5 h-5" />
-                  Security
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField name="password" label="Password" required>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        <Lock className="w-4 h-4" />
-                      </span>
-                      <FormikInput
-                        name="password"
-                        type="password"
-                        className="pl-9"
-                        placeholder="Create a strong password"
-                      />
-                    </div>
-                  </FormField>
-                  <FormField name="confirmPassword" label="Confirm Password" required>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        <Lock className="w-4 h-4" />
-                      </span>
-                      <FormikInput
-                        name="confirmPassword"
-                        type="password"
-                        className="pl-9"
-                        placeholder="Confirm your password"
-                      />
-                    </div>
-                  </FormField>
-                </div>
-              </div>
-
-              {/* Agreement */}
-              <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-                <h3 className="text-lg font-semibold">Agreement & Declaration</h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    I hereby declare that all information provided is true and valid to the best of my knowledge. 
-                    I agree to abide by the platform's guidelines and ensure patient safety, privacy, and quality care.
-                  </p>
-                </div>
-                
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={acceptTerms}
-                    onCheckedChange={(checked) => setAcceptTerms(checked === true)}
-                  />
-                  <Label htmlFor="terms" className="text-sm leading-relaxed">
-                    I agree to the{" "}
-                    <Link to="/terms" className="text-primary hover:underline">
-                      Terms and Conditions
-                    </Link>{" "}
-                    and{" "}
-                    <Link to="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
-                    </Link>
-                  </Label>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type="button"
-                className="w-full py-6 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
-                disabled={isSubmitting}
-                onClick={async () => {
-                  // Validate form before attempting submit to surface errors via toast
-                  const validationErrors = await validateForm();
-                  if (validationErrors && Object.keys(validationErrors).length > 0) {
-                    // Mark all fields as touched so errors show up
-                    setTouched(
-                      Object.keys(validationErrors).reduce((acc: any, key: string) => {
-                        acc[key] = true;
-                        return acc;
-                      }, {}),
-                      true
-                    );
-                    toast({ title: 'Please fix the highlighted errors', description: 'Some required fields are missing or invalid.', variant: 'destructive' });
-                    return;
-                  }
-                  await submitForm();
-                }}
-              >
-                {isSubmitting ? "Submitting Registration..." : "Submit Registration"}
-              </Button>
-                </Form>
-              )}
-            </Formik>
-
-            {/* Document Upload Modal for Providers */}
-            <Dialog open={showDocModal} onOpenChange={setShowDocModal}>
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Upload Verification Document</DialogTitle>
-                  <DialogDescription>
-                    Please upload your business/clinic verification document. You can also skip and submit now; you may be asked to provide it later during verification.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="rounded-xl border-2 border-dashed p-6 text-center bg-gradient-to-br from-gray-50 to-white">
-                  <input
-                    ref={fileInputRef}
-                    id="providerDocModal"
-                    type="file"
-                    className="hidden"
-                    accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0] || null;
-                      if (f && f.size > 25 * 1024 * 1024) {
-                        toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                        setProviderDoc(null);
-                        return;
-                      }
-                      setProviderDoc(f);
-                    }}
-                  />
-
-                  <label
-                    htmlFor="providerDocModal"
-                    className="group inline-flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all"
-                  >
-                    <span className="w-9 h-9 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
-                      <Upload className="w-5 h-5 text-white" />
-                    </span>
-                    <span className="text-sm text-gray-700">
-                      <span className="font-medium">Click to upload</span>
-                      <span className="text-muted-foreground"> • PDF, DOC, DOCX • up to 25MB</span>
-                    </span>
-                  </label>
-
-                  {providerDoc && (
-                    <div className="mt-4 flex items-center justify-center">
-                      <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 border">
-                        <span className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                          <FileText className="w-4 h-4 text-white" />
-                        </span>
-                        <div className="text-left">
-                          <p className="text-sm font-medium truncate max-w-[260px]" title={providerDoc.name}>{providerDoc.name}</p>
-                          <p className="text-xs text-muted-foreground">{(providerDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="ml-1"
-                          onClick={() => {
-                            setProviderDoc(null);
-                            if (fileInputRef.current) fileInputRef.current.value = '';
-                          }}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  <p className="mt-3 text-xs text-muted-foreground">Only one file allowed. Accepted types: PDF/DOC/DOCX. Max 25MB.</p>
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowDocModal(false);
-                      performRegistration();
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    Skip and Submit
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={async () => {
-                      if (!providerDoc) {
-                        toast({ title: 'No file selected', description: 'Please choose a document to upload or skip.', variant: 'destructive' });
-                        return;
-                      }
-                      setShowDocModal(false);
-                      await performRegistration();
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    Upload & Submit
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <div className="mt-6 text-center">
-              <p className="text-muted-foreground">
-                Already have an account?{" "}
-                <Link to="/login" className="text-primary hover:underline font-medium">
-                  Sign in here
-                </Link>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

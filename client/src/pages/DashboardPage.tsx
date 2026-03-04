@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { mockBookings } from "@/data/mockData";
-import { 
+import {
   Calendar,
   Clock,
   MapPin,
@@ -50,6 +51,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="User Dashboard - Sehatkor" noindex={true} />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">

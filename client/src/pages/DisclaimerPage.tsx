@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, AlertTriangle, FileText, Scale, Info } from "lucide-react";
@@ -34,19 +34,12 @@ const DisclaimerPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-            <Helmet>
-                <title>Disclaimer - Sehatkor | Medical Information & Legal Disclaimers</title>
-                <meta
-                    name="description"
-                    content="Read Sehatkor's medical disclaimer, terms of use, and legal information. Understand the limitations and proper use of our healthcare platform. Important legal notices for users."
-                />
-                <meta
-                    name="keywords"
-                    content="sehatkor disclaimer, medical disclaimer, healthcare platform disclaimer, legal disclaimer, terms of use, liability disclaimer, medical information disclaimer"
-                />
-                <link rel="canonical" href="https://sehatkor.pk/disclaimer" />
-                <meta name="robots" content="index, follow" />
-            </Helmet>
+            <SEO
+                title="Disclaimer - Sehatkor | Medical Information & Legal Disclaimers"
+                description="Read Sehatkor's medical disclaimer, terms of use, and legal information. Understand the limitations and proper use of our healthcare platform. Important legal notices for users."
+                keywords="sehatkor disclaimer, medical disclaimer, healthcare platform disclaimer, legal disclaimer, terms of use, liability disclaimer, medical information disclaimer"
+                canonical="https://sehatkor.pk/disclaimer"
+            />
 
             {/* Hero Section */}
             <section className="relative py-16 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white">

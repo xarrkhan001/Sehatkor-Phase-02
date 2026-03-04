@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
@@ -448,18 +448,18 @@ const HospitalsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Helmet>
-        <title>{
+      <SEO
+        title={
           searchTerm
             ? `${searchTerm} - Hospitals & Clinics | Sehatkor`
             : `Best Hospitals in Pakistan | Find Clinics & Medical Centers | Sehatkor`
-        }</title>
-        <meta name="description" content={
+        }
+        description={
           searchTerm
             ? `Find top-rated hospitals and clinics for ${searchTerm}. Compare facilities, check emergency services, fees, and patient reviews. Book appointments online.`
             : `list of best hospitals and clinics in Pakistan. Search private and government medical centers in Karachi, Lahore, Islamabad. 24/7 Emergency services, surgery centers, and specialized clinics.`
-        } />
-        <meta name="keywords" content={(() => {
+        }
+        keywords={(() => {
           const baseKeywords = [
             // Core "High Traffic" Keywords
             "hospital near me", "clinic near me", "hospitals in Pakistan",
@@ -509,9 +509,9 @@ const HospitalsPage = () => {
           }
 
           return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
-        })()} />
-        <link rel="canonical" href={`https://sehatkor.pk/hospitals${searchTerm ? `?search=${searchTerm}` : ''}`} />
-      </Helmet>
+        })()}
+        canonical={`https://sehatkor.pk/hospitals${searchTerm ? `?search=${searchTerm}` : ''}`}
+      />
       <div className="container mx-auto px-4 py-4">
         {/* Header */}
         <div className="mb-6">

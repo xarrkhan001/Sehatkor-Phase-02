@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -1918,20 +1918,20 @@ const SearchPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 relative">
-      <Helmet>
-        <title>{
+      <SEO
+        title={
           searchTerm
             ? `Sehatkor Services - ${searchTerm} | Pakistan's Best Healthcare Platform`
             : categoryFilter !== 'all'
               ? `Sehatkor Services - Best ${categoryFilter.split(':')[1] || categoryFilter.split(':')[0]} in ${location === 'all' ? 'Pakistan' : location}`
               : `Sehatkor Services - Search Doctors, Hospitals, Labs & Pharmacies | Pakistan Healthcare`
-        }</title>
-        <meta name="description" content={
+        }
+        description={
           searchTerm
             ? `Sehatkor Services - Find ${searchTerm} in ${location === 'all' ? 'Pakistan' : location}. Book appointments with top rated doctors, hospitals, labs, pharmacies. 24/7 support, instant booking.`
             : `Sehatkor Services - Find and book the best ${categoryFilter !== 'all' ? (categoryFilter.split(':')[1] || categoryFilter.split(':')[0]) : 'doctors, hospitals, labs, and pharmacies'} in ${location === 'all' ? 'Pakistan' : location}. Read verified reviews, check fees, instant appointments.`
-        } />
-        <meta name="keywords" content={(() => {
+        }
+        keywords={(() => {
           const loc = location === 'all' ? 'Pakistan' : location;
           // Clean category string (e.g. "doctor:Cardiologist" -> "Cardiologist")
           const rawCat = categoryFilter !== 'all' ? categoryFilter : '';
@@ -2097,22 +2097,21 @@ const SearchPage = () => {
 
           // Unique & Join
           return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
-        })()} />
-        <link rel="canonical" href={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`} />
-        <meta property="og:title" content={
+        })()}
+        canonical={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`}
+        ogTitle={
           searchTerm
             ? `Sehatkor Services - ${searchTerm} | Pakistan Healthcare`
             : `Sehatkor Services - Complete Healthcare Platform | Pakistan`
-        } />
-        <meta property="og:description" content={
+        }
+        ogDescription={
           searchTerm
             ? `Find ${searchTerm} on Sehatkor - Pakistan's trusted healthcare platform. Book doctors, hospitals, labs, pharmacies online.`
             : `Sehatkor Services - Complete healthcare solution. Find doctors, hospitals, labs, pharmacies in one place.`
-        } />
-        <meta property="og:url" content={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`} />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Sehatkor Services - Pakistan Healthcare" />
-      </Helmet>
+        }
+        ogUrl={`https://sehatkor.pk/search?q=${searchTerm}&location=${location}`}
+        type="website"
+      />
 
       <div className="container mx-auto px-4 py-4">
 

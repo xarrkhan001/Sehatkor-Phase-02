@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -149,33 +149,24 @@ const PrivacyPolicyPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-            <Helmet>
-                <title>Privacy Policy - Sehatkor | Data Protection & Privacy Information</title>
-                <meta
-                    name="description"
-                    content="Read Sehatkor's privacy policy. Learn how we collect, use, protect, and share your personal and health information. Your privacy and data security are our top priorities."
-                />
-                <meta
-                    name="keywords"
-                    content="sehatkor privacy policy, data protection, privacy information, healthcare data privacy, GDPR compliance, data security, personal information protection, health information privacy"
-                />
-                <link rel="canonical" href="https://sehatkor.pk/privacy" />
-                <meta name="robots" content="index, follow" />
-                <script type="application/ld+json">
-                    {JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "WebPage",
-                        "name": "Privacy Policy - Sehatkor",
-                        "description": "Sehatkor's privacy policy explaining how we collect, use, and protect user data",
-                        "url": "https://sehatkor.pk/privacy",
-                        "publisher": {
-                            "@type": "Organization",
-                            "name": "Sehatkor",
-                            "url": "https://sehatkor.pk"
-                        }
-                    })}
-                </script>
-            </Helmet>
+            <SEO
+                title="Privacy Policy - Sehatkor | Data Protection & Privacy Information"
+                description="Read Sehatkor's privacy policy. Learn how we collect, use, protect, and share your personal and health information. Your privacy and data security are our top priorities."
+                keywords="sehatkor privacy policy, data protection, privacy information, healthcare data privacy, GDPR compliance, data security, personal information protection, health information privacy"
+                canonical="https://sehatkor.pk/privacy"
+                jsonLd={{
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Privacy Policy - Sehatkor",
+                    "description": "Sehatkor's privacy policy explaining how we collect, use, and protect user data",
+                    "url": "https://sehatkor.pk/privacy",
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Sehatkor",
+                        "url": "https://sehatkor.pk"
+                    }
+                }}
+            />
 
             {/* Hero Section */}
             <section className="relative py-16 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">

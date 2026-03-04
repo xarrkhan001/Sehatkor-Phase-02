@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import ServiceManager from "@/lib/serviceManager";
@@ -473,20 +473,20 @@ const LabsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Helmet>
-        <title>{
+      <SEO
+        title={
           searchTerm
             ? `${searchTerm} - Lab Tests & Diagnostics | Sehatkor`
             : selectedLabCategory
               ? `Best ${selectedLabCategory} Labs in Pakistan | Book Online`
               : `Book Lab Tests Online in Pakistan | Home Sampling | Sehatkor`
-        }</title>
-        <meta name="description" content={
+        }
+        description={
           searchTerm || selectedLabCategory
             ? `Book ${searchTerm || selectedLabCategory} tests online. Compare prices from top labs like Chugtai, Excel, and IDC. Get home sample collection and online reports.`
             : `Book diagnostic lab tests online in Pakistan. Find best labs for Blood Tests, MRI, CT Scan, Ultrasound. Free home sampling and digital reports available.`
-        } />
-        <meta name="keywords" content={(() => {
+        }
+        keywords={(() => {
           const baseKeywords = [
             // Core Lab Terms
             "lab test online Pakistan", "book lab test", "home sample collection",
@@ -528,9 +528,9 @@ const LabsPage = () => {
           }
 
           return Array.from(new Set([...dynamicKeywords, ...baseKeywords])).join(", ");
-        })()} />
-        <link rel="canonical" href={`https://sehatkor.pk/labs${selectedLabCategory ? `?labCategory=${selectedLabCategory}` : ''}`} />
-      </Helmet>
+        })()}
+        canonical={`https://sehatkor.pk/labs${selectedLabCategory ? `?labCategory=${selectedLabCategory}` : ''}`}
+      />
       <div className="container mx-auto px-4 py-4">
         {/* Header */}
         <div className="mb-6">
