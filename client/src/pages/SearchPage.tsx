@@ -1921,15 +1921,15 @@ const SearchPage = () => {
       <SEO
         title={
           searchTerm
-            ? `Sehatkor Services - ${searchTerm} | Pakistan's Best Healthcare Platform`
+            ? `${searchTerm} in ${location === 'all' ? 'Pakistan' : location} - Price & Booking | Sehatkor`
             : categoryFilter !== 'all'
-              ? `Sehatkor Services - Best ${categoryFilter.split(':')[1] || categoryFilter.split(':')[0]} in ${location === 'all' ? 'Pakistan' : location}`
-              : `Sehatkor Services - Search Doctors, Hospitals, Labs & Pharmacies | Pakistan Healthcare`
+              ? `Best ${categoryFilter.split(':')[1] || categoryFilter.split(':')[0]} in ${location === 'all' ? 'Pakistan' : location} - Book Now | Sehatkor`
+              : `Search Doctors, Hospitals, Labs & Pharmacies in ${location === 'all' ? 'Pakistan' : location} | Sehatkor Healthcare`
         }
         description={
           searchTerm
-            ? `Sehatkor Services - Find ${searchTerm} in ${location === 'all' ? 'Pakistan' : location}. Book appointments with top rated doctors, hospitals, labs, pharmacies. 24/7 support, instant booking.`
-            : `Sehatkor Services - Find and book the best ${categoryFilter !== 'all' ? (categoryFilter.split(':')[1] || categoryFilter.split(':')[0]) : 'doctors, hospitals, labs, and pharmacies'} in ${location === 'all' ? 'Pakistan' : location}. Read verified reviews, check fees, instant appointments.`
+            ? `Find and book ${searchTerm} in ${location === 'all' ? 'Pakistan' : location}. Get the best prices for ${searchTerm}, read verified reviews, and book instant appointments 24/7 on Sehatkor Pakistan.`
+            : `Looking for ${categoryFilter !== 'all' ? (categoryFilter.split(':')[1] || categoryFilter.split(':')[0]) : 'the best healthcare'} in ${location === 'all' ? 'Pakistan' : location}? Sehatkor connects you with verified doctors, labs, and pharmacies. Instant booking & 24/7 support.`
         }
         keywords={(() => {
           const loc = location === 'all' ? 'Pakistan' : location;

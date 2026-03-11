@@ -34,7 +34,7 @@ const SEO = ({
     // Default Values - Comprehensive SEO Keywords (Everyday + Professional)
     const defaultTitle = 'Sehatkor - آنلائن ڈاکٹر اپائنٹمنٹ پاکستان | Book Best Doctors Online';
     const defaultDescription = "Pakistan's #1 healthcare platform. Book PMDC verified doctors, hospitals, labs & pharmacies online in Karachi, Lahore, Islamabad, Peshawar, Mardan. آنلائن ڈاکٹر بک کریں۔ 24/7 support, instant appointments, home services, lowest fees guaranteed.";
-    const defaultKeywords = "online doctor Pakistan, book doctor online, doctor appointment Pakistan, PMDC verified doctors, best doctors in Pakistan, find doctor Karachi, best doctor Lahore, online pharmacy Pakistan, medicine delivery, lab tests at home, health platform, sehatkor";
+    const defaultKeywords = "sehatkor, sehat kor, sehatkor.pk, online doctor Pakistan, book doctor online, doctor appointment Pakistan, PMDC verified doctors, best doctors in Pakistan, find doctor Karachi, best doctor Lahore, online pharmacy Pakistan, medicine delivery, lab tests at home, health platform, صحت کور، آنلائن ڈاکٹر، میڈیکل سروس، پاکستان ہیلتھ کیر";
     const defaultImage = `${siteUrl}/og-image.jpg`;
 
     const finalTitle = title ? `${title} | Sehatkor` : defaultTitle;

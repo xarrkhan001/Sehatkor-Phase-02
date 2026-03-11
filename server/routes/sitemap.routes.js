@@ -206,6 +206,7 @@ router.get('/sitemap/stats', async (req, res) => {
       ClinicService.countDocuments({})
     ]);
 
+    const totalServices = doctorCount + medicineCount + labTestCount + clinicCount;
     const staticCount = 15;
     const cityCount = 10;
     const diseaseCount = 8;

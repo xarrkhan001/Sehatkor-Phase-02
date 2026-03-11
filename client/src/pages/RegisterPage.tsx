@@ -35,6 +35,16 @@ import {
 } from "lucide-react";
 import { generateUserId } from "@/data/mockData";
 import { apiUrl } from '@/config/api';
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CheckCircle2,
+  ShieldCheck,
+  Zap,
+  ArrowRight,
+  Database,
+  Globe,
+  Plus
+} from "lucide-react";
 import SEO from "@/components/SEO";
 
 // Validation Schema
@@ -56,9 +66,11 @@ const getValidationSchema = (role: string) => {
     phoneAlternate: Yup.string()
       .matches(/^([0-9]{10})?$/, 'Alternate phone must be 10 digits'),
     phoneAlternateCountryCode: Yup.string(),
-    cnic: Yup.string()
-      .matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1')
-      .required('CNIC number is required'),
+    cnic: role === 'patient'
+      ? Yup.string().matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1').notRequired()
+      : Yup.string()
+        .matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1')
+        .required('CNIC number is required'),
     city: Yup.string().required('Please select your city'),
     password: Yup.string()
       .min(8, 'Password must be at least 8 characters')
@@ -132,8 +144,8 @@ const getValidationSchema = (role: string) => {
     accountNumber: Yup.string()
       .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
       .notRequired()
-      .matches(/^[0-9A-Z-]*$/, 'Account number can only contain numbers, letters, and hyphens')
-      .min(10, 'Account number must be at least 10 characters'),
+      .min(2, 'Account number must be at least 10 characters')
+      .matches(/^[0-9A-Z-]*$/, 'Account number can only contain numbers, letters, and hyphens'),
     paymentMode: Yup.string()
       .transform((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val))
       .notRequired()
@@ -153,9 +165,11 @@ const getGoogleValidationSchema = (role: string) => {
     phone: Yup.string()
       .matches(/^[0-9]{10}$/i, 'Phone number must be 10 digits')
       .required('Phone number is required'),
-    cnic: Yup.string()
-      .matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1')
-      .required('CNIC number is required'),
+    cnic: role === 'patient'
+      ? Yup.string().matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1').notRequired()
+      : Yup.string()
+        .matches(/^[0-9]{5}-[0-9]{7}-[0-9]$/, 'CNIC must be in format 12345-1234567-1')
+        .required('CNIC number is required'),
     city: Yup.string().required('Please select your city'),
   };
 
@@ -187,6 +201,7 @@ const getGoogleValidationSchema = (role: string) => {
 };
 
 const RegisterPage = () => {
+  const [activeStep, setActiveStep] = useState(0);
   const initialValues = {
     role: "patient",
     name: "",
@@ -572,11 +587,11 @@ const RegisterPage = () => {
     className?: string;
   }) => (
     <div className={className}>
-      <Label htmlFor={name}>
+      <Label htmlFor={name} className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block">
         {label}{required && " *"}
       </Label>
       {children}
-      <ErrorMessage name={name} component="div" className="text-sm text-red-500 mt-1" />
+      <ErrorMessage name={name} component="div" className="text-[9px] font-bold text-red-500 mt-0.5" />
     </div>
   );
 
@@ -586,7 +601,7 @@ const RegisterPage = () => {
         <Input
           {...field}
           {...props}
-          className={`${props.className || ''} ${meta.touched && meta.error ? 'border-red-500' : ''}`}
+          className={`h-9 text-sm ${props.className || ''} ${meta.touched && meta.error ? 'border-red-500' : ''}`}
         />
       )}
     </Field>
@@ -598,7 +613,7 @@ const RegisterPage = () => {
         <Textarea
           {...field}
           {...props}
-          className={`${props.className || ''} ${meta.touched && meta.error ? 'border-red-500' : ''}`}
+          className={`text-sm min-h-[60px] ${props.className || ''} ${meta.touched && meta.error ? 'border-red-500' : ''}`}
         />
       )}
     </Field>
@@ -615,7 +630,7 @@ const RegisterPage = () => {
           }}
           {...props}
         >
-          <SelectTrigger className={meta.touched && meta.error ? 'border-red-500' : ''}>
+          <SelectTrigger className={`h-9 text-sm ${meta.touched && meta.error ? 'border-red-500' : ''}`}>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -633,11 +648,11 @@ const RegisterPage = () => {
     required?: boolean;
   }) => (
     <div className="flex gap-2">
-      <div className="w-24 sm:w-28 md:w-32">
+      <div className="w-[85px] sm:w-[95px] flex-shrink-0">
         <FormikSelect name={countryCodeName} placeholder="Code">
           {countryCodes.map((country) => (
             <SelectItem key={country.code} value={country.code}>
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 sm:gap-2">
                 <span>{country.flag}</span>
                 <span>{country.code}</span>
               </span>
@@ -661,13 +676,12 @@ const RegisterPage = () => {
     return (
       <>
         {/* Business Information */}
-        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Building className="w-5 h-5" />
+        <div className="space-y-2 rounded-xl border bg-slate-50/50 p-2 shadow-sm">
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2 mb-1">
+            <Building className="w-3.5 h-3.5" />
             Business Information
           </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <FormField
               name="businessName"
               label="Business/Facility Name"
@@ -681,23 +695,22 @@ const RegisterPage = () => {
             <FormField name="designation" label="Designation/Role" required>
               <FormikInput
                 name="designation"
-                placeholder="e.g., CEO, Medical Director"
+                placeholder="CEO, Director, etc"
               />
             </FormField>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField name="licenseNumber" label="Registration/License Number (Optional)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <FormField name="licenseNumber" label="Registration/License (Optional)">
               <FormikInput
                 name="licenseNumber"
-                placeholder="Enter license number"
+                placeholder="Enter license"
               />
             </FormField>
             {values.role === "doctor" && (
               <FormField name="specialization" label="Specialization (Optional)">
                 <FormikInput
                   name="specialization"
-                  placeholder="e.g., Cardiology, Pediatrics"
+                  placeholder="e.g., Cardiology"
                 />
               </FormField>
             )}
@@ -705,12 +718,11 @@ const RegisterPage = () => {
         </div>
 
         {/* Address & Location */}
-        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <MapPin className="w-5 h-5" />
+        <div className="space-y-2 rounded-xl border bg-slate-50/50 p-2 shadow-sm">
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2 mb-1">
+            <MapPin className="w-3.5 h-3.5" />
             Address & Location
           </h3>
-
           <FormField
             name="address"
             label="Complete Address"
@@ -719,11 +731,11 @@ const RegisterPage = () => {
             <FormikTextarea
               name="address"
               placeholder="Enter complete address"
-              rows={3}
+              rows={2}
+              className="text-xs"
             />
           </FormField>
-
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
             <FormField
               name="province"
               label="Province/State"
@@ -736,8 +748,7 @@ const RegisterPage = () => {
               </FormikSelect>
             </FormField>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <Field name="deliveryAvailable">
               {({ field, form }: any) => (
                 <div className="flex items-center space-x-2">
@@ -746,7 +757,7 @@ const RegisterPage = () => {
                     checked={field.value}
                     onCheckedChange={(checked) => form.setFieldValue('deliveryAvailable', checked)}
                   />
-                  <Label htmlFor="deliveryAvailable">Delivery/Visit Available</Label>
+                  <Label htmlFor="deliveryAvailable" className="text-[10px] uppercase font-bold text-slate-600">Delivery Available</Label>
                 </div>
               )}
             </Field>
@@ -758,182 +769,81 @@ const RegisterPage = () => {
                     checked={field.value}
                     onCheckedChange={(checked) => form.setFieldValue('service24x7', checked)}
                   />
-                  <Label htmlFor="service24x7">24/7 Service</Label>
+                  <Label htmlFor="service24x7" className="text-[10px] uppercase font-bold text-slate-600">24/7 Service</Label>
                 </div>
               )}
             </Field>
           </div>
         </div>
 
-        {/* Services Offered */}
-        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Stethoscope className="w-5 h-5" />
-            Services Offered
-          </h3>
-
-          <Field name="servicesOffered">
-            {({ field, form }: any) => (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {servicesOptions.map((service) => (
-                  <div key={service} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={service}
-                      checked={field.value.includes(service)}
-                      onCheckedChange={() => handleServiceToggle(service, field.value, form.setFieldValue)}
-                    />
-                    <Label htmlFor={service} className="text-sm">{service}</Label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Field>
-        </div>
-
-        {/* Staff Details */}
-        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Staff Details (Optional)
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField name="staffDetails.doctors" label="Number of Doctors">
-              <FormikInput
-                name="staffDetails.doctors"
-                type="number"
-                placeholder="0"
-              />
-            </FormField>
-            <FormField name="staffDetails.specialists" label="Number of Specialists">
-              <FormikInput
-                name="staffDetails.specialists"
-                type="number"
-                placeholder="0"
-              />
-            </FormField>
-            <FormField name="staffDetails.nurses" label="Number of Nurses/Technicians">
-              <FormikInput
-                name="staffDetails.nurses"
-                type="number"
-                placeholder="0"
-              />
-            </FormField>
-          </div>
-        </div>
-
-
-        {/* Bank Details */}
-        <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Bank/Payment Information (Optional)
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField name="bankDetails.bankName" label="Bank Name">
-              <FormikInput
-                name="bankDetails.bankName"
-                placeholder="Enter bank name"
-              />
-            </FormField>
-            <FormField name="bankDetails.accountTitle" label="Account Title">
-              <FormikInput
-                name="bankDetails.accountTitle"
-                placeholder="Enter account title"
-              />
-            </FormField>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField name="bankDetails.accountNumber" label="Account Number/IBAN">
-              <FormikInput
-                name="bankDetails.accountNumber"
-                placeholder="Enter account number"
-              />
-            </FormField>
-            <FormField name="bankDetails.paymentMode" label="Payment Mode">
-              <FormikSelect name="bankDetails.paymentMode" placeholder="Select payment mode">
-                {paymentModes.map((mode) => (
-                  <SelectItem key={mode} value={mode}>{mode}</SelectItem>
-                ))}
-              </FormikSelect>
-            </FormField>
-          </div>
-        </div>
 
         {/* Documents Required */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Upload className="w-5 h-5" />
-            Documents Required
+        <div className="space-y-3">
+          <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+            <Upload className="w-3.5 h-3.5" />
+            Verification Document
           </h3>
-          <div className="rounded-xl border-2 border-dashed p-6 md:p-8 text-center bg-gradient-to-br from-gray-50 to-white hover:from-gray-50/80 transition-colors">
-            <p className="text-sm text-muted-foreground mb-3">Please attach copies of the following documents:</p>
-            <ul className="text-sm text-muted-foreground list-disc list-inside mb-5 text-left inline-block">
-              <li>Business Registration / License</li>
-              <li>CNIC of Owner / Admin</li>
-              <li>PMDC/PMC Certificate (for Doctors)</li>
-            </ul>
 
-            <input
-              ref={fileInputRef}
-              id="providerDoc"
-              type="file"
-              className="hidden"
-              accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(e) => {
-                const f = e.target.files?.[0] || null;
-                if (f && f.size > 25 * 1024 * 1024) {
-                  toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                  setProviderDoc(null);
-                  return;
-                }
-                setProviderDoc(f);
-              }}
-            />
-
-            <label
-              htmlFor="providerDoc"
-              className="group inline-flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all"
-            >
-              <span className="w-9 h-9 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
-                <Upload className="w-5 h-5 text-white" />
-              </span>
-              <span className="text-sm text-gray-700">
-                <span className="font-medium">Click to upload</span>
-                <span className="text-muted-foreground"> • PDF, DOC, DOCX • up to 25MB</span>
-              </span>
-            </label>
-
-            {providerDoc && (
-              <div className="mt-4 flex items-center justify-center">
-                <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 border">
-                  <span className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-white" />
-                  </span>
-                  <div className="text-left">
-                    <p className="text-sm font-medium truncate max-w-[220px]" title={providerDoc.name}>{providerDoc.name}</p>
-                    <p className="text-xs text-muted-foreground">{(providerDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="ml-1"
-                    onClick={() => {
-                      setProviderDoc(null);
+          <div className={`rounded-xl border-2 border-dashed transition-all duration-300 ${providerDoc ? "p-3 bg-emerald-50/30 border-emerald-200" : "p-6 bg-slate-50/50 border-slate-200"}`}>
+            {!providerDoc ? (
+              <div className="text-center">
+                <input
+                  ref={fileInputRef}
+                  id="providerDoc"
+                  type="file"
+                  className="hidden"
+                  accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null;
+                    if (f && f.size > 25 * 1024 * 1024) {
+                      toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
                       if (fileInputRef.current) fileInputRef.current.value = '';
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+                      setProviderDoc(null);
+                      return;
+                    }
+                    setProviderDoc(f);
+                  }}
+                />
+                <label
+                  htmlFor="providerDoc"
+                  className="group inline-flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-2 cursor-pointer bg-white hover:bg-slate-50 shadow-sm transition-all"
+                >
+                  <div className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] font-black uppercase tracking-tight text-slate-700">Upload Credentials</p>
+                    <p className="text-[9px] text-slate-400">License / CNIC (PDF/DOC)</p>
+                  </div>
+                </label>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-100">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] font-black uppercase text-slate-900 truncate max-w-[180px]" title={providerDoc.name}>
+                      {providerDoc.name}
+                    </p>
+                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">File Uploaded</p>
+                  </div>
                 </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors"
+                  onClick={() => {
+                    setProviderDoc(null);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
             )}
-
-            <p className="mt-3 text-xs text-muted-foreground">Only one file allowed. Accepted types: PDF/DOC/DOCX. Max 25MB.</p>
           </div>
         </div>
       </>
@@ -1005,125 +915,130 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-0 overflow-x-hidden">
       <SEO
-        title="Register - Sehatkor | Create Your Healthcare Account"
-        description="Join Sehatkor today. Register as a patient or healthcare provider (doctor, hospital, lab, pharmacy). Access online healthcare services, manage appointments, and digital records in Pakistan."
-        keywords="sehatkor registration, join sehatkor, create healthcare account, doctor registration Pakistan, patient signup, medical platform registration"
+        title="Register - Sehatkor | Join Pakistan's Premier Healthcare Network"
+        description="Join Sehatkor today. The smartest way to connect with patients and manage your healthcare practice in Pakistan."
+        keywords="sehatkor registration, join sehatkor, healthcare network pakistan"
         canonical="https://sehatkor.pk/register"
       />
-      <div className="container mx-auto px-4 py-10 lg:py-16">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
-                <Stethoscope className="w-7 h-7 text-white" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</h1>
-            </div>
-            <p className="text-xl text-muted-foreground">
-              Create your account and become part of Pakistan's largest healthcare network
-            </p>
+
+      <div className="w-full flex-1 flex flex-col lg:flex-row">
+        {/* LEFT SIDE: BRANDING & CONTENT */}
+        <div className="hidden lg:flex lg:w-[50%] bg-emerald-950 text-white p-12 flex-col justify-between relative overflow-hidden">
+          {/* Subtle Background Pattern */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-400 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-400 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2" />
           </div>
 
-          <Card className="card-healthcare border shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl">Health Services Provider Registration</CardTitle>
-              <CardDescription>
-                Fill in the details below to register your healthcare facility or service
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Social signup */}
-              <div className="mb-6">
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <div className="w-full sm:w-[280px]">
-                    <GoogleLogin
-                      onSuccess={async (cred) => {
-                        try {
-                          setGoogleLoading(true);
-                          const idToken = cred?.credential as string;
-                          if (!idToken) throw new Error('Missing Google credential');
-
-
-                          // First, try to authenticate with Google (without additional fields)
-                          const res = await fetch(apiUrl('/api/auth/google'), {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ idToken, role: currentFormValues.role || 'patient' })
-                          });
-                          const data = await res.json();
-
-
-                          if (res.ok) {
-                            // User already exists, log them in
-                            await login({ ...data.user, id: data.user._id }, data.token);
-                            toast({ title: 'Welcome back!', description: 'Signed in with Google.' });
-                            navigate('/');
-                          } else if (data.requiresAdditionalFields) {
-                            // New user, need additional fields
-                            setGoogleProfile(data.profile);
-                            setGoogleIdToken(idToken);
-                            setCurrentFormValues((prev) => ({
-                              ...prev,
-                              name: data.profile.name,
-                              email: data.profile.email,
-                            }));
-                            setShowGoogleAdditionalFields(true);
-                            toast({
-                              title: 'Additional Information Required',
-                              description: 'Please fill in the required fields to complete your registration.'
-                            });
-                          } else {
-                            throw new Error(data.message || 'Google signup failed');
-                          }
-                        } catch (err: any) {
-                          toast({ title: 'Google Sign-in Failed', description: err.message || 'Try again', variant: 'destructive' });
-                        } finally {
-                          setGoogleLoading(false);
-                        }
-                      }}
-                      onError={() => toast({ title: 'Google Sign-in Failed', description: 'Try again', variant: 'destructive' })}
-                      theme="filled_blue"
-                      shape="rectangular"
-                      size="large"
-                      text="continue_with"
-                      useOneTap
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="default"
-                    className="w-full sm:w-[280px] flex items-center justify-center rounded-md bg-[#145DBF] hover:bg-[#0F4CA1] text-white shadow-sm"
-                    disabled={facebookLoading}
-                    onClick={() => {
-                      try {
-                        setFacebookLoading(true);
-                        const role = currentFormValues.role || 'patient';
-                        // Start OAuth flow on backend; backend will redirect to Facebook and then back to client callback
-                        window.location.href = apiUrl(`/api/auth/facebook?role=${encodeURIComponent(role)}`);
-                      } finally {
-                        // loading state will be cleared after redirect; this is a safety noop
-                      }
-                    }}
-                  >
-                    <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                      <g transform="translate(-4 -4) scale(1.25)">
-                        <path d="M22 16.1C22 13.1 19.9 11 16.9 11C14.1 11 12 13.1 12 16.1C12 18.7 13.7 20.6 16.1 20.9V17.2H14.7V16.1H16.1V15.2C16.1 13.9 16.8 13.3 18 13.3C18.5 13.3 18.9 13.4 19 13.4V14.7H18.3C17.7 14.7 17.6 15 17.6 15.3V16.1H19L18.8 17.2H17.6V20.9C20 20.6 22 18.7 22 16.1Z" fill="white" />
-                      </g>
-                    </svg>
-                    Continue with Facebook
-                  </Button>
-                </div>
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-muted-foreground">or continue with email</span>
-                  </div>
-                </div>
+          <div className="relative z-10">
+            <Link to="/" className="flex items-center space-x-3 mb-16 group">
+              <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
+                <Stethoscope className="w-6 h-6 text-white" />
               </div>
+              <span className="text-2xl font-black tracking-tighter uppercase italic">SehatKor</span>
+            </Link>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="space-y-8"
+            >
+              <h1 className="text-5xl font-black leading-tight tracking-tight">
+                Unlock the Power of <span className="text-emerald-400 underline decoration-emerald-500/30 underline-offset-8">Smart</span> Healthcare.
+              </h1>
+              <p className="text-emerald-100/70 text-lg font-medium max-w-md leading-relaxed">
+                Join Pakistan's fastest growing digital health network. Whether you're a doctor or a patient, we bring healthcare to your fingertips.
+              </p>
+
+              <div className="space-y-6 pt-6">
+                {[
+                  { icon: Zap, title: "Instant Connectivity", desc: "Connect with verified healthcare providers in seconds." },
+                  { icon: ShieldCheck, title: "Vault Security", desc: "Your medical data is encrypted with enterprise-grade security." },
+                  { icon: Database, title: "Digital Records", desc: "Access prescriptions and lab reports anytime, anywhere." },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + (i * 0.1) }}
+                    className="flex items-start space-x-4"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-emerald-800/50 flex items-center justify-center border border-emerald-700/50">
+                      <item.icon className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-base">{item.title}</h3>
+                      <p className="text-emerald-100/50 text-xs leading-none mt-1">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="relative z-10 pt-16">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="w-8 h-8 rounded-full border-2 border-emerald-900 bg-emerald-700 overflow-hidden">
+                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" className="w-full h-full object-cover grayscale opacity-80" />
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs font-bold text-emerald-400">Join 50,000+ Active Users</p>
+            </div>
+            <p className="text-[10px] text-emerald-500/40 uppercase font-black tracking-widest">© 2026 SehatKor Healthcare Network • All rights reserved</p>
+          </div>
+        </div>
+
+        {/* RIGHT SIDE: FORM */}
+        <div className="flex-1 bg-white flex flex-col justify-start pt-6 pb-20 sm:pt-10 lg:pt-16 px-4 py-8 sm:px-10 lg:px-16 relative overflow-y-auto min-h-screen">
+          <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Mobile Logo */}
+            <div className="lg:hidden flex justify-center mb-10">
+              <Link to="/" className="flex items-center space-x-2">
+                <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                  <Stethoscope className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-2xl font-black tracking-tighter uppercase italic text-emerald-950">SehatKor</span>
+              </Link>
+            </div>
+
+            <div className="mb-10 lg:mb-16">
+              <div className="flex justify-between items-center max-w-sm mx-auto relative px-4">
+                {[0, 1, 2, 3].map((step) => {
+                  const isCompleted = activeStep > step;
+                  const isActive = activeStep === step;
+                  return (
+                    <div key={step} className="flex flex-col items-center z-10">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black border-2 transition-all duration-500 ${isCompleted ? "bg-emerald-600 border-emerald-600 text-white shadow-[0_4px_10px_rgba(16,185,129,0.3)]" :
+                        isActive ? "bg-white border-emerald-600 text-emerald-600 scale-110 shadow-lg shadow-emerald-100" :
+                          "bg-white border-slate-200 text-slate-300"
+                        }`}>
+                        {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : step + 1}
+                      </div>
+                      <span className={`text-[8px] font-black uppercase mt-1.5 tracking-widest ${isActive ? "text-emerald-700" : "text-slate-400"}`}>
+                        {step === 0 ? "Role" : step === 1 ? "Info" : step === 2 ? "Professional" : "Final"}
+                      </span>
+                    </div>
+                  );
+                })}
+                {/* Connector Lines */}
+                <div className="absolute top-4 left-0 w-full h-[2px] bg-slate-100 -z-0" />
+                <motion.div
+                  className="absolute top-4 left-0 h-[2px] bg-emerald-500 shadow-sm"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(activeStep / 3) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
+
+            <div className="py-6 px-4 md:px-8">
+
 
               {/* Google Additional Fields Form */}
               {showGoogleAdditionalFields && (
@@ -1143,8 +1058,8 @@ const RegisterPage = () => {
                   <div className="space-y-6">
                     {/* Role Selection for Google Users */}
                     <div>
-                      <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+                      <Label className="text-sm font-medium mb-2 block">Select Your Role *</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2">
                         {roles.map((role) => {
                           const Icon = role.icon;
                           const isSelected = currentFormValues.role === role.value;
@@ -1158,9 +1073,9 @@ const RegisterPage = () => {
                                 handleGoogleFieldChange("role", role.value);
                               }}
                             >
-                              <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-auto sm:h-[120px] ${isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
+                              <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-auto sm:h-[100px] ${isSelected ? "shadow-md shadow-current/25" : "shadow-sm hover:shadow-md"
                                 }`}>
-                                <div className={`bg-white rounded-lg p-2 sm:p-3 w-full h-full flex flex-col items-center justify-center ${isSelected ? role.bgColor : "hover:" + role.bgColor
+                                <div className={`bg-white rounded-lg p-2 w-full h-full flex flex-col items-center justify-center ${isSelected ? role.bgColor : "hover:" + role.bgColor
                                   } transition-all duration-300`}>
                                   <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${isSelected ? "scale-110" : "group-hover:scale-110"
                                     }`}>
@@ -1230,13 +1145,13 @@ const RegisterPage = () => {
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="google-cnic">CNIC Number *</Label>
+                          <Label htmlFor="google-cnic">CNIC Number {currentFormValues.role === 'patient' ? '(Optional)' : '*'}</Label>
                           <Input
                             id="google-cnic"
                             value={currentFormValues.cnic}
                             onChange={(e) => handleGoogleFieldChange("cnic", e.target.value)}
-                            placeholder="12345-1234567-1"
-                            required
+                            placeholder="12345-1234567-1 (Optional for patients)"
+                            required={currentFormValues.role !== 'patient'}
                           />
                           {googleErrors.cnic && (
                             <p className="text-xs text-red-600 mt-1">{googleErrors.cnic}</p>
@@ -1417,26 +1332,28 @@ const RegisterPage = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4">
                       <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         onClick={() => {
                           setShowGoogleAdditionalFields(false);
                           setGoogleProfile(null);
                           setGoogleIdToken('');
                         }}
-                        className="w-full sm:flex-1"
+                        className="w-full sm:flex-1 h-9 font-bold"
                       >
                         Cancel
                       </Button>
                       <Button
                         type="button"
+                        size="sm"
                         onClick={handleGoogleRegistrationComplete}
                         disabled={googleLoading}
-                        className="w-full sm:flex-1"
+                        className="w-full sm:flex-1 h-9 font-bold bg-blue-600 hover:bg-blue-700"
                       >
-                        {googleLoading ? "Completing Registration..." : "Complete Registration"}
+                        {googleLoading ? "Completing..." : "Complete Account"}
                       </Button>
                     </div>
                   </div>
@@ -1464,398 +1381,496 @@ const RegisterPage = () => {
                 onSubmit={handleFormSubmit}
               >
                 {({ values, setFieldValue, errors, touched, setFieldTouched, submitForm, validateForm, setTouched }) => (
-                  <Form className="space-y-8" style={{ display: showGoogleAdditionalFields ? 'none' : 'block' }}>
-                    {/* Role Selection */}
-                    <div>
-                      <Label className="text-base font-medium mb-4 block">Select Your Role *</Label>
-                      <Field name="role">
-                        {({ field, form }: any) => (
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {roles.map((role) => {
-                              const Icon = role.icon;
-                              const isSelected = field.value === role.value;
-                              return (
-                                <div
-                                  key={role.value}
-                                  className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected ? "scale-105" : ""
-                                    }`}
-                                  onClick={() => {
-                                    form.setFieldValue('role', role.value);
-                                    form.setFieldTouched('role', true);
-                                    // Force re-validation with new schema
-                                    setTimeout(() => {
-                                      form.validateForm();
-                                    }, 0);
-                                  }}
-                                >
-                                  <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-[110px] sm:h-[120px] ${isSelected ? "shadow-lg shadow-current/25" : "shadow-md hover:shadow-lg"
-                                    }`}>
-                                    <div className={`bg-white rounded-lg p-3 w-full h-full flex flex-col items-center justify-center ${isSelected ? role.bgColor : "hover:" + role.bgColor
-                                      } transition-all duration-300`}>
-                                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${isSelected ? "scale-110" : "group-hover:scale-110"
-                                        }`}>
-                                        <Icon className="w-4 h-4 text-white" />
+                  <Form className="space-y-6" style={{ display: showGoogleAdditionalFields ? 'none' : 'block' }}>
+                    {/* STEP 0: ROLE SELECTION */}
+                    {activeStep === 0 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
+                        <div className="text-center space-y-1 mb-6">
+                          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Create your account</h2>
+                          <p className="text-sm text-slate-500 font-medium">Join our healthcare network in minutes.</p>
+                        </div>
+
+                        {/* Social signup */}
+                        <div className="mb-4">
+                          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <div className="w-full sm:w-[240px]">
+                              <GoogleLogin
+                                onSuccess={async (cred) => {
+                                  try {
+                                    setGoogleLoading(true);
+                                    const res = await fetch(apiUrl('/api/auth/google/signup'), {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ idToken: cred.credential, role: values.role })
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                      setFieldValue('name', data.profile.name);
+                                      setFieldValue('email', data.profile.email);
+                                      setShowGoogleAdditionalFields(true);
+                                    } else {
+                                      throw new Error(data.message || 'Google signup failed');
+                                    }
+                                  } catch (err: any) {
+                                    toast({ title: 'Google Sign-in Failed', description: err.message || 'Try again', variant: 'destructive' });
+                                  } finally {
+                                    setGoogleLoading(false);
+                                  }
+                                }}
+                                theme="outline"
+                                shape="pill"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="w-full sm:w-[240px] rounded-full text-xs font-bold border-gray-200"
+                              onClick={() => {
+                                window.location.href = apiUrl(`/api/auth/facebook?role=${encodeURIComponent(values.role)}`);
+                              }}
+                            >
+                              Continue with Facebook
+                            </Button>
+                          </div>
+                          <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center">
+                              <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest text-gray-400">
+                              <span className="bg-transparent px-3">or use direct form</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-6">
+                          <Label className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-3 block text-center">Select Your Identity *</Label>
+                          <Field name="role">
+                            {({ field, form }: any) => (
+                              <div className="flex flex-row justify-center gap-2 sm:gap-6 overflow-x-auto pb-2 no-scrollbar">
+                                {roles.map((role) => {
+                                  const Icon = role.icon;
+                                  const isSelected = field.value === role.value;
+                                  return (
+                                    <div
+                                      key={role.value}
+                                      className="relative flex flex-col items-center cursor-pointer group flex-shrink-0"
+                                      onClick={() => {
+                                        form.setFieldValue('role', role.value);
+                                        form.setFieldTouched('role', true);
+                                      }}
+                                    >
+                                      <div
+                                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center transition-all duration-500 transform ${isSelected
+                                          ? `bg-gradient-to-br ${role.gradient} text-white shadow-lg scale-110 -translate-y-1 ring-2 ring-white`
+                                          : `bg-white ${role.iconColor} hover:bg-slate-50 border border-slate-100 shadow-sm`
+                                          }`}
+                                      >
+                                        <Icon className={`w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-500 ${isSelected ? "scale-110" : "group-hover:scale-110"}`} />
                                       </div>
 
-                                      <h3 className={`text-sm font-bold text-center mb-1 ${role.iconColor} transition-colors duration-300`}>
+                                      <h3 className={`mt-2 text-[7px] sm:text-[8px] font-black uppercase tracking-tighter text-center transition-colors duration-300 leading-tight max-w-[60px] ${isSelected ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
+                                        }`}>
                                         {role.label}
                                       </h3>
 
-                                      <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
-                                        {role.description}
-                                      </p>
-
                                       {isSelected && (
-                                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
-                                          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                          </svg>
-                                        </div>
+                                        <div className={`mt-1 h-1 w-4 rounded-full bg-gradient-to-br ${role.gradient}`} />
                                       )}
                                     </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </Field>
-                      <ErrorMessage name="role" component="div" className="text-sm text-red-500 mt-2" />
-                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </Field>
+                        </div>
 
-                    {/* Basic Information */}
-                    <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <User className="w-5 h-5" />
-                        Basic Information
-                      </h3>
+                        <div className="flex justify-center pt-4">
+                          <Button
+                            type="button"
+                            onClick={() => setActiveStep(1)}
+                            className="w-full sm:w-auto px-10 py-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase text-[10px] sm:text-xs tracking-widest shadow-xl shadow-emerald-100 transition-all hover:-translate-y-1"
+                          >
+                            Continue
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField name="name" label="Full Name" required>
-                          <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                              <User className="w-4 h-4" />
-                            </span>
-                            <FormikInput
-                              name="name"
-                              className="pl-9"
-                              placeholder="Enter full name"
-                            />
+                    {/* STEP 1: BASIC INFORMATION */}
+                    {activeStep === 1 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="space-y-4">
+                        <div className="space-y-3 rounded-xl border bg-slate-50/50 p-4 shadow-sm">
+                          <h3 className="text-sm font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2 mb-2">
+                            <User className="w-4 h-4" />
+                            Step 2: Basic Information
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField name="name" label="Full Name" required>
+                              <div className="relative">
+                                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                  <User className="w-4 h-4" />
+                                </span>
+                                <FormikInput
+                                  name="name"
+                                  className="pl-9"
+                                  placeholder="Enter full name"
+                                />
+                              </div>
+                            </FormField>
+                            <FormField name="email" label="Email Address" required>
+                              <div className="relative">
+                                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                  <Mail className="w-4 h-4" />
+                                </span>
+                                <FormikInput
+                                  name="email"
+                                  type="email"
+                                  className="pl-9"
+                                  placeholder="Enter email address"
+                                />
+                              </div>
+                            </FormField>
                           </div>
-                        </FormField>
-                        <FormField name="email" label="Email Address" required>
-                          <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                              <Mail className="w-4 h-4" />
-                            </span>
-                            <FormikInput
-                              name="email"
-                              type="email"
-                              className="pl-9"
-                              placeholder="Enter email address"
-                            />
-                          </div>
-                        </FormField>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField name="phone" label="Whatsapp Number" required>
-                          <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
-                              <Phone className="w-4 h-4" />
-                            </span>
-                            <div className="pl-9">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField name="phone" label="Whatsapp Number" required>
                               <PhoneInputWithCountryCode
                                 phoneName="phone"
                                 countryCodeName="phoneCountryCode"
                                 placeholder="300 1234567"
                                 required
                               />
-                            </div>
-                          </div>
-                        </FormField>
-                        <FormField name="phoneAlternate" label="Alternate Phone Numbers">
-                          <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
-                              <Phone className="w-4 h-4" />
-                            </span>
-                            <div className="pl-9">
+                            </FormField>
+                            <FormField name="phoneAlternate" label="Alternate Phone Numbers">
                               <PhoneInputWithCountryCode
                                 phoneName="phoneAlternate"
                                 countryCodeName="phoneAlternateCountryCode"
                                 placeholder="300 1234567"
                               />
-                            </div>
+                            </FormField>
                           </div>
-                        </FormField>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField name="cnic" label="CNIC Number" required>
-                          <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                              <IdCard className="w-4 h-4" />
-                            </span>
-                            <FormikInput
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
                               name="cnic"
-                              className="pl-9"
-                              placeholder="12345-1234567-1"
-                            />
+                              label={`CNIC Number ${values.role === 'patient' ? '(Optional)' : ''}`}
+                              required={values.role !== 'patient'}
+                            >
+                              <div className="relative">
+                                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                  <IdCard className="w-4 h-4" />
+                                </span>
+                                <FormikInput
+                                  name="cnic"
+                                  className="pl-9"
+                                  placeholder="12345-1234567-1"
+                                />
+                              </div>
+                            </FormField>
+                            <FormField name="city" label="City" required>
+                              <FormikSelect name="city" placeholder="Select your city">
+                                <SelectItem value="Karachi">Karachi</SelectItem>
+                                <SelectItem value="Lahore">Lahore</SelectItem>
+                                <SelectItem value="Islamabad">Islamabad</SelectItem>
+                                <SelectItem value="Faisalabad">Faisalabad</SelectItem>
+                                <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
+                                <SelectItem value="Multan">Multan</SelectItem>
+                                <SelectItem value="Peshawar">Peshawar</SelectItem>
+                                <SelectItem value="Quetta">Quetta</SelectItem>
+                                <SelectItem value="Mardan">Mardan</SelectItem>
+                                <SelectItem value="Abbottabad">Abbottabad</SelectItem>
+                                <SelectItem value="Bahawalpur">Bahawalpur</SelectItem>
+                                <SelectItem value="Bannu">Bannu</SelectItem>
+                                <SelectItem value="Chiniot">Chiniot</SelectItem>
+                                <SelectItem value="Dera Ghazi Khan">Dera Ghazi Khan</SelectItem>
+                                <SelectItem value="Dera Ismail Khan">Dera Ismail Khan</SelectItem>
+                                <SelectItem value="Gujranwala">Gujranwala</SelectItem>
+                                <SelectItem value="Gujrat">Gujrat</SelectItem>
+                                <SelectItem value="Hyderabad">Hyderabad</SelectItem>
+                                <SelectItem value="Jhang">Jhang</SelectItem>
+                                <SelectItem value="Jhelum">Jhelum</SelectItem>
+                                <SelectItem value="Kasur">Kasur</SelectItem>
+                                <SelectItem value="Kohat">Kohat</SelectItem>
+                                <SelectItem value="Larkana">Larkana</SelectItem>
+                                <SelectItem value="Mirpur Khas">Mirpur Khas</SelectItem>
+                                <SelectItem value="Muzaffarabad">Muzaffarabad</SelectItem>
+                                <SelectItem value="Nawabshah">Nawabshah</SelectItem>
+                                <SelectItem value="Okara">Okara</SelectItem>
+                                <SelectItem value="Pakpattan">Pakpattan</SelectItem>
+                                <SelectItem value="Sahiwal">Sahiwal</SelectItem>
+                                <SelectItem value="Sargodha">Sargodha</SelectItem>
+                                <SelectItem value="Sheikhupura">Sheikhupura</SelectItem>
+                                <SelectItem value="Sialkot">Sialkot</SelectItem>
+                                <SelectItem value="Sukkur">Sukkur</SelectItem>
+                                <SelectItem value="Swat">Swat</SelectItem>
+                                <SelectItem value="Taxila">Taxila</SelectItem>
+                                <SelectItem value="Turbat">Turbat</SelectItem>
+                                <SelectItem value="Wah Cantonment">Wah Cantonment</SelectItem>
+                                <SelectItem value="Zhob">Zhob</SelectItem>
+                              </FormikSelect>
+                            </FormField>
                           </div>
-                        </FormField>
-                        <FormField name="city" label="City" required>
-                          <FormikSelect name="city" placeholder="Select your city">
-                            <SelectItem value="Karachi">Karachi</SelectItem>
-                            <SelectItem value="Lahore">Lahore</SelectItem>
-                            <SelectItem value="Islamabad">Islamabad</SelectItem>
-                            <SelectItem value="Faisalabad">Faisalabad</SelectItem>
-                            <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
-                            <SelectItem value="Multan">Multan</SelectItem>
-                            <SelectItem value="Peshawar">Peshawar</SelectItem>
-                            <SelectItem value="Quetta">Quetta</SelectItem>
-                            <SelectItem value="Mardan">Mardan</SelectItem>
-                            <SelectItem value="Abbottabad">Abbottabad</SelectItem>
-                            <SelectItem value="Bahawalpur">Bahawalpur</SelectItem>
-                            <SelectItem value="Bannu">Bannu</SelectItem>
-                            <SelectItem value="Chiniot">Chiniot</SelectItem>
-                            <SelectItem value="Dera Ghazi Khan">Dera Ghazi Khan</SelectItem>
-                            <SelectItem value="Dera Ismail Khan">Dera Ismail Khan</SelectItem>
-                            <SelectItem value="Gujranwala">Gujranwala</SelectItem>
-                            <SelectItem value="Gujrat">Gujrat</SelectItem>
-                            <SelectItem value="Hyderabad">Hyderabad</SelectItem>
-                            <SelectItem value="Jhang">Jhang</SelectItem>
-                            <SelectItem value="Jhelum">Jhelum</SelectItem>
-                            <SelectItem value="Kasur">Kasur</SelectItem>
-                            <SelectItem value="Kohat">Kohat</SelectItem>
-                            <SelectItem value="Larkana">Larkana</SelectItem>
-                            <SelectItem value="Mirpur Khas">Mirpur Khas</SelectItem>
-                            <SelectItem value="Muzaffarabad">Muzaffarabad</SelectItem>
-                            <SelectItem value="Nawabshah">Nawabshah</SelectItem>
-                            <SelectItem value="Okara">Okara</SelectItem>
-                            <SelectItem value="Pakpattan">Pakpattan</SelectItem>
-                            <SelectItem value="Sahiwal">Sahiwal</SelectItem>
-                            <SelectItem value="Sargodha">Sargodha</SelectItem>
-                            <SelectItem value="Sheikhupura">Sheikhupura</SelectItem>
-                            <SelectItem value="Sialkot">Sialkot</SelectItem>
-                            <SelectItem value="Sukkur">Sukkur</SelectItem>
-                            <SelectItem value="Swat">Swat</SelectItem>
-                            <SelectItem value="Taxila">Taxila</SelectItem>
-                            <SelectItem value="Turbat">Turbat</SelectItem>
-                            <SelectItem value="Wah Cantonment">Wah Cantonment</SelectItem>
-                            <SelectItem value="Zhob">Zhob</SelectItem>
-                          </FormikSelect>
-                        </FormField>
-                      </div>
-                    </div>
+                          <div className="grid grid-cols-5 gap-2 pt-4">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setActiveStep(0)}
+                              className="col-span-2 py-4 rounded-xl font-bold uppercase text-[9px] sm:text-[10px] tracking-widest ring-1 ring-gray-200 bg-white"
+                            >
+                              Back
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => setActiveStep(values.role === 'patient' ? 3 : 2)}
+                              className="col-span-3 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase text-[9px] sm:text-[10px] tracking-widest shadow-lg shadow-emerald-50 transition-all truncate"
+                            >
+                              {values.role === 'patient' ? 'Next: Security' : 'Next: Prof.'}
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
 
-                    {getRoleSpecificFields(values, setFieldValue)}
+                    {/* STEP 2: PROFESSIONAL INFORMATION (PROVDIERS ONLY) */}
+                    {activeStep === 2 && values.role !== 'patient' && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
+                        {getRoleSpecificFields(values, setFieldValue)}
+                        <div className="grid grid-cols-5 gap-2 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setActiveStep(1)}
+                            className="col-span-2 py-4 rounded-xl font-bold uppercase text-[9px] sm:text-[10px] tracking-widest ring-1 ring-gray-200 bg-white"
+                          >
+                            Back
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => setActiveStep(3)}
+                            className="col-span-3 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase text-[9px] sm:text-[10px] tracking-widest shadow-lg shadow-emerald-50 transition-all truncate"
+                          >
+                            Next: Security
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
 
-                    {/* Security */}
-                    <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Lock className="w-5 h-5" />
-                        Security
-                      </h3>
+                    {/* STEP 3: SECURITY & AGREEMENT */}
+                    {activeStep === 3 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="space-y-4">
+                        <div className="space-y-2.5 rounded-xl border bg-slate-50/50 p-3 shadow-sm">
+                          <h3 className="text-[11px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2 mb-1">
+                            <Lock className="w-3.5 h-3.5" />
+                            Step 4: Security Account Setup
+                          </h3>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField name="password" label="Password" required>
-                          <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                              <Lock className="w-4 h-4" />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField name="password" label="Password" required>
+                              <div className="relative">
+                                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                  <Lock className="w-4 h-4" />
+                                </span>
+                                <FormikInput
+                                  name="password"
+                                  type="password"
+                                  className="pl-9"
+                                  placeholder="Create a strong password"
+                                />
+                              </div>
+                            </FormField>
+                            <FormField name="confirmPassword" label="Confirm Password" required>
+                              <div className="relative">
+                                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                  <Lock className="w-4 h-4" />
+                                </span>
+                                <FormikInput
+                                  name="confirmPassword"
+                                  type="password"
+                                  className="pl-9"
+                                  placeholder="Confirm your password"
+                                />
+                              </div>
+                            </FormField>
+                          </div>
+                        </div>
+
+                        {/* Agreement */}
+                        <div className="space-y-3 rounded-xl border bg-white/60 p-3 pb-4">
+                          <h3 className="text-base font-semibold">Agreement & Declaration</h3>
+                          <div className="bg-muted/50 p-2 px-3 rounded-lg">
+                            <p className="text-sm text-muted-foreground mb-4">
+                              I hereby declare that all information provided is true and valid to the best of my knowledge.
+                              I agree to abide by the platform's guidelines and ensure patient safety, privacy, and quality care.
+                            </p>
+                          </div>
+
+                          <div className="flex items-start space-x-2">
+                            <Checkbox
+                              id="terms"
+                              checked={acceptTerms}
+                              onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                            />
+                            <Label htmlFor="terms" className="text-sm leading-relaxed">
+                              I agree to the{" "}
+                              <Link to="/terms" className="text-primary hover:underline">
+                                Terms and Conditions
+                              </Link>{" "}
+                              and{" "}
+                              <Link to="/privacy" className="text-primary hover:underline">
+                                Privacy Policy
+                              </Link>
+                            </Label>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-5 gap-2 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setActiveStep(values.role === 'patient' ? 1 : 2)}
+                            className="col-span-2 py-4 rounded-xl font-bold uppercase text-[9px] sm:text-[10px] tracking-widest ring-1 ring-gray-200 bg-white"
+                          >
+                            Back
+                          </Button>
+                          <Button
+                            type="button"
+                            className="col-span-3 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black uppercase text-[9px] sm:text-[10px] tracking-widest shadow-xl shadow-emerald-100 transition-all truncate"
+                            disabled={isSubmitting}
+                            onClick={async () => {
+                              const validationErrors = await validateForm();
+                              if (validationErrors && Object.keys(validationErrors).length > 0) {
+                                setTouched(
+                                  Object.keys(validationErrors).reduce((acc: any, key: string) => {
+                                    acc[key] = true;
+                                    return acc;
+                                  }, {}),
+                                  true
+                                );
+                                toast({ title: 'Validation Errors', description: 'Please check all steps for missing info.', variant: 'destructive' });
+                                return;
+                              }
+                              await submitForm();
+                            }}
+                          >
+                            {isSubmitting ? "Wait..." : "Register Now"}
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                    {/* Document Upload Modal for Providers */}
+                    <Dialog open={showDocModal} onOpenChange={setShowDocModal}>
+                      <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                          <DialogTitle>Upload Verification Document</DialogTitle>
+                          <DialogDescription>
+                            Please upload your business/clinic verification document. You can also skip and submit now; you may be asked to provide it later during verification.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="rounded-xl border-2 border-dashed p-6 text-center bg-gradient-to-br from-gray-50 to-white">
+                          <input
+                            ref={fileInputRef}
+                            id="providerDocModal"
+                            type="file"
+                            className="hidden"
+                            accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0] || null;
+                              if (f && f.size > 25 * 1024 * 1024) {
+                                toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                                setProviderDoc(null);
+                                return;
+                              }
+                              setProviderDoc(f);
+                            }}
+                          />
+
+                          <label
+                            htmlFor="providerDocModal"
+                            className="group inline-flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all"
+                          >
+                            <span className="w-9 h-9 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
+                              <Upload className="w-5 h-5 text-white" />
                             </span>
-                            <FormikInput
-                              name="password"
-                              type="password"
-                              className="pl-9"
-                              placeholder="Create a strong password"
-                            />
-                          </div>
-                        </FormField>
-                        <FormField name="confirmPassword" label="Confirm Password" required>
-                          <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                              <Lock className="w-4 h-4" />
+                            <span className="text-sm text-gray-700">
+                              <span className="font-medium">Click to upload</span>
+                              <span className="text-muted-foreground"> • PDF, DOC, DOCX • up to 25MB</span>
                             </span>
-                            <FormikInput
-                              name="confirmPassword"
-                              type="password"
-                              className="pl-9"
-                              placeholder="Confirm your password"
-                            />
-                          </div>
-                        </FormField>
-                      </div>
+                          </label>
+
+                          {providerDoc && (
+                            <div className="mt-4 flex items-center justify-center">
+                              <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 border">
+                                <span className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                                  <FileText className="w-4 h-4 text-white" />
+                                </span>
+                                <div className="text-left">
+                                  <p className="text-sm font-medium truncate max-w-[260px]" title={providerDoc.name}>{providerDoc.name}</p>
+                                  <p className="text-xs text-muted-foreground">{(providerDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="ml-1"
+                                  onClick={() => {
+                                    setProviderDoc(null);
+                                    if (fileInputRef.current) fileInputRef.current.value = '';
+                                  }}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          <p className="mt-3 text-xs text-muted-foreground">Only one file allowed. Accepted types: PDF/DOC/DOCX. Max 25MB.</p>
+                        </div>
+
+                        <DialogFooter>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              setShowDocModal(false);
+                              performRegistration();
+                            }}
+                            disabled={isSubmitting}
+                          >
+                            Skip and Submit
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={async () => {
+                              if (!providerDoc) {
+                                toast({ title: 'No file selected', description: 'Please choose a document to upload or skip.', variant: 'destructive' });
+                                return;
+                              }
+                              setShowDocModal(false);
+                              await performRegistration();
+                            }}
+                            disabled={isSubmitting}
+                          >
+                            Upload & Submit
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <div className="mt-6 text-center border-t pt-4">
+                      <p className="text-sm text-gray-500">
+                        Already have an account?{" "}
+                        <Link to="/login" className="text-emerald-600 hover:text-emerald-700 font-black uppercase text-[11px] tracking-widest underline decoration-2 underline-offset-4">
+                          Sign in here
+                        </Link>
+                      </p>
                     </div>
-
-                    {/* Agreement */}
-                    <div className="space-y-4 rounded-xl border bg-white/60 p-5">
-                      <h3 className="text-lg font-semibold">Agreement & Declaration</h3>
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-4">
-                          I hereby declare that all information provided is true and valid to the best of my knowledge.
-                          I agree to abide by the platform's guidelines and ensure patient safety, privacy, and quality care.
-                        </p>
-                      </div>
-
-                      <div className="flex items-start space-x-2">
-                        <Checkbox
-                          id="terms"
-                          checked={acceptTerms}
-                          onCheckedChange={(checked) => setAcceptTerms(checked === true)}
-                        />
-                        <Label htmlFor="terms" className="text-sm leading-relaxed">
-                          I agree to the{" "}
-                          <Link to="/terms" className="text-primary hover:underline">
-                            Terms and Conditions
-                          </Link>{" "}
-                          and{" "}
-                          <Link to="/privacy" className="text-primary hover:underline">
-                            Privacy Policy
-                          </Link>
-                        </Label>
-                      </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <Button
-                      type="button"
-                      className="w-full py-6 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
-                      disabled={isSubmitting}
-                      onClick={async () => {
-                        // Validate form before attempting submit to surface errors via toast
-                        const validationErrors = await validateForm();
-                        if (validationErrors && Object.keys(validationErrors).length > 0) {
-                          // Mark all fields as touched so errors show up
-                          setTouched(
-                            Object.keys(validationErrors).reduce((acc: any, key: string) => {
-                              acc[key] = true;
-                              return acc;
-                            }, {}),
-                            true
-                          );
-                          toast({ title: 'Please fix the highlighted errors', description: 'Some required fields are missing or invalid.', variant: 'destructive' });
-                          return;
-                        }
-                        await submitForm();
-                      }}
-                    >
-                      {isSubmitting ? "Submitting Registration..." : "Submit Registration"}
-                    </Button>
                   </Form>
                 )}
               </Formik>
-
-              {/* Document Upload Modal for Providers */}
-              <Dialog open={showDocModal} onOpenChange={setShowDocModal}>
-                <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Upload Verification Document</DialogTitle>
-                    <DialogDescription>
-                      Please upload your business/clinic verification document. You can also skip and submit now; you may be asked to provide it later during verification.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="rounded-xl border-2 border-dashed p-6 text-center bg-gradient-to-br from-gray-50 to-white">
-                    <input
-                      ref={fileInputRef}
-                      id="providerDocModal"
-                      type="file"
-                      className="hidden"
-                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0] || null;
-                        if (f && f.size > 25 * 1024 * 1024) {
-                          toast({ title: 'File too large', description: 'Max 25MB allowed', variant: 'destructive' });
-                          if (fileInputRef.current) fileInputRef.current.value = '';
-                          setProviderDoc(null);
-                          return;
-                        }
-                        setProviderDoc(f);
-                      }}
-                    />
-
-                    <label
-                      htmlFor="providerDocModal"
-                      className="group inline-flex items-center gap-3 rounded-lg border px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all"
-                    >
-                      <span className="w-9 h-9 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
-                        <Upload className="w-5 h-5 text-white" />
-                      </span>
-                      <span className="text-sm text-gray-700">
-                        <span className="font-medium">Click to upload</span>
-                        <span className="text-muted-foreground"> • PDF, DOC, DOCX • up to 25MB</span>
-                      </span>
-                    </label>
-
-                    {providerDoc && (
-                      <div className="mt-4 flex items-center justify-center">
-                        <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 border">
-                          <span className="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                            <FileText className="w-4 h-4 text-white" />
-                          </span>
-                          <div className="text-left">
-                            <p className="text-sm font-medium truncate max-w-[260px]" title={providerDoc.name}>{providerDoc.name}</p>
-                            <p className="text-xs text-muted-foreground">{(providerDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="ml-1"
-                            onClick={() => {
-                              setProviderDoc(null);
-                              if (fileInputRef.current) fileInputRef.current.value = '';
-                            }}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    <p className="mt-3 text-xs text-muted-foreground">Only one file allowed. Accepted types: PDF/DOC/DOCX. Max 25MB.</p>
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setShowDocModal(false);
-                        performRegistration();
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Skip and Submit
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={async () => {
-                        if (!providerDoc) {
-                          toast({ title: 'No file selected', description: 'Please choose a document to upload or skip.', variant: 'destructive' });
-                          return;
-                        }
-                        setShowDocModal(false);
-                        await performRegistration();
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Upload & Submit
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              <div className="mt-6 text-center">
-                <p className="text-muted-foreground">
-                  Already have an account?{" "}
-                  <Link to="/login" className="text-primary hover:underline font-medium">
-                    Sign in here
-                  </Link>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
