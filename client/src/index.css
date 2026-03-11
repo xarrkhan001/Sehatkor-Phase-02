@@ -247,4 +247,8 @@
       transform: translateX(-50%);
     }
   }
+
+  .font-nastaliq {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+  }
 }

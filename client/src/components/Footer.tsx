@@ -54,7 +54,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gradient-to-br from-gray-950 via-emerald-950 to-gray-950 text-white">
+    <footer dir="ltr" className="bg-gradient-to-br from-gray-950 via-emerald-950 to-gray-950 text-white">
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -62,7 +62,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
+              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg">
                 <Stethoscope className="w-7 h-7 text-white" />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">SehatKor</span>
@@ -78,7 +78,7 @@ const Footer = () => {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="text-center p-3 bg-white/5 rounded-lg backdrop-blur-sm">
-                <div className="text-xl font-bold text-red-400">50K+</div>
+                <div className="text-xl font-bold text-emerald-400">50K+</div>
                 <div className="text-xs text-gray-400">Users</div>
               </div>
               <div className="text-center p-3 bg-white/5 rounded-lg backdrop-blur-sm">
@@ -111,10 +111,10 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-6 flex flex-col">
               <span className="flex items-center mb-1">
-                <Heart className="w-5 h-5 text-red-400 mr-2" />
+                <Heart className="w-5 h-5 text-emerald-400 mr-2" />
                 Our Services
               </span>
-              <span className="text-sm font-bold text-red-400/80" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>ہماری خدمات</span>
+              <span className="text-sm font-bold text-emerald-400/80" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>ہماری خدمات</span>
             </h3>
             <ul className="space-y-3">
               {services.map((service, index) => {
@@ -126,7 +126,7 @@ const Footer = () => {
                       className="flex flex-col space-y-1 group"
                     >
                       <div className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-300">
-                        <Icon className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform duration-300" />
+                        <Icon className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform duration-300" />
                         <span className="group-hover:translate-x-1 transition-transform duration-300">{service.name}</span>
                       </div>
                       <span className="text-xs font-semibold text-gray-400 group-hover:text-gray-200 transition-colors duration-300 pl-7" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>
@@ -188,7 +188,7 @@ const Footer = () => {
                 <span>Sehatkor15@gmail.com</span>
               </div>
               <div className="flex items-start space-x-3 text-gray-300">
-                <MapPin className="w-4 h-4 text-red-400 mt-1" />
+                <MapPin className="w-4 h-4 text-emerald-400 mt-1" />
                 <span className="font-mono text-sm">Charsadda Road Near Mervas Mandi Mardan</span>
               </div>
             </div>

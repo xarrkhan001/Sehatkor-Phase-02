@@ -200,10 +200,11 @@ const UrduHomePage = () => {
 
             {/* Hero Section - Redesigned with Bento Grid */}
             <section className="relative pt-6 pb-12 lg:pt-10 lg:pb-16 overflow-visible">
-                {/* BACKGROUND - Gray 200 as requested */}
-                <div className="absolute inset-0 bg-gray-100 z-0 rounded-b-[2rem] lg:rounded-b-[3rem] shadow-sm overflow-hidden">
+                {/* BACKGROUND - Clean Gradient for professional look */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-gray-50 via-white to-emerald-50/30 z-0 rounded-b-[2rem] lg:rounded-b-[3rem] shadow-sm overflow-hidden">
                     {/* Subtle White Glows for depth */}
                     <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white/60 rounded-full blur-[120px]"></div>
+                    <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-100/20 rounded-full blur-[80px]"></div>
                 </div>
 
                 <div className="container mx-auto px-4 relative z-10">
@@ -222,12 +223,12 @@ const UrduHomePage = () => {
                                 صحت کے مسائل؟ <span className="text-emerald-600">ہمارے پاس حل ہے!</span>
                             </h1>
 
-                            {/* Search Bar Block - SHARP CORNERS (No rounding) */}
-                            <div className="bg-gray-100 p-1 rounded-none shadow-xl border border-gray-400 flex flex-row items-center gap-0 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]">
+                            {/* Search Bar Block - Professional Rounded Style */}
+                            <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-2xl shadow-emerald-900/10 border border-emerald-100 flex flex-row items-center gap-0 max-w-3xl mx-auto transform transition-all hover:scale-[1.005] ring-4 ring-emerald-500/5">
                                 {/* Location */}
-                                <div className="relative w-auto md:w-[30%] border-l border-gray-200">
+                                <div className="relative w-auto md:w-[30%] border-l border-gray-100">
                                     <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 w-4 h-4 pointer-events-none z-10" />
-                                    <select className="w-full h-10 bg-transparent border-none pr-9 pl-2 text-gray-700 font-bold focus:ring-0 cursor-pointer text-sm outline-none relative z-20">
+                                    <select className="w-full h-11 bg-transparent border-none pr-9 pl-2 text-gray-700 font-bold focus:ring-0 cursor-pointer text-sm outline-none relative z-20">
                                         <option>پاکستان بھر میں</option>
                                         <option>کراچی</option>
                                         <option>لاہور</option>
@@ -236,18 +237,18 @@ const UrduHomePage = () => {
                                 </div>
 
                                 {/* Main Search Input */}
-                                <div className="relative flex-1 md:w-[50%] border-l border-gray-200">
+                                <div className="relative flex-1 md:w-[50%] border-l border-gray-100">
                                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none md:hidden" />
                                     <input
                                         type="text"
                                         placeholder="ڈاکٹر، ہسپتال تلاش کریں..."
-                                        className="w-full h-10 px-3 pr-9 md:pr-3 bg-transparent border-none text-gray-800 placeholder:text-gray-400 text-sm focus:ring-0 outline-none"
+                                        className="w-full h-11 px-3 pr-9 md:pr-4 bg-transparent border-none text-gray-800 placeholder:text-gray-400 text-sm focus:ring-0 outline-none"
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
 
                                 {/* Search Button */}
-                                <Button className="w-auto md:w-[20%] h-10 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm m-0 md:ml-1" asChild>
+                                <Button className="w-auto md:w-[20%] h-11 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm m-0 md:mr-1 shadow-lg shadow-emerald-200" asChild>
                                     <Link to={`/search?q=${searchQuery}`}>
                                         <Search className="w-4 h-4 ml-1" />
                                         <span className="hidden md:inline">تلاش</span>
@@ -257,79 +258,79 @@ const UrduHomePage = () => {
                         </div>
 
                         {/* Bento Grid Layout - Mobile: Marham Style (Video right 2cols, 2 cards left 3cols - RTL), Desktop: Bento Grid */}
-                        <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-4">
+                        <div className="grid grid-cols-5 md:grid-cols-12 gap-3 md:gap-5">
                             {/* Video Consultation - Right side (RTL), spans 2 rows on mobile, 2 columns wide */}
                             <Link
                                 to={heroCards[0].link}
-                                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[0].bg} 
-                                    col-span-2 row-span-2 h-auto md:col-span-3 md:row-span-2 md:h-full`}
+                                className={`relative group overflow-hidden rounded-2xl md:rounded-[2.5rem] shadow-xl border border-white/60 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${heroCards[0].bg} 
+                                    col-span-2 row-span-2 min-h-[160px] md:col-span-3 md:row-span-2 md:h-full`}
                             >
-                                <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
-                                    <h3 className={`font-black text-sm md:text-2xl ${heroCards[0].text} mb-0.5 md:mb-1 leading-tight`}>
+                                <div className="p-3 md:p-10 relative z-20 h-full flex flex-col items-start text-right w-full">
+                                    <h3 className={`font-black text-sm md:text-4xl ${heroCards[0].text} mb-1 md:mb-4 leading-tight tracking-tight`}>
                                         {heroCards[0].title}
                                     </h3>
-                                    <p className={`font-bold text-[10px] md:text-sm ${heroCards[0].subText} mb-2 md:mb-4`}>
+                                    <p className={`font-bold text-[10px] md:text-xl ${heroCards[0].subText} opacity-90 leading-tight`}>
                                         {heroCards[0].subtitle}
                                     </p>
                                 </div>
                                 <img
                                     src={heroCards[0].image}
                                     alt={heroCards[0].title}
-                                    className="absolute bottom-2 left-2 w-20 h-20 md:left-1/2 md:-translate-x-1/2 md:bottom-4 md:w-40 md:h-40 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                                    className="absolute bottom-2 left-2 w-16 h-16 md:left-4 md:bottom-6 md:w-44 md:h-44 object-cover rounded-full border-2 md:border-4 border-white shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:rotate-3 z-10"
                                     loading="lazy"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             </Link>
 
                             {/* Clinic Visit - Left side (RTL), top, 3 columns wide */}
                             <Link
                                 to={heroCards[1].link}
-                                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[1].bg} 
-                                    col-span-3 h-24 md:col-span-4 md:h-36`}
+                                className={`relative group overflow-hidden rounded-2xl md:rounded-[2rem] shadow-xl border border-white/60 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${heroCards[1].bg} 
+                                    col-span-3 h-24 md:h-44 md:col-span-4`}
                             >
-                                <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
-                                    <h3 className={`font-black text-sm md:text-2xl ${heroCards[1].text} mb-0.5 md:mb-1 leading-tight`}>
+                                <div className="p-3 md:p-8 relative z-20 h-full flex flex-col items-start text-right w-full">
+                                    <h3 className={`font-black text-sm md:text-3xl ${heroCards[1].text} mb-1 md:mb-2 leading-tight tracking-tight`}>
                                         {heroCards[1].title}
                                     </h3>
-                                    <p className={`font-bold text-[10px] md:text-sm ${heroCards[1].subText} mb-1 md:mb-4`}>
+                                    <p className={`font-bold text-[10px] md:text-lg ${heroCards[1].subText} opacity-90`}>
                                         {heroCards[1].subtitle}
                                     </p>
                                 </div>
                                 <img
                                     src={heroCards[1].image}
                                     alt={heroCards[1].title}
-                                    className="absolute bottom-1.5 left-1.5 w-14 h-14 md:bottom-3 md:left-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                                    className="absolute -bottom-1 -left-1 w-14 h-14 md:bottom-4 md:left-6 md:w-36 md:h-36 object-cover rounded-full border-2 md:border-4 border-white shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:-rotate-3 z-10"
                                     loading="lazy"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
                             </Link>
 
                             {/* Instant Doctor - Left side (RTL), bottom, 3 columns wide */}
                             <Link
                                 to={heroCards[2].link}
-                                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[2].bg} 
-                                    col-span-3 h-24 md:col-span-5 md:h-36`}
+                                className={`relative group overflow-hidden rounded-2xl md:rounded-[2rem] shadow-xl border border-white/60 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${heroCards[2].bg} 
+                                    col-span-3 h-24 md:h-44 md:col-span-5`}
                             >
-                                <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
-                                    <h3 className={`font-black text-sm md:text-2xl ${heroCards[2].text} mb-0.5 md:mb-1 leading-tight`}>
-                                        {heroCards[2].title}
-                                    </h3>
-                                    <p className={`font-bold text-[10px] md:text-sm ${heroCards[2].subText} mb-1 md:mb-4`}>
+                                <div className="p-3 md:p-8 relative z-20 h-full flex flex-col items-start text-right w-full">
+                                    <div className="flex items-center gap-2 mb-1 md:mb-2">
+                                        <h3 className={`font-black text-sm md:text-3xl ${heroCards[2].text} leading-tight tracking-tight`}>
+                                            {heroCards[2].title}
+                                        </h3>
+                                        {heroCards[2].hasBadge && (
+                                            <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse text-[8px] px-1 md:text-xs md:px-2 md:py-1 rounded-full shadow-lg shadow-red-200">
+                                                NEW
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    <p className={`font-bold text-[10px] md:text-lg ${heroCards[2].subText} opacity-90`}>
                                         {heroCards[2].subtitle}
                                     </p>
-                                    {heroCards[2].hasBadge && (
-                                        <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse text-[9px] px-1.5 py-0.5 md:text-xs md:px-2 md:py-1">
-                                            NEW
-                                        </Badge>
-                                    )}
                                 </div>
                                 <img
                                     src={heroCards[2].image}
                                     alt={heroCards[2].title}
-                                    className="absolute bottom-1.5 left-1.5 w-14 h-14 md:bottom-3 md:left-6 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                                    className="absolute -bottom-1 -left-1 w-14 h-14 md:bottom-4 md:left-8 md:w-36 md:h-36 object-cover rounded-full border-2 md:border-4 border-white shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:rotate-6 z-10"
                                     loading="lazy"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
                             </Link>
 
                             {/* Remaining cards - Alternating widths, last card full width */}
@@ -337,33 +338,30 @@ const UrduHomePage = () => {
                                 <Link
                                     to={card.link}
                                     key={card.id}
-                                    className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${card.bg} 
-                                        ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-24 md:col-span-3 md:h-36`}
+                                    className={`relative group overflow-hidden rounded-2xl md:rounded-[1.5rem] shadow-lg border border-white/60 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 ${card.bg} 
+                                        ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-24 md:col-span-3 md:h-40`}
                                 >
-                                    <div className="p-3 md:p-5 relative z-10 h-full flex flex-col items-start text-right w-full">
-                                        <h3 className={`font-black text-sm md:text-2xl ${card.text} mb-0.5 md:mb-1 leading-tight`}>
+                                    <div className="p-3 md:p-6 relative z-20 h-full flex flex-col items-start text-right w-full">
+                                        <h3 className={`font-black text-xs md:text-xl ${card.text} mb-0.5 leading-tight`}>
                                             {card.title}
                                         </h3>
-                                        <p className={`font-bold text-[10px] md:text-sm ${card.subText} mb-1 md:mb-4`}>
+                                        <p className={`font-bold text-[8px] md:text-xs ${card.subText} opacity-80`}>
                                             {card.subtitle}
                                         </p>
                                     </div>
                                     <img
                                         src={card.image}
                                         alt={card.title}
-                                        className="absolute bottom-1.5 left-1.5 w-14 h-14 md:bottom-3 md:left-2 md:w-20 md:h-20 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                                        className="absolute -bottom-1 -left-1 w-12 h-12 md:bottom-3 md:left-3 md:w-20 md:h-20 object-cover rounded-full border-1 md:border-2 border-white shadow-xl transition-transform duration-700 group-hover:scale-110 z-10"
                                         loading="lazy"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10 pointer-events-none"></div>
                                 </Link>
                             ))}
                         </div>
-
                     </motion.div>
                 </div>
             </section>
 
-            {/* Stats Section with Icons - Shifted Up slightly to bridge the gap if needed, or normal padding */}
             {/* Stats Section - Redesigned */}
             <section className="py-20 relative overflow-hidden">
                 <div className="absolute inset-0 bg-slate-50 opacity-80 z-0"></div>
@@ -487,7 +485,7 @@ const UrduHomePage = () => {
             </section>
 
             <CompareTray />
-        </div>
+        </div >
     );
 };
 
