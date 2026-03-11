@@ -1398,13 +1398,21 @@ const RegisterPage = () => {
                                 onSuccess={async (cred) => {
                                   try {
                                     setGoogleLoading(true);
-                                    const res = await fetch(apiUrl('/api/auth/google/signup'), {
+                                    const res = await fetch(apiUrl('/api/auth/google'), {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({ idToken: cred.credential, role: values.role })
                                     });
                                     const data = await res.json();
-                                    if (res.ok) {
+                                    
+                                    if (res.ok && data.token) {
+                                      login({ ...data.user, id: data.user._id }, data.token);
+                                      toast({ title: 'Welcome Back!', description: 'Logged in securely with Google.' });
+                                      navigate('/');
+                                    } else if (res.status === 400 && data.requiresAdditionalFields) {
+                                      setGoogleIdToken(cred.credential);
+                                      setGoogleProfile(data.profile);
+                                      setCurrentFormValues(prev => ({ ...prev, role: values.role }));
                                       setFieldValue('name', data.profile.name);
                                       setFieldValue('email', data.profile.email);
                                       setShowGoogleAdditionalFields(true);
