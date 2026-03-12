@@ -1042,15 +1042,19 @@ const RegisterPage = () => {
 
               {/* Google Additional Fields Form */}
               {showGoogleAdditionalFields && (
-                <div className="mb-8 p-4 sm:p-6 border-2 border-blue-200 rounded-lg bg-blue-50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-blue-600" />
+                <div className="mb-8 animate-in fade-in duration-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                    <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center overflow-hidden shadow-sm shrink-0 ring-4 ring-emerald-50">
+                      {googleProfile?.picture ? (
+                        <img src={googleProfile?.picture} alt={googleProfile?.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-7 h-7 text-emerald-600" />
+                      )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-blue-900">Complete Your Google Registration</h3>
-                      <p className="text-sm text-blue-700">
-                        Welcome {googleProfile?.name}! Please provide additional information to complete your registration.
+                      <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Complete Registration</h3>
+                      <p className="text-sm text-slate-500 font-medium mt-1.5 leading-relaxed">
+                        Welcome <span className="text-emerald-700 font-bold">{googleProfile?.name}</span>! Just a few more details to set up your account.
                       </p>
                     </div>
                   </div>
@@ -1058,47 +1062,37 @@ const RegisterPage = () => {
                   <div className="space-y-6">
                     {/* Role Selection for Google Users */}
                     <div>
-                      <Label className="text-sm font-medium mb-2 block">Select Your Role *</Label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2">
+                      <Label className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-4 block text-center">Select Your Identity *</Label>
+                      <div className="flex flex-row justify-center gap-2 sm:gap-6 overflow-x-auto pb-4 no-scrollbar">
                         {roles.map((role) => {
                           const Icon = role.icon;
                           const isSelected = currentFormValues.role === role.value;
                           return (
                             <div
                               key={role.value}
-                              className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected ? "scale-105" : ""
-                                }`}
+                              className="relative flex flex-col items-center cursor-pointer group flex-shrink-0"
                               onClick={() => {
                                 setGoogleErrors({});
                                 handleGoogleFieldChange("role", role.value);
                               }}
                             >
-                              <div className={`bg-gradient-to-br ${role.gradient} p-[1.5px] rounded-lg w-full h-auto sm:h-[100px] ${isSelected ? "shadow-md shadow-current/25" : "shadow-sm hover:shadow-md"
-                                }`}>
-                                <div className={`bg-white rounded-lg p-2 w-full h-full flex flex-col items-center justify-center ${isSelected ? role.bgColor : "hover:" + role.bgColor
-                                  } transition-all duration-300`}>
-                                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-2 transform transition-transform duration-300 ${isSelected ? "scale-110" : "group-hover:scale-110"
-                                    }`}>
-                                    <Icon className="w-4 h-4 text-white" />
-                                  </div>
-
-                                  <h3 className={`text-sm font-bold text-center mb-1 break-words ${role.iconColor} transition-colors duration-300`}>
-                                    {role.label}
-                                  </h3>
-
-                                  <p className="text-[10px] text-gray-600 text-center leading-tight px-1">
-                                    {role.description}
-                                  </p>
-
-                                  {isSelected && (
-                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
-                                      <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
-                                    </div>
-                                  )}
-                                </div>
+                              <div
+                                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center transition-all duration-500 transform ${isSelected
+                                  ? `bg-gradient-to-br ${role.gradient} text-white shadow-lg scale-110 -translate-y-1 ring-2 ring-white`
+                                  : `bg-white ${role.iconColor} hover:bg-slate-50 border border-slate-100 shadow-sm`
+                                  }`}
+                              >
+                                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-500 ${isSelected ? "scale-110" : "group-hover:scale-110"}`} />
                               </div>
+
+                              <h3 className={`mt-2 text-[7px] sm:text-[8px] font-black uppercase tracking-tighter text-center transition-colors duration-300 leading-tight max-w-[60px] ${isSelected ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
+                                }`}>
+                                {role.label}
+                              </h3>
+
+                              {isSelected && (
+                                <div className={`mt-1 h-1 w-4 rounded-full bg-gradient-to-br ${role.gradient}`} />
+                              )}
                             </div>
                           );
                         })}
@@ -1113,7 +1107,7 @@ const RegisterPage = () => {
                         <div>
                           <Label htmlFor="google-phone">Phone Number *</Label>
                           <div className="flex gap-2">
-                            <div className="w-24 sm:w-28 md:w-32">
+                            <div className="w-[85px] sm:w-[95px] flex-shrink-0">
                               <Select value={currentFormValues.phoneCountryCode} onValueChange={(value) => handleGoogleFieldChange("phoneCountryCode", value)}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Code" />
@@ -1121,7 +1115,7 @@ const RegisterPage = () => {
                                 <SelectContent>
                                   {countryCodes.map((country) => (
                                     <SelectItem key={country.code} value={country.code}>
-                                      <span className="flex items-center gap-2">
+                                      <span className="flex items-center gap-1.5 sm:gap-2">
                                         <span>{country.flag}</span>
                                         <span>{country.code}</span>
                                       </span>
@@ -1351,7 +1345,7 @@ const RegisterPage = () => {
                         size="sm"
                         onClick={handleGoogleRegistrationComplete}
                         disabled={googleLoading}
-                        className="w-full sm:flex-1 h-9 font-bold bg-blue-600 hover:bg-blue-700"
+                        className="w-full sm:flex-1 h-9 font-bold bg-emerald-600 hover:bg-emerald-700"
                       >
                         {googleLoading ? "Completing..." : "Complete Account"}
                       </Button>
