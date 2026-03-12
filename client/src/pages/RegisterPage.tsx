@@ -177,11 +177,17 @@ const getGoogleValidationSchema = (role: string) => {
   const roleSpecific: Record<string, any> = {};
   if (role === 'doctor') {
     roleSpecific.licenseNumber = Yup.string()
-      .min(3, 'License number must be at least 3 characters')
-      .required('License number is required');
+      .test('min-length-if-provided', 'License number must be at least 3 characters', function (value) {
+        if (!value || value.trim() === '') return true;
+        return value.length >= 3;
+      })
+      .notRequired();
     roleSpecific.designation = Yup.string()
-      .min(2, 'Designation must be at least 2 characters')
-      .required('Designation is required');
+      .test('min-length-if-provided', 'Designation must be at least 2 characters', function (value) {
+        if (!value || value.trim() === '') return true;
+        return value.length >= 2;
+      })
+      .notRequired();
   }
 
   if (['clinic/hospital', 'laboratory', 'pharmacy'].includes(role)) {
@@ -189,8 +195,11 @@ const getGoogleValidationSchema = (role: string) => {
       .min(2, 'Business name must be at least 2 characters')
       .required('Business name is required');
     roleSpecific.licenseNumber = Yup.string()
-      .min(3, 'License number must be at least 3 characters')
-      .required('License number is required');
+      .test('min-length-if-provided', 'License number must be at least 3 characters', function (value) {
+        if (!value || value.trim() === '') return true;
+        return value.length >= 3;
+      })
+      .notRequired();
     roleSpecific.address = Yup.string()
       .min(10, 'Address must be at least 10 characters')
       .required('Complete address is required');
@@ -250,6 +259,8 @@ const RegisterPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showDocModal, setShowDocModal] = useState(false);
   const [googleErrors, setGoogleErrors] = useState<Record<string, string>>({});
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [successRole, setSuccessRole] = useState<string>('');
 
   const roles = [
     { value: "patient", label: "Patient", icon: User, description: "Book appointments and manage health records", gradient: "from-blue-500 to-cyan-500", bgColor: "bg-blue-50", iconColor: "text-blue-600" },
@@ -427,12 +438,9 @@ const RegisterPage = () => {
             toast({ title: 'Document Upload Error', description: docErr?.message || 'Failed to upload document', variant: 'destructive' });
           }
         }
-        toast({
-          title: 'Registration Submitted!',
-          description: `Your registration as ${currentFormValues.role} has been submitted. Please wait for admin verification before you can log in.`,
-        });
         setShowGoogleAdditionalFields(false);
-        navigate('/login');
+        setSuccessRole(currentFormValues.role);
+        setShowSuccessScreen(true);
       } else {
         // Patients: log them in immediately
         await login({ ...data.user, id: data.user._id }, data.token);
@@ -532,18 +540,12 @@ const RegisterPage = () => {
             toast({ title: 'Document Upload Error', description: docErr?.message || 'Failed to upload document', variant: 'destructive' });
           }
         }
-        toast({
-          title: 'Registration Submitted!',
-          description: `Your registration as ${values.role} has been submitted. Please wait for admin verification before you can log in.`,
-        });
-        navigate('/login');
+        setSuccessRole(values.role);
+        setShowSuccessScreen(true);
       } else {
-        // Patients are verified immediately but should login manually
-        toast({
-          title: 'Registration Successful!',
-          description: 'Your patient account is ready. Please sign in to continue.',
-        });
-        navigate('/login');
+        // Patients are verified immediately - show success screen
+        setSuccessRole(values.role);
+        setShowSuccessScreen(true);
       }
     } catch (error: any) {
       toast({
@@ -913,6 +915,181 @@ const RegisterPage = () => {
       return next;
     });
   };
+
+  // SUCCESS SCREEN
+  if (showSuccessScreen) {
+    const roleLabels: Record<string, string> = {
+      doctor: 'Doctor',
+      'clinic/hospital': 'Clinic / Hospital',
+      laboratory: 'Laboratory',
+      pharmacy: 'Pharmacy',
+      patient: 'Patient',
+    };
+    const roleLabel = roleLabels[successRole] || successRole;
+    const isProvider = successRole !== 'patient';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-900 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Background blobs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-400/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-400/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="relative z-10 w-full max-w-lg"
+        >
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-12 text-center shadow-2xl">
+
+            {/* Animated Icon */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 15 }}
+              className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-2xl shadow-emerald-500/30"
+            >
+              <CheckCircle2 className="w-12 h-12 text-white" />
+            </motion.div>
+
+            {/* Heading */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-400 mb-3">SehatKor Healthcare</p>
+              <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight mb-3">
+                Congratulations! 🎉
+              </h1>
+              <p className="text-white/70 text-base font-medium">
+                Your <span className="text-emerald-400 font-bold">{roleLabel}</span> account has been successfully created.
+              </p>
+            </motion.div>
+
+            {/* Info Cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="mt-8 bg-white/10 border border-white/10 rounded-2xl p-5 text-left space-y-4"
+            >
+              {isProvider ? (
+                <>
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                      <Clock className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">Admin Verification Pending</p>
+                      <p className="text-white/60 text-xs mt-1 leading-relaxed">
+                        Your account has been submitted successfully. Our admin team will review and verify your account within <span className="text-amber-300 font-bold">24 hours</span>.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                      <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">Account Active After Approval</p>
+                      <p className="text-white/60 text-xs mt-1 leading-relaxed">
+                        Once approved by the admin, you will be able to log in and access all features of your {roleLabel} dashboard.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">Account Ready to Use</p>
+                      <p className="text-white/60 text-xs mt-1 leading-relaxed">
+                        Your patient account is active and ready. You can now log in to book appointments and manage your health records.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                      <ShieldCheck className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm">Secure & Private</p>
+                      <p className="text-white/60 text-xs mt-1 leading-relaxed">
+                        Your medical data is protected with enterprise-grade security. Your privacy is our top priority.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </motion.div>
+
+            {/* Progress Steps */}
+            {(() => {
+              const steps = isProvider ? [
+                { step: '1', label: 'Account Created', done: true },
+                { step: '2', label: 'Admin Review', done: false },
+                { step: '3', label: 'Verified & Active', done: false },
+              ] : [
+                { step: '1', label: 'Account Created', done: true },
+                { step: '2', label: 'Email Verified', done: true },
+                { step: '3', label: 'Ready to Use', done: true },
+              ];
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                  className="mt-6 grid grid-cols-3 gap-3"
+                >
+                  {steps.map((item) => (
+                    <div key={item.step} className={`rounded-xl p-3 border text-center ${
+                      item.done
+                        ? 'bg-emerald-500/20 border-emerald-400/40'
+                        : 'bg-white/5 border-white/10'
+                    }`}>
+                      <div className={`w-7 h-7 rounded-full mx-auto flex items-center justify-center text-xs font-black mb-1 ${
+                        item.done ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/50'
+                      }`}>
+                        {item.done ? <CheckCircle2 className="w-4 h-4" /> : item.step}
+                      </div>
+                      <p className={`text-[9px] font-bold uppercase tracking-wide ${
+                        item.done ? 'text-emerald-300' : 'text-white/40'
+                      }`}>{item.label}</p>
+                    </div>
+                  ))}
+                </motion.div>
+              );
+            })()}
+
+            {/* CTA Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1 }}
+              className="mt-8"
+            >
+              <Button
+                onClick={() => navigate('/login')}
+                className="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black uppercase tracking-widest text-sm shadow-xl shadow-emerald-500/30 transition-all hover:-translate-y-0.5"
+              >
+                {isProvider ? 'Proceed to Login' : 'Login to Your Account'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+              <p className="text-white/30 text-[10px] mt-4 font-medium">
+                © 2026 SehatKor Healthcare Network • All rights reserved
+              </p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-0 overflow-x-hidden">
@@ -1409,6 +1586,13 @@ const RegisterPage = () => {
                                       setCurrentFormValues(prev => ({ ...prev, role: values.role }));
                                       setFieldValue('name', data.profile.name);
                                       setFieldValue('email', data.profile.email);
+                                      // Also sync into currentFormValues so the Google validation schema can read name & email
+                                      setCurrentFormValues(prev => ({
+                                        ...prev,
+                                        name: data.profile.name,
+                                        email: data.profile.email,
+                                        role: values.role,
+                                      }));
                                       setShowGoogleAdditionalFields(true);
                                     } else {
                                       throw new Error(data.message || 'Google signup failed');
