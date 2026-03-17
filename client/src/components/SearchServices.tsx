@@ -645,7 +645,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
               <button
                 type="button"
                 onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
-                className="flex items-center gap-1 px-3 h-9 rounded-none border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition text-sm font-medium relative"
+                className="flex items-center gap-1 px-3 h-9 rounded-none border-0 bg-transparent text-gray-700 hover:bg-gray-50 transition text-sm font-medium relative"
                 title="Select Location"
               >
                 {/* Mobile: show only a pin icon; Desktop: chevron + label */}
@@ -728,7 +728,7 @@ const SearchServices = ({ hideCategory = false, hideLocationIcon = false, light 
             {/* Search Button */}
             <Button
               onClick={handleSearch}
-              className="h-9 sm:h-10 px-3 sm:px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-md transition-all duration-300 text-sm flex-none"
+              className="h-9 sm:h-10 px-3 sm:px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-none transition-all duration-300 text-sm flex-none"
             >
               <SearchIcon className="w-4 h-4 sm:mr-1" />
               <span className="hidden sm:inline">Search</span>

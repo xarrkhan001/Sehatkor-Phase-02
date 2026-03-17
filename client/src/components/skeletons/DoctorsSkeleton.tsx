@@ -6,7 +6,7 @@ const DoctorsSkeleton = () => {
       <Skeleton className="h-8 w-64" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="p-4 border rounded-xl bg-white space-y-3">
+          <div key={i} className="p-4 border border-gray-200 rounded-none bg-white space-y-3 shadow-sm">
             <Skeleton className="h-32 w-full" />
             <div className="flex items-center gap-3">
               <Skeleton className="h-10 w-10 rounded-full" />

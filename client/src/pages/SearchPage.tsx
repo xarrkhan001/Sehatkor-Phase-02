@@ -217,9 +217,13 @@ const SearchPage = () => {
 
   const [showFilters, setShowFilters] = useState(false);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [sidebarReady, setSidebarReady] = useState(false);
+
+  useEffect(() => {
+    setSidebarReady(true);
+  }, []);
 
   const [highlightedService, setHighlightedService] = useState<string | null>(null);
 
@@ -1917,7 +1921,7 @@ const SearchPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-100 relative">
+    <div className="min-h-screen bg-white relative">
       <SEO
         title={
           searchTerm
@@ -2120,70 +2124,35 @@ const SearchPage = () => {
         <div className="mb-6">
 
           <PageSearchHeader
-            title={
-              <span className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
-                Search Healthcare Services
-              </span>
-            }
+            layout="compact-right"
+            title="Search Services"
             subtitle="Find doctors, hospitals, labs, and pharmacies across Pakistan"
-            rightContent={
-              <div className="flex flex-col gap-1">
-                <span className="text-2xl md:text-3xl font-nastaliq text-blue-800" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
-                  صحت کی خدمات تلاش کریں
-                </span>
-                <span className="font-nastaliq text-slate-500 text-lg" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
-                  پاکستان بھر میں ڈاکٹرز، ہسپتال، لیز اور فارمیسی تلاش کریں
-                </span>
-              </div>
-            }
             label="Search services"
             placeholder="Search for services, providers, or treatments..."
             value={searchTerm}
             onChange={(v) => setSearchTerm(v)}
             resultsCount={filteredServices.length}
+            filterAction={
+              <Button
+                onClick={() => {
+                  setShowFilters(!showFilters);
+                  toggleSidebar();
+                }}
+                className="h-10 px-3 rounded-none bg-emerald-600 hover:bg-emerald-700 text-white border-0 text-xs font-medium flex items-center gap-2 shrink-0 transition-all duration-200"
+              >
+                <Filter className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Filters</span>
+              </Button>
+            }
           />
 
-          {/* Mobile: Filters toggle */}
 
-          <div className="flex justify-start mt-2 md:mt-3 lg:hidden">
-
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-
-              <Filter className="w-4 h-4 mr-2" />
-
-              Filters
-
-            </Button>
-
-          </div>
 
         </div>
 
 
 
-        {/* Desktop: Large Filters icon trigger (click to open/close) */}
 
-        <div className="hidden lg:flex items-center mb-3">
-
-          <button
-
-            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/95 shadow-sm px-4 py-2 text-gray-700 hover:border-primary hover:text-primary transition"
-
-            onClick={toggleSidebar}
-
-            aria-label="Toggle filters"
-
-            aria-pressed={isSidebarOpen}
-
-          >
-
-            <Filter className="w-5 h-5" />
-
-            <span className="font-medium">Filters</span>
-
-          </button>
-
-        </div>
 
 
 
@@ -3015,22 +2984,6 @@ const SearchPage = () => {
 
                     </Badge>
 
-                    <div className="text-sm text-gray-600">
-
-                      Showing {filteredServices.length} results
-
-                    </div>
-
-                  </div>
-
-                )}
-
-                {selectedServiceTypes.length === 0 && (
-
-                  <div className="text-sm text-gray-600">
-
-                    Showing all {filteredServices.length} services (no filter applied)
-
                   </div>
 
                 )}
@@ -3071,7 +3024,7 @@ const SearchPage = () => {
 
                     key={service.id}
 
-                    className={`h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 ${isHighlighted ? "ring-2 ring-primary" : ""
+                    className={`h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-200 hover:border-gray-300 transition-colors bg-white ${isHighlighted ? "ring-2 ring-primary" : ""
 
                       }`}
 
@@ -3081,7 +3034,7 @@ const SearchPage = () => {
 
                       {/* Image with Variant Slider (if any) */}
 
-                      <div className="relative w-full h-48 md:h-56 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-2">
+                      <div className="relative w-full h-48 md:h-56 bg-white rounded-none flex items-center justify-center overflow-hidden mb-2">
 
 
 

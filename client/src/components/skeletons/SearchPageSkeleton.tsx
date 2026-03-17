@@ -3,19 +3,16 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const SearchPageSkeleton = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
-        {/* Search Header Skeleton */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-6 w-32" />
-          </div>
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Skeleton className="h-10 w-full rounded-md" />
+        {/* Compact Header Skeleton */}
+        <div className="mb-6 rounded-none border-b border-emerald-50 bg-gradient-to-r from-emerald-50/20 to-white p-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-96 max-w-full" />
             </div>
-            <Skeleton className="h-10 w-20 lg:hidden" />
+            <Skeleton className="h-10 w-full md:w-96 rounded-none" />
           </div>
         </div>
 
@@ -41,8 +38,8 @@ const SearchPageSkeleton = () => {
           <div className="lg:col-span-3">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 9 }).map((_, i) => (
-                <Card key={i} className="shadow-md rounded-xl border border-gray-200 animate-pulse">
-                  <CardContent className="p-5">
+                <Card key={i} className="shadow-sm rounded-none border border-gray-200 animate-pulse bg-white">
+                  <CardContent className="p-3">
                     {/* Image */}
                     <Skeleton className="w-full h-40 rounded-lg mb-4" />
                     
