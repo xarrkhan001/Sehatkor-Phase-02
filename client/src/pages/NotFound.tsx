@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home, Search, ArrowLeft, Stethoscope } from "lucide-react";
+import { Home, Search, ArrowLeft, AlertTriangle } from "lucide-react";
 import SEO from "@/components/SEO";
 
 const NotFound = () => {
@@ -25,8 +25,8 @@ const NotFound = () => {
       <Card className="w-full max-w-md card-healthcare text-center">
         <CardContent className="p-8">
           <div className="mb-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-red-500 rounded-full mx-auto mb-4">
-              <Stethoscope className="w-8 h-8 text-white" />
+            <div className="flex items-center justify-center w-16 h-16 bg-emerald-500 rounded-full mx-auto mb-4">
+              <AlertTriangle className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-6xl font-bold text-primary mb-2">404</h1>
             <h2 className="text-2xl font-semibold mb-4">Page Not Found</h2>

@@ -311,8 +311,8 @@ const ContactPage = () => {
                 <div className="w-full p-8">
                   <CardHeader className="px-0 pt-0">
                     <div className="inline-flex items-center mb-2">
-                      <Stethoscope className="w-6 h-6 text-blue-600 mr-2" />
-                      <span className="text-blue-600 font-medium">Get in Touch</span>
+                      <MessageCircle className="w-6 h-6 text-emerald-600 mr-2" />
+                      <span className="text-emerald-600 font-medium">Get in Touch</span>
                     </div>
                     <CardTitle className="text-3xl font-bold text-gray-800">Send us a Message</CardTitle>
                     <CardDescription className="text-gray-600">

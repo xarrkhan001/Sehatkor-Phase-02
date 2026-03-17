@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { CreditCard, Smartphone, ArrowLeft, Stethoscope, MapPin, Phone, Clock, DollarSign, CheckCircle, User, Mail, ShieldCheck, Lock } from 'lucide-react';
+import { CreditCard, Smartphone, ArrowLeft, Stethoscope, MapPin, Phone, Clock, DollarSign, CheckCircle, User, Mail, ShieldCheck, Lock, Activity } from 'lucide-react';
 
 interface ServiceData {
   serviceId?: string; // optional for donations
@@ -172,8 +172,8 @@ const PaymentPage = () => {
         {/* Header: Title + Secure Badge + Steps */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
-              <Stethoscope className="w-7 h-7 text-white" />
+            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+              <CreditCard className="w-7 h-7 text-white" />
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">{isDonation ? 'Confirm Donation' : 'Confirm Booking'}</h1>
@@ -340,8 +340,8 @@ const PaymentPage = () => {
                     )}
                     <div className="space-y-4">
                       <div className="flex items-start space-x-3">
-                        <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <Stethoscope className="w-5 h-5 text-red-600" />
+                        <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Activity className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div className="flex-1">
                           <h3 className="font-bold text-lg text-gray-900 mb-1">{serviceData.serviceName}</h3>
