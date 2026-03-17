@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import SEO from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
 import ServiceManager from "@/lib/serviceManager";
@@ -417,24 +418,27 @@ const PharmaciesPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <div className="flex flex-col items-center text-center mb-6">
-              <h1 className="text-3xl font-bold mb-2">Find Pharmacies</h1>
-              <p className="text-lg text-gray-500 max-w-2xl">
-                Search from our network of pharmacies and medicine providers
-              </p>
-            </div>
-          </div>
-          <ServiceCardSkeleton count={6} />
+      <div className="min-h-screen bg-white">
+         {/* Compact Header Skeleton */}
+         <div className="mb-6 rounded-none border-b border-emerald-50 bg-gradient-to-r from-emerald-50/20 to-white p-4">
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto animate-pulse">
+             <div className="space-y-2 text-left">
+               <Skeleton className="h-8 w-64" />
+               <Skeleton className="h-4 w-96 max-w-full" />
+             </div>
+             <Skeleton className="h-10 w-full md:w-96 rounded-none" />
+           </div>
+         </div>
+
+        <div className="container mx-auto px-4 py-4">
+          <ServiceCardSkeleton count={8} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white">
       <SEO
         title={
           searchTerm
@@ -500,22 +504,9 @@ const PharmaciesPage = () => {
         {/* Header */}
         <div className="mb-6">
           <PageSearchHeader
-            title={
-              <span className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
-                Find Pharmacies
-              </span>
-            }
+            layout="compact-right"
+            title="Find Pharmacies"
             subtitle="Search from our network of pharmacies and medicine providers"
-            rightContent={
-              <div className="flex flex-col items-end">
-                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-blue-800 font-nastaliq leading-normal pb-2" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
-                  بہترین فارمیسی تلاش کریں
-                </h1>
-                <p className="mt-1 text-sm md:text-base text-slate-500 font-nastaliq text-right" style={{ fontFamily: '"Noto Nastaliq Urdu", serif' }}>
-                  آن لائن ادویات آرڈر کریں اور گھر منگوائیں
-                </p>
-              </div>
-            }
             label="Search pharmacies"
             placeholder="Search pharmacies by name, medicine, or location..."
             value={searchTerm}
@@ -529,11 +520,11 @@ const PharmaciesPage = () => {
           {filteredServices.map((service) => (
             <Card
               key={service.id}
-              className="h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-300 hover:border-gray-400 transition-colors bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200"
+              className="h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-200 rounded-none border border-gray-200 hover:border-blue-200 transition-colors bg-white"
             >
               <CardContent className="p-3 flex flex-col h-full">
                 {/* Image */}
-                <div className="w-full h-40 md:h-48 bg-gray-100 rounded-none flex items-center justify-center overflow-hidden mb-2 relative">
+                <div className="w-full h-40 md:h-48 bg-white rounded-none flex items-center justify-center overflow-hidden mb-2 relative">
                   {service.image ? (
                     <img
                       src={service.image}

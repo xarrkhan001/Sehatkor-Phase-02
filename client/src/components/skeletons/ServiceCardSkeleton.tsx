@@ -10,8 +10,8 @@ const ServiceCardSkeleton = ({ count = 8, className = "" }: ServiceCardSkeletonP
   return (
     <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-4 ${className}`}>
       {Array.from({ length: count }).map((_, i) => (
-        <Card key={i} className="shadow-md rounded-xl border border-gray-200 animate-pulse">
-          <CardContent className="p-5">
+        <Card key={i} className="shadow-sm rounded-none border border-gray-200 animate-pulse bg-white">
+          <CardContent className="p-3">
             {/* Image Skeleton */}
             <Skeleton className="w-full h-40 rounded-lg mb-4" />
             

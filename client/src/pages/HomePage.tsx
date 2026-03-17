@@ -87,61 +87,67 @@ const HomePage = () => {
       title: "Online Video Consultation",
       subtitle: "PMC Verified",
       link: "/doctors?type=video",
-      bg: "bg-sky-100",
-      text: "text-sky-900",
-      subText: "text-sky-700",
+      bg: "bg-gradient-to-br from-blue-100 to-indigo-200",
+      text: "text-blue-950",
+      subText: "text-blue-700",
       image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=400",
+      iconColor: "bg-blue-300/40"
     },
     {
       id: 2,
       title: "Book Clinic Appointment",
       subtitle: "Book Appointment",
       link: "/doctors",
-      bg: "bg-orange-100",
-      text: "text-orange-900",
+      bg: "bg-gradient-to-br from-amber-100 to-orange-200",
+      text: "text-orange-950",
       subText: "text-orange-700",
       image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400&h=400",
+      iconColor: "bg-orange-300/40"
     },
     {
       id: 3,
       title: "Get Instant Doctor",
       subtitle: "One Click Relief",
       link: "/doctors",
-      bg: "bg-emerald-100",
-      text: "text-emerald-900",
+      bg: "bg-gradient-to-br from-emerald-100 to-teal-200",
+      text: "text-emerald-950",
       subText: "text-emerald-700",
       image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400&h=400",
-      hasBadge: true
+      hasBadge: true,
+      iconColor: "bg-emerald-300/40"
     },
     {
       id: 4,
       title: "Weight Loss",
       subtitle: "Healthy Life",
       link: "/weight-loss",
-      bg: "bg-yellow-100",
-      text: "text-yellow-900",
-      subText: "text-yellow-700",
+      bg: "bg-gradient-to-br from-lime-100 to-green-200",
+      text: "text-green-950",
+      subText: "text-green-700",
       image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=300&h=300",
+      iconColor: "bg-green-300/40"
     },
     {
       id: 5,
       title: "Lab Tests",
       subtitle: "Home Sample",
       link: "/labs",
-      bg: "bg-blue-100",
-      text: "text-blue-900",
-      subText: "text-blue-700",
-      image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=300&h=300",
+      bg: "bg-gradient-to-br from-violet-100 to-purple-200",
+      text: "text-violet-950",
+      subText: "text-violet-700",
+      image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&get=80&w=300&h=300",
+      iconColor: "bg-violet-300/40"
     },
     {
       id: 6,
       title: "Buy Medicine Online",
       subtitle: "Genuine Medicines",
       link: "/pharmacies",
-      bg: "bg-pink-100",
-      text: "text-pink-900",
-      subText: "text-pink-700",
+      bg: "bg-gradient-to-br from-cyan-100 to-sky-200",
+      text: "text-cyan-950",
+      subText: "text-cyan-700",
       image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=300&h=300",
+      iconColor: "bg-cyan-300/40"
     }
   ];
 
@@ -237,7 +243,7 @@ const HomePage = () => {
   const diseaseIntro = popularDiseases;
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <SEO
         title="Sehatkor - Pakistan's #1 Healthcare Platform | Online Doctor Pakistan"
         description="Pakistan's trusted healthcare platform. Book verified doctors, home lab tests, and medicines online in Karachi, Lahore, Islamabad. Your health, our priority."
@@ -263,8 +269,8 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="relative pt-16 md:pt-20 pb-8 md:pb-12 lg:pt-24 lg:pb-16 overflow-visible">
         {/* BACKGROUND */}
-        <div className="absolute inset-0 bg-gray-100 z-0 rounded-b-[2rem] lg:rounded-b-[3rem] shadow-sm overflow-hidden">
-          <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-white/60 rounded-full blur-[120px]"></div>
+        <div className="absolute inset-0 bg-white z-0 rounded-b-[2rem] lg:rounded-b-[3rem] overflow-hidden">
+          <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-emerald-50/10 rounded-full blur-[120px]"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -314,92 +320,105 @@ const HomePage = () => {
                 </span>
               </div>
 
-              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight pt-2 md:pt-0 mb-1 md:mb-3">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight pt-8 md:pt-0 mb-5 md:mb-2">
                 Health Issues? <span className="text-emerald-600">We Have The Solution!</span>
               </h1>
+
+              {/* Supporting Tagline - Hidden on Mobile */}
+              <p className="hidden md:block text-center text-[14px] text-gray-500 mb-6 px-4 font-normal tracking-wide opacity-90 mx-auto max-w-2xl">
+                Connecting you with top medical specialists, online consultations, and trusted healthcare services across Pakistan.
+              </p>
 
               {/* Search Bar Block */}
               <SearchServices
                 hideCategory
                 hideLocationIcon
-                className="!bg-gray-100 !p-1 !rounded-none !shadow-xl !border !border-gray-400 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]"
+                className="!bg-white !p-1 !rounded-none !shadow-[0_4px_20px_rgba(0,0,0,0.05)] !border !border-gray-300 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]"
               />
             </div>
 
             {/* Bento Grid Layout - Mobile: Marham Style (Video left 2cols, 2 cards right 3cols), Desktop: Bento Grid */}
-            <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-4 pt-2 md:pt-0">
+            <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-3 pt-2 md:pt-0">
               {/* Video Consultation - Left side, spans 2 rows on mobile, 2 columns wide */}
               <Link
                 to={heroCards[0].link}
-                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[0].bg} 
-                  col-span-2 row-span-2 h-auto md:col-span-3 md:row-span-2 md:h-full`}
+                className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${heroCards[0].bg} 
+                  col-span-2 row-span-2 h-auto md:col-span-3 md:row-span-2 md:h-full group`}
               >
-                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[65%]">
-                  <h3 className={`font-black text-sm md:text-2xl ${heroCards[0].text} mb-0.5 md:mb-1 leading-tight`}>
+                {/* Decorative Elements - Subtle Tints */}
+                <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
+                
+                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-full">
+                  <div className={`w-7 h-7 md:w-10 md:h-10 rounded-xl ${heroCards[0].iconColor} flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform`}>
+                    <Phone className="w-3.5 h-3.5 md:w-5 md:h-5 text-blue-600" />
+                  </div>
+                  <h3 className={`font-black text-[12px] md:text-xl ${heroCards[0].text} mb-0.5 leading-tight max-w-[80%]`}>
                     {heroCards[0].title}
                   </h3>
-                  <p className={`font-bold text-[10px] md:text-sm ${heroCards[0].subText} mb-2 md:mb-4`}>
+                  <p className={`font-bold text-[9px] md:text-xs ${heroCards[0].subText}`}>
                     {heroCards[0].subtitle}
                   </p>
                 </div>
                 <img
                   src={heroCards[0].image}
                   alt={heroCards[0].title}
-                  className="absolute bottom-2 right-2 w-20 h-20 md:right-1/2 md:translate-x-1/2 md:bottom-4 md:w-40 md:h-40 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                  className="absolute bottom-1.5 right-1.5 w-16 h-16 md:right-4 md:bottom-4 md:w-32 md:h-32 object-cover rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
               </Link>
 
               {/* Clinic Visit - Right side, top, 3 columns wide */}
               <Link
                 to={heroCards[1].link}
-                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[1].bg} 
-                  col-span-3 h-24 md:col-span-4 md:h-36`}
+                className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${heroCards[1].bg} 
+                  col-span-3 h-24 md:col-span-4 md:h-[135px]`}
               >
-                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[65%]">
-                  <h3 className={`font-black text-sm md:text-2xl ${heroCards[1].text} mb-0.5 md:mb-1 leading-tight`}>
-                    {heroCards[1].title}
+                <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
+                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full">
+                  <h3 className={`font-black text-[12px] md:text-xl ${heroCards[1].text} mb-0.5 leading-tight max-w-[65%]`}>
+                    Book Clinic <br /> Appointment
                   </h3>
-                  <p className={`font-bold text-[10px] md:text-sm ${heroCards[1].subText} mb-1 md:mb-4`}>
+                  <p className={`font-bold text-[9px] md:text-xs ${heroCards[1].subText}`}>
                     {heroCards[1].subtitle}
                   </p>
                 </div>
                 <img
                   src={heroCards[1].image}
                   alt={heroCards[1].title}
-                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-28 md:h-28 object-cover rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
               </Link>
 
               {/* Instant Doctor - Right side, bottom, 3 columns wide */}
               <Link
                 to={heroCards[2].link}
-                className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${heroCards[2].bg} 
-                  col-span-3 h-24 md:col-span-5 md:h-36`}
+                className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${heroCards[2].bg} 
+                  col-span-3 h-24 md:col-span-5 md:h-[135px]`}
               >
-                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[65%]">
-                  <h3 className={`font-black text-sm md:text-2xl ${heroCards[2].text} mb-0.5 md:mb-1 leading-tight`}>
+                <div className="absolute -left-6 -top-6 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl group-hover:rotate-180 transition-transform duration-1000"></div>
+                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full">
+                  <h3 className={`font-black text-[12px] md:text-xl ${heroCards[2].text} mb-0.5 leading-tight max-w-[75%]`}>
                     {heroCards[2].title}
                   </h3>
-                  <p className={`font-bold text-[10px] md:text-sm ${heroCards[2].subText} mb-1 md:mb-4`}>
-                    {heroCards[2].subtitle}
-                  </p>
-                  {heroCards[2].hasBadge && (
-                    <Badge className="bg-red-500 hover:bg-red-600 text-white border-none animate-pulse text-[9px] px-1.5 py-0.5 md:text-xs md:px-2 md:py-1">
-                      NEW
-                    </Badge>
-                  )}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className={`font-bold text-[9px] md:text-xs ${heroCards[2].subText}`}>
+                      {heroCards[2].subtitle}
+                    </p>
+                    {heroCards[2].hasBadge && (
+                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[7px] px-1 py-0 md:text-[9px] md:px-1.5 md:py-0 font-black uppercase">
+                        NEW
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <img
                   src={heroCards[2].image}
                   alt={heroCards[2].title}
-                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-28 md:h-28 object-cover rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
               </Link>
 
               {/* Remaining cards - Alternating widths, last card full width */}
@@ -407,24 +426,24 @@ const HomePage = () => {
                 <Link
                   to={card.link}
                   key={card.id}
-                  className={`relative group overflow-hidden rounded-xl md:rounded-2xl shadow-lg border border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${card.bg} 
-                    ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-24 md:col-span-3 md:h-36`}
+                  className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${card.bg} 
+                    ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-24 md:col-span-3 md:h-[135px]`}
                 >
-                  <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-[60%]">
-                    <h3 className={`font-black text-sm md:text-2xl ${card.text} mb-0.5 md:mb-1 leading-tight`}>
+                  <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-gray-500/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                  <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full">
+                    <h3 className={`font-black text-[11px] md:text-lg ${card.text} mb-0.5 leading-tight max-w-[70%]`}>
                       {card.title}
                     </h3>
-                    <p className={`font-bold text-[10px] md:text-sm ${card.subText} mb-1 md:mb-4`}>
+                    <p className={`font-bold text-[8px] md:text-[10px] ${card.subText}`}>
                       {card.subtitle}
                     </p>
                   </div>
                   <img
                     src={card.image}
                     alt={card.title}
-                    className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-32 md:h-32 object-cover rounded-full border-2 md:border-4 border-white shadow-lg transition-transform duration-500 group-hover:scale-105"
+                    className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-3 md:w-24 md:h-24 object-cover rounded-full border-[3px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/10 pointer-events-none"></div>
                 </Link>
               ))}
             </div>

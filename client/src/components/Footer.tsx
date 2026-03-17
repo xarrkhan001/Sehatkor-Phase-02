@@ -66,7 +66,7 @@ const Footer = () => {
               <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-lg overflow-hidden">
                 <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">SehatKor</span>
+              <span className="text-2xl font-bold tracking-wide bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent uppercase">SEHATKOR</span>
             </div>
             <p className="text-gray-300 leading-relaxed mb-6">
               Pakistan's trusted healthcare platform connecting patients with quality medical services.

@@ -17,21 +17,21 @@ import { Switch } from "@/components/ui/switch";
 import {
   Menu,
   X,
-  Stethoscope,
+  Activity,
   Home,
   Globe,
-  Grid3X3,
+  LayoutGrid,
   UserPlus,
   LogIn,
-  BookOpen,
-  Phone,
+  Newspaper,
+  Headset,
   LayoutDashboard,
   LogOut,
   User,
-  Hospital,
-  FlaskConical,
-  Pill,
-  UserCircle,
+  Building2,
+  Microscope,
+  Tablets,
+  UserRound,
   BadgeCheck,
   Repeat,
   ChevronDown,
@@ -39,6 +39,7 @@ import {
   HelpCircle,
   FileText,
   Shield,
+  Briefcase,
   ChevronRight,
   Info
 } from "lucide-react";
@@ -144,18 +145,18 @@ const Navbar = () => {
   };
 
   const allNavItems = [
-    { name: "Overview", href: "/", icon: Home, color: "text-blue-600" },
-    { name: "مرکزی صفحہ", href: "/urdu", icon: Globe, color: "text-blue-600" },
-    { name: "Services", href: "/search", icon: Grid3X3, color: "text-purple-600" },
-    { name: "Doctors", href: "/doctors", icon: UserCircle, color: "text-green-600" },
-    { name: "Hospitals", href: "/hospitals", icon: Hospital, color: "text-red-600" },
-    { name: "Labs", href: "/labs", icon: FlaskConical, color: "text-orange-600" },
-    { name: "Pharmacies", href: "/pharmacies", icon: Pill, color: "text-teal-600" },
-    { name: "About", href: "/about", icon: BadgeCheck, color: "text-blue-500" },
-    { name: "Blog", href: "/blog", icon: BookOpen, color: "text-indigo-600" },
-    { name: "Contact", href: "/contact", icon: Phone, color: "text-emerald-600" },
+    { name: "Overview", href: "/", icon: Home, color: "text-blue-500" },
+    { name: "مرکزی صفحہ", href: "/urdu", icon: Globe, color: "text-blue-500" },
+    { name: "Services", href: "/search", icon: LayoutGrid, color: "text-emerald-500" },
+    { name: "Doctors", href: "/doctors", icon: UserRound, color: "text-emerald-500" },
+    { name: "Hospitals", href: "/hospitals", icon: Building2, color: "text-emerald-500" },
+    { name: "Labs", href: "/labs", icon: Microscope, color: "text-emerald-500" },
+    { name: "Pharmacies", href: "/pharmacies", icon: Tablets, color: "text-emerald-500" },
+    { name: "About", href: "/about", icon: Info, color: "text-gray-500" },
+    { name: "Blog", href: "/blog", icon: Newspaper, color: "text-emerald-500" },
+    { name: "Contact", href: "/contact", icon: Headset, color: "text-emerald-500" },
     { name: "Dashboard", href: getDashboardPath(), icon: LayoutDashboard, color: "text-slate-600", requiresAuth: true },
-    { name: "Developers", href: "/developers", icon: User, color: "text-purple-600" },
+    { name: "Developers", href: "/developers", icon: Briefcase, color: "text-gray-500" },
   ];
 
   const navItems = allNavItems.filter(item => {
@@ -174,35 +175,39 @@ const Navbar = () => {
   return (
     <nav
       dir="ltr"
-      className={`${location.pathname === '/' ? 'fixed' : 'sticky'} top-0 z-50 w-full border-b overflow-visible transition-all duration-300 ${location.pathname === '/' && isScrolled
-        ? 'bg-gray-50/40 backdrop-blur-xl shadow-xl border-gray-100/40'
-        : 'bg-gray-50/70 backdrop-blur-md shadow-sm border-gray-100/60'
+      className={`${location.pathname === '/' ? 'fixed' : 'sticky'} top-0 z-50 w-full border-b border-gray-100 transition-all duration-300 ${location.pathname === '/' && !isScrolled
+        ? 'bg-white/95 backdrop-blur-md'
+        : 'bg-white shadow-none'
         }`}
     >
       <div className="container mx-auto px-4 relative">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-xl shadow-sm group-hover:shadow-emerald-100 group-hover:scale-105 transition-all duration-300 overflow-hidden">
-              <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-cover" />
+            <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-sm group-hover:shadow-emerald-100 group-hover:scale-105 transition-all duration-300 overflow-hidden border border-emerald-50">
+              <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-contain p-1" />
             </div>
-            <span className="text-xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
+            <span className="text-xl font-bold tracking-wide bg-gradient-to-r from-emerald-700 to-teal-800 bg-clip-text text-transparent uppercase">SEHATKOR</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            {navItems.filter(item => !['مرکزی صفحہ', 'Developers', 'Blog', 'Contact', 'Dashboard'].includes(item.name)).map((item) => {
+          <div className="hidden md:flex items-center space-x-1 ml-4">
+            {navItems.filter(item => {
+              const excluded = ['مرکزی صفحہ', 'Developers', 'Contact', 'Dashboard'];
+              if (!user) excluded.push('Blog');
+              return !excluded.includes(item.name);
+            }).map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 ${isActive(item.href)
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200"
-                    : "text-gray-800 hover:text-gray-900 hover:bg-gray-100"
+                  className={`group flex items-center space-x-1.5 px-2.5 py-2 rounded-lg text-sm md:text-[14px] font-normal transition-all duration-300 ${isActive(item.href)
+                    ? "bg-emerald-50 text-emerald-800 border border-emerald-100/50 font-medium"
+                    : "text-emerald-900/90 hover:text-emerald-600 hover:bg-emerald-50/30"
                     }`}
                 >
-                  <Icon className={`w-4 h-4 transition-all duration-300 ${isActive(item.href) ? "text-white" : `${item.color} group-hover:text-emerald-500`}`} />
+                  <Icon className={`w-4 h-4 transition-all duration-300 ${isActive(item.href) ? "text-emerald-600" : `${item.color} group-hover:text-emerald-500`}`} />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -211,8 +216,8 @@ const Navbar = () => {
             {/* Locations Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="group flex items-center space-x-2 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 hover:scale-105 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50/50">
-                  <MapPin className="w-4 h-4 text-emerald-500" />
+                <button className="group flex items-center space-x-1.5 px-2.5 py-2 rounded-lg text-sm md:text-[14px] font-normal transition-all duration-300 text-emerald-900/90 hover:text-emerald-600 hover:bg-emerald-50/30">
+                  <MapPin className="w-4 h-4 text-emerald-500/80" />
                   <span>Locations</span>
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:rotate-180 transition-transform" />
                 </button>
@@ -243,8 +248,8 @@ const Navbar = () => {
             {/* Information Dropdown */}
             <DropdownMenu open={isInfoDropdownOpen} onOpenChange={setIsInfoDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <button className="group flex items-center space-x-1 px-2.5 py-2 rounded-xl transition-all duration-300 hover:scale-105 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50/50">
-                  <BadgeCheck className="w-5 h-5 text-emerald-500" />
+                <button className="group flex items-center space-x-1 px-2 py-1.5 rounded-lg transition-all duration-300 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50/30">
+                  <BadgeCheck className="w-4.5 h-4.5 text-emerald-500/80" />
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:rotate-180 transition-transform" />
                 </button>
               </DropdownMenuTrigger>
@@ -257,7 +262,7 @@ const Navbar = () => {
                   </div>
                 </Link>
                 <DropdownMenuSeparator className="bg-gray-100" />
-                {['About', 'Blog', 'Contact', 'Developers'].map(name => {
+                {['About', !user ? 'Blog' : '', 'Contact', 'Developers'].filter(Boolean).map(name => {
                   const itm = allNavItems.find(i => i.name === name);
                   if (!itm) return null;
                   return (
@@ -322,14 +327,14 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-1.5">
                 <Link to="/register">
-                  <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-5 py-2 rounded-xl font-bold uppercase text-xs tracking-widest transition-all">
+                  <Button variant="outline" className="h-9 border-2 border-emerald-500 bg-white text-emerald-600 hover:bg-emerald-50 px-5 rounded-lg font-black uppercase text-[10px] tracking-widest transition-all">
                     Register
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl font-bold uppercase text-xs tracking-widest transition-all">
+                  <Button className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white px-5 rounded-lg font-medium uppercase text-[10px] tracking-widest transition-all">
                     Login
                   </Button>
                 </Link>
@@ -357,10 +362,10 @@ const Navbar = () => {
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2">
-                <div className="flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-xl shadow-md overflow-hidden">
-                  <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-cover" />
+                <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50">
+                  <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-contain p-1" />
                 </div>
-                <span className="text-xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
+                <span className="text-xl font-bold tracking-wide bg-gradient-to-r from-emerald-700 to-teal-800 bg-clip-text text-transparent uppercase">SEHATKOR</span>
               </Link>
               <Button variant="ghost" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full w-10 h-10 p-0 hover:bg-red-50 text-gray-400 hover:text-red-500">
                 <X className="w-6 h-6" />
@@ -412,16 +417,16 @@ const Navbar = () => {
                   <Link
                     to="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-3 bg-white border-2 border-emerald-200 rounded-2xl text-emerald-700 shadow-sm"
+                    className="flex items-center justify-between px-4 py-3 bg-white border-2 border-emerald-500 rounded-2xl text-emerald-700 shadow-sm"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center"><UserPlus className="w-4 h-4 text-emerald-600" /></div>
                       <div>
                         <span className="block font-black uppercase text-xs tracking-widest">Create Account</span>
-                        <span className="text-[10px] text-gray-500">Register as patient or provider</span>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-tighter">Register as patient or provider</span>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-emerald-400" />
+                    <ChevronRight className="w-5 h-5 text-emerald-500" />
                   </Link>
                 </div>
               )}
