@@ -43,6 +43,7 @@ import {
   Info
 } from "lucide-react";
 import { apiUrl } from '@/config/api';
+import logoNew from '@/assets/logo-new.png';
 
 const Navbar = () => {
   const { user, logout, mode, toggleMode } = useAuth();
@@ -182,8 +183,8 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg group-hover:shadow-emerald-200 group-hover:scale-105 transition-all duration-300">
-              <Stethoscope className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-xl shadow-sm group-hover:shadow-emerald-100 group-hover:scale-105 transition-all duration-300 overflow-hidden">
+              <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
           </Link>
@@ -356,8 +357,8 @@ const Navbar = () => {
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-2">
-                <div className="flex items-center justify-center w-10 h-10 bg-emerald-500 rounded-xl text-white shadow-lg">
-                  <Stethoscope className="w-6 h-6" />
+                <div className="flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-xl shadow-md overflow-hidden">
+                  <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SehatKor</span>
               </Link>

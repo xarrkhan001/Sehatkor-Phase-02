@@ -25,7 +25,8 @@ import {
     Star,
     Smartphone,
     MapPin,
-    ChevronDown
+    ChevronDown,
+    UserCheck
 } from "lucide-react";
 
 // Animations
@@ -142,7 +143,7 @@ const UrduHomePage = () => {
 
     const stats = [
         { number: "50K+", label: "مطمئن مریض", icon: UserPlus, color: "text-blue-600", bg: "bg-blue-100" },
-        { number: "3K+", label: "مستند ڈاکٹرز", icon: Stethoscope, color: "text-emerald-600", bg: "bg-emerald-100" },
+        { number: "3K+", label: "مستند ڈاکٹرز", icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-100" },
         { number: "24/7", label: "فوری سروس", icon: Activity, color: "text-indigo-600", bg: "bg-indigo-100" },
         { number: "100%", label: "محفوظ ڈیٹا", icon: ShieldCheck, color: "text-rose-600", bg: "bg-rose-100" }
     ];

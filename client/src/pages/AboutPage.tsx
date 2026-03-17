@@ -117,7 +117,7 @@ const AboutPage = () => {
 
   const services = [
     {
-      icon: Stethoscope,
+      icon: UserCheck,
       title: "Medical Consultations",
       description: "Connect with qualified doctors for consultations, treatments, and medical advice",
       types: ["Online Consultations", "Physical Appointments", "Specialist Treatments", "Emergency Care"],
@@ -189,7 +189,7 @@ const AboutPage = () => {
             Pakistan's Premier Healthcare Platform
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">SehatKor</span>
+            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">SehatKor</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
             Revolutionizing healthcare delivery in Pakistan through innovative technology, connecting patients with verified healthcare providers for seamless, secure, and affordable medical services.

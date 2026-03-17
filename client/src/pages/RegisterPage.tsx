@@ -46,6 +46,7 @@ import {
   Plus
 } from "lucide-react";
 import SEO from "@/components/SEO";
+import logoNew from '@/assets/logo-new.png';
 
 // Validation Schema
 const getValidationSchema = (role: string) => {
@@ -1111,8 +1112,8 @@ const RegisterPage = () => {
 
           <div className="relative z-10">
             <Link to="/" className="flex items-center space-x-3 mb-16 group">
-              <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
-                <Stethoscope className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden">
+                <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-cover" />
               </div>
               <span className="text-2xl font-black tracking-tighter uppercase italic">SehatKor</span>
             </Link>
@@ -1177,8 +1178,8 @@ const RegisterPage = () => {
             {/* Mobile Logo */}
             <div className="lg:hidden flex justify-center mb-10">
               <Link to="/" className="flex items-center space-x-2">
-                <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
-                  <Stethoscope className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                  <img src={logoNew} alt="SehatKor Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-2xl font-black tracking-tighter uppercase italic text-emerald-950">SehatKor</span>
               </Link>
