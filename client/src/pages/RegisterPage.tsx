@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,7 @@ import {
   Plus
 } from "lucide-react";
 import SEO from "@/components/SEO";
+import PageLoader from "@/components/PageLoader";
 import logoNew from '@/assets/logo-new.png';
 
 // Validation Schema
@@ -262,6 +263,12 @@ const RegisterPage = () => {
   const [googleErrors, setGoogleErrors] = useState<Record<string, string>>({});
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [successRole, setSuccessRole] = useState<string>('');
+  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const roles = [
     { value: "patient", label: "Patient", icon: User, description: "Book appointments and manage health records", gradient: "from-blue-500 to-cyan-500", bgColor: "bg-blue-50", iconColor: "text-blue-600" },
@@ -916,6 +923,8 @@ const RegisterPage = () => {
       return next;
     });
   };
+
+  if (isPageLoading) return <PageLoader />;
 
   // SUCCESS SCREEN
   if (showSuccessScreen) {

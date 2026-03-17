@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,18 +17,21 @@ import {
     Linkedin,
     Briefcase,
     Award,
-    MapPin
+    MapPin,
+    ShieldCheck,
+    Zap
 } from "lucide-react";
+import PageLoader from "@/components/PageLoader";
 
 const DevelopersPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 800);
+        const timer = setTimeout(() => setIsLoading(false), 1000);
         return () => clearTimeout(timer);
     }, []);
+
+    if (isLoading) return <PageLoader />;
 
     // Enhanced structured data for developers
     const jsonLd = {
@@ -293,115 +297,186 @@ const DevelopersPage = () => {
                 image="https://sehatkor.pk/developers-og-image.jpg"
             />
 
-            {/* Hero Section */}
-            <section className="relative bg-gradient-to-br from-white via-blue-50/50 to-white overflow-hidden py-20 lg:py-24">
-                <div className="absolute inset-0 opacity-20">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#3b82f6_0.03,transparent_50%)]"></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,#8b5cf6_0.03,transparent_50%)]"></div>
+            {/* Professional Hero Section */}
+            <section className="relative overflow-hidden pt-16 pb-20 lg:pt-24 lg:pb-32">
+                {/* Modern Fluid Background */}
+                <div className="absolute inset-0 -z-10 bg-white">
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50/50 rounded-full blur-[120px] -mr-48 -mt-24"></div>
+                    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-teal-50/40 rounded-full blur-[130px] -ml-64 -mb-32"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
                 </div>
 
-                <div className="relative container mx-auto px-6">
-                    <div className="max-w-5xl mx-auto text-center">
-                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-8 shadow-lg">
-                            <Users className="w-4 h-4" />
-                            Meet Our Development Team
-                        </div>
+                <div className="container mx-auto px-6 relative">
+                    <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                        {/* Left Content - Text & Branding */}
+                        <div className="flex-1 text-left">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6 }}
+                                className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-sm font-bold mb-6 shadow-sm"
+                            >
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                                ASH Cloud Engineering Team
+                            </motion.div>
 
-                        <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                            The <span className="text-blue-600">Brilliant Minds</span> Behind <span className="text-blue-600">Sehatkor.pk</span>
-                        </h1>
+                            <motion.h1 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.1 }}
+                                className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1]"
+                            >
+                                Designing the <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">Future of Healthcare</span>
+                            </motion.h1>
 
-                        <p className="text-lg lg:text-xl text-gray-600 font-medium mb-8 max-w-3xl mx-auto">
-                            Expert full-stack developers from ASH Cloud who built Pakistan's innovative healthcare platform.
-                            Comprehensive expertise across web applications, mobile apps, desktop software, AI solutions,
-                            cloud computing, and database systems for healthcare, e-commerce, enterprise, and custom business applications.
-                        </p>
+                            <motion.p 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                                className="text-lg lg:text-xl text-slate-600 font-medium mb-10 max-w-2xl leading-relaxed"
+                            >
+                                Meet the architects behind <span className="text-emerald-600 font-bold">Sehatkor.pk</span>. We bridge the gap between complex medical systems and seamless user experiences through high-performance engineering.
+                            </motion.p>
 
-                        <div className="flex flex-wrap justify-center gap-2 mb-8">
-                            {["Full Stack", "Web & Mobile", "AI & Cloud", "All Platforms"].map((keyword) => (
-                                <span key={keyword} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-                                    {keyword}
-                                </span>
-                            ))}
-                        </div>
-
-                        {/* Quick Stats */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                            {[
-                                { label: "Projects Completed", value: "50+", icon: Code },
-                                { label: "Technologies", value: "22+", icon: Brain },
-                                { label: "Years Experience", value: "5+", icon: Award },
-                                { label: "Happy Clients", value: "100+", icon: Users }
-                            ].map((stat, index) => {
-                                const Icon = stat.icon;
-                                return (
-                                    <div key={index} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                                        <div className="flex items-center justify-center w-10 h-10 bg-blue-50 rounded-lg mb-3">
-                                            <Icon className="w-5 h-5 text-blue-600" />
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.3 }}
+                                className="flex flex-wrap gap-4"
+                            >
+                                <Button 
+                                    size="lg" 
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 py-6 text-md font-bold shadow-xl shadow-emerald-200/50 transition-all hover:-translate-y-1"
+                                    onClick={() => document.getElementById('developers')?.scrollIntoView({ behavior: 'smooth' })}
+                                >
+                                    Meet the Developers
+                                </Button>
+                                <div className="flex -space-x-4">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center overflow-hidden">
+                                            <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="avatar" className="w-full h-full object-cover grayscale" />
                                         </div>
-                                        <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                                        <div className="text-xs text-gray-600">{stat.label}</div>
+                                    ))}
+                                    <div className="w-12 h-12 rounded-full border-4 border-white bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+                                        +50
                                     </div>
-                                );
-                            })}
+                                </div>
+                            </motion.div>
                         </div>
+
+                        {/* Right Content - Modern Stats Component */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="flex-1 w-full lg:max-w-md"
+                        >
+                            <div className="relative">
+                                {/* Floating Background Shapes */}
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-200/30 rounded-full blur-2xl"></div>
+                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-200/30 rounded-full blur-3xl"></div>
+
+                                <div className="grid grid-cols-2 gap-4 relative z-10">
+                                    {[
+                                        { label: "High Performance", value: "99.9%", sub: "System Uptime", icon: Zap, color: "text-amber-500", bg: "bg-amber-50" },
+                                        { label: "Secure Data", value: "100%", sub: "Encryption", icon: ShieldCheck, color: "text-blue-500", bg: "bg-blue-50" },
+                                        { label: "Projects Done", value: "50+", sub: "Successful Delivery", icon: Code, color: "text-emerald-500", bg: "bg-emerald-50" },
+                                        { label: "Expert Support", value: "24/7", sub: "Member Access", icon: Users, color: "text-purple-500", bg: "bg-purple-50" }
+                                    ].map((stat, i) => {
+                                        const Icon = stat.icon;
+                                        return (
+                                            <motion.div 
+                                                key={i}
+                                                whileHover={{ y: -5 }}
+                                                className="bg-white/80 backdrop-blur-md p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300"
+                                            >
+                                                <div className={`w-12 h-12 ${stat.bg} rounded-2xl flex items-center justify-center mb-4`}>
+                                                    <Icon className={`w-6 h-6 ${stat.color}`} />
+                                                </div>
+                                                <div className="text-2xl font-black text-slate-900 leading-none mb-1">{stat.value}</div>
+                                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">{stat.label}</div>
+                                                <div className="text-[10px] text-slate-400 font-medium">{stat.sub}</div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>
 
             {/* ASH Cloud Company Section */}
-            <section className="py-16">
+            <section className="py-20 lg:py-28 relative overflow-hidden">
                 <div className="container mx-auto px-6">
                     <div className="max-w-6xl mx-auto">
-                        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 lg:p-12 border border-blue-100">
-                            <div className="text-center mb-8">
-                                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">ASH Cloud</h2>
-                                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                                    Leading software development company in Pakistan, specializing in healthcare solutions
-                                    and innovative digital technologies.
+                        <div className="bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/50 rounded-[3rem] p-8 lg:p-16 border border-emerald-100 shadow-sm relative overflow-hidden">
+                            {/* Decorative Pattern Overlay */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                            
+                            <div className="text-center mb-16 relative z-10">
+                                <h2 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6">ASH Cloud</h2>
+                                <p className="text-lg lg:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                                    A premier software engineering firm in Pakistan, driving digital excellence 
+                                    through <span className="text-emerald-600 font-bold">healthcare innovation</span> and state-of-the-art technology solutions.
                                 </p>
                             </div>
 
-                            <div className="grid lg:grid-cols-2 gap-8 items-center">
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-6">Our Expertise</h3>
-                                    <div className="space-y-4">
+                            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
+                                <div className="space-y-10">
+                                    <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                                        <div className="w-2 h-8 bg-emerald-500 rounded-full"></div>
+                                        Core Expertise
+                                    </h3>
+                                    <div className="space-y-6">
                                         {[
-                                            { icon: Globe, title: "Web Applications", desc: "Modern, responsive web apps using latest technologies" },
-                                            { icon: Smartphone, title: "Mobile Development", desc: "Native and cross-platform mobile solutions" },
-                                            { icon: Database, title: "Backend Systems", desc: "Scalable server architecture and database design" },
-                                            { icon: Brain, title: "AI Integration", desc: "Smart solutions with artificial intelligence" }
+                                            { icon: Globe, title: "Next-Gen Web Apps", desc: "Ultra-fast, SEO-optimized medical platforms using React & Next.js", color: "text-emerald-600", bg: "bg-emerald-100/50" },
+                                            { icon: Smartphone, title: "Mobile Ecosystems", desc: "Patient-centric iOS and Android apps with React Native", color: "text-teal-600", bg: "bg-teal-100/50" },
+                                            { icon: Database, title: "Secure Infrastructure", desc: "HIPAA-compliant backend architectures and cloud systems", color: "text-cyan-600", bg: "bg-cyan-100/50" },
+                                            { icon: Brain, title: "AI-Driven Health", desc: "Intelligent diagnostic tools and automated healthcare logic", color: "text-emerald-700", bg: "bg-emerald-200/40" }
                                         ].map((service, i) => {
                                             const Icon = service.icon;
                                             return (
-                                                <div key={i} className="flex items-start gap-3">
-                                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                        <Icon className="w-5 h-5 text-blue-600" />
+                                                <motion.div 
+                                                    key={i} 
+                                                    whileHover={{ x: 10 }}
+                                                    className="flex items-start gap-5 p-4 rounded-2xl hover:bg-white/60 transition-all cursor-default"
+                                                >
+                                                    <div className={`w-14 h-14 ${service.bg} rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                                                        <Icon className={`w-7 h-7 ${service.color}`} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-semibold text-gray-900">{service.title}</h4>
-                                                        <p className="text-sm text-gray-600">{service.desc}</p>
+                                                        <h4 className="text-lg font-bold text-slate-900 mb-1">{service.title}</h4>
+                                                        <p className="text-sm text-slate-500 leading-relaxed font-medium">{service.desc}</p>
                                                     </div>
-                                                </div>
+                                                </motion.div>
                                             );
                                         })}
                                     </div>
                                 </div>
 
-                                <div className="bg-white rounded-xl p-6 border border-gray-100">
-                                    <h4 className="text-lg font-bold text-gray-900 mb-4">Technology Stack</h4>
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 lg:p-10 border border-emerald-100 shadow-xl shadow-emerald-900/5">
+                                    <h4 className="text-xl font-black text-slate-900 mb-8 border-b border-emerald-50 pb-4">Technology Arsenal</h4>
+                                    <div className="flex flex-wrap gap-2.5">
                                         {[
-                                            "React.js", "Node.js", "MongoDB", "Express.js", "TypeScript",
-                                            "Next.js", "Tailwind CSS", "PostgreSQL", "AWS", "Docker",
-                                            "GraphQL", "Redux", "Socket.io", "JWT", "Git",
-                                            "React Native", "Python Django", "JavaScript Expert", "Nuxt.js", "Vue.js",
-                                            "Desktop Application (Offline/Online)", "Firebase"
-                                        ].map((tech) => (
-                                            <span key={tech} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">
+                                            "React.js", "Node.js", "MongoDB", "TypeScript",
+                                            "Next.js", "Tailwind CSS", "AWS Cloud", "Docker",
+                                            "GraphQL", "Socket.io", "React Native", "Python Django",
+                                            "Firebase", "Electron.js", "Vue.js", "SQLite", 
+                                            "PostgreSQL", "MySQL", "AI-Based Solutions"
+                                        ].map((tech, idx) => (
+                                            <span 
+                                                key={idx} 
+                                                className="px-4 py-2 bg-white border border-emerald-50 text-emerald-800 rounded-xl text-xs font-bold shadow-sm hover:border-emerald-300 hover:text-emerald-600 transition-all cursor-default"
+                                            >
                                                 {tech}
                                             </span>
                                         ))}
+                                    </div>
+                                    <div className="mt-10 p-5 bg-emerald-600 rounded-2xl text-white">
+                                        <div className="text-xs font-bold uppercase tracking-widest opacity-80 mb-2">Primary Stack</div>
+                                        <div className="text-lg font-black italic">Enterprise Fullstack Stack</div>
                                     </div>
                                 </div>
                             </div>
@@ -411,196 +486,220 @@ const DevelopersPage = () => {
             </section>
 
             {/* Developers Section */}
-            <section className="py-16">
+            <section id="developers" className="py-20 lg:py-32 scroll-mt-20">
                 <div className="container mx-auto px-6">
                     <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Our Core Developers</h2>
-                            <div className="w-16 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto rounded-full"></div>
-                            <p className="text-lg text-gray-600 mt-4">The talented individuals who built Sehatkor.pk</p>
+                        <div className="text-center mb-20">
+                            <motion.h2 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                className="text-4xl lg:text-6xl font-black text-slate-900 mb-6"
+                            >
+                                Our Core <span className="text-emerald-600">Architects</span>
+                            </motion.h2>
+                            <div className="w-24 h-2 bg-gradient-to-r from-emerald-600 to-teal-400 mx-auto rounded-full mb-6"></div>
+                            <p className="text-lg lg:text-xl text-slate-500 font-medium max-w-2xl mx-auto">
+                                Meet the primary engineers who conceptualized and built the Sehatkor.pk ecosystem from the ground up.
+                            </p>
                         </div>
 
-                        <div className="grid lg:grid-cols-2 gap-8">
+                        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
                             {/* Abuzar Card */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-                                <div className="h-2 bg-gradient-to-r from-blue-600 to-purple-600"></div>
-                                <div className="p-8">
-                                    <div className="flex flex-col items-center text-center mb-6">
-                                        <div className="relative mb-6">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-xl opacity-40"></div>
-                                            <div className="relative w-40 h-40 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 border-4 border-white shadow-2xl ring-4 ring-blue-100 overflow-hidden">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6 }}
+                                className="group relative bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,80,40,0.06)] border border-emerald-50 overflow-hidden hover:shadow-[0_40px_80px_rgba(10,80,40,0.1)] transition-all duration-500"
+                            >
+                                <div className="h-2.5 bg-gradient-to-r from-emerald-600 to-teal-500"></div>
+                                <div className="p-6 lg:p-8">
+                                    <div className="flex flex-col items-center text-center mb-5">
+                                        <div className="relative mb-5">
+                                            <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-2xl group-hover:blur-xl transition-all"></div>
+                                            <div className="relative w-28 h-28 lg:w-32 lg:h-32 rounded-full border-[5px] border-white shadow-xl overflow-hidden ring-4 ring-emerald-50/50 transition-transform duration-500 group-hover:scale-105">
                                                 <img
                                                     src="/abuzar-ceo.jpg?v=3"
-                                                    alt="Abuzar - CEO and Co-Founder of ASH Cloud, Software Engineer, Full Stack Developer, Lead Developer of Sehatkor.pk"
-                                                    title="Abuzar - CEO ASH Cloud | Software Engineer | Full Stack Developer Pakistan"
+                                                    alt="Abuzar - CEO Sehatkor"
                                                     className="w-full h-full object-cover"
                                                     style={{ objectPosition: '45% 8%' }}
-                                                    loading="eager"
-                                                    itemProp="image"
                                                 />
+                                            </div>
+                                            <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-xl shadow-lg border border-emerald-50">
+                                                <Award className="w-4 h-4 text-emerald-600" />
                                             </div>
                                         </div>
 
-                                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Abuzar</h3>
-                                        <p className="text-blue-600 font-semibold mb-4">Software Engineer (Full-Stack Developer)</p>
-
-                                        <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white mb-4">
-                                            CEO & Co-Founder of ASH Cloud
+                                        <h3 className="text-xl font-black text-slate-900 mb-0.5">Abuzar</h3>
+                                        <p className="text-emerald-700 font-bold text-[13px] mb-2.5 uppercase tracking-tighter">Chief Executive Officer</p>
+                                        
+                                        <Badge className="bg-slate-900 text-emerald-400 border-none px-4 py-1.5 text-[9px] font-black rounded-full shadow-md">
+                                            Lead Full-Stack Engineer
                                         </Badge>
                                     </div>
 
-                                    <p className="text-gray-600 mb-6 text-center leading-relaxed">
-                                        Passionate about creating innovative digital solutions across all technology platforms.
-                                        Expert in web applications, mobile apps, desktop software, AI solutions, cloud computing,
-                                        and database systems for healthcare, e-commerce, enterprise, and custom business applications.
-                                        Leading ASH Cloud to deliver cutting-edge digital transformation solutions.
-                                    </p>
-
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Briefcase className="w-4 h-4 text-blue-500" />
-                                            <span>5+ Years Experience</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <MapPin className="w-4 h-4 text-green-500" />
-                                            <span>Peshawar, Pakistan</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Award className="w-4 h-4 text-purple-500" />
-                                            <span>Full Stack Expert</span>
+                                    <div className="space-y-3.5 mb-6">
+                                        <p className="text-slate-600 text-center leading-relaxed font-medium text-[13px] lg:text-[14px]">
+                                            A visionary tech entrepreneur and elite full-stack engineer, specializing in scalable healthcare infrastructures and AI-driven diagnostics.
+                                        </p>
+                                        
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            <div className="flex items-center gap-2 p-2.5 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
+                                                <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
+                                                <span className="text-[9px] font-black text-slate-700 uppercase">5+ Years Exp</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 p-2.5 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                                                <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                                                <span className="text-[9px] font-black text-slate-700 uppercase">Peshawar</span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-6 space-y-3">
-                                        <a href="tel:+923429752032" className="flex items-center justify-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors font-medium">
-                                            <Phone className="w-4 h-4" />
-                                            +923429752032
+                                    <div className="space-y-2.5">
+                                        <a href="tel:+923429752032" className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl hover:bg-emerald-600 hover:text-white transition-all group/link border border-slate-100 shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <Phone className="w-3.5 h-3.5 text-emerald-600 group-hover/link:text-white" />
+                                                <span className="font-bold text-[13px]">+92 342 9752032</span>
+                                            </div>
+                                            <ExternalLink className="w-3 h-3 opacity-0 group-hover/link:opacity-100 transition-all" />
                                         </a>
-                                        <a href="tel:+923178521144" className="flex items-center justify-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors font-medium">
-                                            <Phone className="w-4 h-4" />
-                                            +923178521144
-                                        </a>
-                                        <a href="mailto:abuzarktk123@gmail.com" className="flex items-center justify-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors font-medium">
-                                            <Mail className="w-4 h-4" />
-                                            abuzarktk123@gmail.com
+                                        <a href="mailto:abuzarktk123@gmail.com" className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl hover:bg-emerald-600 hover:text-white transition-all group/link border border-slate-100 shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <Mail className="w-3.5 h-3.5 text-emerald-600 group-hover/link:text-white" />
+                                                <span className="font-bold text-[13px]">abuzarktk123@gmail.com</span>
+                                            </div>
+                                            <ExternalLink className="w-3 h-3 opacity-0 group-hover/link:opacity-100 transition-all" />
                                         </a>
                                     </div>
 
-                                    <div className="flex flex-wrap justify-center gap-3 mt-6">
-                                        <a href="https://abuzar-portfolio-lat.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium text-sm">
-                                            <ExternalLink className="w-4 h-4" />
-                                            Portfolio
-                                        </a>
-                                        <a href="https://ash-cloud-official-bpmr.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm">
-                                            <Briefcase className="w-4 h-4" />
-                                            ASH Cloud
-                                        </a>
-                                        <a href="https://www.linkedin.com/company/ashcloudofficial/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium text-sm">
-                                            <Linkedin className="w-4 h-4" />
-                                            LinkedIn
-                                        </a>
+                                    <div className="flex justify-center gap-3.5 mt-7">
+                                        {[
+                                            { icon: ExternalLink, href: "https://abuzar-portfolio-lat.vercel.app/", label: "Portfolio", color: "text-emerald-600" },
+                                            { icon: Briefcase, href: "https://ash-cloud-official-bpmr.vercel.app/", label: "Company", color: "text-emerald-700" },
+                                            { icon: Linkedin, href: "https://www.linkedin.com/company/ashcloudofficial/", label: "LinkedIn", color: "text-blue-600" }
+                                        ].map((social, i) => (
+                                            <a key={i} href={social.href} target="_blank" rel="noopener noreferrer" className="p-3 bg-white border border-slate-100 rounded-xl hover:border-emerald-300 hover:shadow-lg transition-all hover:-translate-y-1">
+                                                <social.icon className={`w-4.5 h-4.5 ${social.color}`} />
+                                            </a>
+                                        ))}
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
 
                             {/* Syed Haris Shah Card */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-                                <div className="h-2 bg-gradient-to-r from-green-600 to-blue-600"></div>
-                                <div className="p-8">
-                                    <div className="flex flex-col items-center text-center mb-6">
-                                        <div className="relative mb-6">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-blue-600 rounded-full blur-xl opacity-40"></div>
-                                            <img
-                                                src="/haris-photo.jpg"
-                                                alt="Syed Haris Shah - Senior Developer Member of ASH Cloud, Software Engineer, Full Stack Developer, Key Developer of Sehatkor.pk"
-                                                title="Syed Haris Shah - Senior Developer ASH Cloud | Software Engineer | Full Stack Developer Pakistan"
-                                                className="relative w-40 h-40 rounded-full object-cover border-4 border-white shadow-2xl ring-4 ring-green-100"
-                                                loading="eager"
-                                                itemProp="image"
-                                            />
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                                className="group relative bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,80,40,0.06)] border border-emerald-50 overflow-hidden hover:shadow-[0_40px_80px_rgba(10,80,40,0.1)] transition-all duration-500"
+                            >
+                                <div className="h-2.5 bg-gradient-to-r from-teal-500 to-emerald-600"></div>
+                                <div className="p-6 lg:p-8">
+                                    <div className="flex flex-col items-center text-center mb-5">
+                                        <div className="relative mb-5">
+                                            <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-2xl group-hover:blur-xl transition-all"></div>
+                                            <div className="relative w-28 h-28 lg:w-32 lg:h-32 rounded-full border-[5px] border-white shadow-xl overflow-hidden ring-4 ring-emerald-50/50 transition-transform duration-500 group-hover:scale-105">
+                                                <img
+                                                    src="/haris-photo.jpg"
+                                                    alt="Syed Haris Shah - Senior Engineer Sehatkor"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-xl shadow-lg border border-emerald-50">
+                                                <Code className="w-4 h-4 text-emerald-600" />
+                                            </div>
                                         </div>
 
-                                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Syed Haris Shah</h3>
-                                        <p className="text-green-600 font-semibold mb-4">Software Engineer (Full-Stack Developer)</p>
-
-                                        <Badge className="bg-gradient-to-r from-green-600 to-blue-600 text-white mb-4">
-                                            Senior Member of ASH Cloud
+                                        <h3 className="text-xl font-black text-slate-900 mb-0.5">Syed Haris Shah</h3>
+                                        <p className="text-emerald-700 font-bold text-[13px] mb-2.5 uppercase tracking-tighter">Senior Engineering Lead</p>
+                                        
+                                        <Badge className="bg-slate-900 text-emerald-400 border-none px-4 py-1.5 text-[9px] font-black rounded-full shadow-md">
+                                            Full-Stack Specialist
                                         </Badge>
                                     </div>
 
-                                    <p className="text-gray-600 mb-6 text-center leading-relaxed">
-                                        A versatile full stack developer with expertise across multiple technology platforms.
-                                        Specializing in web development, mobile applications, desktop software, frontend/backend systems,
-                                        UI/UX design, and database management for healthcare, e-commerce, enterprise solutions,
-                                        and custom business applications.
-                                    </p>
-
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Briefcase className="w-4 h-4 text-blue-500" />
-                                            <span>3+ Years Experience</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <MapPin className="w-4 h-4 text-green-500" />
-                                            <span>Peshawar, Pakistan</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Award className="w-4 h-4 text-purple-500" />
-                                            <span>Full Stack Developer</span>
+                                    <div className="space-y-3.5 mb-6">
+                                        <p className="text-slate-600 text-center leading-relaxed font-medium text-[13px] lg:text-[14px]">
+                                            An expert in modern web architectures and UI/UX systems. Haris combines technical precision with creative problem-solving.
+                                        </p>
+                                        
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            <div className="flex items-center gap-2 p-2.5 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
+                                                <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
+                                                <span className="text-[9px] font-black text-slate-700 uppercase">3+ Years Exp</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 p-2.5 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                                                <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                                                <span className="text-[9px] font-black text-slate-700 uppercase">Peshawar</span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-6 space-y-3">
-                                        <a href="mailto:syedharryshah1@gmail.com" className="flex items-center justify-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors font-medium">
-                                            <Mail className="w-4 h-4" />
-                                            syedharryshah1@gmail.com
+                                    <div className="space-y-2.5">
+                                        <a href="mailto:syedharryshah1@gmail.com" className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl hover:bg-emerald-600 hover:text-white transition-all group/link border border-slate-100 shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <Mail className="w-3.5 h-3.5 text-emerald-600 group-hover/link:text-white" />
+                                                <span className="font-bold text-[13px]">syedharryshah1@gmail.com</span>
+                                            </div>
+                                            <ExternalLink className="w-3 h-3 opacity-0 group-hover/link:opacity-100 transition-all" />
                                         </a>
                                     </div>
 
-                                    <div className="flex flex-wrap justify-center gap-3 mt-6">
-                                        <a href="https://portfolio22-lilac.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium text-sm">
-                                            <ExternalLink className="w-4 h-4" />
-                                            Portfolio
-                                        </a>
-                                        <a href="https://ash-cloud-official-bpmr.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm">
-                                            <Briefcase className="w-4 h-4" />
-                                            ASH Cloud
-                                        </a>
-                                        <a href="https://www.linkedin.com/company/ashcloudofficial/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium text-sm">
-                                            <Linkedin className="w-4 h-4" />
-                                            LinkedIn
-                                        </a>
+                                    <div className="flex justify-center gap-3.5 mt-7">
+                                        {[
+                                            { icon: ExternalLink, href: "https://portfolio22-lilac.vercel.app/", label: "Portfolio", color: "text-emerald-600" },
+                                            { icon: Briefcase, href: "https://ash-cloud-official-bpmr.vercel.app/", label: "Company", color: "text-emerald-700" },
+                                            { icon: Linkedin, href: "https://www.linkedin.com/company/ashcloudofficial/", label: "LinkedIn", color: "text-blue-600" }
+                                        ].map((social, i) => (
+                                            <a key={i} href={social.href} target="_blank" rel="noopener noreferrer" className="p-3 bg-white border border-slate-100 rounded-xl hover:border-emerald-300 hover:shadow-lg transition-all hover:-translate-y-1">
+                                                <social.icon className={`w-4.5 h-4.5 ${social.color}`} />
+                                            </a>
+                                        ))}
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* CTA Section */}
-            <section className="py-16">
+            <section className="py-24 relative overflow-hidden">
                 <div className="container mx-auto px-6">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center text-white">
-                            <h2 className="text-2xl lg:text-3xl font-bold mb-4">Need Custom Development?</h2>
-                            <p className="text-lg mb-6 opacity-90">
-                                Partner with ASH Cloud for your next digital project. Healthcare, e-commerce,
-                                or custom solutions - we've got you covered.
-                            </p>
+                    <div className="max-w-5xl mx-auto">
+                        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-[3rem] p-10 lg:p-16 text-center text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden">
+                            {/* Decorative Elements */}
+                            <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-32 -mt-32"></div>
+                            <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-400/20 rounded-full blur-3xl -mr-32 -mb-32"></div>
+                            
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="relative z-10"
+                            >
+                                <h2 className="text-3xl lg:text-5xl font-black mb-6">Need Elite Development?</h2>
+                                <p className="text-lg lg:text-xl mb-10 text-emerald-50/90 max-w-2xl mx-auto font-medium leading-relaxed">
+                                    Whether it's a critical healthcare platform, complex e-commerce engine, 
+                                    or a custom enterprise solution, ASH Cloud is your high-fidelity engineering partner.
+                                </p>
 
-                            <div className="flex flex-wrap justify-center gap-4">
-                                <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-                                    <a href="https://ash-cloud-official-bpmr.vercel.app/" target="_blank" rel="noopener noreferrer">
-                                        Visit ASH Cloud
-                                    </a>
-                                </Button>
-                                <Button asChild size="lg" className="bg-green-500 text-white hover:bg-green-600 border-2 border-green-500">
-                                    <a href="tel:+923178521144">
-                                        Call Now
-                                    </a>
-                                </Button>
-                            </div>
+                                <div className="flex flex-wrap justify-center gap-6">
+                                    <Button asChild size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50 rounded-2xl px-10 py-7 text-lg font-bold shadow-xl transition-all hover:-translate-y-1">
+                                        <a href="https://ash-cloud-official-bpmr.vercel.app/" target="_blank" rel="noopener noreferrer">
+                                            Visit ASH Cloud
+                                        </a>
+                                    </Button>
+                                    <Button asChild size="lg" className="bg-transparent border-2 border-white/30 text-white hover:bg-white/10 rounded-2xl px-10 py-7 text-lg font-bold backdrop-blur-sm transition-all hover:-translate-y-1">
+                                        <a href="tel:+923178521144" className="flex items-center gap-3">
+                                            <Phone className="w-5 h-5" />
+                                            Call Engineering Team
+                                        </a>
+                                    </Button>
+                                </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>

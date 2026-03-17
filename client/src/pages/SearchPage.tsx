@@ -41,7 +41,7 @@ import { useCompare } from "@/contexts/CompareContext";
 
 import CompareTray from "@/components/CompareTray";
 
-import SearchPageSkeleton from "@/components/skeletons/SearchPageSkeleton";
+import PageLoader from "@/components/PageLoader";
 
 import { toast } from "sonner";
 
@@ -157,6 +157,7 @@ const SearchPage = () => {
 
 
 
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
@@ -213,7 +214,7 @@ const SearchPage = () => {
 
   const [allServices, setAllServices] = useState<SearchService[]>([]);
 
-  const [isLoading, setIsLoading] = useState(true);
+
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -708,9 +709,10 @@ const SearchPage = () => {
 
     try {
 
-      setIsLoading(true);
-
       const { services: realServices } = await ServiceManager.fetchPublicServices({ limit: 500 });
+      
+      // Ensure loader is visible for at least 1 second
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
 
 
@@ -1912,9 +1914,21 @@ const SearchPage = () => {
 
 
 
-  if (isLoading) {
+  const [showMinLoader, setShowMinLoader] = useState(true);
 
-    return <SearchPageSkeleton />;
+  useEffect(() => {
+
+    const timer = setTimeout(() => setShowMinLoader(false), 1000);
+
+    return () => clearTimeout(timer);
+
+  }, []);
+
+
+
+  if (isLoading || showMinLoader) {
+
+    return <PageLoader />;
 
   }
 

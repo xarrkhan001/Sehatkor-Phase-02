@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { apiUrl } from '@/config/api';
 import SEO from "@/components/SEO";
+import PageLoader from "@/components/PageLoader";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -41,12 +42,12 @@ const staggerContainer = {
 };
 
 const ContactPage = () => {
-  const [isMounted, setIsMounted] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -58,6 +59,8 @@ const ContactPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  if (isLoading) return <PageLoader />;
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -166,7 +169,7 @@ const ContactPage = () => {
     }
   ];
 
-  if (!isMounted) return null;
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
