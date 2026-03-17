@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import CompareTray from "@/components/CompareTray";
-import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
+import PageLoader from "@/components/PageLoader";
 import SEO from "@/components/SEO";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,12 +56,12 @@ const UrduHomePage = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
-        const timer = setTimeout(() => setIsLoading(false), 500);
+        const timer = setTimeout(() => setIsLoading(false), 1000);
         return () => clearTimeout(timer);
     }, []);
 
     if (isLoading) {
-        return <HomeSkeleton />;
+        return <PageLoader />;
     }
 
     const heroCards = [
@@ -431,20 +431,20 @@ const UrduHomePage = () => {
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div className="flex flex-wrap md:flex-nowrap justify-center gap-3 md:gap-4 max-w-6xl mx-auto overflow-x-auto pb-4 px-2">
                         {[
-                            { name: 'کراچی', bg: 'bg-blue-50', hover: 'hover:bg-blue-100', text: 'text-blue-700' },
-                            { name: 'لاہور', bg: 'bg-emerald-50', hover: 'hover:bg-emerald-100', text: 'text-emerald-700' },
-                            { name: 'اسلام آباد', bg: 'bg-teal-50', hover: 'hover:bg-teal-100', text: 'text-teal-700' },
-                            { name: 'پشاور', bg: 'bg-violet-50', hover: 'hover:bg-violet-100', text: 'text-violet-700' },
-                            { name: 'کوئٹہ', bg: 'bg-amber-50', hover: 'hover:bg-amber-100', text: 'text-amber-700' },
-                            { name: 'ملتان', bg: 'bg-rose-50', hover: 'hover:bg-rose-100', text: 'text-rose-700' }
+                            { name: 'کراچی', id: 'karachi', bg: 'bg-blue-50', hover: 'hover:bg-blue-100', text: 'text-blue-700' },
+                            { name: 'لاہور', id: 'lahore', bg: 'bg-emerald-50', hover: 'hover:bg-emerald-100', text: 'text-emerald-700' },
+                            { name: 'اسلام آباد', id: 'islamabad', bg: 'bg-teal-50', hover: 'hover:bg-teal-100', text: 'text-teal-700' },
+                            { name: 'پشاور', id: 'peshawar', bg: 'bg-violet-50', hover: 'hover:bg-violet-100', text: 'text-violet-700' },
+                            { name: 'مردان', id: 'mardan', bg: 'bg-amber-50', hover: 'hover:bg-amber-100', text: 'text-amber-700' },
+                            { name: 'سوات', id: 'swat', bg: 'bg-rose-50', hover: 'hover:bg-rose-100', text: 'text-rose-700' }
                         ].map((city, idx) => (
-                            <Link to="/search" key={idx} className="block group">
-                                <div className={`relative overflow-hidden rounded-2xl p-6 text-center border border-transparent transition-all duration-300 ${city.bg} ${city.hover} hover:scale-105 hover:shadow-lg`}>
-                                    <h3 className={`font-black text-lg md:text-xl ${city.text} transition-colors relative z-10`}>{city.name}</h3>
+                            <Link to={`/${city.id}`} key={idx} className="block group flex-1 max-w-[200px] min-w-[140px]">
+                                <div className={`relative overflow-hidden rounded-[2rem] py-4 px-2 flex justify-center items-center text-center border border-transparent transition-all duration-300 ${city.bg} ${city.hover} hover:-translate-y-1 hover:shadow-md`}>
+                                    <h3 className={`font-black text-sm md:text-base ${city.text} transition-colors relative z-10`}>{city.name}</h3>
                                     {/* Decorative subtle circle background */}
-                                    <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-white/40 rounded-full blur-xl group-hover:blur-2xl transition-all"></div>
+                                    <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-white/40 rounded-full blur-xl group-hover:blur-2xl transition-all"></div>
                                 </div>
                             </Link>
                         ))}

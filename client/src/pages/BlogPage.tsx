@@ -2,25 +2,19 @@ import { useState, useEffect } from "react";
 import SEO from "@/components/SEO";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import BlogSkeleton from "@/components/skeletons/BlogSkeleton";
 import { BookOpen, ArrowRight, Clock } from "lucide-react";
+import PageLoader from "@/components/PageLoader";
 
 const BlogPage = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate loading time for demonstration
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
-  // Show skeleton while loading
-  if (isLoading) {
-    return <BlogSkeleton />;
-  }
+    if (isLoading) return <PageLoader />;
 
   const jsonLd = [
     {

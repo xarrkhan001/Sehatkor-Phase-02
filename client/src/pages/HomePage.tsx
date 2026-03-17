@@ -8,7 +8,7 @@ import SearchServices from "@/components/SearchServices";
 import CompareTray from "@/components/CompareTray";
 import PartnersMarquee from "@/components/PartnersMarquee";
 import CompareExplorer from "@/components/CompareExplorer";
-import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
+import PageLoader from "@/components/PageLoader";
 import HomeCTA from "@/components/HomeCTA";
 import SEO from "@/components/SEO";
 import FeaturedHealthcare from "@/components/FeaturedHealthcare";
@@ -42,7 +42,12 @@ import {
   Baby,
   Smile,
   Bone,
-  Sparkles
+  Sparkles,
+  Video,
+  Building2,
+  Camera,
+  Dumbbell,
+  Microscope
 } from "lucide-react";
 
 // Animations
@@ -73,12 +78,12 @@ const HomePage = () => {
   const [showMobileHelpline, setShowMobileHelpline] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 500);
+    const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {
-    return <HomeSkeleton />;
+    return <PageLoader />;
   }
 
   const heroCards = [
@@ -90,8 +95,7 @@ const HomePage = () => {
       bg: "bg-gradient-to-br from-blue-100 to-indigo-200",
       text: "text-blue-950",
       subText: "text-blue-700",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=400",
-      iconColor: "bg-blue-300/40"
+      image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=400&h=400"
     },
     {
       id: 2,
@@ -101,8 +105,7 @@ const HomePage = () => {
       bg: "bg-gradient-to-br from-amber-100 to-orange-200",
       text: "text-orange-950",
       subText: "text-orange-700",
-      image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400&h=400",
-      iconColor: "bg-orange-300/40"
+      image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400&h=400"
     },
     {
       id: 3,
@@ -113,8 +116,7 @@ const HomePage = () => {
       text: "text-emerald-950",
       subText: "text-emerald-700",
       image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400&h=400",
-      hasBadge: true,
-      iconColor: "bg-emerald-300/40"
+      hasBadge: true
     },
     {
       id: 4,
@@ -124,8 +126,7 @@ const HomePage = () => {
       bg: "bg-gradient-to-br from-lime-100 to-green-200",
       text: "text-green-950",
       subText: "text-green-700",
-      image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=300&h=300",
-      iconColor: "bg-green-300/40"
+      image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=300&h=300"
     },
     {
       id: 5,
@@ -135,8 +136,7 @@ const HomePage = () => {
       bg: "bg-gradient-to-br from-violet-100 to-purple-200",
       text: "text-violet-950",
       subText: "text-violet-700",
-      image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&get=80&w=300&h=300",
-      iconColor: "bg-violet-300/40"
+      image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=300&h=300"
     },
     {
       id: 6,
@@ -146,8 +146,7 @@ const HomePage = () => {
       bg: "bg-gradient-to-br from-cyan-100 to-sky-200",
       text: "text-cyan-950",
       subText: "text-cyan-700",
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=300&h=300",
-      iconColor: "bg-cyan-300/40"
+      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=300&h=300"
     }
   ];
 
@@ -350,9 +349,6 @@ const HomePage = () => {
                 <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
                 
                 <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-full">
-                  <div className={`w-7 h-7 md:w-10 md:h-10 rounded-xl ${heroCards[0].iconColor} flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform`}>
-                    <Phone className="w-3.5 h-3.5 md:w-5 md:h-5 text-blue-600" />
-                  </div>
                   <h3 className={`font-black text-[12px] md:text-xl ${heroCards[0].text} mb-0.5 leading-tight max-w-[80%]`}>
                     {heroCards[0].title}
                   </h3>
@@ -360,10 +356,11 @@ const HomePage = () => {
                     {heroCards[0].subtitle}
                   </p>
                 </div>
+                
                 <img
                   src={heroCards[0].image}
                   alt={heroCards[0].title}
-                  className="absolute bottom-1.5 right-1.5 w-16 h-16 md:right-4 md:bottom-4 md:w-32 md:h-32 object-cover rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
+                  className="absolute bottom-1.5 right-1.5 w-16 h-16 md:right-4 md:bottom-4 md:w-32 md:h-32 object-cover object-top rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
               </Link>
@@ -383,6 +380,7 @@ const HomePage = () => {
                     {heroCards[1].subtitle}
                   </p>
                 </div>
+                
                 <img
                   src={heroCards[1].image}
                   alt={heroCards[1].title}
@@ -413,6 +411,7 @@ const HomePage = () => {
                     )}
                   </div>
                 </div>
+                
                 <img
                   src={heroCards[2].image}
                   alt={heroCards[2].title}
@@ -438,6 +437,7 @@ const HomePage = () => {
                       {card.subtitle}
                     </p>
                   </div>
+                  
                   <img
                     src={card.image}
                     alt={card.title}
@@ -601,29 +601,22 @@ const HomePage = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-              {["Karachi", "Lahore", "Islamabad", "Peshawar", "Mardan", "Swat", "Multan", "Faisalabad"].map((city) => (
+            <div className="flex flex-wrap md:flex-nowrap justify-center gap-3 md:gap-4 max-w-6xl mx-auto overflow-x-auto pb-4 px-2">
+              {["Karachi", "Lahore", "Islamabad", "Peshawar", "Mardan", "Swat"].map((city) => (
                 <Link
                   key={city}
                   to={`/${city.toLowerCase()}`}
-                  className="group relative p-4 bg-white rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 hover:border-emerald-100 hover:-translate-y-1 transition-all duration-300 flex items-center gap-3 overflow-hidden"
+                  className="group relative px-6 py-4 bg-white rounded-[2rem] shadow-sm hover:shadow-md border border-emerald-100/50 hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden text-center whitespace-nowrap min-w-[150px] flex-1 max-w-[200px]"
                 >
-                  <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-emerald-50/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-50/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                  <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:scale-110 transition-all duration-300 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors duration-300 flex-shrink-0 z-10 shadow-sm border border-transparent group-hover:border-emerald-200">
                     <MapPin className="w-5 h-5" />
                   </div>
 
-                  <div className="flex-1 min-w-0 flex flex-col items-start relative z-10">
-                    <span className="font-bold text-gray-800 group-hover:text-emerald-700 transition-colors truncate w-full text-left">
-                      {city}
-                    </span>
-                    <span className="text-[10px] text-gray-400 font-medium group-hover:text-emerald-500/70 transition-colors uppercase tracking-wider">
-                      Pakistan
-                    </span>
-                  </div>
-
-                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all duration-300" />
+                  <span className="font-bold text-slate-800 group-hover:text-emerald-800 transition-colors z-10 text-base">
+                    {city}
+                  </span>
                 </Link>
               ))}
             </div>

@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { GoogleLogin } from '@react-oauth/google';
 import SEO from "@/components/SEO";
+import PageLoader from "@/components/PageLoader";
 import {
   Mail,
   Lock,
@@ -38,6 +39,7 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -54,6 +56,12 @@ const LoginPage = () => {
       });
     }
   }, [searchParams, toast]);
+
+  // Premium PageLoader timer
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -133,6 +141,8 @@ const LoginPage = () => {
       description: `${provider} authentication will be implemented here`,
     });
   };
+
+  if (isPageLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white overflow-x-hidden">

@@ -1,8 +1,18 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Clock, Star, Users, ShieldCheck } from 'lucide-react';
 import SEO from "@/components/SEO";
+import PageLoader from "@/components/PageLoader";
 
 const SwabiPage = () => {
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (isLoading) return <PageLoader />;
     return (
         <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white">
             <SEO

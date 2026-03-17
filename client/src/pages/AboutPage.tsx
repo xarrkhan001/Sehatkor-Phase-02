@@ -37,8 +37,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SEO from "@/components/SEO";
+import PageLoader from "@/components/PageLoader";
 
 const AboutPage = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -50,8 +52,14 @@ const AboutPage = () => {
   };
 
   useEffect(() => {
-    setIsVisible(true);
+    const timer = setTimeout(() => {
+        setIsLoading(false);
+        setIsVisible(true);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
+
+  if (isLoading) return <PageLoader />;
 
   const quickSetAmount = (amt: number) => setDonationAmount(amt);
   const proceedDonate = () => {

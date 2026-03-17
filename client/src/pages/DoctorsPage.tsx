@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import SEO from "@/components/SEO";
+import PageLoader from "@/components/PageLoader";
 
 import ServiceManager from "@/lib/serviceManager";
 import { Service } from "@/data/mockData";
@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Minimize2, Maximize2, X, Search, Star, Home, Clock, ChevronLeft, ChevronRight, Calendar, Share2 } from "lucide-react";
-import ServiceCardSkeleton from "@/components/skeletons/ServiceCardSkeleton";
 import RatingBadge from "@/components/RatingBadge";
 import AvailabilityBadge from "@/components/AvailabilityBadge";
 import ServiceTypeBadge from "@/components/ServiceTypeBadge";
@@ -35,6 +34,7 @@ const DoctorsPage = () => {
   const [searchTerm, setSearchTerm] = useState(initialDisease);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [showMinLoader, setShowMinLoader] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState<boolean | undefined>(true);
 
@@ -225,6 +225,11 @@ const DoctorsPage = () => {
     loadPage(1);
     return () => { isMounted = false; };
   }, [user?.id, user?.name, initialDisease]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowMinLoader(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Live per-user badge updates for optimistic UI after rating submit
   useEffect(() => {
@@ -692,26 +697,7 @@ const DoctorsPage = () => {
     })()
     : null;
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white">
-         {/* Compact Header Skeleton */}
-         <div className="mb-6 rounded-none border-b border-emerald-50 bg-gradient-to-r from-emerald-50/20 to-white p-4">
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto animate-pulse">
-             <div className="space-y-2 text-left">
-               <Skeleton className="h-8 w-64" />
-               <Skeleton className="h-4 w-96 max-w-full" />
-             </div>
-             <Skeleton className="h-10 w-full md:w-96 rounded-none" />
-           </div>
-         </div>
-
-        <div className="container mx-auto px-4 py-4">
-          <ServiceCardSkeleton count={8} />
-        </div>
-      </div>
-    );
-  }
+  if (isLoading || showMinLoader) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-white">
