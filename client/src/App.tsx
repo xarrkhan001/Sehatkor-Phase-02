@@ -13,13 +13,16 @@ import VerificationNotificationModal from "./components/VerificationNotification
 import { useAuth } from "./contexts/AuthContext";
 import { lazy, Suspense } from "react";
 import ScrollToTop from "./components/ScrollToTop";
-import HomeSkeleton from "./components/skeletons/HomeSkeleton";
-import PageSkeleton from "./components/skeletons/PageSkeleton";
 import DashboardSkeleton from "./components/skeletons/DashboardSkeleton";
 import AdminSkeleton from "./components/skeletons/AdminSkeleton";
-import AuthSkeleton from "./components/skeletons/AuthSkeleton";
-import ServiceSkeleton from "./components/skeletons/ServiceSkeleton";
-import BlogSkeleton from "./components/skeletons/BlogSkeleton";
+import PageLoader from "./components/PageLoader";
+
+const HomeSkeleton = PageLoader;
+const PageSkeleton = PageLoader;
+const AuthSkeleton = PageLoader;
+const ServiceSkeleton = PageLoader;
+const BlogSkeleton = PageLoader;
+
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
