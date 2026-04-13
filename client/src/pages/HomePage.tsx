@@ -90,63 +90,93 @@ const HomePage = () => {
     {
       id: 1,
       title: "Online Video Consultation",
-      subtitle: "PMC Verified",
+      subtitle: "PMC Verified Doctors",
       link: "/doctors?type=video",
-      bg: "bg-gradient-to-br from-blue-100 to-indigo-200",
-      text: "text-blue-950",
-      subText: "text-blue-700",
-      image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=400&h=400"
+      bg: "bg-gradient-to-br from-white to-blue-50/50",
+      borderColor: "border-blue-100/80",
+      accent: "bg-blue-600/10",
+      text: "text-slate-900",
+      subText: "text-blue-600",
+      image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=400&h=400",
+      glow: "shadow-blue-500/10",
+      icon: Video,
+      themeColor: "blue"
     },
     {
       id: 2,
       title: "Book Clinic Appointment",
-      subtitle: "Book Appointment",
+      subtitle: "100% Secure Booking",
       link: "/doctors",
-      bg: "bg-gradient-to-br from-amber-100 to-orange-200",
-      text: "text-orange-950",
-      subText: "text-orange-700",
-      image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400&h=400"
+      bg: "bg-gradient-to-br from-white to-amber-50/50",
+      borderColor: "border-amber-100/80",
+      accent: "bg-amber-600/10",
+      text: "text-slate-900",
+      subText: "text-amber-600",
+      image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400&h=400",
+      glow: "shadow-amber-500/10",
+      icon: Building2,
+      themeColor: "amber"
     },
     {
       id: 3,
       title: "Get Instant Doctor",
-      subtitle: "One Click Relief",
+      subtitle: "Instant Response",
       link: "/doctors",
-      bg: "bg-gradient-to-br from-emerald-100 to-teal-200",
-      text: "text-emerald-950",
-      subText: "text-emerald-700",
-      image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400&h=400",
-      hasBadge: true
+      bg: "bg-gradient-to-br from-white to-emerald-50/50",
+      borderColor: "border-emerald-100/80",
+      accent: "bg-emerald-600/10",
+      text: "text-slate-900",
+      subText: "text-emerald-600",
+      image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=400&h=400",
+      glow: "shadow-emerald-500/10",
+      hasBadge: true,
+      icon: Zap,
+      themeColor: "emerald"
     },
     {
       id: 4,
       title: "Weight Loss",
-      subtitle: "Healthy Life",
+      subtitle: "Expert Guidance",
       link: "/weight-loss",
-      bg: "bg-gradient-to-br from-lime-100 to-green-200",
-      text: "text-green-950",
-      subText: "text-green-700",
-      image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=300&h=300"
+      bg: "bg-gradient-to-br from-white to-rose-50/50",
+      borderColor: "border-rose-100/80",
+      accent: "bg-rose-600/10",
+      text: "text-slate-900",
+      subText: "text-rose-600",
+      image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=400&h=400",
+      glow: "shadow-rose-500/10",
+      icon: Activity,
+      themeColor: "rose"
     },
     {
       id: 5,
       title: "Lab Tests",
-      subtitle: "Home Sample",
+      subtitle: "Home Sampling",
       link: "/labs",
-      bg: "bg-gradient-to-br from-violet-100 to-purple-200",
-      text: "text-violet-950",
-      subText: "text-violet-700",
-      image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=300&h=300"
+      bg: "bg-gradient-to-br from-white to-violet-50/50",
+      borderColor: "border-violet-100/80",
+      accent: "bg-violet-600/10",
+      text: "text-slate-900",
+      subText: "text-violet-600",
+      image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400&h=400",
+      glow: "shadow-violet-500/10",
+      icon: FlaskConical,
+      themeColor: "violet"
     },
     {
       id: 6,
       title: "Buy Medicine Online",
-      subtitle: "Genuine Medicines",
+      subtitle: "Express Delivery",
       link: "/pharmacies",
-      bg: "bg-gradient-to-br from-cyan-100 to-sky-200",
-      text: "text-cyan-950",
-      subText: "text-cyan-700",
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=300&h=300"
+      bg: "bg-gradient-to-br from-white to-cyan-50/50",
+      borderColor: "border-cyan-100/80",
+      accent: "bg-cyan-600/10",
+      text: "text-slate-900",
+      subText: "text-cyan-600",
+      image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&q=80&w=400&h=400",
+      glow: "shadow-cyan-500/10",
+      icon: Pill,
+      themeColor: "cyan"
     }
   ];
 
@@ -265,11 +295,20 @@ const HomePage = () => {
         }}
       />
 
-      {/* Hero Section */}
-      <section className="relative pt-16 md:pt-20 pb-8 md:pb-12 lg:pt-24 lg:pb-16 overflow-visible">
-        {/* BACKGROUND */}
-        <div className="absolute inset-0 bg-white z-0 rounded-b-[2rem] lg:rounded-b-[3rem] overflow-hidden">
-          <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-emerald-50/10 rounded-full blur-[120px]"></div>
+      {/* Hero Section - Balanced Optimization */}
+      <section className="relative pt-20 md:pt-22 pb-6 md:pb-10 lg:pt-24 lg:pb-14 overflow-visible">
+        {/* BACKGROUND - Enhanced Layered Aesthetic */}
+        <div className="absolute inset-0 bg-slate-50/80 z-0 rounded-b-[3rem] lg:rounded-b-[5rem] overflow-hidden shadow-[inset_0_-2px_10px_rgba(0,0,0,0.02)]">
+          {/* Main Mesh Gradient Blobs */}
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[70%] bg-emerald-100/40 rounded-full blur-[120px]"></div>
+          <div className="absolute top-[10%] right-[-5%] w-[40%] h-[50%] bg-blue-100/30 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-[-10%] left-[10%] w-[50%] h-[40%] bg-indigo-50/40 rounded-full blur-[120px]"></div>
+          
+          {/* Subtle Subtle Grid Accent */}
+          <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0f172a 1.5px, transparent 1.5px)', backgroundSize: '56px 56px' }}></div>
+          
+          {/* Bottom Accent Line */}
+          <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-teal-200/40 to-transparent"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -279,38 +318,42 @@ const HomePage = () => {
             variants={fadeInUp}
             className="max-w-7xl mx-auto"
           >
-            {/* Welcome Greeting - Always generic green icon and Welcome text */}
-            <div className="flex items-center gap-2 mt-2 -ml-1 mb-1 relative z-20 md:mb-0 md:mt-0 md:ml-0 md:absolute md:left-4 md:top-0">
-              <div className="p-0.5 bg-white rounded-full shadow-md">
-                <Avatar className="h-8 w-8 md:h-11 md:w-11 border-2 border-emerald-50">
+            {/* Welcome Greeting - Refined Professional Look */}
+            <div className="flex items-center gap-3 mt-2 -ml-1 mb-1 relative z-20 md:mb-0 md:mt-0 md:ml-0 md:absolute md:left-4 md:top-0 group cursor-default">
+              <div className="p-0.5 bg-white rounded-full shadow-md border border-emerald-50 group-hover:shadow-emerald-100 transition-shadow">
+                <Avatar className="h-8 w-8 md:h-12 md:w-12 border-2 border-emerald-50/50">
                   <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-xs md:text-lg flex items-center justify-center">
                     {user ? <UserRound className="w-4 h-4 md:w-6 md:h-6 text-white" /> : "G"}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="text-left">
-                <p className="text-xs md:text-base font-bold text-gray-900 leading-none">
-                  Welcome
+                <p className="text-xs md:text-base font-extrabold text-slate-800 leading-none">
+                  Welcome to SehatKor
                 </p>
-                <p className="text-[9px] md:text-xs text-gray-500 font-medium mt-0.5">
-                  Glad to have you here
-                </p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <p className="text-[9px] md:text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                    {user ? "Your Health Partner" : "Guest User"}
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Helpline Widget - Desktop Only (Right Side) */}
-            <div className="hidden md:flex items-center gap-2 absolute right-4 top-0 z-20 bg-white pl-1 pr-4 py-1 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-emerald-50/50 hover:shadow-[0_4px_12px_rgba(16,185,129,0.15)] transition-all duration-300 cursor-pointer group hover:-translate-y-0.5 animate-pulse-slow">
-              <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ring-4 ring-emerald-50">
-                <Phone className="w-3.5 h-3.5 text-white fill-white/20 animate-bounce" />
+            {/* Helpline Widget - Desktop Only (Right Side) - Highly Professional Redesign */}
+            <div className="hidden md:flex items-center gap-3 absolute right-4 top-0 z-20 bg-white/80 backdrop-blur-md pl-1.5 pr-5 py-1.5 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.05)] border border-slate-100 hover:shadow-[0_8px_25px_rgba(16,185,129,0.12)] hover:border-emerald-200 transition-all duration-500 cursor-pointer group hover:-translate-y-1">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 ring-2 ring-white">
+                <Phone className="w-4 h-4 text-white fill-white/10" />
               </div>
               <div className="text-left">
-                <p className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold leading-none mb-0.5 group-hover:text-emerald-700 transition-colors">SehatKor Helpline</p>
-                <p className="text-xs font-black text-gray-500 leading-none group-hover:text-emerald-800 transition-colors tracking-tight">+92 314 1521115</p>
+                <p className="text-[9px] uppercase tracking-[0.1em] text-emerald-600 font-extrabold leading-none mb-1">24/7 Helpline</p>
+                <p className="text-sm font-black text-slate-700 leading-none transition-colors tracking-tight">+92 314 1521115</p>
               </div>
             </div>
 
-            {/* Header Content */}
-            <div className="text-center mb-2 md:mb-8">
+            {/* Header Content - Balanced Spacing */}
+            <div className="text-center mb-5 md:mb-8">
               <div className="absolute right-4 top-0 mt-3 md:static md:mt-0 flex items-center justify-center gap-1 md:gap-2 mb-1 md:mb-4">
                 <ShieldCheck className="w-3.5 h-3.5 md:w-5 md:h-5 text-emerald-600" />
                 <span className="text-[10px] font-bold text-emerald-700 md:text-lg">
@@ -319,133 +362,156 @@ const HomePage = () => {
                 </span>
               </div>
 
-              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight pt-8 md:pt-0 mb-5 md:mb-2">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-slate-900 leading-tight pt-6 md:pt-0 mb-4 md:mb-3">
                 Health Issues? <span className="text-emerald-600">We Have The Solution!</span>
               </h1>
 
-              {/* Supporting Tagline - Hidden on Mobile */}
-              <p className="hidden md:block text-center text-[14px] text-gray-500 mb-6 px-4 font-normal tracking-wide opacity-90 mx-auto max-w-2xl">
+              {/* Supporting Tagline - Balanced */}
+              <p className="hidden md:block text-center text-[15px] text-slate-500 mb-6 px-4 font-normal tracking-wide opacity-90 mx-auto max-w-2xl">
                 Connecting you with top medical specialists, online consultations, and trusted healthcare services across Pakistan.
               </p>
 
-              {/* Search Bar Block */}
+              {/* Search Bar Block - Sharper, Themed Look */}
               <SearchServices
                 hideCategory
                 hideLocationIcon
-                className="!bg-white !p-1 !rounded-none !shadow-[0_4px_20px_rgba(0,0,0,0.05)] !border !border-gray-300 max-w-3xl mx-auto transform transition-all hover:scale-[1.005]"
+                className="!bg-slate-50/80 !backdrop-blur-md !p-2 !rounded-lg !shadow-[0_15px_40px_rgba(0,0,0,0.04)] !border !border-slate-200/60 max-w-3xl mx-auto transform transition-all duration-300 hover:bg-slate-100/90 hover:border-emerald-200/50"
               />
             </div>
 
             {/* Bento Grid Layout - Mobile: Marham Style (Video left 2cols, 2 cards right 3cols), Desktop: Bento Grid */}
-            <div className="grid grid-cols-5 md:grid-cols-12 gap-2 md:gap-3 pt-2 md:pt-0">
+            <div className="grid grid-cols-5 md:grid-cols-12 gap-3 md:gap-4 pt-2 md:pt-1">
               {/* Video Consultation - Left side, spans 2 rows on mobile, 2 columns wide */}
               <Link
                 to={heroCards[0].link}
-                className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${heroCards[0].bg} 
+                className={`relative group overflow-hidden rounded-2xl md:rounded-[2.5rem] ${heroCards[0].bg} border-2 ${heroCards[0].borderColor} shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 
                   col-span-2 row-span-2 h-auto md:col-span-3 md:row-span-2 md:h-full group`}
               >
-                {/* Decorative Elements - Subtle Tints */}
-                <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
+                {/* Decorative Pattern Accent */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100/20 rounded-bl-[100%] transition-transform duration-700 group-hover:scale-125"></div>
                 
-                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full md:max-w-full">
-                  <h3 className={`font-black text-[12px] md:text-xl ${heroCards[0].text} mb-0.5 leading-tight max-w-[80%]`}>
-                    {heroCards[0].title}
+                <div className="p-3 md:pt-4 md:px-6 md:pb-6 relative z-20 h-full flex flex-col items-start text-left max-w-[75%] md:max-w-[70%]">
+                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-1 md:mb-2 group-hover:rotate-6 transition-transform">
+                    <Video className="w-4 h-4 md:w-6 md:h-6 text-blue-600" />
+                  </div>
+                  <h3 className="font-black text-[12px] md:text-2xl text-slate-800 mb-0.5 md:mb-1 leading-tight">
+                    Online Video <br /> Consultation
                   </h3>
-                  <p className={`font-bold text-[9px] md:text-xs ${heroCards[0].subText}`}>
-                    {heroCards[0].subtitle}
-                  </p>
+                  <div className="flex items-center gap-1.5 -translate-y-0.5 md:-translate-y-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                    <p className="font-bold text-[8px] md:text-sm text-blue-600 uppercase tracking-wide leading-tight">
+                      {heroCards[0].subtitle}
+                    </p>
+                  </div>
                 </div>
                 
-                <img
-                  src={heroCards[0].image}
-                  alt={heroCards[0].title}
-                  className="absolute bottom-1.5 right-1.5 w-16 h-16 md:right-4 md:bottom-4 md:w-32 md:h-32 object-cover object-top rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
+                <div className="absolute -bottom-1 -right-1 md:bottom-4 md:right-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-blue-400/30 blur-2xl rounded-full scale-110 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <img
+                      src={heroCards[0].image}
+                      alt={heroCards[0].title}
+                      className="relative w-16 h-16 md:w-40 md:h-40 object-cover object-top rounded-full border-[4px] md:border-[8px] border-white shadow-xl transition-all duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
               </Link>
 
-              {/* Clinic Visit - Right side, top, 3 columns wide */}
               <Link
                 to={heroCards[1].link}
-                className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${heroCards[1].bg} 
-                  col-span-3 h-24 md:col-span-4 md:h-[135px]`}
+                className={`relative group overflow-hidden rounded-2xl md:rounded-[2.5rem] ${heroCards[1].bg} border-2 ${heroCards[1].borderColor} shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-amber-500/20 hover:-translate-y-2 
+                  col-span-3 h-28 md:col-span-4 md:h-[150px]`}
               >
-                <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
-                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full">
-                  <h3 className={`font-black text-[12px] md:text-xl ${heroCards[1].text} mb-0.5 leading-tight max-w-[65%]`}>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-100/20 rounded-bl-[100%] transition-transform duration-700 group-hover:scale-125"></div>
+                <div className="p-4 md:p-6 relative z-20 h-full flex flex-col items-start text-left max-w-[70%] md:max-w-[65%]">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white shadow-sm flex items-center justify-center mb-2 md:mb-3 group-hover:rotate-6 transition-transform">
+                    <Building2 className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
+                  </div>
+                  <h3 className="font-black text-[12px] md:text-xl text-slate-800 mb-1 leading-tight">
                     Book Clinic <br /> Appointment
                   </h3>
-                  <p className={`font-bold text-[9px] md:text-xs ${heroCards[1].subText}`}>
+                  <p className="font-bold text-[9px] md:text-sm text-amber-600 uppercase tracking-wide">
                     {heroCards[1].subtitle}
                   </p>
                 </div>
                 
-                <img
-                  src={heroCards[1].image}
-                  alt={heroCards[1].title}
-                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-28 md:h-28 object-cover rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
+                <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4">
+                  <img
+                    src={heroCards[1].image}
+                    alt={heroCards[1].title}
+                    className="w-14 h-14 md:w-24 md:h-24 object-cover rounded-full border-[3px] md:border-[5px] border-white shadow-xl transition-all duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
               </Link>
 
-              {/* Instant Doctor - Right side, bottom, 3 columns wide */}
               <Link
                 to={heroCards[2].link}
-                className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${heroCards[2].bg} 
-                  col-span-3 h-24 md:col-span-5 md:h-[135px]`}
+                className={`relative group overflow-hidden rounded-2xl md:rounded-[2.5rem] ${heroCards[2].bg} border-2 ${heroCards[2].borderColor} shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20 hover:-translate-y-2 
+                  col-span-3 h-28 md:col-span-5 md:h-[150px]`}
               >
-                <div className="absolute -left-6 -top-6 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl group-hover:rotate-180 transition-transform duration-1000"></div>
-                <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full">
-                  <h3 className={`font-black text-[12px] md:text-xl ${heroCards[2].text} mb-0.5 leading-tight max-w-[75%]`}>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/20 rounded-bl-[100%] transition-transform duration-700 group-hover:scale-125"></div>
+                <div className="p-4 md:p-6 relative z-20 h-full flex flex-col items-start text-left max-w-[70%] md:max-w-[75%]">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white shadow-sm flex items-center justify-center mb-2 md:mb-3 group-hover:rotate-6 transition-transform">
+                    <Zap className="w-4 h-4 md:w-5 md:h-5 text-emerald-600" />
+                  </div>
+                  <h3 className="font-black text-[12px] md:text-xl text-slate-800 mb-1 leading-tight">
                     {heroCards[2].title}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <p className={`font-bold text-[9px] md:text-xs ${heroCards[2].subText}`}>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-[9px] md:text-sm text-emerald-600 uppercase tracking-wide">
                       {heroCards[2].subtitle}
                     </p>
-                    {heroCards[2].hasBadge && (
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[7px] px-1 py-0 md:text-[9px] md:px-1.5 md:py-0 font-black uppercase">
-                        NEW
-                      </Badge>
-                    )}
+                    <Badge className="bg-emerald-600 text-white border-none text-[8px] md:text-[10px] px-2 py-0.5 font-black uppercase ring-2 ring-emerald-50">
+                      NEW
+                    </Badge>
                   </div>
                 </div>
                 
-                <img
-                  src={heroCards[2].image}
-                  alt={heroCards[2].title}
-                  className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-4 md:w-28 md:h-28 object-cover rounded-full border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
+                <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4">
+                  <img
+                    src={heroCards[2].image}
+                    alt={heroCards[2].title}
+                    className="w-14 h-14 md:w-24 md:h-24 object-cover rounded-full border-[3px] md:border-[5px] border-white shadow-xl transition-all duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
               </Link>
 
               {/* Remaining cards - Alternating widths, last card full width */}
-              {heroCards.slice(3).map((card, index) => (
-                <Link
-                  to={card.link}
-                  key={card.id}
-                  className={`relative group overflow-hidden rounded-xl md:rounded-[2rem] shadow-sm border border-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 ${card.bg} 
-                    ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-24 md:col-span-3 md:h-[135px]`}
-                >
-                  <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-gray-500/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
-                  <div className="p-3 md:p-5 relative z-20 h-full flex flex-col items-start text-left w-full">
-                    <h3 className={`font-black text-[11px] md:text-lg ${card.text} mb-0.5 leading-tight max-w-[70%]`}>
-                      {card.title}
-                    </h3>
-                    <p className={`font-bold text-[8px] md:text-[10px] ${card.subText}`}>
-                      {card.subtitle}
-                    </p>
-                  </div>
-                  
-                  <img
-                    src={card.image}
-                    alt={card.title}
-                    className="absolute bottom-1.5 right-1.5 w-14 h-14 md:bottom-3 md:right-3 md:w-24 md:h-24 object-cover rounded-full border-[3px] border-white shadow-lg transition-all duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                </Link>
-              ))}
+              {heroCards.slice(3).map((card, index) => {
+                const Icon = card.icon;
+                return (
+                  <Link
+                    to={card.link}
+                    key={card.id}
+                    className={`relative group overflow-hidden rounded-2xl md:rounded-[2rem] ${card.bg} border-2 ${card.borderColor} shadow-sm transition-all duration-500 hover:shadow-xl hover:shadow-${card.themeColor}-500/10 hover:-translate-y-2 
+                      ${index === 2 ? 'col-span-5' : index % 2 === 0 ? 'col-span-2' : 'col-span-3'} h-28 md:col-span-3 md:h-[150px]`}
+                  >
+                    <div className={`p-4 md:p-6 relative z-20 h-full flex flex-col items-start text-left max-w-[70%] md:max-w-[65%]`}>
+                      <div className={`w-7 h-7 md:w-10 md:h-10 rounded-xl bg-white shadow-sm flex items-center justify-center mb-2.5 md:mb-4 group-hover:scale-110 transition-transform`}>
+                        <Icon className={`w-4 h-4 md:w-5 md:h-5 ${card.subText}`} />
+                      </div>
+                      <h3 className={`font-black text-[11px] md:text-lg text-slate-800 mb-1 leading-tight`}>
+                        {card.title}
+                      </h3>
+                      <p className={`font-bold text-[8px] md:text-xs ${card.subText} uppercase tracking-wide`}>
+                        {card.subtitle}
+                      </p>
+                    </div>
+                    
+                    <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4">
+                      <img
+                        src={card.image}
+                        alt={card.title}
+                        className="w-12 h-12 md:w-24 md:h-24 object-cover rounded-full border-[3px] md:border-[4px] border-white shadow-lg transition-all duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
 
           </motion.div>
@@ -776,33 +842,6 @@ const HomePage = () => {
 
       <CompareTray />
 
-      {/* Floating Mobile Helpline - Bottom Center */}
-      {showMobileHelpline && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] md:hidden max-w-[240px]">
-          <div className="relative bg-white pl-1 pr-3 py-1.5 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.15)] border border-emerald-50 flex items-center gap-2 animate-pulse-slow">
-            {/* Close Button */}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                setShowMobileHelpline(false);
-              }}
-              className="absolute -top-1 -right-1 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full p-0.5 shadow-sm border border-gray-200 transition-colors"
-            >
-              <X className="w-2.5 h-2.5" />
-            </button>
-
-            <a href="tel:+923141521115" className="flex items-center gap-2 w-full">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
-                <Phone className="w-3.5 h-3.5 text-white fill-white/20 animate-bounce" />
-              </div>
-              <div className="text-left flex-1 min-w-0">
-                <p className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold leading-none mb-0.5">SehatKor Helpline</p>
-                <p className="text-xs font-black text-gray-600 leading-none tracking-tight">+92 314 1521115</p>
-              </div>
-            </a>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
