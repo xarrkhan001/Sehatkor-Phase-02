@@ -8,6 +8,8 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import FloatingChat from "./components/FloatingChat";
 import WhatsAppButton from "./components/WhatsAppButton";
+import FloatingHelpMenu from "./components/FloatingHelpMenu";
+import RegistrationPromoModal from "./components/RegistrationPromoModal";
 import GlobalConnectionListener from "./components/GlobalConnectionListener";
 import VerificationNotificationModal from "./components/VerificationNotificationModal";
 import { useAuth } from "./contexts/AuthContext";
@@ -174,8 +176,9 @@ const AppShell = () => {
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
         </Suspense>
-        <FloatingChat />
-        <WhatsAppButton />
+        <FloatingChat showTrigger={false} />
+        <FloatingHelpMenu />
+        <RegistrationPromoModal />
         <GlobalConnectionListener />
         <VerificationNotificationModal />
         <Footer />

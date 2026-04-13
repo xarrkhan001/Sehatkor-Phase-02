@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import ProfileAvatarDialog from "./ProfileAvatarDialog";
 import ConnectionRequests from "./ConnectionRequests";
 
-const FloatingChat = () => {
+const FloatingChat = ({ showTrigger = true }: { showTrigger?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -128,6 +128,13 @@ const FloatingChat = () => {
       loadPendingRequestsCount();
     }
   }, [isOpen]);
+
+  // Listen for external open requests
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('sehatkor:open-chat', handleOpen);
+    return () => window.removeEventListener('sehatkor:open-chat', handleOpen);
+  }, []);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -2032,7 +2039,7 @@ const FloatingChat = () => {
           </DialogContent>
         </Dialog>
 
-        {!isOpen && (
+        {showTrigger && !isOpen && (
           <div className="relative">
             <Button
               onClick={() => setIsOpen(true)}
