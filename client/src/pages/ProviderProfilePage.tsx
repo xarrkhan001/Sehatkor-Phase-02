@@ -551,6 +551,14 @@ const ProviderProfilePage = () => {
       keywords.push(`doctor appointment ${seoCity}`);
       keywords.push(`online doctor booking Pakistan`);
       keywords.push(`PMDC verified doctor`);
+      keywords.push(`best doctor near me`);
+      keywords.push(`doctor contact number`);
+      keywords.push(`doctor clinic timing`);
+      keywords.push(`doctor fees check`);
+    } else {
+      keywords.push(`${seoRole} near me`);
+      keywords.push(`${seoRole} contact number`);
+      keywords.push(`${seoRole} timing`);
     }
 
     // 6. Urdu keywords for better local SEO
@@ -563,6 +571,10 @@ const ProviderProfilePage = () => {
       keywords.push('جلد کا ڈاکٹر');
     }
     keywords.push('آنلائن ڈاکٹر اپائنٹمنٹ');
+    keywords.push('ڈاکٹر دکھاؤ');
+    keywords.push('بیماری کا علاج');
+    keywords.push('قریبی کلینک');
+    keywords.push(`${seoName} کا نمبر`);
 
     return Array.from(new Set(keywords)).join(", ");
   };

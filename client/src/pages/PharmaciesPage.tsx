@@ -438,10 +438,13 @@ const PharmaciesPage = () => {
         }
         keywords={(() => {
           const baseKeywords = [
-            // Core Pharmacy Terms
             "online pharmacy Pakistan", "buy medicine online", "medicine delivery",
             "medical store near me", "pharmacy near me", "home delivery pharmacy",
             "discount pharmacy", "authentic medicine",
+            "dawai home delivery", "medicine store number", "urgent medicine delivery",
+            "nearby pharmacy", "best medical store",
+            "express medicine delivery Pakistan", "100% genuine medicines", "best online pharmacy",
+            "top medical store Karachi", "verified medicine seller", "discounted medicines online",
 
             // Major Brands & Chains (Contextual)
             "HealthPlus", "Dvago", "Servaid", "Clinix", "Fazal Din",
@@ -465,7 +468,8 @@ const PharmaciesPage = () => {
 
             // Urdu Keywords
             "آنلائن فارمیسی", "ادویات گھر منگوائیں", "میڈیکل سٹور", "دوائیاں",
-            "شوگر کی دوائی", "بلڈ پریشر کی مشین", "طاقت کی دوائی"
+            "شوگر کی دوائی", "بلڈ پریشر کی مشین", "طاقت کی دوائی",
+            "دوائی منگوانی hai", "میڈیکل سٹور کا نمبر", "قریبی میڈیکل سٹور", "اصلی دوائیاں", "سستی دوائیاں"
           ];
 
           let dynamicKeywords = [];

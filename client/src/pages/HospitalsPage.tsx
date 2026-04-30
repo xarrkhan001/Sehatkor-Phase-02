@@ -455,6 +455,8 @@ const HospitalsPage = () => {
             "hospital near me", "clinic near me", "hospitals in Pakistan",
             "best medical center", "emergency hospital near me", "24 hour hospital",
             "private hospital", "government hospital", "civil hospital", "DHQ hospital",
+            "hospital contact number", "clinic timing", "emergency ward number",
+            "nearby hospital", "nearby clinic", "best hospital Pakistan",
 
             // Facility Types (High Search Volume)
             "maternity home", "gynecology clinic", "delivery clinic",
@@ -464,10 +466,12 @@ const HospitalsPage = () => {
             "cardiology center", "heart hospital",
             "skin clinic", "dermatology center",
             "kidney center", "dialysis center",
+            "child specialist hospital", "bachon ka hospital",
 
             // Services & Tests
             "lab test", "blood test", "x-ray", "ultrasound", "MRI scan", "CT scan",
             "emergency ward", "trauma center", "burn center", "ICU", "operation theater",
+            "icu hospital", "icu bed availability",
 
             // Location Specific (Major Cities)
             "hospitals in Karachi", "hospitals in Lahore", "hospitals in Islamabad",
@@ -477,6 +481,7 @@ const HospitalsPage = () => {
             // Urdu Keywords (For Local Traffic)
             "ہسپتال", "کلینک", "طبی مرکز", "ایمرجنسی", "خواتین کا ہسپتال",
             "بچوں کا ہسپتال", "سرکاری ہسپتال", "پرائیویٹ ہسپتال", "علاج",
+            "ہسپتال کا نمبر", "کلینک کا ٹائم", "قریبی ہسپتال",
 
             // Intent Based
             "cheap hospital", "free medical camp", "charity hospital",
