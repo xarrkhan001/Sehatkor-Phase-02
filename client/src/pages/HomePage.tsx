@@ -276,7 +276,7 @@ const HomePage = () => {
       <SEO
         title="Sehatkor - Pakistan's #1 Healthcare Platform | Online Doctor Pakistan"
         description="Pakistan's trusted healthcare platform. Book verified doctors, home lab tests, and medicines online in Karachi, Lahore, Islamabad. Your health, our priority."
-        keywords="online doctor Pakistan, book doctor online, doctor appointment Pakistan, home lab test, online pharmacy Pakistan, Sehatkor, best doctors Pakistan"
+        keywords="online doctor Pakistan, book doctor online, doctor appointment Pakistan, home lab test, online pharmacy Pakistan, Sehatkor, best doctors Pakistan, find doctor near me, doctor dikhao, bimari ka ilaj, cheap medicine online, health services Pakistan, ڈاکٹر دکھاؤ، بیماری کا علاج"
         canonical="https://sehatkor.pk/"
         lang="en"
         dir="ltr"

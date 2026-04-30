@@ -482,6 +482,10 @@ const LabsPage = () => {
             "lab test online Pakistan", "book lab test", "home sample collection",
             "Chughtai Lab", "Excel Labs", "IDC", "Citilab", "diagnostic center",
             "medical lab", "pathology lab", "radiology center",
+            "blood test near me", "lab contact number", "home sampling near me",
+            "online lab reports", "cheap lab tests",
+            "cheapest lab tests Pakistan", "best lab service at home", "top diagnostic center",
+            "verified medical lab", "accurate lab reports", "discounted lab tests",
 
             // Specific Tests (Found in Data & Common High-Traffic)
             "Complete Blood Count", "CBC test", "Blood Test Complete",
@@ -498,8 +502,9 @@ const LabsPage = () => {
             "ECG", "Echocardiography", "Mammography",
 
             // Urdu Keywords
-            "لیب ٹیسٹ", "خون کا ٹیسٹ", "گھر پر ٹیسٹ", "شوگر ٹیسٹ",
-            "یرقان کا ٹیسٹ", "کورونا ٹیسٹ", "ریڈیالوجی", "ایکسرے"
+            "لیب ٹیسٹ", "خون ka test", "گھر پر ٹیسٹ", "شوگر ٹیسٹ",
+            "یرقان کا ٹیسٹ", "کورونا ٹیسٹ", "ریڈیالوجی", "ایکسرے",
+            "ٹیسٹ کروانا ہے", "لیب رپورٹ", "ٹیسٹ کی قیمت", "سب سے سستی لیب", "بہترین لیب پاکستان"
           ];
 
           let dynamicKeywords = [];

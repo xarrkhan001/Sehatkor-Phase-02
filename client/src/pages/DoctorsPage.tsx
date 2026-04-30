@@ -720,7 +720,12 @@ const DoctorsPage = () => {
             "best doctors Karachi", "best doctors Lahore", "best doctors Islamabad",
             "General Physician", "Gastroenterologist", "Family Doctor", "Medical Specialist",
             "stomach doctor", "liver specialist", "daily checkup doctor",
-            "ڈاکٹر تلاش کریں", "آنلائن ڈاکٹر", "میڈیکل سپیشلسٹ", "Sehatkor doctors"
+            "best doctor near me", "doctor contact number", "check doctor fees",
+            "doctor dikhao", "bimari ka ilaj", "doctor ka timing",
+            "top doctors in Pakistan", "best pmdc verified doctors", "lowest fee doctors",
+            "verified specialist doctor", "doctor app Pakistan", "best medical consultation",
+            "ڈاکٹر تلاش کریں", "آنلائن ڈاکٹر", "میڈیکل سپیشلسٹ", "Sehatkor doctors",
+            "ڈاکٹر دکھاؤ", "اچھا ڈاکٹر", "قریبی ڈاکٹر", "پاکستان کے بہترین ڈاکٹرز", "سستا ڈاکٹر"
           ];
 
           let dynamicKeywords = [];
@@ -737,15 +742,22 @@ const DoctorsPage = () => {
               `${query} specialist`,
               `${query} treatment doctors`,
               `doctor for ${query} pain`,
+              `best ${query} specialist near me`,
+              `${query} ka doctor`,
+              `top ${query} expert`,
+              `verified ${query} specialist`,
               `ڈاکٹر ${query}`,
-              `${query} کا علاج`
+              `${query} کا علاج`,
+              `${query} کے بہترین ڈاکٹرز`,
+              `${query} کا ماہر ڈاکٹر`
             );
           } else {
             dynamicKeywords.push(
               "cardiologist", "dermatologist", "gynecologist", "pediatrician",
               "general physician", "medical consultant", "stomach specialist",
               "ent specialist", "eye specialist", "orthopedic surgeon",
-              "sugar doctor", "blood pressure doctor", "fever doctor"
+              "sugar doctor", "blood pressure doctor", "fever doctor",
+              "child specialist", "skin doctor", "dil ka doctor"
             );
           }
 
